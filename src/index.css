@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Rubik', sans-serif;
+  --color-primary: #f97316;
+  --color-secondary: #8b5cf6;
+  --color-background: #f3f4f6;
+  --color-surface: #ffffff;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    direction: rtl;
+  }
+
+  body {
+    background: linear-gradient(to bottom right, #e0e7ff, #f3e8ff);
+    min-height: 100vh;
+    color: #1e293b;
+  }
+}
