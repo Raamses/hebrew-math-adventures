@@ -58,6 +58,12 @@
   - Modal showing session stats (Accuracy, XP) upon completion.
   - Options to "Play Again" or "Exit".
 
+### Audio
+- **`useSound.ts`:**
+  - Custom hook using `AudioContext` for synthesized sound effects.
+  - Handles "Correct", "Wrong", "Level Up", and "Click" sounds.
+  - Manages Mute state via `localStorage`.
+
 ### Navigation & Control
 - **`GameMenuModal.tsx`:**
   - **Safe Pause:** Triggered by top-left pause button.
@@ -80,6 +86,7 @@
 - [x] GitHub Integration (`hebrew-math-adventures`).
 - [x] **Phase 1: Enhanced Feedback** (Confetti, Shake, Encouraging Phrases).
 - [x] **Phase 1: Session Progress** (Progress Bar, Summary Modal).
+- [x] **Phase 1: Sound Effects** (Synthesized Audio, Mute Toggle).
 
 ### 🚀 Next Steps
 - [ ] **Sound Effects:** Add audio feedback for correct/wrong answers and level ups.

@@ -4,25 +4,6 @@ Based on `PRODUCT_DESIGN_ANALYSIS.md`, this roadmap breaks down the evolution of
 
 ## Phase 1: Immediate Impact & Engagement (The "Juice" Update)
 **Goal:** Make the game feel more alive, rewarding, and polished for the target audience (Ages 6-11).
-
-### 📦 PR 1: Enhanced Feedback System ("Juicy" Interactions)
-**Focus:** Replace static feedback with joyful animations.
-- [x] **Correct Answer:**
-  - Implement "Confetti" or "Sparkle" explosion on correct answer.
-  - Animate numbers "dancing" or pulsing.
-  - Add random encouraging Hebrew phrases ("!מעולה", "!כל הכבוד", "!אלוף").
-- [x] **Wrong Answer:**
-  - Gentle "shake" animation of the card (instead of just text).
-  - Wrong Answer (Soft Thud/Buzz)
-  - Level Up (Fanfare)
-  - Button Click (Pop/Click)
-- [ ] **UI:** Add Mute/Unmute toggle in the Game Menu.
-
-### 📦 PR 4: RTL & UI Polish
-**Focus:** Fix usability friction points identified in analysis.
-- [ ] **Pause Button:** Move to Top-Right (Logical Start in RTL).
-- [ ] **Layout:** Ensure all modals and menus flow naturally Right-to-Left.
-- [ ] **Typography:** Verify font sizes are large enough (24px+) for all key text.
 - [ ] **Input:** Refine the custom keypad layout for better ergonomics.
 
 ---
