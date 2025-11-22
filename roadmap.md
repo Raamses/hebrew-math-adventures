@@ -1,16 +1,3 @@
-# Product Roadmap: Hebrew Math Adventures
-
-Based on `PRODUCT_DESIGN_ANALYSIS.md`, this roadmap breaks down the evolution of the app into distinct, deliverable Feature PRs.
-
-## Phase 1: Immediate Impact & Engagement (The "Juice" Update)
-**Goal:** Make the game feel more alive, rewarding, and polished for the target audience (Ages 6-11).
-- [ ] **Input:** Refine the custom keypad layout for better ergonomics.
-
----
-
-## Phase 2: Deeper Learning & Progression (The "Adventure" Update)
-**Goal:** Add narrative context and deeper help systems.
-
 ### 📦 PR 5: World Select & Map UI
 **Focus:** Replace the static "Profile Setup -> Game" loop with a Map.
 - [ ] **Map Component:** A scrollable or static map view.

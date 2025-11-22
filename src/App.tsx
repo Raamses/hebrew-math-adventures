@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Pause, Volume2, VolumeX } from 'lucide-react'
+import { ChevronRight, Pause, Volume2, VolumeX } from 'lucide-react'
 import { MathCard } from './components/MathCard'
 import { MyWorld } from './components/MyWorld'
 import { FlyingStars } from './components/Effects'
@@ -156,7 +156,7 @@ const GameScreen = () => {
         <h1 className="text-2xl font-bold text-primary">הרפתקאות חשבון</h1>
 
         <button className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-primary transition-colors">
-          <ChevronLeft size={24} />
+          <ChevronRight size={24} />
         </button>
       </div>
 
