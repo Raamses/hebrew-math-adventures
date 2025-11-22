@@ -105,8 +105,11 @@
   - Created ThemeSelector and Settings UI
   - Linked themes to level milestones
 
-### Phase 3: Expansion (The "Ecosystem" Update) (Next)
-- [ ] **PR 8: Multi-Profile Parent Dashboard**
+### Phase 3: Expansion (The "Ecosystem" Update) (In Progress)
+- [x] **PR 8: Multi-Profile Parent Dashboard**
+  - Implemented ProfileContext with multi-user support
+  - Added ProfileSelector with avatars
+  - Created Parent Dashboard with Math Gate protection
 - [ ] **PR 9: Mascot Integration**
 
 ## 6. Key Files Index
