@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
-import { ChevronRight, Pause, Volume2, VolumeX } from 'lucide-react'
+import { Settings, Pause, Volume2, VolumeX } from 'lucide-react'
 import { MathCard } from './components/MathCard'
 import { MyWorld } from './components/MyWorld'
 import { FlyingStars } from './components/Effects'
 import { Confetti } from './components/Confetti'
 import { ProfileProvider, useProfile } from './context/ProfileContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { ProfileSetup } from './components/ProfileSetup'
 import { ProgressBar } from './components/ProgressBar'
 import { GameMenuModal } from './components/GameMenuModal'
 import { SessionProgressBar } from './components/SessionProgressBar'
 import { SessionSummary } from './components/SessionSummary'
+import { SettingsModal } from './components/SettingsModal'
 import { generateProblemForLevel, calculateRewards } from './engines/MathEngine'
 import { QuestionGenerator } from './engines/QuestionGenerator'
 import { useSound } from './hooks/useSound'
@@ -41,6 +43,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
   const [showStars, setShowStars] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Session State
   const [sessionCount, setSessionCount] = useState(0);
@@ -161,8 +164,11 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
 
         <h1 className="text-2xl font-bold text-primary">הרפתקאות חשבון</h1>
 
-        <button className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-primary transition-colors">
-          <ChevronRight size={24} />
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-primary transition-colors"
+        >
+          <Settings size={24} />
         </button>
       </div>
 
@@ -198,6 +204,11 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
         onPlayAgain={handlePlayAgain}
         onExit={handleExit}
       />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 };
@@ -205,10 +216,12 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
 import { WorldMap } from './components/WorldMap';
 
 
-function App() {
+const App = () => {
   return (
     <ProfileProvider>
-      <AppContent />
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </ProfileProvider>
   );
 }
