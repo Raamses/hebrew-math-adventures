@@ -52,6 +52,11 @@
 - **`Confetti.tsx`:**
   - Particle system using `framer-motion` and React Portals.
   - Triggers on correct answers for positive reinforcement ("Juice").
+- **`SessionProgressBar.tsx`:**
+  - Visualizes progress through a 10-question session.
+- **`SessionSummary.tsx`:**
+  - Modal showing session stats (Accuracy, XP) upon completion.
+  - Options to "Play Again" or "Exit".
 
 ### Navigation & Control
 - **`GameMenuModal.tsx`:**
@@ -74,6 +79,7 @@
 - [x] 3-Digit visual enhancements and Hint Animations.
 - [x] GitHub Integration (`hebrew-math-adventures`).
 - [x] **Phase 1: Enhanced Feedback** (Confetti, Shake, Encouraging Phrases).
+- [x] **Phase 1: Session Progress** (Progress Bar, Summary Modal).
 
 ### 🚀 Next Steps
 - [ ] **Sound Effects:** Add audio feedback for correct/wrong answers and level ups.
