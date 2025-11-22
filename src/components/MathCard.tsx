@@ -120,6 +120,8 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
             <form onSubmit={handleSubmit} className="flex flex-col items-center gap-6">
                 <input
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                     className="w-32 h-20 text-4xl text-center font-bold text-slate-800 bg-slate-100 rounded-2xl border-2 border-slate-300 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all"
