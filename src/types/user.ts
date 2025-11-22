@@ -3,6 +3,7 @@ export interface UserProfile {
     name: string;
     age: number;
     avatar: string;
+    mascot: 'owl' | 'bear' | 'ant' | 'lion';
     currentLevel: number;
     xp: number;
     streak: number;

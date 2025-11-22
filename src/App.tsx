@@ -19,6 +19,9 @@ import { useSound } from './hooks/useSound'
 import type { Problem } from './lib/gameLogic'
 import { WorldMap } from './components/WorldMap'
 
+import { Mascot, type MascotEmotion } from './components/mascot/Mascot'
+import { SpeechBubble } from './components/mascot/SpeechBubble'
+
 const ENCOURAGING_PHRASES = [
   "!מעולה",
   "!כל הכבוד",
@@ -41,11 +44,15 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
   const { profile, addXP } = useProfile();
   const { playSound, isMuted, toggleMute } = useSound();
   const [problem, setProblem] = useState<Problem | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
   const [showStars, setShowStars] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Mascot State
+  const [mascotEmotion, setMascotEmotion] = useState<MascotEmotion>('idle');
+  const [mascotMessage, setMascotMessage] = useState<string>('');
+  const [showBubble, setShowBubble] = useState(false);
 
   // Session State
   const [sessionCount, setSessionCount] = useState(0);
@@ -57,6 +64,14 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
   useEffect(() => {
     if (profile) {
       setProblem(generateProblemForLevel(profile.currentLevel));
+      // Initial greeting
+      setMascotEmotion('happy');
+      setMascotMessage(`היי ${profile.name}! מוכן לשחק?`);
+      setShowBubble(true);
+      setTimeout(() => {
+        setShowBubble(false);
+        setMascotEmotion('idle');
+      }, 3000);
     }
   }, [profile]);
 
@@ -76,15 +91,21 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       setSessionCount(nextSessionCount); // Only advance on correct
 
       const phrase = ENCOURAGING_PHRASES[Math.floor(Math.random() * ENCOURAGING_PHRASES.length)];
-      setFeedback(phrase);
+
+      // Mascot Reaction
+      setMascotEmotion('excited');
+      setMascotMessage(phrase);
+      setShowBubble(true);
+
       setShowStars(true);
       setShowConfetti(true);
 
       addXP(xpChange);
 
       setTimeout(() => {
-        setFeedback(null);
+        setShowBubble(false);
         setShowConfetti(false);
+        setMascotEmotion('idle');
 
         if (nextSessionCount >= SESSION_LENGTH) {
           playSound('levelUp'); // Or a specific session complete sound
@@ -101,10 +122,15 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       addXP(xpChange);
 
       const phrase = GENTLE_PHRASES[Math.floor(Math.random() * GENTLE_PHRASES.length)];
-      setFeedback(phrase);
+
+      // Mascot Reaction
+      setMascotEmotion('encourage'); // New emotion!
+      setMascotMessage(phrase);
+      setShowBubble(true);
 
       setTimeout(() => {
-        setFeedback(null);
+        setShowBubble(false);
+        setMascotEmotion('idle');
       }, 2000);
     }
   };
@@ -182,12 +208,23 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       <ProgressBar xp={profile.xp} level={profile.currentLevel} />
 
       {problem && (
-        <div className="w-full max-w-md z-10 mt-16">
+        <div className="w-full max-w-md z-10 mt-16 relative">
           <MathCard
             problem={problem}
             onAnswer={handleAnswer}
-            feedback={feedback}
+            feedback={null} // Feedback is now handled by the mascot
           />
+
+          {/* Mascot Positioned relative to card or screen */}
+          <div className="absolute -bottom-20 -right-20 md:-right-32 md:bottom-0 z-20 pointer-events-none">
+            <div className="relative">
+              <SpeechBubble text={mascotMessage} isVisible={showBubble} />
+              <Mascot
+                character={profile.mascot || 'owl'}
+                emotion={mascotEmotion}
+              />
+            </div>
+          </div>
         </div>
       )}
 

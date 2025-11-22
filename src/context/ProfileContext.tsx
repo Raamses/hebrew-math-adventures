@@ -4,7 +4,7 @@ import { type UserProfile, XP_PER_LEVEL } from '../types/user';
 interface ProfileContextType {
     profile: UserProfile | null;
     allProfiles: UserProfile[];
-    createProfile: (name: string, age: number, avatar: string) => Promise<void>;
+    createProfile: (name: string, age: number, avatar: string, mascot: 'owl' | 'bear' | 'ant' | 'lion') => Promise<void>;
     switchProfile: (profileId: string) => void;
     deleteProfile: (profileId: string) => void;
     logout: () => void;
@@ -28,6 +28,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         if (savedProfiles) {
             profiles = JSON.parse(savedProfiles);
+            // Ensure all profiles have a mascot field (migration for existing profiles)
+            profiles = profiles.map(p => ({
+                ...p,
+                mascot: p.mascot || 'owl'
+            }));
         } else {
             // Migration: Check for legacy single profile
             const legacyProfile = localStorage.getItem(LEGACY_PROFILE_KEY);
@@ -37,7 +42,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 const migratedProfile: UserProfile = {
                     ...parsedLegacy,
                     id: crypto.randomUUID(),
-                    avatar: '🦁' // Default avatar for migrated users
+                    avatar: '🦁', // Default avatar for migrated users
+                    mascot: 'owl' // Default mascot
                 };
                 profiles = [migratedProfile];
                 localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(profiles));
@@ -54,12 +60,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [allProfiles]);
 
-    const createProfile = async (name: string, age: number, avatar: string) => {
+    const createProfile = async (name: string, age: number, avatar: string, mascot: 'owl' | 'bear' | 'ant' | 'lion') => {
         const newProfile: UserProfile = {
             id: crypto.randomUUID(),
             name,
             age,
             avatar,
+            mascot,
             currentLevel: age <= 6 ? 1 : age === 7 ? 2 : age === 8 ? 3 : age === 9 ? 4 : age === 10 ? 5 : 6,
             xp: 0,
             streak: 0
