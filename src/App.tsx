@@ -3,20 +3,37 @@ import { ChevronLeft, Pause } from 'lucide-react'
 import { MathCard } from './components/MathCard'
 import { MyWorld } from './components/MyWorld'
 import { FlyingStars } from './components/Effects'
+import { Confetti } from './components/Confetti'
 import { ProfileProvider, useProfile } from './context/ProfileContext'
 import { ProfileSetup } from './components/ProfileSetup'
 import { ProgressBar } from './components/ProgressBar'
 import { GameMenuModal } from './components/GameMenuModal'
 import { generateProblemForLevel, calculateRewards } from './engines/MathEngine'
 import { QuestionGenerator } from './engines/QuestionGenerator'
-import { getRandomPhrase } from './lib/gameLogic'
 import type { Problem } from './lib/gameLogic'
+
+const ENCOURAGING_PHRASES = [
+  "!מעולה",
+  "!כל הכבוד",
+  "!אלוף",
+  "!מדהים",
+  "!יופי",
+  "!נהדר"
+];
+
+const GENTLE_PHRASES = [
+  "בוא ננסה שוב",
+  "כמעט...",
+  "לא נורא, נסה שוב",
+  "עוד ניסיון אחד"
+];
 
 const GameScreen = () => {
   const { profile, addXP, setProfile } = useProfile();
   const [problem, setProblem] = useState<Problem | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [showStars, setShowStars] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -31,18 +48,21 @@ const GameScreen = () => {
     const xpChange = calculateRewards(profile.currentLevel, isCorrect, profile.streak);
 
     if (isCorrect) {
-      const phrase = getRandomPhrase();
+      const phrase = ENCOURAGING_PHRASES[Math.floor(Math.random() * ENCOURAGING_PHRASES.length)];
       setFeedback(phrase);
       setShowStars(true);
+      setShowConfetti(true);
 
       addXP(xpChange);
 
       setTimeout(() => {
         setFeedback(null);
+        setShowConfetti(false);
         setProblem(generateProblemForLevel(profile.currentLevel));
       }, 2000);
     } else {
-      setFeedback("!נסה שוב");
+      const phrase = GENTLE_PHRASES[Math.floor(Math.random() * GENTLE_PHRASES.length)];
+      setFeedback(phrase);
       // Penalty is applied via addXP (which also resets streak for negative values)
       addXP(xpChange);
       setTimeout(() => setFeedback(null), 1500);
@@ -80,6 +100,7 @@ const GameScreen = () => {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-4 pt-8 relative overflow-hidden">
       {showStars && <FlyingStars onComplete={() => setShowStars(false)} />}
+      {showConfetti && <Confetti />}
 
       <div className="w-full max-w-md flex justify-between items-center mb-4 px-2">
         {/* Pause button - Top-Left in RTL (logical end) */}
