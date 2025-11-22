@@ -1,6 +1,8 @@
 export interface UserProfile {
+    id: string;
     name: string;
     age: number;
+    avatar: string;
     currentLevel: number;
     xp: number;
     streak: number;

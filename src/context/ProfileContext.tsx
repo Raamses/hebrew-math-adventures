@@ -3,72 +3,138 @@ import { type UserProfile, XP_PER_LEVEL } from '../types/user';
 
 interface ProfileContextType {
     profile: UserProfile | null;
-    setProfile: (profile: UserProfile | null) => void;
+    allProfiles: UserProfile[];
+    createProfile: (name: string, age: number, avatar: string) => Promise<void>;
+    switchProfile: (profileId: string) => void;
+    deleteProfile: (profileId: string) => void;
+    logout: () => void;
     addXP: (amount: number) => void;
     resetStreak: () => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
+const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
+const LEGACY_PROFILE_KEY = 'userProfile';
+
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [profile, setProfileState] = useState<UserProfile | null>(() => {
-        const saved = localStorage.getItem('userProfile');
-        return saved ? JSON.parse(saved) : null;
-    });
+    const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
+    const [profile, setProfileState] = useState<UserProfile | null>(null);
 
+    // Load profiles and handle migration on mount
     useEffect(() => {
-        if (profile) {
-            localStorage.setItem('userProfile', JSON.stringify(profile));
-        }
-    }, [profile]);
+        const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        let profiles: UserProfile[] = [];
 
-    const setProfile = (newProfile: UserProfile | null) => {
-        setProfileState(newProfile);
-        if (newProfile === null) {
-            localStorage.removeItem('userProfile');
+        if (savedProfiles) {
+            profiles = JSON.parse(savedProfiles);
+        } else {
+            // Migration: Check for legacy single profile
+            const legacyProfile = localStorage.getItem(LEGACY_PROFILE_KEY);
+            if (legacyProfile) {
+                const parsedLegacy = JSON.parse(legacyProfile);
+                // Convert legacy to new format with ID and default avatar
+                const migratedProfile: UserProfile = {
+                    ...parsedLegacy,
+                    id: crypto.randomUUID(),
+                    avatar: '🦁' // Default avatar for migrated users
+                };
+                profiles = [migratedProfile];
+                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(profiles));
+                localStorage.removeItem(LEGACY_PROFILE_KEY); // Clean up legacy
+            }
+        }
+        setAllProfiles(profiles);
+    }, []);
+
+    // Persist profiles whenever they change
+    useEffect(() => {
+        if (allProfiles.length > 0) {
+            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+        }
+    }, [allProfiles]);
+
+    const createProfile = async (name: string, age: number, avatar: string) => {
+        const newProfile: UserProfile = {
+            id: crypto.randomUUID(),
+            name,
+            age,
+            avatar,
+            currentLevel: age <= 6 ? 1 : age === 7 ? 2 : age === 8 ? 3 : age === 9 ? 4 : age === 10 ? 5 : 6,
+            xp: 0,
+            streak: 0
+        };
+
+        setAllProfiles(prev => [...prev, newProfile]);
+        setProfileState(newProfile); // Auto-login new user
+    };
+
+    const switchProfile = (profileId: string) => {
+        const selected = allProfiles.find(p => p.id === profileId);
+        if (selected) {
+            setProfileState(selected);
         }
     };
 
+    const deleteProfile = (profileId: string) => {
+        setAllProfiles(prev => prev.filter(p => p.id !== profileId));
+        if (profile?.id === profileId) {
+            setProfileState(null);
+        }
+    };
+
+    const logout = () => {
+        setProfileState(null);
+    };
+
     const addXP = (amount: number) => {
-        setProfileState(prev => {
-            if (!prev) return null;
+        if (!profile) return;
 
-            let newXP = prev.xp + amount;
-            let newLevel = prev.currentLevel;
-            let newStreak = prev.streak;
+        const updatedProfile = { ...profile };
+        let newXP = updatedProfile.xp + amount;
+        let newLevel = updatedProfile.currentLevel;
+        let newStreak = updatedProfile.streak;
 
-            if (amount > 0) {
-                newStreak += 1;
-            } else {
-                // Reset streak on penalty (negative XP)
-                newStreak = 0;
-            }
+        if (amount > 0) {
+            newStreak += 1;
+        } else {
+            newStreak = 0;
+        }
 
-            // Prevent negative total XP
-            if (newXP < 0) newXP = 0;
+        if (newXP < 0) newXP = 0;
 
-            // Level Up Logic
-            if (newXP >= XP_PER_LEVEL) {
-                newXP -= XP_PER_LEVEL;
-                newLevel += 1;
-            }
+        if (newXP >= XP_PER_LEVEL) {
+            newXP -= XP_PER_LEVEL;
+            newLevel += 1;
+        }
 
-            return {
-                ...prev,
-                xp: newXP,
-                currentLevel: newLevel,
-                streak: newStreak
-            };
-        });
+        updatedProfile.xp = newXP;
+        updatedProfile.currentLevel = newLevel;
+        updatedProfile.streak = newStreak;
+
+        // Update both current state and the list
+        setProfileState(updatedProfile);
+        setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
     };
 
     const resetStreak = () => {
         if (!profile) return;
-        setProfileState({ ...profile, streak: 0 });
+        const updatedProfile = { ...profile, streak: 0 };
+        setProfileState(updatedProfile);
+        setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
     };
 
     return (
-        <ProfileContext.Provider value={{ profile, setProfile, addXP, resetStreak }}>
+        <ProfileContext.Provider value={{
+            profile,
+            allProfiles,
+            createProfile,
+            switchProfile,
+            deleteProfile,
+            logout,
+            addXP,
+            resetStreak
+        }}>
             {children}
         </ProfileContext.Provider>
     );

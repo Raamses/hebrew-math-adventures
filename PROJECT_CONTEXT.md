@@ -88,13 +88,29 @@
 - [x] **Phase 1: Session Progress** (Progress Bar, Summary Modal with accurate tracking).
 - [x] **Phase 1: Sound Effects** (Synthesized Audio, Mute Toggle).
 - [x] **Phase 1: RTL & UI Polish** (Header Layout, Mobile Input Optimization).
-- [x] **Phase 2: World Map** (Visual zone-based progression with Addition Island, Subtraction Forest, Multiplication Mountain).
+- [x] **Phase 2: World Map** (Visual zone-based progression).
 
-### 🚀 Next Steps
-- [ ] **Phase 2: Interactive Hint System** ("Show Me How" visual explanations).
-- [ ] **Phase 2: Unlockable Themes** (Visual customization rewards).
-- [ ] **Phase 3: Multi-Profile Dashboard** (Household use and parent mode).
-- [ ] **More Problem Types:** Geometry, fractions, or word problems for higher levels.
+### Phase 2: Core Game Loop & Progression (In Progress)
+- [x] **PR 5: World Select & Map UI**
+  - Replaced linear flow with World Map
+  - Implemented zones (Island, Forest, Mountain)
+  - Added navigation logic
+- [x] **PR 6: Interactive "Show Me How" Hint System**
+  - Added visual hint components (Addition, Subtraction, Borrowing)
+  - Integrated "Show Me How" button in MathCard
+  - Implemented smart hint selection
+- [x] **PR 7: Unlockable Themes (Rewards)**
+  - Implemented Theme System with CSS variables
+  - Added 4 themes (Default, Forest, Space, Candy)
+  - Created ThemeSelector and Settings UI
+  - Linked themes to level milestones
+
+### Phase 3: Expansion (The "Ecosystem" Update) (In Progress)
+- [x] **PR 8: Multi-Profile Parent Dashboard**
+  - Implemented ProfileContext with multi-user support
+  - Added ProfileSelector with avatars
+  - Created Parent Dashboard with Math Gate protection
+- [ ] **PR 9: Mascot Integration**
 
 ## 6. Key Files Index
 - `src/App.tsx`: Main entry and game loop with navigation state management.
