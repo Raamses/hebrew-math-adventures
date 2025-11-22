@@ -19,6 +19,7 @@
 - **Level 2 (Age 7):** Addition/Subtraction result < 20. (e.g., 12 - 5)
 - **Level 3 (Age 8):** Addition/Subtraction < 100, Basic Multiplication (1-5 tables).
 - **Level 4 (Age 9+):** Multiplication (1-10), Basic Division.
+- **Level 5 (Age 10+):** Basic fractions (1/2, 1/4, 1/8), Basic Division (1-100).
 - **Progression:** Users earn "XP". Every 100 XP = Level Up, use progression in the amount of XP to level up.
 
 ## 5. Advanced Math Generation Rules

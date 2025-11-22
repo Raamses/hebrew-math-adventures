@@ -85,7 +85,11 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
     };
 
     return (
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+        <motion.div
+            animate={feedback && !feedback.includes('!') ? { x: [0, -10, 10, -10, 10, 0] } : {}}
+            transition={{ duration: 0.4 }}
+            className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden"
+        >
             {/* Question Text (RTL) */}
             <h2 className="text-3xl font-bold text-slate-700 mb-8 text-center">?כמה זה</h2>
 
@@ -152,6 +156,6 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </motion.div>
     );
 };

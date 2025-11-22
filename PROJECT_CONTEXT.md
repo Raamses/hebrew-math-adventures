@@ -47,7 +47,11 @@
   - Displays the problem.
   - **Visuals:** `tracking-widest` for 3-digit numbers.
   - **Hint System:** Visual "borrow" animation (crossing out numbers) triggers after 2 wrong attempts.
+  - **Feedback:** Shake animation on wrong answer.
   - **Input:** Custom numeric keypad or keyboard input.
+- **`Confetti.tsx`:**
+  - Particle system using `framer-motion` and React Portals.
+  - Triggers on correct answers for positive reinforcement ("Juice").
 
 ### Navigation & Control
 - **`GameMenuModal.tsx`:**
@@ -69,6 +73,7 @@
 - [x] Safe Pause/Restart/Exit mechanism.
 - [x] 3-Digit visual enhancements and Hint Animations.
 - [x] GitHub Integration (`hebrew-math-adventures`).
+- [x] **Phase 1: Enhanced Feedback** (Confetti, Shake, Encouraging Phrases).
 
 ### 🚀 Next Steps
 - [ ] **Sound Effects:** Add audio feedback for correct/wrong answers and level ups.
