@@ -6,16 +6,18 @@ import { FlyingStars } from './components/Effects'
 import { Confetti } from './components/Confetti'
 import { ProfileProvider, useProfile } from './context/ProfileContext'
 import { ThemeProvider } from './context/ThemeContext'
-import { ProfileSetup } from './components/ProfileSetup'
+import { ProfileSelector } from './components/onboarding/ProfileSelector'
+import { ParentGate } from './components/parent/ParentGate'
+import { ParentDashboard } from './components/parent/ParentDashboard'
 import { ProgressBar } from './components/ProgressBar'
 import { GameMenuModal } from './components/GameMenuModal'
 import { SessionProgressBar } from './components/SessionProgressBar'
 import { SessionSummary } from './components/SessionSummary'
 import { SettingsModal } from './components/SettingsModal'
 import { generateProblemForLevel, calculateRewards } from './engines/MathEngine'
-import { QuestionGenerator } from './engines/QuestionGenerator'
 import { useSound } from './hooks/useSound'
 import type { Problem } from './lib/gameLogic'
+import { WorldMap } from './components/WorldMap'
 
 const ENCOURAGING_PHRASES = [
   "!מעולה",
@@ -36,7 +38,7 @@ const GENTLE_PHRASES = [
 const SESSION_LENGTH = 10;
 
 const GameScreen = ({ onExit }: { onExit: () => void }) => {
-  const { profile, addXP, setProfile } = useProfile();
+  const { profile, addXP } = useProfile();
   const { playSound, isMuted, toggleMute } = useSound();
   const [problem, setProblem] = useState<Problem | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -56,7 +58,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
     if (profile) {
       setProblem(generateProblemForLevel(profile.currentLevel));
     }
-  }, [profile?.currentLevel]); // Re-generate when level changes
+  }, [profile]);
 
   const handleAnswer = (isCorrect: boolean) => {
     if (!profile || !problem) return;
@@ -91,35 +93,30 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
           setProblem(generateProblemForLevel(profile.currentLevel));
         }
       }, 2000);
+
+      setTimeout(() => setShowStars(false), 1500);
+
     } else {
       playSound('wrong');
+      addXP(xpChange);
+
       const phrase = GENTLE_PHRASES[Math.floor(Math.random() * GENTLE_PHRASES.length)];
       setFeedback(phrase);
-      addXP(xpChange); // Penalty
-      setTimeout(() => setFeedback(null), 1500);
+
+      setTimeout(() => {
+        setFeedback(null);
+      }, 2000);
     }
   };
 
   const handleRestart = () => {
     if (!profile) return;
-
-    QuestionGenerator.getInstance().reset();
-
-    setProfile({
-      ...profile,
-      xp: 0,
-      streak: 0
-    });
-
-    // Reset Session
     setSessionCount(0);
     setSessionCorrect(0);
     setSessionAttempts(0);
     setSessionXP(0);
-    setShowSummary(false);
-
-    setProblem(generateProblemForLevel(profile.currentLevel));
     setIsMenuOpen(false);
+    setProblem(generateProblemForLevel(profile.currentLevel));
   };
 
   const handlePlayAgain = () => {
@@ -138,27 +135,31 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
     onExit();
   };
 
-  if (!profile) return null;
+  if (!profile || !problem) return null;
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen p-4 pt-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+      <MyWorld score={profile.xp} streak={profile.streak} level={profile.currentLevel} />
       {showStars && <FlyingStars onComplete={() => setShowStars(false)} />}
       {showConfetti && <Confetti />}
 
-      <div className="w-full max-w-md flex justify-between items-center mb-4 px-2">
-        <div className="flex gap-2">
+      {/* Header with Progress, Settings, and Sound */}
+      <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-4 z-10">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setIsMenuOpen(true)}
-            className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-primary transition-colors"
+            className="p-3 bg-white rounded-full shadow-lg hover:bg-slate-50 transition-all"
+            aria-label="Pause"
           >
-            <Pause size={24} />
+            <Pause className="text-slate-600" size={24} />
           </button>
 
           <button
             onClick={toggleMute}
-            className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-primary transition-colors"
+            className="p-3 bg-white rounded-full shadow-lg hover:bg-slate-50 transition-all"
+            aria-label="Mute"
           >
-            {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            {isMuted ? <VolumeX className="text-slate-400" size={24} /> : <Volume2 className="text-slate-600" size={24} />}
           </button>
         </div>
 
@@ -179,14 +180,15 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
           For now, keeping both as per design.
       */}
       <ProgressBar xp={profile.xp} level={profile.currentLevel} />
-      <MyWorld score={profile.xp} streak={profile.streak} level={profile.currentLevel} />
 
       {problem && (
-        <MathCard
-          problem={problem}
-          onAnswer={handleAnswer}
-          feedback={feedback}
-        />
+        <div className="w-full max-w-md z-10 mt-16">
+          <MathCard
+            problem={problem}
+            onAnswer={handleAnswer}
+            feedback={feedback}
+          />
+        </div>
       )}
 
       <GameMenuModal
@@ -213,8 +215,6 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
   );
 };
 
-import { WorldMap } from './components/WorldMap';
-
 
 const App = () => {
   return (
@@ -227,16 +227,20 @@ const App = () => {
 }
 
 const AppContent = () => {
-  const { profile, setProfile } = useProfile();
-  const [view, setView] = useState<'setup' | 'map' | 'game'>('setup');
+  const { profile, logout } = useProfile();
+  const [view, setView] = useState<'select' | 'map' | 'game' | 'parent'>('select');
+  const [showParentGate, setShowParentGate] = useState(false);
 
   // Effect to sync view with profile state
   useEffect(() => {
-    if (!profile) {
-      setView('setup');
-    } else if (view === 'setup') {
-      // If we have a profile but are in setup, go to map
-      setView('map');
+    if (profile) {
+      // If we have a profile, we go to map (unless we're already in game)
+      if (view === 'select') {
+        setView('map');
+      }
+    } else {
+      // No profile = selection screen
+      setView('select');
     }
   }, [profile, view]);
 
@@ -249,11 +253,30 @@ const AppContent = () => {
   };
 
   const handleLogout = () => {
-    setProfile(null);
-    setView('setup');
+    logout();
+    setView('select');
   };
 
-  if (!profile) return <ProfileSetup />;
+  if (view === 'parent') {
+    return <ParentDashboard onExit={() => setView('select')} />;
+  }
+
+  if (!profile) {
+    return (
+      <>
+        <ProfileSelector onParentAccess={() => setShowParentGate(true)} />
+        {showParentGate && (
+          <ParentGate
+            onSuccess={() => {
+              setShowParentGate(false);
+              setView('parent');
+            }}
+            onCancel={() => setShowParentGate(false)}
+          />
+        )}
+      </>
+    );
+  }
 
   if (view === 'map') {
     return (
