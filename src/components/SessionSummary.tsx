@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RotateCcw, Home, Star, Clock } from 'lucide-react';
+import { RotateCcw, Home, Star } from 'lucide-react';
 
 interface SessionSummaryProps {
     isOpen: boolean;

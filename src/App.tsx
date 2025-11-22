@@ -33,7 +33,7 @@ const GENTLE_PHRASES = [
 
 const SESSION_LENGTH = 10;
 
-const GameScreen = () => {
+const GameScreen = ({ onExit }: { onExit: () => void }) => {
   const { profile, addXP, setProfile } = useProfile();
   const { playSound, isMuted, toggleMute } = useSound();
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -45,6 +45,7 @@ const GameScreen = () => {
   // Session State
   const [sessionCount, setSessionCount] = useState(0);
   const [sessionCorrect, setSessionCorrect] = useState(0);
+  const [sessionAttempts, setSessionAttempts] = useState(0);
   const [sessionXP, setSessionXP] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
 
@@ -56,6 +57,8 @@ const GameScreen = () => {
 
   const handleAnswer = (isCorrect: boolean) => {
     if (!profile || !problem) return;
+
+    setSessionAttempts(prev => prev + 1);
 
     const xpChange = calculateRewards(profile.currentLevel, isCorrect, profile.streak);
 
@@ -108,6 +111,7 @@ const GameScreen = () => {
     // Reset Session
     setSessionCount(0);
     setSessionCorrect(0);
+    setSessionAttempts(0);
     setSessionXP(0);
     setShowSummary(false);
 
@@ -116,9 +120,11 @@ const GameScreen = () => {
   };
 
   const handlePlayAgain = () => {
+    if (!profile) return;
     // Reset Session Stats but keep Profile XP/Streak
     setSessionCount(0);
     setSessionCorrect(0);
+    setSessionAttempts(0);
     setSessionXP(0);
     setShowSummary(false);
     setProblem(generateProblemForLevel(profile.currentLevel));
@@ -126,7 +132,7 @@ const GameScreen = () => {
 
   const handleExit = () => {
     if (!profile) return;
-    setProfile(null);
+    onExit();
   };
 
   if (!profile) return null;
@@ -188,13 +194,16 @@ const GameScreen = () => {
         isOpen={showSummary}
         xpGained={sessionXP}
         correctCount={sessionCorrect}
-        totalCount={SESSION_LENGTH} // Assuming they eventually solve all 10
+        totalCount={sessionAttempts} // Use actual attempts for accuracy
         onPlayAgain={handlePlayAgain}
         onExit={handleExit}
       />
     </div>
   );
 };
+
+import { WorldMap } from './components/WorldMap';
+
 
 function App() {
   return (
@@ -205,8 +214,49 @@ function App() {
 }
 
 const AppContent = () => {
-  const { profile } = useProfile();
-  return profile ? <GameScreen /> : <ProfileSetup />;
+  const { profile, setProfile } = useProfile();
+  const [view, setView] = useState<'setup' | 'map' | 'game'>('setup');
+
+  // Effect to sync view with profile state
+  useEffect(() => {
+    if (!profile) {
+      setView('setup');
+    } else if (view === 'setup') {
+      // If we have a profile but are in setup, go to map
+      setView('map');
+    }
+  }, [profile, view]);
+
+  const handleZoneSelect = () => {
+    setView('game');
+  };
+
+  const handleGameExit = () => {
+    setView('map');
+  };
+
+  const handleLogout = () => {
+    setProfile(null);
+    setView('setup');
+  };
+
+  if (!profile) return <ProfileSetup />;
+
+  if (view === 'map') {
+    return (
+      <WorldMap
+        currentLevel={profile.currentLevel}
+        onZoneSelect={handleZoneSelect}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  return (
+    <GameScreen
+      onExit={handleGameExit}
+    />
+  );
 };
 
 export default App;

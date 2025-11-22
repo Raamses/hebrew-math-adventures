@@ -85,19 +85,22 @@
 - [x] 3-Digit visual enhancements and Hint Animations.
 - [x] GitHub Integration (`hebrew-math-adventures`).
 - [x] **Phase 1: Enhanced Feedback** (Confetti, Shake, Encouraging Phrases).
-- [x] **Phase 1: Session Progress** (Progress Bar, Summary Modal).
+- [x] **Phase 1: Session Progress** (Progress Bar, Summary Modal with accurate tracking).
 - [x] **Phase 1: Sound Effects** (Synthesized Audio, Mute Toggle).
 - [x] **Phase 1: RTL & UI Polish** (Header Layout, Mobile Input Optimization).
+- [x] **Phase 2: World Map** (Visual zone-based progression with Addition Island, Subtraction Forest, Multiplication Mountain).
 
 ### 🚀 Next Steps
-- [ ] **Phase 2: World Map** (Visual progression system).
-- [ ] **Visual Themes:** Unlockable backgrounds or avatars based on Level/XP.
-- [ ] **Teacher/Parent Dashboard:** View progress over time.
+- [ ] **Phase 2: Interactive Hint System** ("Show Me How" visual explanations).
+- [ ] **Phase 2: Unlockable Themes** (Visual customization rewards).
+- [ ] **Phase 3: Multi-Profile Dashboard** (Household use and parent mode).
 - [ ] **More Problem Types:** Geometry, fractions, or word problems for higher levels.
 
 ## 6. Key Files Index
-- `src/App.tsx`: Main entry and game loop.
+- `src/App.tsx`: Main entry and game loop with navigation state management.
 - `src/engines/QuestionGenerator.ts`: The "Brain" of the math generation.
 - `src/components/MathCard.tsx`: The primary interaction UI.
+- `src/components/WorldMap.tsx`: Zone-based level selection and progression.
 - `src/context/ProfileContext.tsx`: User state management.
+- `src/lib/worldConfig.ts`: Zone configuration and level ranges.
 - `ANTIGRAVITY_RULES.md`: Detailed game design rules.
