@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Users, Trash2 } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
 import { ProfileSetup } from '../ProfileSetup';
 

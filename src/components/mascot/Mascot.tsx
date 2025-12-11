@@ -10,17 +10,17 @@ interface MascotProps {
     className?: string;
 }
 
-export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = '' }) => {
+// Animation variants based on emotion
+const variants = {
+    idle: { y: [0, -5, 0], transition: { repeat: Infinity, duration: 3, ease: "easeInOut" } },
+    happy: { y: [0, -20, 0], scale: [1, 1.1, 1], transition: { repeat: Infinity, duration: 0.6 } },
+    excited: { y: [0, -30, 0], rotate: [0, -10, 10, 0], transition: { repeat: Infinity, duration: 0.4 } },
+    sad: { y: 5, rotate: -5, scale: 0.95 },
+    thinking: { rotate: [0, 15, 0], transition: { repeat: Infinity, duration: 2 } },
+    encourage: { scale: [1, 1.2, 1], transition: { repeat: Infinity, duration: 1 } }
+} as any;
 
-    // Animation variants based on emotion
-    const variants = {
-        idle: { y: [0, -5, 0], transition: { repeat: Infinity, duration: 3, ease: "easeInOut" } },
-        happy: { y: [0, -20, 0], scale: [1, 1.1, 1], transition: { repeat: Infinity, duration: 0.6 } },
-        excited: { y: [0, -30, 0], rotate: [0, -10, 10, 0], transition: { repeat: Infinity, duration: 0.4 } },
-        sad: { y: 5, rotate: -5, scale: 0.95 },
-        thinking: { rotate: [0, 15, 0], transition: { repeat: Infinity, duration: 2 } },
-        encourage: { scale: [1, 1.2, 1], transition: { repeat: Infinity, duration: 1 } }
-    } as any;
+export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = '' }) => {
 
     const renderCharacter = () => {
         switch (character) {
@@ -34,9 +34,9 @@ export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = 
                         {/* Eyes */}
                         <circle cx="35" cy="40" r="12" fill="white" stroke="#7c3aed" strokeWidth="2" />
                         <circle cx="65" cy="40" r="12" fill="white" stroke="#7c3aed" strokeWidth="2" />
-                        {/* Pupils - change based on emotion */}
-                        <motion.circle cx="35" cy="40" r="4" fill="#4c1d95" animate={emotion === 'thinking' ? { x: 3 } : { x: 0 }} />
-                        <motion.circle cx="65" cy="40" r="4" fill="#4c1d95" animate={emotion === 'thinking' ? { x: 3 } : { x: 0 }} />
+                        {/* Pupils - Static for now to prevent crash */}
+                        <circle cx={emotion === 'thinking' ? 38 : 35} cy="40" r="4" fill="#4c1d95" />
+                        <circle cx={emotion === 'thinking' ? 68 : 65} cy="40" r="4" fill="#4c1d95" />
                         {/* Beak */}
                         <path d="M45 50 L55 50 L50 60 Z" fill="#f59e0b" />
                         {/* Wings */}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useProfile } from '../context/ProfileContext';
-import { Mascot, MascotCharacter } from './mascot/Mascot';
+import { Mascot } from './mascot/Mascot';
+import type { MascotCharacter } from './mascot/Mascot';
 
 const AVATARS = ['🦁', '🐯', '🐻', '🐨', '🐼', '🐸', '🦄', '🐲', '🚀', '⭐'];
 const MASCOTS: { id: MascotCharacter; name: string }[] = [
@@ -44,8 +45,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
                                 type="button"
                                 onClick={() => setSelectedAvatar(avatar)}
                                 className={`text-3xl p-2 rounded-xl transition-all ${selectedAvatar === avatar
-                                        ? 'bg-blue-100 scale-110 ring-2 ring-blue-400'
-                                        : 'hover:bg-slate-50'
+                                    ? 'bg-blue-100 scale-110 ring-2 ring-blue-400'
+                                    : 'hover:bg-slate-50'
                                     }`}
                             >
                                 {avatar}
@@ -64,8 +65,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
                                 type="button"
                                 onClick={() => setSelectedMascot(mascot.id)}
                                 className={`flex flex-col items-center p-2 rounded-xl transition-all ${selectedMascot === mascot.id
-                                        ? 'bg-purple-100 ring-2 ring-purple-400 scale-105'
-                                        : 'hover:bg-slate-50'
+                                    ? 'bg-purple-100 ring-2 ring-purple-400 scale-105'
+                                    : 'hover:bg-slate-50'
                                     }`}
                             >
                                 <div className="w-16 h-16">

@@ -62,7 +62,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
   const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
-    if (profile) {
+    if (profile && !problem) {
       setProblem(generateProblemForLevel(profile.currentLevel));
       // Initial greeting
       setMascotEmotion('happy');
@@ -73,7 +73,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
         setMascotEmotion('idle');
       }, 3000);
     }
-  }, [profile]);
+  }, [profile, problem]);
 
   const handleAnswer = (isCorrect: boolean) => {
     if (!profile || !problem) return;
@@ -164,7 +164,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
   if (!profile || !problem) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center justify-center p-4 pt-24 relative overflow-hidden" dir="rtl">
       <MyWorld score={profile.xp} streak={profile.streak} level={profile.currentLevel} />
       {showStars && <FlyingStars onComplete={() => setShowStars(false)} />}
       {showConfetti && <Confetti />}

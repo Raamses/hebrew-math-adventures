@@ -23,7 +23,14 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({ text, isVisible, var
                         </p>
 
                         {/* Bubble Tail */}
-                        <div className="absolute -bottom-3 right-8 w-6 h-6 bg-white border-r-2 border-b-2 border-slate-100 transform rotate-45"></div>
+                        {variant === 'speech' ? (
+                            <div className="absolute -bottom-3 right-8 w-6 h-6 bg-white border-r-2 border-b-2 border-slate-100 transform rotate-45"></div>
+                        ) : (
+                            <div className="absolute -bottom-4 right-8 flex flex-col items-center gap-1">
+                                <div className="w-3 h-3 bg-white border-2 border-slate-100 rounded-full"></div>
+                                <div className="w-2 h-2 bg-white border-2 border-slate-100 rounded-full"></div>
+                            </div>
+                        )}
                     </div>
                 </motion.div>
             )}

@@ -41,6 +41,8 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
     const showHint = problem.subType === 'borrow' && wrongAttempts >= 2 && problem.missing === 'answer';
     const canShowHintButton = wrongAttempts >= 1;
 
+
+
     const renderNum1 = () => {
         if (problem.missing === 'num1') {
             return <div className="w-20 h-20 bg-indigo-100 rounded-xl border-4 border-indigo-300 flex items-center justify-center text-indigo-600">?</div>;
