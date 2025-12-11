@@ -1,15 +1,9 @@
 import React, { useState } from 'react';
 import { useProfile } from '../context/ProfileContext';
-import { Mascot } from './mascot/Mascot';
-import type { MascotCharacter } from './mascot/Mascot';
+import { type MascotCharacter } from './mascot/Mascot';
+import { MascotSelector } from './mascot/MascotSelector';
 
 const AVATARS = ['🦁', '🐯', '🐻', '🐨', '🐼', '🐸', '🦄', '🐲', '🚀', '⭐'];
-const MASCOTS: { id: MascotCharacter; name: string }[] = [
-    { id: 'owl', name: 'ינשוף' },
-    { id: 'bear', name: 'דוב' },
-    { id: 'ant', name: 'נמלה' },
-    { id: 'lion', name: 'אריה' }
-];
 
 interface ProfileSetupProps {
     onComplete?: () => void;
@@ -58,24 +52,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
                 {/* Mascot Selection */}
                 <div>
                     <label className="block text-slate-600 font-bold mb-2 text-lg">בחר חבר למסע:</label>
-                    <div className="grid grid-cols-4 gap-2">
-                        {MASCOTS.map(mascot => (
-                            <button
-                                key={mascot.id}
-                                type="button"
-                                onClick={() => setSelectedMascot(mascot.id)}
-                                className={`flex flex-col items-center p-2 rounded-xl transition-all ${selectedMascot === mascot.id
-                                    ? 'bg-purple-100 ring-2 ring-purple-400 scale-105'
-                                    : 'hover:bg-slate-50'
-                                    }`}
-                            >
-                                <div className="w-16 h-16">
-                                    <Mascot character={mascot.id} emotion="idle" />
-                                </div>
-                                <span className="text-sm font-bold text-slate-600 mt-1">{mascot.name}</span>
-                            </button>
-                        ))}
-                    </div>
+                    <MascotSelector selectedMascot={selectedMascot} onSelect={setSelectedMascot} />
                 </div>
 
                 <div>

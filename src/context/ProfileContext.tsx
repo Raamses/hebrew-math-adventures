@@ -10,6 +10,7 @@ interface ProfileContextType {
     logout: () => void;
     addXP: (amount: number) => void;
     resetStreak: () => void;
+    updateMascot: (mascot: 'owl' | 'bear' | 'ant' | 'lion') => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -131,6 +132,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
     };
 
+    const updateMascot = (mascot: 'owl' | 'bear' | 'ant' | 'lion') => {
+        if (!profile) return;
+        const updatedProfile = { ...profile, mascot };
+        setProfileState(updatedProfile);
+        setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
+    };
+
     return (
         <ProfileContext.Provider value={{
             profile,
@@ -140,7 +148,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             deleteProfile,
             logout,
             addXP,
-            resetStreak
+            resetStreak,
+            updateMascot
         }}>
             {children}
         </ProfileContext.Provider>
