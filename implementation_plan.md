@@ -1,63 +1,62 @@
-# Implementation Plan - Phase 3: Expansion & Mascot Integration
+# Implementation Plan - Phase 4: Going Live (Deployment)
 
 ## Goal Description
-Implement the "Mascot Integration" (PR 9) to add an emotional layer to the game. The mascot ("Beni" and friends) will accompany the player, reacting to their success and failure, and providing a sense of companionship.
+Deploy "Hebrew Math Adventures" to the public internet using a "Big Cloud" provider (GCP/AWS/Azure) to ensure scalability, reliability, and professional infrastructure.
+
+## Deployment Strategy: Big Cloud vs. Frontend Cloud
+The user requested "Big Cloud" options. Here is the comparison and recommendation:
+
+### 🏆 Recommendation: Google Firebase Hosting (GCP)
+**Why?**
+- **Effective "Big Cloud":** It *is* Google Cloud Platform, but wrapped in a developer-friendly interface.
+- **True Free Tier:** The "Spark" plan is generous for free usage.
+- **Speed:** Google's global CDN is incredibly fast.
+- **Simplicity:** Easier to set up than raw AWS/Azure for a static site.
+
+### 🥈 Alternative: AWS Amplify
+- **Why?** It's the AWS equivalent of Vercel/Firebase.
+- **Pros:** Deep integration if you use other AWS services later.
+- **Cons:** The AWS Console can be intimidatingly complex.
+
+### 🥉 Alternative: Azure Static Web Apps
+- **Why?** Great if you are already in the Microsoft ecosystem.
+- **Pros:** Great VS Code integration.
 
 ## User Review Required
 > [!IMPORTANT]
-> **Mascot Assets:** Currently using SVG placeholders for Owl, Bear, Ant, and Lion. If custom artwork is provided later, we will replace the SVGs.
+> **Decision Point:** I have written the plan for **Firebase Hosting (GCP)** below, as it is my primary recommendation for this specific project.
+> If you prefer AWS or Azure, let me know, and I will rewrite Step 2.
 
 ## Proposed Changes
 
-### 📦 PR 9: Mascot Integration
+### 📦 Step 1: Prepare Codebase
+#### [MODIFY] [vite.config.ts](file:///d:/Projects/Hebrew%20Educational%20Game/vite.config.ts)
+- Verify `build.outDir` is set to `dist` (default) for Firebase to detect.
 
-#### [NEW] [Mascot.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/mascot/Mascot.tsx)
-- Create `Mascot` component with SVG rendering for 4 characters:
-  - Owl (Default)
-  - Bear
-  - Ant
-  - Lion
-- Implement `framer-motion` variants for emotions:
-  - `idle`: Gentle floating.
-  - `happy`/`excited`: Jumping/Rotating on correct answers.
-  - `sad`/`encourage`: Supportive gestures on wrong answers.
-  - `thinking`: Subtle animation for idle state.
+### 📦 Step 2: Deployment (Firebase Hosting)
+**Prerequisite:** You need a Google Account.
+1.  **Install CLI:** Run `npm install -g firebase-tools`.
+2.  **Login:** Run `firebase login`.
+3.  **Initialize:** Run `firebase init hosting`.
+    - Select "Use an existing project" or "Create a new project".
+    - Public directory: `dist`.
+    - Configure as a single-page app (rewrites all urls to /index.html)? **Yes**.
+    - Set up automatic builds and deploys with GitHub? **Yes** (Recommended) or No.
+4.  **Deploy:** Run `npm run build` then `firebase deploy`.
 
-#### [NEW] [SpeechBubble.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/mascot/SpeechBubble.tsx)
-- Component to display text messages from the mascot.
-- Supports `speech` and `thought` variants.
-- Animated using `framer-motion` (pop-in/out).
+### 📦 Step 3: Post-Deployment Polish
+#### [NEW] [firebase.json](file:///d:/Projects/Hebrew%20Educational%20Game/firebase.json)
+- Created automatically during initialization.
+- Can configure caching headers for performance.
 
-#### [MODIFY] [user.ts](file:///d:/Projects/Hebrew%20Educational%20Game/src/types/user.ts)
-- Update `UserProfile` interface to include `mascot` field.
-
-#### [MODIFY] [ProfileContext.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/context/ProfileContext.tsx)
-- Update `createProfile` to accept mascot selection.
-- Implement migration logic for existing profiles (default to 'owl').
-
-#### [MODIFY] [ProfileSetup.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/ProfileSetup.tsx)
-- Add "Choose Your Companion" step to the onboarding flow.
-- Display preview of mascots.
-
-#### [MODIFY] [App.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/App.tsx)
-- Integrate `Mascot` and `SpeechBubble` into the main game loop.
-- Manage `mascotEmotion` state based on `handleAnswer` results.
-- Trigger "Excited" animation and encouraging text on correct answers.
-- Trigger "Encourage" animation and gentle text on wrong answers.
-- Show mascot greeting on session start.
-
-#### [MODIFY] [MathCard.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/MathCard.tsx)
-- Clean up any temporary debug logs.
+#### [MODIFY] [README.md](file:///d:/Projects/Hebrew%20Educational%20Game/README.md)
+- Add "Hosted on Firebase" badge.
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `npm run type-check` to ensure no TypeScript errors with the new `mascot` field.
+- `npm run build` to ensure the `dist` folder is generated correctly.
 
 ### Manual Verification
-- **Onboarding:** Create a new profile, verify mascot selection works.
-- **Persistence:** Refresh page, verify selected mascot persists.
-- **Reactions:**
-  - Answer correctly: Verify mascot jumps/cheers and says something nice.
-  - Answer incorrectly: Verify mascot looks supportive and says "Try again".
-- **Migration:** Switch to an old profile (if any), verify it defaults to Owl without crashing.
+- **Deploy Test:** Run `firebase deploy` and check the output URL.
+- **Routing Test:** Refresh the page while on a sub-route (e.g., `/game`) to ensure the SPA rewrite works.
