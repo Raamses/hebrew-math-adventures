@@ -44,6 +44,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit }) => {
                                         <th className="pb-3 font-bold text-slate-500">גיל</th>
                                         <th className="pb-3 font-bold text-slate-500">רמה</th>
                                         <th className="pb-3 font-bold text-slate-500">XP</th>
+                                        <th className="pb-3 font-bold text-slate-500">ניקוד כולל</th>
                                         <th className="pb-3 font-bold text-slate-500">פעולות</th>
                                     </tr>
                                 </thead>
@@ -57,6 +58,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit }) => {
                                             <td className="py-4 text-slate-600">{profile.age}</td>
                                             <td className="py-4 text-slate-600">{profile.currentLevel}</td>
                                             <td className="py-4 text-slate-600">{profile.xp}</td>
+                                            <td className="py-4 text-slate-600 font-bold text-primary">{profile.totalScore || 0}</td>
                                             <td className="py-4">
                                                 <button
                                                     onClick={() => handleDelete(profile.id, profile.name)}

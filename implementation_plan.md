@@ -1,71 +1,62 @@
-# Implementation Plan - Phase 1: Immediate Impact & Engagement
+# Implementation Plan - Phase 4: Going Live (Deployment)
 
 ## Goal Description
-Implement the "Juice" update to make the game more engaging, rewarding, and polished for 6-11 year olds. This covers PRs 1-4 from the roadmap.
+Deploy "Hebrew Math Adventures" to the public internet using a "Big Cloud" provider (GCP/AWS/Azure) to ensure scalability, reliability, and professional infrastructure.
+
+## Deployment Strategy: Big Cloud vs. Frontend Cloud
+The user requested "Big Cloud" options. Here is the comparison and recommendation:
+
+### 🏆 Recommendation: Google Firebase Hosting (GCP)
+**Why?**
+- **Effective "Big Cloud":** It *is* Google Cloud Platform, but wrapped in a developer-friendly interface.
+- **True Free Tier:** The "Spark" plan is generous for free usage.
+- **Speed:** Google's global CDN is incredibly fast.
+- **Simplicity:** Easier to set up than raw AWS/Azure for a static site.
+
+### 🥈 Alternative: AWS Amplify
+- **Why?** It's the AWS equivalent of Vercel/Firebase.
+- **Pros:** Deep integration if you use other AWS services later.
+- **Cons:** The AWS Console can be intimidatingly complex.
+
+### 🥉 Alternative: Azure Static Web Apps
+- **Why?** Great if you are already in the Microsoft ecosystem.
+- **Pros:** Great VS Code integration.
 
 ## User Review Required
 > [!IMPORTANT]
-> **Sound Assets:** I will use placeholder sounds or synthesized beeps if actual assets are not provided.
-> **Session Logic:** Defining a "Session" as 10 questions. This changes the infinite loop nature of the current game.
+> **Decision Point:** I have written the plan for **Firebase Hosting (GCP)** below, as it is my primary recommendation for this specific project.
+> If you prefer AWS or Azure, let me know, and I will rewrite Step 2.
 
 ## Proposed Changes
 
-### 📦 PR 1: Enhanced Feedback System
-#### [NEW] [Confetti.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/Confetti.tsx)
-- Create a confetti particle system using `framer-motion`.
+### 📦 Step 1: Prepare Codebase
+#### [MODIFY] [vite.config.ts](file:///d:/Projects/Hebrew%20Educational%20Game/vite.config.ts)
+- Verify `build.outDir` is set to `dist` (default) for Firebase to detect.
 
-#### [MODIFY] [Effects.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/Effects.tsx)
-- Export `Confetti` component.
-- Update `FlyingStars` to be more dynamic.
+### 📦 Step 2: Deployment (Firebase Hosting)
+**Prerequisite:** You need a Google Account.
+1.  **Install CLI:** Run `npm install -g firebase-tools`.
+2.  **Login:** Run `firebase login`.
+3.  **Initialize:** Run `firebase init hosting`.
+    - Select "Use an existing project" or "Create a new project".
+    - Public directory: `dist`.
+    - Configure as a single-page app (rewrites all urls to /index.html)? **Yes**.
+    - Set up automatic builds and deploys with GitHub? **Yes** (Recommended) or No.
+4.  **Deploy:** Run `npm run build` then `firebase deploy`.
 
-#### [MODIFY] [MathCard.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/MathCard.tsx)
-- Add `shake` animation prop for wrong answers.
-- Add `pulse` animation for correct answers.
-- Update feedback overlay to use "Juicy" animations (pop-in, rotate).
+### 📦 Step 3: Post-Deployment Polish
+#### [NEW] [firebase.json](file:///d:/Projects/Hebrew%20Educational%20Game/firebase.json)
+- Created automatically during initialization.
+- Can configure caching headers for performance.
 
-#### [MODIFY] [App.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/App.tsx)
-- Update `handleAnswer` to use random encouraging Hebrew phrases.
-- Trigger `shake` on wrong answer.
-- Trigger `Confetti` on correct answer.
-
-### 📦 PR 2: Session Progress & Micro-Goals
-#### [NEW] [SessionProgressBar.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/SessionProgressBar.tsx)
-- Simple progress bar (0-10).
-
-#### [NEW] [SessionSummary.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/SessionSummary.tsx)
-- Modal showing Accuracy, Time, XP gained.
-- "Play Again" button.
-
-#### [MODIFY] [App.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/App.tsx)
-- Add `sessionCount` state.
-- Show `SessionSummary` when `sessionCount >= 10`.
-
-### 📦 PR 3: Sound Effects System
-#### [NEW] [useSound.ts](file:///d:/Projects/Hebrew%20Educational%20Game/src/hooks/useSound.ts)
-- Hook to manage `Audio` objects.
-- Preload sounds: `correct.mp3`, `wrong.mp3`, `levelUp.mp3`.
-- Mute toggle state (persisted in localStorage).
-
-#### [MODIFY] [App.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/App.tsx)
-- Integrate `useSound` hook.
-- Play sounds in `handleAnswer`.
-
-### 📦 PR 4: RTL & UI Polish
-#### [MODIFY] [App.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/App.tsx)
-- Move Pause button to Top-Right.
-- Ensure logical tab order.
-
-#### [MODIFY] [MathCard.tsx](file:///d:/Projects/Hebrew%20Educational%20Game/src/components/MathCard.tsx)
-- Refine keypad layout/size.
-- Ensure all text is `text-right` or `text-center` as appropriate.
+#### [MODIFY] [README.md](file:///d:/Projects/Hebrew%20Educational%20Game/README.md)
+- Add "Hosted on Firebase" badge.
 
 ## Verification Plan
 
 ### Automated Tests
-- None for visual effects (manual verification required).
+- `npm run build` to ensure the `dist` folder is generated correctly.
 
 ### Manual Verification
-- **Feedback:** Play game, verify confetti on correct, shake on wrong.
-- **Session:** Play 10 questions, verify Summary screen appears.
-- **Sound:** Verify sounds play (if assets available) or console logs trigger.
-- **RTL:** Verify Pause button position and layout flow.
+- **Deploy Test:** Run `firebase deploy` and check the output URL.
+- **Routing Test:** Refresh the page while on a sub-route (e.g., `/game`) to ensure the SPA rewrite works.

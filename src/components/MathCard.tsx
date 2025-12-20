@@ -41,6 +41,8 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
     const showHint = problem.subType === 'borrow' && wrongAttempts >= 2 && problem.missing === 'answer';
     const canShowHintButton = wrongAttempts >= 1;
 
+
+
     const renderNum1 = () => {
         if (problem.missing === 'num1') {
             return <div className="w-20 h-20 bg-indigo-100 rounded-xl border-4 border-indigo-300 flex items-center justify-center text-indigo-600">?</div>;
@@ -93,13 +95,13 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
             <motion.div
                 animate={feedback && !feedback.includes('!') ? { x: [0, -10, 10, -10, 10, 0] } : {}}
                 transition={{ duration: 0.4 }}
-                className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden"
+                className="w-full max-w-md bg-white rounded-3xl shadow-xl p-6 relative overflow-hidden"
             >
                 {/* Question Text (RTL) */}
-                <h2 className="text-3xl font-bold text-slate-700 mb-8 text-center">?כמה זה</h2>
+                <h2 className="text-2xl font-bold text-slate-700 mb-4 text-center">?כמה זה</h2>
 
                 {/* Equation (LTR) */}
-                <div className="flex items-center justify-center gap-4 text-5xl font-bold text-slate-800 mb-8" dir="ltr">
+                <div className="flex items-center justify-center gap-3 text-5xl font-bold text-slate-800 mb-6" dir="ltr">
                     {renderNum1()}
 
                     <span className="text-primary">{problem.operator === '*' ? '×' : problem.operator === '/' ? '÷' : problem.operator}</span>
@@ -122,7 +124,7 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
                 </div>
 
                 {/* Input Area */}
-                <form onSubmit={handleSubmit} className="flex flex-col items-center gap-6">
+                <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
                     <input
                         type="number"
                         inputMode="numeric"

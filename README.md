@@ -1,5 +1,10 @@
 # React + TypeScript + Vite
+# Hebrew Math Adventures (הרפתקאות חשבון) 🦉
+[![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://hebrew-math-adventures-2025.web.app)
 
+A gamified math learning web application built for Israeli kids (grades 1-6).
+
+## Features
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

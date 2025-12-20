@@ -29,14 +29,14 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
 
         // For borrowing/carrying or larger numbers, show step-by-step
         if ((operator === '-' && subType === 'borrow') || (operator === '+' && subType === 'carry')) {
-            return <BorrowingHint operand1={num1} operand2={num2} answer={answer} />;
+            return <BorrowingHint operand1={num1} operand2={num2} answer={answer} operator={operator} />;
         }
 
         // Default: Simple explanation
         return (
             <div className="flex flex-col items-center gap-4 p-6">
                 <h3 className="text-2xl font-bold text-slate-700 text-center">!בואו נחשב ביחד</h3>
-                <div className="bg-white rounded-2xl p-8 shadow-lg">
+                <div className="bg-white rounded-2xl p-8 shadow-lg" dir="ltr">
                     <div className="text-5xl font-bold text-center space-y-4">
                         <div>{num1}</div>
                         <div className="text-3xl">{operator}</div>
