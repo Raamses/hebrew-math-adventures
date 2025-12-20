@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapZone } from './MapZone';
 import { WORLD_ZONES, type ZoneConfig } from '../lib/worldConfig';
-import { Settings, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 interface WorldMapProps {
     currentLevel: number;
@@ -13,23 +13,22 @@ export const WorldMap: React.FC<WorldMapProps> = ({ currentLevel, onZoneSelect, 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4 pt-8">
             {/* Header */}
-            <div className="w-full max-w-md flex justify-between items-center mb-8 px-2">
+            <div className="w-full max-w-md flex items-center mb-8 px-2 relative h-12">
                 <button
                     onClick={onLogout}
-                    className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-red-500 transition-colors"
+                    className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-red-500 transition-colors z-10"
+                    title="התנתק"
                 >
                     <LogOut size={24} />
                 </button>
 
-                <h1 className="text-3xl font-bold text-primary">מפת העולם</h1>
+                <h1 className="text-3xl font-bold text-primary absolute left-1/2 -translate-x-1/2 whitespace-nowrap">מפת העולם</h1>
 
-                <button className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-primary transition-colors">
-                    <Settings size={24} />
-                </button>
+
             </div>
 
             {/* Map Container */}
-            <div className="w-full max-w-md flex-1 overflow-y-auto pb-20 px-2 scrollbar-hide">
+            <div className="w-full max-w-md flex-1 overflow-y-auto pb-20 px-6 scrollbar-hide">
                 <div className="space-y-6">
                     {WORLD_ZONES.map((zone, index) => (
                         <MapZone
