@@ -29,10 +29,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         if (savedProfiles) {
             profiles = JSON.parse(savedProfiles);
-            // Ensure all profiles have a mascot field (migration for existing profiles)
+            // Ensure all profiles have new fields (migration)
             profiles = profiles.map(p => ({
                 ...p,
-                mascot: p.mascot || 'owl'
+                mascot: p.mascot || 'owl',
+                totalScore: p.totalScore ?? ((p.currentLevel - 1) * XP_PER_LEVEL + p.xp) // Estimate total score for existing users
             }));
         } else {
             // Migration: Check for legacy single profile
@@ -44,7 +45,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     ...parsedLegacy,
                     id: crypto.randomUUID(),
                     avatar: '🦁', // Default avatar for migrated users
-                    mascot: 'owl' // Default mascot
+                    mascot: 'owl', // Default mascot
+                    totalScore: 0
                 };
                 profiles = [migratedProfile];
                 localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(profiles));
@@ -70,7 +72,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             mascot,
             currentLevel: age <= 6 ? 1 : age === 7 ? 2 : age === 8 ? 3 : age === 9 ? 4 : age === 10 ? 5 : 6,
             xp: 0,
-            streak: 0
+            streak: 0,
+            totalScore: 0
         };
 
         setAllProfiles(prev => [...prev, newProfile]);
@@ -105,13 +108,29 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         if (amount > 0) {
             newStreak += 1;
+            updatedProfile.totalScore = (updatedProfile.totalScore || 0) + amount;
         } else {
             newStreak = 0;
+            // No penalty to totalScore for now, or maybe small penalty? User asked for total score to "keep going up" implies only positive?
+            // "total score to xp, xp should be reset after a level up but not score"
+            // Let's assume we ADD amount even if it's negative? No, calculateRewards returns negative for wrong answers.
+            // If amount is negative, totalScore would decrease. 
+            // "i want to show me where the changes should be to support this change" -> "xp should be reset ... but not score"
+            // This implies score accumulates. If we subtract points, it should probably subtract from total too, or maybe Total Score is "Lifetime XP"?
+            // Usually "Score" means "Current Game Score" or "Lifetime Accumulated".
+            // If I subtract, it might go down.
+            // Let's implement: Total Score is separate accumulator. 
+            // If amount is negative, do we subtract? Yes, consistent with XP.
+            if (amount < 0 && updatedProfile.totalScore + amount < 0) {
+                updatedProfile.totalScore = 0; // Clamp at 0
+            } else if (amount < 0) {
+                updatedProfile.totalScore += amount;
+            }
         }
 
         if (newXP < 0) newXP = 0;
 
-        if (newXP >= XP_PER_LEVEL) {
+        while (newXP >= XP_PER_LEVEL) {
             newXP -= XP_PER_LEVEL;
             newLevel += 1;
         }

@@ -7,6 +7,7 @@ export interface UserProfile {
     currentLevel: number;
     xp: number;
     streak: number;
+    totalScore: number;
 }
 
 export const getInitialLevel = (age: number): number => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Settings, Pause, Volume2, VolumeX } from 'lucide-react'
+import { Zap } from 'lucide-react'
 import { MathCard } from './components/MathCard'
-import { MyWorld } from './components/MyWorld'
+// MyWorld removed
 import { FlyingStars } from './components/Effects'
 import { Confetti } from './components/Confetti'
 import { ProfileProvider, useProfile } from './context/ProfileContext'
@@ -14,9 +14,11 @@ import { GameMenuModal } from './components/GameMenuModal'
 import { SessionProgressBar } from './components/SessionProgressBar'
 import { SessionSummary } from './components/SessionSummary'
 import { SettingsModal } from './components/SettingsModal'
+import { SettingsMenu } from './components/SettingsMenu'
 import { generateProblemForLevel, calculateRewards } from './engines/MathEngine'
 import { useSound } from './hooks/useSound'
 import type { Problem } from './lib/gameLogic'
+import { getZoneForLevel } from './lib/worldConfig'
 import { WorldMap } from './components/WorldMap'
 
 import { Mascot, type MascotEmotion } from './components/mascot/Mascot'
@@ -164,39 +166,54 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
   if (!profile || !problem) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center justify-center p-4 pt-24 relative overflow-hidden" dir="rtl">
-      <MyWorld score={profile.xp} streak={profile.streak} level={profile.currentLevel} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center p-4 relative overflow-hidden" dir="rtl">
+      {/* MyWorld removed */}
       {showStars && <FlyingStars onComplete={() => setShowStars(false)} />}
       {showConfetti && <Confetti />}
 
       {/* Header with Progress, Settings, and Sound */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-4 z-10">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="p-3 bg-white rounded-full shadow-lg hover:bg-slate-50 transition-all"
-            aria-label="Pause"
-          >
-            <Pause className="text-slate-600" size={24} />
-          </button>
+      <div className="w-full max-w-md flex flex-col items-center gap-2 z-10 mb-2">
 
-          <button
-            onClick={toggleMute}
-            className="p-3 bg-white rounded-full shadow-lg hover:bg-slate-50 transition-all"
-            aria-label="Mute"
-          >
-            {isMuted ? <VolumeX className="text-slate-400" size={24} /> : <Volume2 className="text-slate-600" size={24} />}
-          </button>
+        {/* Top Bar: Controls & Title */}
+        <div className="w-full flex items-center justify-between relative h-12">
+          {/* Left: Streak (moved here) */}
+          <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-orange-100 z-10">
+            <Zap size={16} className="text-orange-500 fill-orange-500" />
+            <span className="font-bold text-slate-700 text-sm">{profile.streak}</span>
+          </div>
+
+          {/* Center: Title */}
+          <h1 className="text-2xl font-bold text-primary absolute left-1/2 -translate-x-1/2 whitespace-nowrap drop-shadow-sm">
+            הרפתקאות חשבון
+          </h1>
+
+          {/* Right: Settings Menu */}
+          <div className="z-20">
+            <SettingsMenu
+              onPause={() => setIsMenuOpen(true)}
+              onToggleMute={toggleMute}
+              isMuted={isMuted}
+              onOpenSettings={() => setIsSettingsOpen(true)}
+            />
+          </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-primary">הרפתקאות חשבון</h1>
+        {/* Zone Badge (Space Filler) */}
+        <div className="bg-emerald-100/80 backdrop-blur-sm px-4 py-1 rounded-full border border-emerald-200 shadow-sm flex items-center gap-2">
+          {(() => {
+            const zone = getZoneForLevel(profile.currentLevel);
+            const ZoneIcon = zone?.icon || Zap; // Fallback
+            return (
+              <>
+                <ZoneIcon size={14} className="text-emerald-700" />
+                <span className="text-xs font-bold text-emerald-800">
+                  רמה {profile.currentLevel} • {zone?.name || 'יער החיסור'}
+                </span>
+              </>
+            );
+          })()}
+        </div>
 
-        <button
-          onClick={() => setIsSettingsOpen(true)}
-          className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-primary transition-colors"
-        >
-          <Settings size={24} />
-        </button>
       </div>
 
       <SessionProgressBar current={sessionCount} total={SESSION_LENGTH} />
@@ -208,7 +225,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       <ProgressBar xp={profile.xp} level={profile.currentLevel} />
 
       {problem && (
-        <div className="w-full max-w-md z-10 mt-16 relative">
+        <div className="w-full max-w-md z-10 relative">
           <MathCard
             problem={problem}
             onAnswer={handleAnswer}
@@ -242,6 +259,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
         totalCount={sessionAttempts} // Use actual attempts for accuracy
         onPlayAgain={handlePlayAgain}
         onExit={handleExit}
+        totalScore={profile.totalScore || 0}
       />
 
       <SettingsModal
@@ -277,7 +295,9 @@ const AppContent = () => {
       }
     } else {
       // No profile = selection screen
-      setView('select');
+      if (view !== 'parent') {
+        setView('select');
+      }
     }
   }, [profile, view]);
 

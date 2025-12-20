@@ -7,6 +7,7 @@ interface SessionSummaryProps {
     xpGained: number;
     correctCount: number;
     totalCount: number;
+    totalScore: number;
     onPlayAgain: () => void;
     onExit: () => void;
 }
@@ -16,6 +17,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
     xpGained,
     correctCount,
     totalCount,
+    totalScore,
     onPlayAgain,
     onExit
 }) => {
@@ -55,6 +57,10 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                                 <div className="text-3xl mb-2">🎯</div>
                                 <span className="text-3xl font-bold text-slate-700">{accuracy}%</span>
                                 <span className="text-sm text-slate-500">דיוק</span>
+                            </div>
+                            <div className="bg-purple-50 p-4 rounded-2xl border-2 border-purple-100 flex flex-col items-center col-span-2">
+                                <span className="text-3xl font-bold text-purple-700">{totalScore}</span>
+                                <span className="text-sm text-slate-500">ניקוד כולל</span>
                             </div>
                         </div>
 
