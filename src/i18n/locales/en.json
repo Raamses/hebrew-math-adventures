@@ -1,0 +1,182 @@
+{
+    "app": {
+        "title": "Math Adventures",
+        "streak": "Streak",
+        "worldMap": "World Map",
+        "greeting": "Hi {{name}}! Ready to play?"
+    },
+    "menu": {
+        "settings": "Settings",
+        "mute": "Mute Sounds",
+        "unmute": "Unmute Sounds",
+        "paused": "Paused",
+        "pause": "Pause Game",
+        "gameMenu": "Game Menu",
+        "resume": "Resume Playing",
+        "restart": "Restart Level",
+        "exitToMap": "Exit to Map",
+        "logout": "Log Out"
+    },
+    "mascot": {
+        "title": "Choose Your Companion",
+        "welcome": "Hi, I'm {{name}}!",
+        "select": "Pick Me!",
+        "names": {
+            "owl": "Owl",
+            "bear": "Bear",
+            "ant": "Ant",
+            "lion": "Lion"
+        }
+    },
+    "zones": {
+        "addition": {
+            "name": "Addition Island",
+            "desc": "Learn to add numbers!"
+        },
+        "subtraction": {
+            "name": "Subtraction Forest",
+            "desc": "Beware of the minus!"
+        },
+        "multiplication": {
+            "name": "Multiplication Mountain",
+            "desc": "Climb to the summit!"
+        },
+        "fallback": "Adventure Zone",
+        "level": "Level",
+        "stages": "Stages"
+    },
+    "parent": {
+        "title": "Parent Dashboard",
+        "exit": "Exit",
+        "manageProfiles": "Manage Profiles",
+        "table": {
+            "name": "Name",
+            "age": "Age",
+            "level": "Level",
+            "xp": "XP",
+            "totalScore": "Total Score",
+            "actions": "Actions",
+            "noProfiles": "No profiles registered"
+        },
+        "delete": {
+            "confirm": "Are you sure you want to delete {{name}}'s profile? This action cannot be undone.",
+            "tooltip": "Delete Profile"
+        },
+        "danger": {
+            "title": "Danger Zone",
+            "warning": "These actions cannot be undone.",
+            "reset": "Reset All Data",
+            "resetConfirm": "This will delete ALL app data. Continue?"
+        },
+        "gateTitle": "Parent Gate",
+        "gateDesc": "Solve to continue:",
+        "enter": "Enter"
+    },
+    "feedback": {
+        "phrases": [
+            "Awesome!",
+            "Genius!",
+            "Amazing!",
+            "Well done!",
+            "Beautiful!",
+            "Very smart!",
+            "Excellent!",
+            "Great!",
+            "Wow!",
+            "You're a star!",
+            "Correct answer!",
+            "Keep it up!",
+            "Proud of you!",
+            "Number Champ!",
+            "Way to go!",
+            "Just magic!",
+            "Good job!",
+            "Dizzying success!",
+            "Unbeatable!",
+            "Math King/Queen!"
+        ],
+        "gentle": [
+            "Let's try again",
+            "Almost...",
+            "Don't worry, try again",
+            "One more try"
+        ]
+    },
+    "onboarding": {
+        "title": "Welcome!",
+        "selectAvatar": "Choose a Character:",
+        "selectMascot": "Choose a Companion:",
+        "nameLabel": "What is your name?",
+        "namePlaceholder": "Your name...",
+        "ageLabel": "How old are you?",
+        "ageNote": "(We'll adjust the level to your age)",
+        "start": "Let's Start!",
+        "whoIsPlaying": "Who is playing?",
+        "parentsAccess": "Parents",
+        "newPlayer": "New Player",
+        "back": "Back"
+    },
+    "summary": {
+        "title": "Finished!",
+        "subtitle": "Great effort!",
+        "points": "Points",
+        "accuracy": "Accuracy",
+        "totalScore": "Total Score",
+        "result": "You answered <c>{{correct}}</c> out of <t>{{total}}</t> questions correctly",
+        "playAgain": "Play Again",
+        "exit": "Exit"
+    },
+    "settings": {
+        "themes": "Themes",
+        "mascot": "My Friend",
+        "mascotPrompt": "Choose your companion:",
+        "mascotNote": "Your friend will join you and cheer you on!",
+        "close": "Close",
+        "unlockLevel": "🔒 Unlocks at level {{level}}"
+    },
+    "game": {
+        "progress": "Progress",
+        "questionCount": "Question {{current}} of {{total}}",
+        "howMuch": "How much is...?",
+        "check": "Check",
+        "howTo": "Show Hint",
+        "hintClose": "Got it!",
+        "hintHeader": "Let me help!",
+        "hintCalcTogether": "Let's calculate together!",
+        "hints": {
+            "letsSee": "Let's see how it works!",
+            "blueDots": " Blue Dots",
+            "greenDots": " Green Dots",
+            "circles": " Circles",
+            "totalPoints": " Total Points!",
+            "weHave": "We have ",
+            "groups": "{{count}} groups of {{items}} make {{total}}!",
+            "sharing": "{{total}} apples shared by {{baskets}} baskets is {{perBasket}}!",
+            "weHad": "We had ",
+            "weRemoved": "We removed ",
+            "weHaveLeft": "We have {{count}} circles left!",
+            "stepByStepAdd": "Step by Step - Vertical Addition",
+            "stepByStepSub": "Step by Step - Subtraction with Borrowing",
+            "step1": "Step 1: Start",
+            "step1Add": "Let's add digit by digit",
+            "step1Sub": "Let's subtract digit by digit",
+            "step2Add": "Step 2: Adding",
+            "step2Sub": "Step 2: The Problem",
+            "step2AddDesc": "Add units, then tens...",
+            "step2AddNote": "If result > 9, carry over!",
+            "step2SubDesc": "Top digit is smaller than bottom",
+            "step2SubNote": "Need to \"borrow\" from neighbor!",
+            "step3Add": "Step 3: Finish",
+            "step3Sub": "Step 3: Borrowing",
+            "step3AddDesc": "Continue adding until done",
+            "step3SubDesc": "\"Borrow\" 10 from the neighbor",
+            "step3SubNote": "Now we can subtract!",
+            "result": "Result!"
+        },
+        "placeValues": {
+            "ones": "Ones",
+            "tens": "Tens",
+            "hundreds": "Hundreds"
+        }
+    }
+}

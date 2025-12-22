@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Lightbulb } from 'lucide-react';
 import { AdditionHint } from './AdditionHint';
 import { SubtractionHint } from './SubtractionHint';
+import { MultiplicationHint } from './MultiplicationHint';
+import { DivisionHint } from './DivisionHint';
 import { BorrowingHint } from './BorrowingHint';
 import type { Problem } from '../lib/gameLogic';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +29,14 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
 
         if (operator === '-' && num1 <= 20 && num2 <= 10) {
             return <SubtractionHint operand1={num1} operand2={num2} answer={answer} />;
+        }
+
+        if (operator === '*' && num1 <= 10 && num2 <= 10) {
+            return <MultiplicationHint operand1={num1} operand2={num2} answer={answer} />;
+        }
+
+        if (operator === '/' && num2 <= 10 && answer <= 10) {
+            return <DivisionHint operand1={num1} operand2={num2} answer={answer} />;
         }
 
         // For borrowing/carrying or larger numbers, show step-by-step

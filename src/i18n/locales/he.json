@@ -1,0 +1,182 @@
+{
+    "app": {
+        "title": "הרפתקאות חשבון",
+        "streak": "רצף",
+        "worldMap": "מפת העולם",
+        "greeting": "היי {{name}}! מוכן לשחק?"
+    },
+    "menu": {
+        "settings": "הגדרות",
+        "mute": "השתק צלילים",
+        "unmute": "הפעל צלילים",
+        "paused": "משחק מושהה",
+        "pause": "השהה משחק",
+        "gameMenu": "תפריט משחק",
+        "resume": "המשך לשחק",
+        "restart": "התחל מחדש",
+        "exitToMap": "יציאה למפה",
+        "logout": "התנתק"
+    },
+    "mascot": {
+        "title": "בחרו את המלווה שלכם",
+        "welcome": "שלום, אני {{name}}!",
+        "select": "בחר אותי!",
+        "names": {
+            "owl": "ינשוף",
+            "bear": "דוב",
+            "ant": "נמלה",
+            "lion": "אריה"
+        }
+    },
+    "zones": {
+        "addition": {
+            "name": "אי החיבור",
+            "desc": "למדו לחבר מספרים!"
+        },
+        "subtraction": {
+            "name": "יער החיסור",
+            "desc": "היזהרו מהמינוס!"
+        },
+        "multiplication": {
+            "name": "הר הכפל",
+            "desc": "טפסו לפסגה!"
+        },
+        "fallback": "אזור הרפתקה",
+        "level": "רמה",
+        "stages": "שלבים"
+    },
+    "parent": {
+        "title": "לוח בקרה להורים",
+        "exit": "יציאה",
+        "manageProfiles": "ניהול פרופילים",
+        "table": {
+            "name": "שם",
+            "age": "גיל",
+            "level": "רמה",
+            "xp": "XP",
+            "totalScore": "ניקוד כולל",
+            "actions": "פעולות",
+            "noProfiles": "אין פרופילים רשומים"
+        },
+        "delete": {
+            "confirm": "האם אתם בטוחים שברצונכם למחוק את הפרופיל של {{name}}? פעולה זו אינה הפיכה.",
+            "tooltip": "מחק פרופיל"
+        },
+        "danger": {
+            "title": "אזור מסוכן",
+            "warning": "פעולות אלו אינן הפיכות.",
+            "reset": "איפוס כל הנתונים",
+            "resetConfirm": "פעולה זו תמחק את כל הנתונים באפליקציה. האם להמשיך?"
+        },
+        "gateTitle": "בקרת הורים",
+        "gateDesc": "פתרו את התרגיל כדי להמשיך:",
+        "enter": "כניסה"
+    },
+    "feedback": {
+        "phrases": [
+            "!אלופה",
+            "!גאון של אמא",
+            "!מדהים",
+            "!כל הכבוד",
+            "!איזה יופי",
+            "!חכם מאוד",
+            "!מצוין",
+            "!נהדר",
+            "!וואו",
+            "!את/ה כוכב/ת",
+            "!תשובה נכונה",
+            "!המשך כך",
+            "!גאווה",
+            "!אלוף המספרים",
+            "!ישר כוח",
+            "!פשוט קסם",
+            "!עבודה טובה",
+            "!הצלחה מסחררת",
+            "!אין עליך",
+            "!מלך/מלכת החשבון"
+        ],
+        "gentle": [
+            "בוא ננסה שוב",
+            "כמעט...",
+            "לא נורא, נסה שוב",
+            "עוד ניסיון אחד"
+        ]
+    },
+    "onboarding": {
+        "title": "ברוכים הבאים!",
+        "selectAvatar": "בחר דמות:",
+        "selectMascot": "בחר חבר למסע:",
+        "nameLabel": "איך קוראים לך?",
+        "namePlaceholder": "השם שלך...",
+        "ageLabel": "בן/בת כמה את/ה?",
+        "ageNote": "(נתאים את הרמה לגיל שלך)",
+        "start": "בוא נתחיל!",
+        "whoIsPlaying": "מי משחק?",
+        "parentsAccess": "הורים",
+        "newPlayer": "שחקן חדש",
+        "back": "חזרה"
+    },
+    "summary": {
+        "title": "!סיימנו",
+        "subtitle": "כל הכבוד על המאמץ",
+        "points": "נקודות",
+        "accuracy": "דיוק",
+        "totalScore": "ניקוד כולל",
+        "result": "ענית נכון על <c>{{correct}}</c> מתוך <t>{{total}}</t> שאלות",
+        "playAgain": "סיבוב נוסף",
+        "exit": "יציאה"
+    },
+    "settings": {
+        "themes": "ערכות נושא",
+        "mascot": "החבר שלי",
+        "mascotPrompt": "בחר את החבר שילווה אותך במסע:",
+        "mascotNote": "החבר שתבחר יופיע במשחק ויעודד אותך!",
+        "close": "סגור",
+        "unlockLevel": "🔒 נפתח ברמה {{level}}"
+    },
+    "game": {
+        "progress": "התקדמות",
+        "questionCount": "שאלה {{current}} מתוך {{total}}",
+        "howMuch": "?כמה זה",
+        "check": "בדיקה",
+        "howTo": "?איך עושים את זה",
+        "hintClose": "הבנתי, תודה!",
+        "hintHeader": "תנו לי לעזור!",
+        "hintCalcTogether": "בואו נחשב ביחד!",
+        "hints": {
+            "letsSee": "!בואו נראה איך זה עובד",
+            "blueDots": " נקודות כחולות",
+            "greenDots": " נקודות ירוקות",
+            "circles": " עיגולים",
+            "totalPoints": " נקודות בסך הכל!",
+            "weHave": "יש לנו ",
+            "groups": "{{count}} קבוצות של {{items}} שוות {{total}}!",
+            "sharing": "{{total}} תפוחים שמחולקים ל-{{baskets}} סלסלות זה {{perBasket}}!",
+            "weHad": "היו לנו ",
+            "weRemoved": "הסרנו ",
+            "weHaveLeft": "נשארו לנו {{count}} עיגולים!",
+            "stepByStepAdd": "שלב אחר שלב - חיבור במאונך",
+            "stepByStepSub": "שלב אחר שלב - חיסור עם \"שאילה\"",
+            "step1": "שלב 1: התחלה",
+            "step1Add": "בואו נחבר מספר אחר מספר",
+            "step1Sub": "בואו נחסר מספר אחר מספר",
+            "step2Add": "שלב 2: חיבור",
+            "step2Sub": "שלב 2: זיהוי הבעיה",
+            "step2AddDesc": "מחברים את היחידות, ואז את העשרות...",
+            "step2AddNote": "אם התוצאה גדולה מ-9, זוכרים בצד!",
+            "step2SubDesc": "לפעמים הספרה למעלה קטנה מהספרה למטה",
+            "step2SubNote": "צריך \"לשאול\" מהספרה השכנה!",
+            "step3Add": "שלב 3: סיום",
+            "step3Sub": "שלב 3: השאילה",
+            "step3AddDesc": "ממשיכים לחבר עד שמסיימים את כל המספרים",
+            "step3SubDesc": "\"שואלים\" 10 מהספרה השכנה",
+            "step3SubNote": "עכשיו אפשר לחסר!",
+            "result": "!התוצאה"
+        },
+        "placeValues": {
+            "ones": "אחדות",
+            "tens": "עשרות",
+            "hundreds": "מאות"
+        }
+    }
+}
