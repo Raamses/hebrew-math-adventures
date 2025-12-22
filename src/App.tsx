@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Zap } from 'lucide-react'
 import { MathCard } from './components/MathCard'
 // MyWorld removed
@@ -24,25 +25,10 @@ import { WorldMap } from './components/WorldMap'
 import { Mascot, type MascotEmotion } from './components/mascot/Mascot'
 import { SpeechBubble } from './components/mascot/SpeechBubble'
 
-const ENCOURAGING_PHRASES = [
-  "!מעולה",
-  "!כל הכבוד",
-  "!אלוף",
-  "!מדהים",
-  "!יופי",
-  "!נהדר"
-];
-
-const GENTLE_PHRASES = [
-  "בוא ננסה שוב",
-  "כמעט...",
-  "לא נורא, נסה שוב",
-  "עוד ניסיון אחד"
-];
-
 const SESSION_LENGTH = 10;
 
 const GameScreen = ({ onExit }: { onExit: () => void }) => {
+  const { t, i18n } = useTranslation();
   const { profile, addXP } = useProfile();
   const { playSound, isMuted, toggleMute } = useSound();
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -68,14 +54,14 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       setProblem(generateProblemForLevel(profile.currentLevel));
       // Initial greeting
       setMascotEmotion('happy');
-      setMascotMessage(`היי ${profile.name}! מוכן לשחק?`);
+      setMascotMessage(t('app.greeting', { name: profile.name }));
       setShowBubble(true);
       setTimeout(() => {
         setShowBubble(false);
         setMascotEmotion('idle');
       }, 3000);
     }
-  }, [profile, problem]);
+  }, [profile, problem, t]);
 
   const handleAnswer = (isCorrect: boolean) => {
     if (!profile || !problem) return;
@@ -92,7 +78,8 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       const nextSessionCount = sessionCount + 1;
       setSessionCount(nextSessionCount); // Only advance on correct
 
-      const phrase = ENCOURAGING_PHRASES[Math.floor(Math.random() * ENCOURAGING_PHRASES.length)];
+      const phrases = t('feedback.phrases', { returnObjects: true }) as string[];
+      const phrase = Array.isArray(phrases) ? phrases[Math.floor(Math.random() * phrases.length)] : "Great!";
 
       // Mascot Reaction
       setMascotEmotion('excited');
@@ -123,7 +110,8 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       playSound('wrong');
       addXP(xpChange);
 
-      const phrase = GENTLE_PHRASES[Math.floor(Math.random() * GENTLE_PHRASES.length)];
+      const phrases = t('feedback.gentle', { returnObjects: true }) as string[];
+      const phrase = Array.isArray(phrases) ? phrases[Math.floor(Math.random() * phrases.length)] : "Try again";
 
       // Mascot Reaction
       setMascotEmotion('encourage'); // New emotion!
@@ -163,10 +151,17 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
     onExit();
   };
 
+
+
+  // Effect to update document direction for scrollbars etc
+  useEffect(() => {
+    document.documentElement.dir = i18n.dir();
+  }, [i18n.language]);
+
   if (!profile || !problem) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center p-4 relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center p-4 relative overflow-hidden" dir={i18n.dir()}>
       {/* MyWorld removed */}
       {showStars && <FlyingStars onComplete={() => setShowStars(false)} />}
       {showConfetti && <Confetti />}
@@ -184,7 +179,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
 
           {/* Center: Title */}
           <h1 className="text-2xl font-bold text-primary absolute left-1/2 -translate-x-1/2 whitespace-nowrap drop-shadow-sm">
-            הרפתקאות חשבון
+            {t('app.title')}
           </h1>
 
           {/* Right: Settings Menu */}
@@ -207,7 +202,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
               <>
                 <ZoneIcon size={14} className="text-emerald-700" />
                 <span className="text-xs font-bold text-emerald-800">
-                  רמה {profile.currentLevel} • {zone?.name || 'יער החיסור'}
+                  {t('zones.level')} {profile.currentLevel} • {zone ? t(zone.name) : t('zones.fallback')}
                 </span>
               </>
             );
@@ -250,6 +245,10 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
         onClose={() => setIsMenuOpen(false)}
         onRestart={handleRestart}
         onExit={handleExit}
+        onSettings={() => {
+          setIsMenuOpen(false);
+          setIsSettingsOpen(true);
+        }}
       />
 
       <SessionSummary
@@ -271,15 +270,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
 };
 
 
-const App = () => {
-  return (
-    <ProfileProvider>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </ProfileProvider>
-  );
-}
+
 
 const AppContent = () => {
   const { profile, logout } = useProfile();
@@ -351,5 +342,17 @@ const AppContent = () => {
     />
   );
 };
+
+
+
+const App = () => {
+  return (
+    <ProfileProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </ProfileProvider>
+  );
+}
 
 export default App;

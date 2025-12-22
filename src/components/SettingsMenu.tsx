@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Settings, Pause, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface SettingsMenuProps {
     onPause: () => void;
@@ -17,6 +18,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+    const { t, i18n } = useTranslation();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -36,6 +38,11 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
 
     const toggleMenu = () => setIsOpen(!isOpen);
 
+    const toggleLanguage = () => {
+        const newLang = i18n.language === 'he' ? 'en' : 'he';
+        i18n.changeLanguage(newLang);
+    };
+
     return (
         <div className="relative z-50" ref={menuRef}>
             <button
@@ -52,18 +59,15 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         initial={{ opacity: 0, y: -10, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.9 }}
-                        className="absolute top-full mt-2 left-0 bg-white rounded-2xl shadow-xl p-2 flex flex-col gap-2 min-w-[60px]"
+                        className="absolute top-full mt-2 end-0 bg-white rounded-2xl shadow-xl p-2 flex flex-col gap-2 min-w-[200px]"
                     >
                         {/* Sound Toggle */}
                         <button
-                            onClick={() => {
-                                onToggleMute();
-                                // Keep open to allow multiple toggles, or close? User said "any click anywhere else... merge back", implying interacting with buttons inside keeps it open? usually pressing an action closes. But toggle mute might want to be verified. Let's keep open.
-                            }}
-                            className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex justify-center"
-                            title={isMuted ? "בטל השתקה" : "השתק"}
+                            onClick={onToggleMute}
+                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3"
                         >
-                            {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+                            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                            <span className="font-medium text-sm">{isMuted ? t('menu.unmute') : t('menu.mute')}</span>
                         </button>
 
                         {/* Pause / Menu */}
@@ -72,10 +76,19 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                                 onPause();
                                 setIsOpen(false);
                             }}
-                            className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex justify-center"
-                            title="תפריט ראשי"
+                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3"
                         >
-                            <Pause size={24} />
+                            <Pause size={20} />
+                            <span className="font-medium text-sm">{t('menu.pause')}</span>
+                        </button>
+
+                        {/* Language Toggle */}
+                        <button
+                            onClick={toggleLanguage}
+                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3"
+                        >
+                            <span className="font-bold text-lg w-5 text-center">{i18n.language === 'he' ? 'EN' : 'עב'}</span>
+                            <span className="font-medium text-sm">{i18n.language === 'he' ? 'Switch to English' : 'עבור לעברית'}</span>
                         </button>
 
                         {/* Full Settings */}
@@ -84,10 +97,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                                 onOpenSettings();
                                 setIsOpen(false);
                             }}
-                            className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex justify-center border-t-2 border-slate-100 mt-1"
-                            title="הגדרות נוספות"
+                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3 border-t-2 border-slate-100 mt-1"
                         >
-                            <Settings size={20} className="opacity-50" />
+                            <Settings size={20} />
+                            <span className="font-medium text-sm">{t('menu.settings')}</span>
                         </button>
                     </motion.div>
                 )}

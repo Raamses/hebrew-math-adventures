@@ -5,6 +5,7 @@ import { AdditionHint } from './AdditionHint';
 import { SubtractionHint } from './SubtractionHint';
 import { BorrowingHint } from './BorrowingHint';
 import type { Problem } from '../lib/gameLogic';
+import { useTranslation } from 'react-i18next';
 
 interface HintVisualizerProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface HintVisualizerProps {
 }
 
 export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem, onClose }) => {
+    const { t, i18n } = useTranslation();
     if (!isOpen) return null;
 
     const renderHint = () => {
@@ -35,7 +37,7 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
         // Default: Simple explanation
         return (
             <div className="flex flex-col items-center gap-4 p-6">
-                <h3 className="text-2xl font-bold text-slate-700 text-center">!בואו נחשב ביחד</h3>
+                <h3 className="text-2xl font-bold text-slate-700 text-center">{t('game.hintCalcTogether')}</h3>
                 <div className="bg-white rounded-2xl p-8 shadow-lg" dir="ltr">
                     <div className="text-5xl font-bold text-center space-y-4">
                         <div>{num1}</div>
@@ -69,7 +71,7 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
                         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl shadow-2xl z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-                        dir="rtl"
+                        dir={i18n.dir()}
                     >
                         {/* Close Button */}
                         <button
@@ -82,7 +84,7 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
                         {/* Header */}
                         <div className="bg-primary/10 p-6 rounded-t-3xl flex items-center justify-center gap-2">
                             <Lightbulb className="text-primary" size={32} />
-                            <h2 className="text-3xl font-bold text-primary">תנו לי לעזור!</h2>
+                            <h2 className="text-3xl font-bold text-primary">{t('game.hintHeader')}</h2>
                         </div>
 
                         {/* Content */}
@@ -94,7 +96,7 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
                                 onClick={onClose}
                                 className="w-full py-3 bg-primary hover:bg-orange-600 text-white text-xl font-bold rounded-2xl shadow-lg transition-all active:scale-95"
                             >
-                                הבנתי, תודה!
+                                {t('game.hintClose')}
                             </button>
                         </div>
                     </motion.div>

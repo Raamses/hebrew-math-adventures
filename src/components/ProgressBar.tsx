@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { XP_PER_LEVEL } from '../types/user';
+import { useTranslation } from 'react-i18next';
 
 interface ProgressBarProps {
     xp: number;
@@ -8,13 +9,14 @@ interface ProgressBarProps {
 }
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({ xp, level }) => {
+    const { t } = useTranslation();
     const progress = (xp / XP_PER_LEVEL) * 100;
 
     return (
         <div className="w-full max-w-md mb-6 px-2">
             <div className="flex justify-between text-slate-600 font-bold mb-1 text-sm">
-                <span>רמה {level + 1}</span>
-                <span>רמה {level}</span>
+                <span>{t('zones.level')} {level + 1}</span>
+                <span>{t('zones.level')} {level}</span>
             </div>
             <div className="h-6 bg-white rounded-full shadow-inner overflow-hidden border border-slate-200 relative">
                 <motion.div

@@ -2,6 +2,7 @@ import React from 'react';
 import { Lock, CheckCircle, Play } from 'lucide-react';
 import type { ZoneConfig } from '../lib/worldConfig';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface MapZoneProps {
     zone: ZoneConfig;
@@ -11,6 +12,7 @@ interface MapZoneProps {
 }
 
 export const MapZone: React.FC<MapZoneProps> = ({ zone, currentLevel, onSelect, index }) => {
+    const { t } = useTranslation();
     const isLocked = currentLevel < zone.minLevel;
     const isCompleted = currentLevel > zone.maxLevel;
     const isActive = currentLevel >= zone.minLevel && currentLevel <= zone.maxLevel;
@@ -33,11 +35,11 @@ export const MapZone: React.FC<MapZoneProps> = ({ zone, currentLevel, onSelect, 
                     <div className={`p-4 rounded-full ${isLocked ? 'bg-slate-200' : zone.backgroundClass}`}>
                         <zone.icon size={32} className={isLocked ? 'text-slate-400' : zone.themeColor} />
                     </div>
-                    <div className="text-right">
-                        <h3 className="text-xl font-bold text-slate-800">{zone.name}</h3>
-                        <p className="text-sm text-slate-500">{zone.description}</p>
+                    <div className="text-start">
+                        <h3 className="text-xl font-bold text-slate-800">{t(zone.name)}</h3>
+                        <p className="text-sm text-slate-500">{t(zone.description)}</p>
                         <span className="text-xs font-medium text-slate-400 mt-1 block">
-                            שלבים {zone.minLevel}-{zone.maxLevel}
+                            {t('zones.stages')} {zone.minLevel}-{zone.maxLevel}
                         </span>
                     </div>
                 </div>

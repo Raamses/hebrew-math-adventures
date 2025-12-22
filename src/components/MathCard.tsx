@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Lightbulb } from 'lucide-react';
 import { HintVisualizer } from './HintVisualizer';
 import type { Problem } from '../lib/gameLogic';
+import { useTranslation } from 'react-i18next';
 
 interface MathCardProps {
     problem: Problem;
@@ -11,6 +12,7 @@ interface MathCardProps {
 }
 
 export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback }) => {
+    const { t } = useTranslation();
     const [answer, setAnswer] = useState('');
     const [wrongAttempts, setWrongAttempts] = useState(0);
     const [showHintModal, setShowHintModal] = useState(false);
@@ -97,8 +99,8 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
                 transition={{ duration: 0.4 }}
                 className="w-full max-w-md bg-white rounded-3xl shadow-xl p-6 relative overflow-hidden"
             >
-                {/* Question Text (RTL) */}
-                <h2 className="text-2xl font-bold text-slate-700 mb-4 text-center">?כמה זה</h2>
+                {/* Question Text */}
+                <h2 className="text-2xl font-bold text-slate-700 mb-4 text-center">{t('game.howMuch')}</h2>
 
                 {/* Equation (LTR) */}
                 <div className="flex items-center justify-center gap-3 text-5xl font-bold text-slate-800 mb-6" dir="ltr">
@@ -141,7 +143,7 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
                         className="w-full py-4 bg-primary hover:bg-orange-600 text-white text-2xl font-bold rounded-2xl shadow-lg shadow-orange-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
                         <Check size={32} />
-                        <span>בדיקה</span>
+                        <span>{t('game.check')}</span>
                     </button>
 
                     {/* Hint Button */}
@@ -154,7 +156,7 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback 
                             className="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-800 text-xl font-bold rounded-2xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
                             <Lightbulb size={24} />
-                            <span>?איך עושים את זה</span>
+                            <span>{t('game.howTo')}</span>
                         </motion.button>
                     )}
                 </form>

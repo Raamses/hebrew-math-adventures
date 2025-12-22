@@ -4,10 +4,12 @@ import { Lock, Check } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
 import { isThemeUnlocked, type Theme } from '../lib/themes';
+import { useTranslation } from 'react-i18next';
 
 export const ThemeSelector: React.FC = () => {
     const { currentTheme, setTheme, availableThemes } = useTheme();
     const { profile } = useProfile();
+    const { t } = useTranslation();
 
     if (!profile) return null;
 
@@ -18,7 +20,7 @@ export const ThemeSelector: React.FC = () => {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6" dir="rtl">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {availableThemes.map((theme) => {
                 const unlocked = isThemeUnlocked(theme.id, profile.currentLevel);
                 const isActive = currentTheme.id === theme.id;
@@ -29,9 +31,9 @@ export const ThemeSelector: React.FC = () => {
                         whileHover={unlocked ? { scale: 1.05 } : {}}
                         onClick={() => handleThemeSelect(theme)}
                         className={`
-                            relative p-6 rounded-2xl border-4 cursor-pointer transition-all
-                            ${unlocked ? 'border-transparent hover:shadow-xl' : 'border-slate-200 opacity-60'}
-                            ${isActive ? 'ring-4 ring-offset-2 ring-primary' : ''}
+                            relative p-3 rounded-xl border-2 cursor-pointer transition-all
+                            ${unlocked ? 'border-transparent hover:shadow-lg' : 'border-slate-200 opacity-60'}
+                            ${isActive ? 'ring-2 ring-offset-1 ring-primary' : ''}
                         `}
                         style={{
                             background: unlocked
@@ -41,35 +43,35 @@ export const ThemeSelector: React.FC = () => {
                     >
                         {/* Active Indicator */}
                         {isActive && (
-                            <div className="absolute top-3 right-3 bg-primary text-white rounded-full p-1">
-                                <Check size={16} />
+                            <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-0.5">
+                                <Check size={14} />
                             </div>
                         )}
 
                         {/* Lock Icon */}
                         {!unlocked && (
-                            <div className="absolute top-3 right-3 text-slate-400">
-                                <Lock size={24} />
+                            <div className="absolute top-2 right-2 text-slate-400">
+                                <Lock size={16} />
                             </div>
                         )}
 
                         {/* Theme Name */}
-                        <h3 className="text-2xl font-bold mb-3" style={{ color: unlocked ? theme.colors.text : '#64748b' }}>
+                        <h3 className="text-lg font-bold mb-2" style={{ color: unlocked ? theme.colors.text : '#64748b' }}>
                             {theme.nameHebrew}
                         </h3>
 
                         {/* Color Preview */}
-                        <div className="flex gap-2 mb-4">
+                        <div className="flex gap-1.5 mb-2">
                             <div
-                                className="w-12 h-12 rounded-lg shadow-md"
+                                className="w-8 h-8 rounded-md shadow-sm"
                                 style={{ backgroundColor: theme.colors.primary }}
                             />
                             <div
-                                className="w-12 h-12 rounded-lg shadow-md"
+                                className="w-8 h-8 rounded-md shadow-sm"
                                 style={{ backgroundColor: theme.colors.secondary }}
                             />
                             <div
-                                className="w-12 h-12 rounded-lg shadow-md"
+                                className="w-8 h-8 rounded-md shadow-sm"
                                 style={{ backgroundColor: theme.colors.accent }}
                             />
                         </div>
@@ -77,7 +79,7 @@ export const ThemeSelector: React.FC = () => {
                         {/* Background Pattern Preview */}
                         {theme.backgroundPattern && (
                             <div
-                                className="w-full h-16 rounded-lg shadow-inner mb-3"
+                                className="w-full h-10 rounded-md shadow-inner mb-2"
                                 style={{
                                     backgroundColor: theme.colors.background,
                                     backgroundImage: `url("${theme.backgroundPattern}")`
@@ -87,8 +89,8 @@ export const ThemeSelector: React.FC = () => {
 
                         {/* Unlock Info */}
                         {!unlocked && (
-                            <p className="text-sm text-slate-500 mt-2">
-                                🔒 נפתח ברמה {theme.unlockLevel}
+                            <p className="text-xs text-slate-500 mt-1">
+                                {t('settings.unlockLevel', { level: theme.unlockLevel })}
                             </p>
                         )}
                     </motion.div>

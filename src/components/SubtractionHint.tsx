@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface SubtractionHintProps {
     operand1: number;
@@ -8,6 +9,8 @@ interface SubtractionHintProps {
 }
 
 export const SubtractionHint: React.FC<SubtractionHintProps> = ({ operand1, operand2, answer }) => {
+    const { t } = useTranslation();
+
     const renderObjects = () => {
         const objects = [];
         for (let i = 0; i < operand1; i++) {
@@ -57,14 +60,14 @@ export const SubtractionHint: React.FC<SubtractionHintProps> = ({ operand1, oper
 
     return (
         <div className="flex flex-col items-center gap-4 p-6">
-            <h3 className="text-2xl font-bold text-slate-700 text-center">!בואו נראה איך זה עובד</h3>
+            <h3 className="text-2xl font-bold text-slate-700 text-center">{t('game.hints.letsSee')}</h3>
 
             {/* Visual representation */}
             <div className="bg-white rounded-2xl p-6 shadow-lg">
                 <svg width="400" height="250" className="mx-auto">
                     {/* Title */}
                     <text x="20" y="30" className="text-lg font-bold fill-blue-600">
-                        {operand1} עיגולים
+                        {operand1}{t('game.hints.circles')}
                     </text>
 
                     {renderObjects()}
@@ -91,13 +94,13 @@ export const SubtractionHint: React.FC<SubtractionHintProps> = ({ operand1, oper
                 transition={{ delay: operand1 * 0.1 + operand2 * 0.15 + 1 }}
             >
                 <p className="font-medium">
-                    היו לנו <span className="text-blue-600 font-bold">{operand1}</span> עיגולים
+                    {t('game.hints.weHad')}<span className="text-blue-600 font-bold">{operand1}</span>{t('game.hints.circles')}
                 </p>
                 <p className="font-medium mt-1">
-                    הסרנו <span className="text-red-500 font-bold">{operand2}</span> עיגולים
+                    {t('game.hints.weRemoved')}<span className="text-red-500 font-bold">{operand2}</span>{t('game.hints.circles')}
                 </p>
                 <p className="text-2xl font-bold text-primary mt-2">
-                    נשארו לנו {answer} עיגולים!
+                    {t('game.hints.weHaveLeft', { count: answer })}
                 </p>
             </motion.div>
         </div>

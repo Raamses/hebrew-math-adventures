@@ -1,9 +1,11 @@
+export type MascotId = 'owl' | 'bear' | 'ant' | 'lion';
+
 export interface UserProfile {
     id: string;
     name: string;
     age: number;
     avatar: string;
-    mascot: 'owl' | 'bear' | 'ant' | 'lion';
+    mascot: MascotId;
     currentLevel: number;
     xp: number;
     streak: number;

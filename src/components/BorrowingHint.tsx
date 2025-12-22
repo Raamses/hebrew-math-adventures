@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface BorrowingHintProps {
     operand1: number;
@@ -9,6 +10,7 @@ interface BorrowingHintProps {
 }
 
 export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2, answer, operator }) => {
+    const { t } = useTranslation();
     const [step, setStep] = useState(0);
 
     // Convert numbers to digit arrays
@@ -28,7 +30,7 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
     return (
         <div className="flex flex-col items-center gap-6 p-6">
             <h3 className="text-2xl font-bold text-slate-700 text-center">
-                {isAddition ? 'שלב אחר שלב - חיבור במאונך' : 'שלב אחר שלב - חיסור עם "שאילה"'}
+                {isAddition ? t('game.hints.stepByStepAdd') : t('game.hints.stepByStepSub')}
             </h3>
 
             {/* Visual representation */}
@@ -77,8 +79,8 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                                 exit={{ opacity: 0, y: -20 }}
                                 className="text-center text-lg text-slate-600 max-w-md"
                             >
-                                <p className="font-bold text-primary">שלב 1: התחלה</p>
-                                <p>{isAddition ? 'בואו נחבר מספר אחר מספר' : 'בואו נחסר מספר אחר מספר'}</p>
+                                <p className="font-bold text-primary">{t('game.hints.step1')}</p>
+                                <p>{isAddition ? t('game.hints.step1Add') : t('game.hints.step1Sub')}</p>
                             </motion.div>
                         )}
 
@@ -90,16 +92,16 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                                 exit={{ opacity: 0, y: -20 }}
                                 className="text-center text-lg text-slate-600 max-w-md"
                             >
-                                <p className="font-bold text-primary">שלב 2: {isAddition ? 'חיבור' : 'זיהוי הבעיה'}</p>
+                                <p className="font-bold text-primary">{t(isAddition ? 'game.hints.step2Add' : 'game.hints.step2Sub')}</p>
                                 {isAddition ? (
                                     <>
-                                        <p>מחברים את היחידות, ואז את העשרות...</p>
-                                        <p className="text-sm text-slate-500 mt-2">אם התוצאה גדולה מ-9, זוכרים בצד!</p>
+                                        <p>{t('game.hints.step2AddDesc')}</p>
+                                        <p className="text-sm text-slate-500 mt-2">{t('game.hints.step2AddNote')}</p>
                                     </>
                                 ) : (
                                     <>
-                                        <p>לפעמים הספרה למעלה קטנה מהספרה למטה</p>
-                                        <p className="text-sm text-slate-500 mt-2">צריך "לשאול" מהספרה השכנה!</p>
+                                        <p>{t('game.hints.step2SubDesc')}</p>
+                                        <p className="text-sm text-slate-500 mt-2">{t('game.hints.step2SubNote')}</p>
                                     </>
                                 )}
                             </motion.div>
@@ -113,13 +115,13 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                                 exit={{ opacity: 0, y: -20 }}
                                 className="text-center text-lg text-slate-600 max-w-md"
                             >
-                                <p className="font-bold text-primary">שלב 3: {isAddition ? 'סיום' : 'השאילה'}</p>
+                                <p className="font-bold text-primary">{t(isAddition ? 'game.hints.step3Add' : 'game.hints.step3Sub')}</p>
                                 {isAddition ? (
-                                    <p>ממשיכים לחבר עד שמסיימים את כל המספרים</p>
+                                    <p>{t('game.hints.step3AddDesc')}</p>
                                 ) : (
                                     <>
-                                        <p>"שואלים" 10 מהספרה השכנה</p>
-                                        <p className="text-sm text-slate-500 mt-2">עכשיו אפשר לחסר!</p>
+                                        <p>{t('game.hints.step3SubDesc')}</p>
+                                        <p className="text-sm text-slate-500 mt-2">{t('game.hints.step3SubNote')}</p>
                                     </>
                                 )}
                             </motion.div>
@@ -133,7 +135,7 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                                 exit={{ opacity: 0, y: -20 }}
                                 className="text-center text-lg text-slate-600 max-w-md"
                             >
-                                <p className="font-bold text-primary">!התוצאה</p>
+                                <p className="font-bold text-primary">{t('game.hints.result')}</p>
                                 <p className="text-3xl font-bold text-primary mt-2">{answer}</p>
                             </motion.div>
                         )}

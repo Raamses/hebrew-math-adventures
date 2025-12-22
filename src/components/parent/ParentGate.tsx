@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ParentGateProps {
     onSuccess: () => void;
@@ -7,6 +8,7 @@ interface ParentGateProps {
 }
 
 export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) => {
+    const { t, i18n } = useTranslation();
     const [problem, setProblem] = useState<{ n1: number, n2: number } | null>(null);
     const [answer, setAnswer] = useState('');
     const [error, setError] = useState(false);
@@ -36,7 +38,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm relative">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm relative" dir={i18n.dir()}>
                 <button
                     onClick={onCancel}
                     className="absolute top-4 left-4 text-slate-400 hover:text-slate-600"
@@ -44,8 +46,8 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
                     <X size={24} />
                 </button>
 
-                <h2 className="text-2xl font-bold text-center mb-6 text-slate-700">בקרת הורים</h2>
-                <p className="text-center text-slate-500 mb-6">פתרו את התרגיל כדי להמשיך:</p>
+                <h2 className="text-2xl font-bold text-center mb-6 text-slate-700">{t('parent.gateTitle')}</h2>
+                <p className="text-center text-slate-500 mb-6">{t('parent.gateDesc')}</p>
 
                 <div className="text-4xl font-bold text-center mb-8 text-primary tracking-wider">
                     {problem.n1} + {problem.n2} = ?
@@ -65,7 +67,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
                         type="submit"
                         className="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition-colors"
                     >
-                        כניסה
+                        {t('parent.enter')}
                     </button>
                 </form>
             </div>

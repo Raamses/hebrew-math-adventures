@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface AdditionHintProps {
     operand1: number;
@@ -8,6 +9,8 @@ interface AdditionHintProps {
 }
 
 export const AdditionHint: React.FC<AdditionHintProps> = ({ operand1, operand2, answer }) => {
+    const { t } = useTranslation();
+
     const renderDots = (count: number, color: string, startX: number) => {
         const dots = [];
 
@@ -32,7 +35,7 @@ export const AdditionHint: React.FC<AdditionHintProps> = ({ operand1, operand2, 
 
     return (
         <div className="flex flex-col items-center gap-4 p-6">
-            <h3 className="text-2xl font-bold text-slate-700 text-center">!בואו נראה איך זה עובד</h3>
+            <h3 className="text-2xl font-bold text-slate-700 text-center">{t('game.hints.letsSee')}</h3>
 
             {/* Visual representation */}
             <div className="bg-white rounded-2xl p-6 shadow-lg">
@@ -82,12 +85,12 @@ export const AdditionHint: React.FC<AdditionHintProps> = ({ operand1, operand2, 
                 transition={{ delay: (operand1 + operand2) * 0.1 + 0.8 }}
             >
                 <p className="font-medium">
-                    יש לנו <span className="text-blue-600 font-bold">{operand1}</span> נקודות כחולות
+                    {t('game.hints.weHave')}<span className="text-blue-600 font-bold">{operand1}</span>{t('game.hints.blueDots')}
                     {' '}+{' '}
-                    <span className="text-green-600 font-bold">{operand2}</span> נקודות ירוקות
+                    <span className="text-green-600 font-bold">{operand2}</span>{t('game.hints.greenDots')}
                 </p>
                 <p className="text-2xl font-bold text-primary mt-2">
-                    = {answer} נקודות בסך הכל!
+                    = {answer}{t('game.hints.totalPoints')}
                 </p>
             </motion.div>
         </div>

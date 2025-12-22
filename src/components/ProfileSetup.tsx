@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useProfile } from '../context/ProfileContext';
 import { type MascotCharacter } from './mascot/Mascot';
 import { MascotSelector } from './mascot/MascotSelector';
+import { useTranslation } from 'react-i18next';
 
 const AVATARS = ['🦁', '🐯', '🐻', '🐨', '🐼', '🐸', '🦄', '🐲', '🚀', '⭐'];
 
@@ -15,6 +16,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
     const [age, setAge] = useState<number>(6);
     const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
     const [selectedMascot, setSelectedMascot] = useState<MascotCharacter>('owl');
+    const { t } = useTranslation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,12 +28,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
     return (
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
-            <h1 className="text-3xl font-bold text-center text-primary mb-8">ברוכים הבאים!</h1>
+            <h1 className="text-3xl font-bold text-center text-primary mb-8">{t('onboarding.title')}</h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Avatar Selection */}
                 <div>
-                    <label className="block text-slate-600 font-bold mb-2 text-lg">בחר דמות:</label>
+                    <label className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.selectAvatar')}</label>
                     <div className="grid grid-cols-5 gap-2">
                         {AVATARS.map(avatar => (
                             <button
@@ -51,24 +53,24 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
                 {/* Mascot Selection */}
                 <div>
-                    <label className="block text-slate-600 font-bold mb-2 text-lg">בחר חבר למסע:</label>
+                    <label className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.selectMascot')}</label>
                     <MascotSelector selectedMascot={selectedMascot} onSelect={setSelectedMascot} />
                 </div>
 
                 <div>
-                    <label className="block text-slate-600 font-bold mb-2 text-lg">איך קוראים לך?</label>
+                    <label className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.nameLabel')}</label>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none text-xl text-right"
-                        placeholder="השם שלך..."
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none text-xl text-start"
+                        placeholder={t('onboarding.namePlaceholder')}
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-slate-600 font-bold mb-2 text-lg">בן/בת כמה את/ה?</label>
+                    <label className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.ageLabel')}</label>
                     <div className="flex items-center justify-center gap-4 bg-slate-50 p-4 rounded-xl">
                         <button
                             type="button"
@@ -87,7 +89,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
                         </button>
                     </div>
                     <p className="text-center text-slate-400 text-sm mt-2">
-                        (נתאים את הרמה לגיל שלך)
+                        {t('onboarding.ageNote')}
                     </p>
                 </div>
 
@@ -96,7 +98,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
                     disabled={!name.trim()}
                     className="w-full py-4 bg-primary hover:bg-orange-600 text-white text-2xl font-bold rounded-xl shadow-lg shadow-orange-500/30 mt-4 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    בוא נתחיל!
+                    {t('onboarding.start')}
                 </button>
             </form>
         </div>

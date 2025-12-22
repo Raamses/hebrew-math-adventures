@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, Globe } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
 import { ProfileSetup } from '../ProfileSetup';
+import { useTranslation } from 'react-i18next';
 
 interface ProfileSelectorProps {
     onParentAccess: () => void;
@@ -10,15 +11,22 @@ interface ProfileSelectorProps {
 export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess }) => {
     const { allProfiles, switchProfile } = useProfile();
     const [isCreating, setIsCreating] = useState(false);
+    const { t, i18n } = useTranslation();
+
+    const toggleLanguage = () => {
+        const newLang = i18n.language === 'he' ? 'en' : 'he';
+        i18n.changeLanguage(newLang);
+    };
 
     if (isCreating) {
         return (
-            <div className="w-full max-w-md mx-auto">
+            <div className="w-full max-w-md mx-auto" dir={i18n.dir()}>
                 <button
                     onClick={() => setIsCreating(false)}
-                    className="mb-4 text-slate-500 hover:text-slate-700 font-bold"
+                    className="mb-4 text-slate-500 hover:text-slate-700 font-bold flex items-center gap-2"
                 >
-                    ← חזרה
+                    <span>{i18n.dir() === 'rtl' ? '←' : '→'}</span>
+                    {t('onboarding.back')}
                 </button>
                 <ProfileSetup onComplete={() => setIsCreating(false)} />
             </div>
@@ -26,16 +34,32 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-purple-50" dir="rtl">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-purple-50" dir={i18n.dir()}>
             <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-8">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-primary">מי משחק?</h1>
+                    {/* Language Toggle */}
+                    <button
+                        onClick={toggleLanguage}
+                        className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-bold"
+                        title="Switch Language"
+                    >
+                        <Globe size={20} />
+                        <span className="text-sm">{i18n.language === 'he' ? 'English' : 'עברית'}</span>
+                    </button>
+
+                    <h1 className="text-3xl font-bold text-primary absolute left-1/2 -translate-x-1/2 whitespace-nowrap hidden md:block">
+                        {t('onboarding.whoIsPlaying')}
+                    </h1>
+                    <h1 className="text-2xl font-bold text-primary md:hidden">
+                        {t('onboarding.whoIsPlaying')}
+                    </h1>
+
                     <button
                         onClick={onParentAccess}
                         className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors"
                     >
                         <Users size={20} />
-                        <span className="text-sm font-bold">הורים</span>
+                        <span className="text-sm font-bold">{t('onboarding.parentsAccess')}</span>
                     </button>
                 </div>
 
@@ -53,7 +77,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                                 {profile.name}
                             </span>
                             <span className="text-sm text-slate-400 mt-1">
-                                רמה {profile.currentLevel}
+                                {t('zones.level')} {profile.currentLevel}
                             </span>
                         </button>
                     ))}
@@ -66,7 +90,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-green-500">
                             <Plus size={32} />
                         </div>
-                        <span className="text-lg font-bold text-slate-500">שחקן חדש</span>
+                        <span className="text-lg font-bold text-slate-500">{t('onboarding.newPlayer')}</span>
                     </button>
                 </div>
             </div>

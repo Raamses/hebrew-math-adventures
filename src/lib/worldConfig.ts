@@ -14,8 +14,8 @@ export interface ZoneConfig {
 export const WORLD_ZONES: ZoneConfig[] = [
     {
         id: 'addition_island',
-        name: 'אי התוספות',
-        description: 'למדו לחבר מספרים!',
+        name: 'zones.addition.name',
+        description: 'zones.addition.desc',
         minLevel: 1,
         maxLevel: 2,
         icon: Palmtree,
@@ -24,8 +24,8 @@ export const WORLD_ZONES: ZoneConfig[] = [
     },
     {
         id: 'subtraction_forest',
-        name: 'יער החיסור',
-        description: 'היזהרו מהמינוס!',
+        name: 'zones.subtraction.name',
+        description: 'zones.subtraction.desc',
         minLevel: 3,
         maxLevel: 4,
         icon: Trees,
@@ -34,8 +34,8 @@ export const WORLD_ZONES: ZoneConfig[] = [
     },
     {
         id: 'multiplication_mountain',
-        name: 'הר הכפל',
-        description: 'טפסו לפסגה!',
+        name: 'zones.multiplication.name',
+        description: 'zones.multiplication.desc',
         minLevel: 5,
         maxLevel: 10, // Assuming 10 is max for now
         icon: Mountain,
