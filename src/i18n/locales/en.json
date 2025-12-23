@@ -71,7 +71,16 @@
         },
         "gateTitle": "Parent Gate",
         "gateDesc": "Solve to continue:",
-        "enter": "Enter"
+        "enter": "Enter",
+        "edit": {
+            "title": "Edit Profile",
+            "save": "Save Changes",
+            "tooltip": "Edit",
+            "errorName": "Name is required",
+            "errorAge": "Age must be between 4 and 12",
+            "errorLevel": "Level must be between 1 and 10",
+            "errorXP": "XP cannot be negative"
+        }
     },
     "feedback": {
         "phrases": [
