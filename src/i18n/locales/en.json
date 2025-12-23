@@ -2,6 +2,7 @@
     "app": {
         "title": "Math Adventures",
         "streak": "Streak",
+        "streakTooltip": "Win Streak: Correct answers in a row!",
         "worldMap": "World Map",
         "greeting": "Hi {{name}}! Ready to play?"
     },
@@ -171,6 +172,10 @@
             "step3AddDesc": "Continue adding until done",
             "step3SubDesc": "\"Borrow\" 10 from the neighbor",
             "step3SubNote": "Now we can subtract!",
+            "subtractionExplainer": "We had {{total}}, we took away {{removed}}, so we have {{left}} left!",
+            "additionExplainer": "We have {{op1}}, we add {{op2}}, together they make {{answer}}!",
+            "borrow10": "Borrow 10 from neighbor!",
+            "carry1": "Carry the 1!",
             "result": "Result!"
         },
         "placeValues": {
