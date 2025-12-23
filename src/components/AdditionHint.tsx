@@ -151,6 +151,10 @@ export const AdditionHint: React.FC<AdditionHintProps> = ({ operand1, operand2, 
                     </span>
                 </motion.div>
             </div>
+
+            <div className="text-center text-slate-600 font-medium max-w-xs">
+                {t('game.hints.additionExplainer', { op1: operand1, op2: operand2, answer: answer, defaultValue: `We have ${operand1}, we add ${operand2}, together they make ${answer}!` })}
+            </div>
         </div>
     );
 };

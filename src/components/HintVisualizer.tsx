@@ -40,7 +40,7 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
         }
 
         // For borrowing/carrying or larger numbers, show step-by-step
-        if ((operator === '-' && subType === 'borrow') || (operator === '+' && subType === 'carry')) {
+        if ((operator === '-' && (subType === 'borrow' || num1 > 20)) || (operator === '+' && (subType === 'carry' || num1 + num2 > 20))) {
             return <BorrowingHint operand1={num1} operand2={num2} answer={answer} operator={operator} />;
         }
 

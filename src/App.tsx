@@ -27,6 +27,8 @@ import { SpeechBubble } from './components/mascot/SpeechBubble'
 
 const SESSION_LENGTH = 10;
 
+import { ScoreToast } from './components/ScoreToast'
+
 const GameScreen = ({ onExit }: { onExit: () => void }) => {
   const { t, i18n } = useTranslation();
   const { profile, addXP } = useProfile();
@@ -36,6 +38,7 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [scoreToast, setScoreToast] = useState<{ points: number } | null>(null);
 
   // Mascot State
   const [mascotEmotion, setMascotEmotion] = useState<MascotEmotion>('idle');
@@ -74,6 +77,9 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       playSound('correct');
       setSessionCorrect(prev => prev + 1);
       setSessionXP(prev => prev + xpChange);
+
+      // Trigger Score Toast
+      setScoreToast({ points: xpChange });
 
       const nextSessionCount = sessionCount + 1;
       setSessionCount(nextSessionCount); // Only advance on correct
@@ -166,13 +172,22 @@ const GameScreen = ({ onExit }: { onExit: () => void }) => {
       {showStars && <FlyingStars onComplete={() => setShowStars(false)} />}
       {showConfetti && <Confetti />}
 
+      <ScoreToast
+        points={scoreToast ? scoreToast.points : 0}
+        isVisible={!!scoreToast}
+        onComplete={() => setScoreToast(null)}
+      />
+
       {/* Header with Progress, Settings, and Sound */}
       <div className="w-full max-w-md flex flex-col items-center gap-2 z-10 mb-2">
 
         {/* Top Bar: Controls & Title */}
         <div className="w-full flex items-center justify-between relative h-12">
           {/* Left: Streak (moved here) */}
-          <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-orange-100 z-10">
+          <div
+            className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-orange-100 z-10 cursor-help transition-transform hover:scale-105"
+            title={t('app.streakTooltip')}
+          >
             <Zap size={16} className="text-orange-500 fill-orange-500" />
             <span className="font-bold text-slate-700 text-sm">{profile.streak}</span>
           </div>
