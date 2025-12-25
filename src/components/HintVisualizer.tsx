@@ -23,24 +23,24 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
         const { num1, num2, operator, answer, subType } = problem;
 
         // For small numbers (≤ 20), show visual hints
-        if (operator === '+' && num1 <= 10 && num2 <= 10) {
+        if (operator === '+' && num1 <= 10 && num2 <= 10 && typeof answer === 'number') {
             return <AdditionHint operand1={num1} operand2={num2} answer={answer} />;
         }
 
-        if (operator === '-' && num1 <= 20 && num2 <= 10) {
+        if (operator === '-' && num1 <= 20 && num2 <= 10 && typeof answer === 'number') {
             return <SubtractionHint operand1={num1} operand2={num2} answer={answer} />;
         }
 
-        if (operator === '*' && num1 <= 10 && num2 <= 10) {
+        if (operator === '*' && num1 <= 10 && num2 <= 10 && typeof answer === 'number') {
             return <MultiplicationHint operand1={num1} operand2={num2} answer={answer} />;
         }
 
-        if (operator === '/' && num2 <= 10 && answer <= 10) {
+        if (operator === '/' && num2 <= 10 && typeof answer === 'number' && answer <= 10) {
             return <DivisionHint operand1={num1} operand2={num2} answer={answer} />;
         }
 
         // For borrowing/carrying or larger numbers, show step-by-step
-        if ((operator === '-' && (subType === 'borrow' || num1 > 20)) || (operator === '+' && (subType === 'carry' || num1 + num2 > 20))) {
+        if (((operator === '-' && (subType === 'borrow' || num1 > 20)) || (operator === '+' && (subType === 'carry' || num1 + num2 > 20))) && typeof answer === 'number') {
             return <BorrowingHint operand1={num1} operand2={num2} answer={answer} operator={operator} />;
         }
 

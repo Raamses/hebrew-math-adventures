@@ -21,4 +21,14 @@ export const getInitialLevel = (age: number): number => {
     return 6; // Age 11+
 };
 
+export const calculateLevelXP = (level: number): number => {
+    // Base 100 XP, increasing by 50% each level
+    return Math.floor(100 * Math.pow(1.5, level - 1));
+};
+
+export const getXPForNextLevel = (currentLevel: number): number => {
+    return calculateLevelXP(currentLevel);
+};
+
+// Deprecated: kept for temporary compatibility if needed, but should be replaced
 export const XP_PER_LEVEL = 100;

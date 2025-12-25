@@ -3,7 +3,7 @@
 ## 1. Project Overview
 **Goal:** Build a gamified, engaging math learning web application for Israeli children (ages 6-11+).
 **Core Philosophy:** "Smart Fun" - combining rigorous math practice with game mechanics (XP, streaks, animations) in a native Hebrew (RTL) environment.
-**Target Audience:** Kids grades 1-6. UI must be intuitive, large, and text-minimal.
+**Target Audience:** Kids grades 1-6. UI must be intuitive, large, and text-minimal. **Mobile-First Design** is mandatory.
 
 ## 2. Technical Architecture
 - **Framework:** React 18 + TypeScript + Vite
@@ -12,111 +12,82 @@
 - **Persistence:** `localStorage` for user profile and progress.
 - **Icons:** Lucide React.
 - **Animation:** Framer Motion.
+- **Localization:** `react-i18next` (he/en).
 
-## 3. Core Systems
+## 3. Core Systems & Rules
 
 ### A. Math Engine (`src/engines/`)
-- **`QuestionGenerator.ts` (Singleton):**
-  - **Bag Deck System:** Ensures variety by cycling through question types (e.g., `addition_simple`, `sub_borrow`) before repeating.
-  - **History Buffer:** Remembers last 3 questions to prevent immediate duplicates.
-  - **Difficulty Tuning:**
-    - **Level 1 (Age 6):** Single-digit addition (sum ≤ 10), non-negative subtraction.
-    - **Level 2 (Age 7):** 2-digit simple operations.
-    - **Level 3 (Age 8):** 3-digit operations with forced carry/borrow and zero-crossing logic.
-    - **Level 4+:** Includes multiplication and division.
-- **`MathEngine.ts`:**
-  - Facade for generating problems.
-  - **XP Calculation:** Base XP (5) + Level Bonus + Streak Bonus.
-  - **Penalties:** Negative XP for incorrect answers (`-(2 + level)`).
+-   **`QuestionGenerator.ts` (Singleton):**
+    -   **Rule:** Must cycle through question types (`addition_simple`, `sub_borrow`, etc.) using a "Bag Deck" system to ensure variety.
+    -   **Rule:** Must maintain a history of 3 questions to prevent duplicates.
+    -   **Generation Rules by Level:**
+        -   **Level 1 (Age 6):** Single-digit addition (sum ≤ 10), non-negative subtraction.
+        -   **Level 2 (Age 7):** 2-digit simple operations.
+        -   **Level 3 (Age 8):** 3-digit operations with forced carry/borrow and zero-crossing logic.
+        -   **Level 4+:** Includes multiplication and division.
+-   **`MathEngine.ts`:**
+    -   **XP Rule:** Base XP (5) + (Level * 2) + (Streak * 2).
+    -   **Penalty Rule:** Incorrect answers deduct `-(2 + level)`.
 
-### B. Game Logic (`src/lib/gameLogic.ts`)
-- **Types:** `Problem` interface (operands, operator, answer, subType).
-- **Operators:** `+`, `-`, `*`, `/`.
-- **SubTypes:** `simple`, `carry`, `borrow`, `zero` (used for UI hints).
+### B. User Profile (`src/context/ProfileContext.tsx`)
+-   **Data Model:** `UserProfile`
+    -   `id`: UUID string.
+    -   `currentLevel`: 1-10.
+    -   `xp`: Progress within current level.
+    -   `totalScore`: Lifetime accumulated score (never resets).
+    -   `mascot`: Selected companion ('owl', 'bear', 'ant', 'lion').
+-   **Business Logic:**
+    -   **Level Up:** Occurs when `xp >= XP_PER_LEVEL` (currently 100).
+    -   **Migration:** Logic exists to migrate legacy single-profile data to the new multi-profile array format.
 
-### C. User Profile (`src/context/ProfileContext.tsx`)
-- **Data Model:** `UserProfile` (name, age, currentLevel, xp, streak).
-- **Logic:** Handles leveling up (threshold: `level * 100 XP`) and streak management.
-- **Safety:** Handles negative XP (clamped at 0) and session resets.
+### C. Parent Ecosystem (`src/components/parent/`)
+-   **`ParentGate.tsx`:**
+    -   **Rule:** Must protect sensitive areas with a math challenge (e.g., "3 × 4 = ?").
+    -   **Rule:** Cannot be bypassed without solving the challenge.
+-   **`ParentDashboard.tsx`:**
+    -   **View:** Displays all profiles in a Data Grid / Table.
+    -   **Actions:** Edit (opens modal), Delete (with confirmation).
+    -   **Design:** Clean, "Admin-like" but friendly stats view.
+-   **`EditProfileModal.tsx`:**
+    -   **Validation:** Name required, Age 4-12, Level 1-10, XP >= 0.
+    -   **Feedback:** Toast/Alert on success or error.
 
-## 4. UI Components (`src/components/`)
+## 4. UI Components & Design Rules
 
-### Game Loop
-- **`App.tsx`:** Main game controller. Handles state transitions (Setup <-> Game), feedback loops, and modal visibility.
-- **`MathCard.tsx`:**
-  - Displays the problem.
-  - **Visuals:** `tracking-widest` for 3-digit numbers.
-  - **Hint System:** Visual "borrow" animation (crossing out numbers) triggers after 2 wrong attempts.
-  - **Feedback:** Shake animation on wrong answer.
-  - **Input:** Custom numeric keypad or keyboard input.
-- **`Confetti.tsx`:**
-  - Particle system using `framer-motion` and React Portals.
-  - Triggers on correct answers for positive reinforcement ("Juice").
-- **`SessionProgressBar.tsx`:**
-  - Visualizes progress through a 10-question session.
-- **`SessionSummary.tsx`:**
-  - Modal showing session stats (Accuracy, XP) upon completion.
-  - Options to "Play Again" or "Exit".
+### General UI
+-   **Mobile-First:** Touch targets must be >= 48px.
+-   **Thumb Zone:** Key actions (Answer, Next, Back) must be in the bottom 50% of the screen.
+-   **RTL:** Layouts must naturally support Right-to-Left (Hebrew). Use `flex-row-reverse` or standard RTL flow.
+-   **Typography:** Large, rounded fonts for readability.
 
-### Audio
-- **`useSound.ts`:**
-  - Custom hook using `AudioContext` for synthesized sound effects.
-  - Handles "Correct", "Wrong", "Level Up", and "Click" sounds.
-  - Manages Mute state via `localStorage`.
+### Game Loop Components
+-   **`MathCard.tsx`:**
+    -   **State:** Manages Input, Shake animation, and Hint visibility.
+    -   **Hint Rule:** "Show Me How" button appears after 1 wrong attempt (or if enabled in settings).
+    -   **Input:** Custom Numeric Keypad (no native keyboard) for consistent mobile experience.
+-   **Hints (`src/components/*Hint.tsx`):**
+    -   **`BorrowingHint.tsx`:** Shows visual crossing out of digits for subtraction.
+    -   **`MultiplicationHint.tsx`:** Shows grid/array visualization.
+    -   **Rule:** Hints must be visual/animated, not just text explanations.
 
-### Navigation & Control
-- **`GameMenuModal.tsx`:**
-  - **Safe Pause:** Triggered by top-left pause button.
-  - **Options:** Resume, Restart (resets session, keeps level), Exit (saves & quits).
-  - **Design:** Kid-friendly, large buttons, RTL layout.
+### Global Components
+-   **`ThemeSelector.tsx`:** Allows switching global CSS variables for colors/backgrounds. Unlockable based on level.
+-   **`SessionProgressBar.tsx`:** Linear progress (1-10 questions). must persist during a session.
 
-### Onboarding
-- **`ProfileSetup.tsx`:**
-  - Simple form for Name and Age.
-  - Auto-calibrates starting level based on age (e.g., Age 6 -> Level 1).
+## 5. Current Roadmap
 
-## 5. Current Status & Roadmap
+### Completed
+- [x] Core Math Engine (Levels 1-10)
+- [x] Multi-Profile System
+- [x] Parent Dashboard with Editing
+- [x] Visual Hint System (Carry/Borrow/Mult/Div)
+- [x] World Map Navigation
 
-### ✅ Completed
-- [x] Core Math Engine with Bag Deck & History.
-- [x] Adaptive Difficulty (Levels 1-10) with specific tuning for Level 1.
-- [x] XP System with streaks, bonuses, and penalties.
-- [x] Safe Pause/Restart/Exit mechanism.
-- [x] 3-Digit visual enhancements and Hint Animations.
-- [x] GitHub Integration (`hebrew-math-adventures`).
-- [x] **Phase 1: Enhanced Feedback** (Confetti, Shake, Encouraging Phrases).
-- [x] **Phase 1: Session Progress** (Progress Bar, Summary Modal with accurate tracking).
-- [x] **Phase 1: Sound Effects** (Synthesized Audio, Mute Toggle).
-- [x] **Phase 1: RTL & UI Polish** (Header Layout, Mobile Input Optimization).
-- [x] **Phase 2: World Map** (Visual zone-based progression).
+### In Progress
+- [ ] **Mascot Integration:** Fully interactive 3D/Animated 2D mascots.
+- [ ] **Lesson Mode:** Pre-level interactive tutorials.
+- [ ] **Mobile Optimization:** Ongoing refinement of touch targets.
 
-### Phase 2: Core Game Loop & Progression (In Progress)
-- [x] **PR 5: World Select & Map UI**
-  - Replaced linear flow with World Map
-  - Implemented zones (Island, Forest, Mountain)
-  - Added navigation logic
-- [x] **PR 6: Interactive "Show Me How" Hint System**
-  - Added visual hint components (Addition, Subtraction, Borrowing)
-  - Integrated "Show Me How" button in MathCard
-  - Implemented smart hint selection
-- [x] **PR 7: Unlockable Themes (Rewards)**
-  - Implemented Theme System with CSS variables
-  - Added 4 themes (Default, Forest, Space, Candy)
-  - Created ThemeSelector and Settings UI
-  - Linked themes to level milestones
-
-### Phase 3: Expansion (The "Ecosystem" Update) (In Progress)
-- [x] **PR 8: Multi-Profile Parent Dashboard**
-  - Implemented ProfileContext with multi-user support
-  - Added ProfileSelector with avatars
-  - Created Parent Dashboard with Math Gate protection
-- [ ] **PR 9: Mascot Integration**
-
-## 6. Key Files Index
-- `src/App.tsx`: Main entry and game loop with navigation state management.
-- `src/engines/QuestionGenerator.ts`: The "Brain" of the math generation.
-- `src/components/MathCard.tsx`: The primary interaction UI.
-- `src/components/WorldMap.tsx`: Zone-based level selection and progression.
-- `src/context/ProfileContext.tsx`: User state management.
-- `src/lib/worldConfig.ts`: Zone configuration and level ranges.
-- `ANTIGRAVITY_RULES.md`: Detailed game design rules.
+## 6. Deployment API
+-   **Hosting:** Firebase Hosting (`hebrew-math-adventures-2025`).
+-   **CI/CD:** Manual `npm run build` && `firebase deploy`.

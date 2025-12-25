@@ -3,34 +3,11 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 export interface Problem {
     num1: number;
     num2: number;
-    operator: '+' | '-' | '*' | '/';
-    answer: number;
+    operator: '+' | '-' | '*' | '/' | 'compare';
+    answer: number | string;
     missing: 'answer' | 'num1' | 'num2'; // For "5 + ? = 8"
     subType?: 'borrow' | 'carry' | 'simple' | 'zero'; // For UI hints
 }
-
-export const HEBREW_PHRASES = [
-    "!אלופה",
-    "!גאון של אמא",
-    "!מדהים",
-    "!כל הכבוד",
-    "!איזה יופי",
-    "!חכם מאוד",
-    "!מצוין",
-    "!נהדר",
-    "!וואו",
-    "!את/ה כוכב/ת",
-    "!תשובה נכונה",
-    "!המשך כך",
-    "!גאווה",
-    "!אלוף המספרים",
-    "!ישר כוח",
-    "!פשוט קסם",
-    "!עבודה טובה",
-    "!הצלחה מסחררת",
-    "!אין עליך",
-    "!מלך/מלכת החשבון"
-];
 
 export const generateProblem = (streak: number): Problem => {
     let difficulty: Difficulty = 'easy';
@@ -81,9 +58,5 @@ export const generateProblem = (streak: number): Problem => {
         missing = Math.random() > 0.5 ? 'num1' : 'num2';
     }
 
-    return { num1, num2, operator, answer, missing };
-};
-
-export const getRandomPhrase = () => {
-    return HEBREW_PHRASES[Math.floor(Math.random() * HEBREW_PHRASES.length)];
+    return { num1, num2, operator, missing, answer: answer! };
 };
