@@ -11,6 +11,7 @@ interface ProfileContextType {
     addXP: (amount: number) => void;
     resetStreak: () => void;
     updateMascot: (mascot: 'owl' | 'bear' | 'ant' | 'lion') => void;
+    updateProfile: (id: string, updates: Partial<UserProfile>) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -158,6 +159,20 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
     };
 
+    const updateProfile = (id: string, updates: Partial<UserProfile>) => {
+        setAllProfiles(prev => prev.map(p => {
+            if (p.id === id) {
+                const updated = { ...p, ...updates };
+                // If we updated the currently logged-in profile, update state
+                if (profile && profile.id === id) {
+                    setProfileState(updated);
+                }
+                return updated;
+            }
+            return p;
+        }));
+    };
+
     return (
         <ProfileContext.Provider value={{
             profile,
@@ -168,7 +183,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             logout,
             addXP,
             resetStreak,
-            updateMascot
+            updateMascot,
+            updateProfile
         }}>
             {children}
         </ProfileContext.Provider>

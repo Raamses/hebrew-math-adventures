@@ -1,20 +1,28 @@
 import React from 'react';
-import { Trash2, LogOut, AlertTriangle } from 'lucide-react';
+import { Trash2, LogOut, AlertTriangle, Edit } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
 import { useTranslation } from 'react-i18next';
+import { EditProfileModal } from './EditProfileModal';
+import type { UserProfile } from '../../types/user';
 
 interface ParentDashboardProps {
     onExit: () => void;
 }
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit }) => {
-    const { allProfiles, deleteProfile } = useProfile();
+    const { allProfiles, deleteProfile, updateProfile } = useProfile();
     const { t } = useTranslation();
+    const [editingProfile, setEditingProfile] = React.useState<UserProfile | null>(null);
 
     const handleDelete = (id: string, name: string) => {
         if (confirm(t('parent.delete.confirm', { name }))) {
             deleteProfile(id);
         }
+    };
+
+    const handleSaveProfile = (id: string, updates: Partial<UserProfile>) => {
+        updateProfile(id, updates);
+        setEditingProfile(null);
     };
 
     return (
@@ -34,53 +42,69 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit }) => {
                 <div className="grid gap-6">
                     {/* Profiles Management */}
                     <section className="bg-white rounded-2xl shadow-sm p-6">
-                        <h2 className="text-xl font-bold text-slate-700 mb-4 flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-slate-700 mb-6 flex items-center gap-2">
                             <span className="text-2xl">👥</span> {t('parent.manageProfiles')}
                         </h2>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="text-start border-b border-slate-100">
-                                        <th className="pb-3 font-bold text-slate-500">{t('parent.table.name')}</th>
-                                        <th className="pb-3 font-bold text-slate-500">{t('parent.table.age')}</th>
-                                        <th className="pb-3 font-bold text-slate-500">{t('parent.table.level')}</th>
-                                        <th className="pb-3 font-bold text-slate-500">{t('parent.table.xp')}</th>
-                                        <th className="pb-3 font-bold text-slate-500">{t('parent.table.totalScore')}</th>
-                                        <th className="pb-3 font-bold text-slate-500">{t('parent.table.actions')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
+                        <div className="min-w-full inline-block align-middle">
+                            <div className="border rounded-xl overflow-hidden">
+                                {/* Header */}
+                                <div className="grid grid-cols-12 bg-slate-50 border-b border-slate-100 py-3 px-4 text-sm font-bold text-slate-500">
+                                    <div className="col-span-4">{t('parent.table.name')}</div>
+                                    <div className="col-span-1 text-center">{t('parent.table.age')}</div>
+                                    <div className="col-span-1 text-center">{t('parent.table.level')}</div>
+                                    <div className="col-span-2 text-center">{t('parent.table.xp')}</div>
+                                    <div className="col-span-2 text-center">{t('parent.table.totalScore')}</div>
+                                    <div className="col-span-2 text-center">{t('parent.table.actions')}</div>
+                                </div>
+
+                                {/* Rows */}
+                                <div className="divide-y divide-slate-50">
                                     {allProfiles.map(profile => (
-                                        <tr key={profile.id} className="group">
-                                            <td className="py-4 flex items-center gap-3">
-                                                <span className="text-2xl">{profile.avatar}</span>
-                                                <span className="font-bold text-slate-700">{profile.name}</span>
-                                            </td>
-                                            <td className="py-4 text-slate-600">{profile.age}</td>
-                                            <td className="py-4 text-slate-600">{profile.currentLevel}</td>
-                                            <td className="py-4 text-slate-600">{profile.xp}</td>
-                                            <td className="py-4 text-slate-600 font-bold text-primary">{profile.totalScore || 0}</td>
-                                            <td className="py-4">
+                                        <div key={profile.id} className="grid grid-cols-12 items-center py-4 px-4 hover:bg-slate-50/80 transition-colors group">
+                                            {/* Name & Avatar */}
+                                            <div className="col-span-4 flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-xl shadow-sm border border-indigo-100">
+                                                    {profile.avatar}
+                                                </div>
+                                                <div className="font-bold text-slate-700 truncate">{profile.name}</div>
+                                            </div>
+
+                                            {/* Stats */}
+                                            <div className="col-span-1 text-center font-bold text-slate-600 bg-slate-100/50 py-1 rounded-lg mx-1">{profile.age}</div>
+                                            <div className="col-span-1 text-center font-bold text-slate-600 bg-slate-100/50 py-1 rounded-lg mx-1">{profile.currentLevel}</div>
+                                            <div className="col-span-2 text-center text-slate-600">{profile.xp}</div>
+                                            <div className="col-span-2 text-center font-bold text-primary">{profile.totalScore || 0}</div>
+
+                                            {/* Actions */}
+                                            <div className="col-span-2 flex justify-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => setEditingProfile(profile)}
+                                                    className="w-8 h-8 flex items-center justify-center text-blue-500 hover:text-white hover:bg-blue-500 rounded-lg transition-all shadow-sm border border-blue-100 hover:border-blue-500"
+                                                    title={t('parent.edit.tooltip')}
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
                                                 <button
                                                     onClick={() => handleDelete(profile.id, profile.name)}
-                                                    className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors"
+                                                    className="w-8 h-8 flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 rounded-lg transition-all shadow-sm border border-red-100 hover:border-red-500"
                                                     title={t('parent.delete.tooltip')}
                                                 >
-                                                    <Trash2 size={18} />
+                                                    <Trash2 size={16} />
                                                 </button>
-                                            </td>
-                                        </tr>
+                                            </div>
+                                        </div>
                                     ))}
+
+                                    {/* Empty State */}
                                     {allProfiles.length === 0 && (
-                                        <tr>
-                                            <td colSpan={5} className="py-8 text-center text-slate-400">
-                                                {t('parent.table.noProfiles')}
-                                            </td>
-                                        </tr>
+                                        <div className="py-12 text-center text-slate-400">
+                                            <div className="mb-2 text-4xl">📭</div>
+                                            <p>{t('parent.table.noProfiles')}</p>
+                                        </div>
                                     )}
-                                </tbody>
-                            </table>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -105,6 +129,15 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit }) => {
                     </section>
                 </div>
             </div>
+
+            {editingProfile && (
+                <EditProfileModal
+                    profile={editingProfile}
+                    isOpen={!!editingProfile}
+                    onClose={() => setEditingProfile(null)}
+                    onSave={handleSaveProfile}
+                />
+            )}
         </div>
     );
 };

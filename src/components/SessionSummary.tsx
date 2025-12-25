@@ -2,6 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RotateCcw, Home, Star } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
+import { useProfile } from '../context/ProfileContext';
+import { getXPForNextLevel } from '../types/user';
 
 interface SessionSummaryProps {
     isOpen: boolean;
@@ -11,6 +13,7 @@ interface SessionSummaryProps {
     totalScore: number;
     onPlayAgain: () => void;
     onExit: () => void;
+    targetLevel: number;
 }
 
 export const SessionSummary: React.FC<SessionSummaryProps> = ({
@@ -20,13 +23,15 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
     totalCount,
     totalScore,
     onPlayAgain,
-    onExit
+    onExit,
+    targetLevel
 }) => {
     const { t } = useTranslation();
+    const { profile } = useProfile();
 
     if (!isOpen) return null;
 
-    const accuracy = Math.round((correctCount / totalCount) * 100);
+    const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
 
     return (
         <AnimatePresence>
@@ -79,6 +84,26 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                                 />
                             </p>
                         </div>
+
+                        {/* Progression Bar (Only if playing at current level) */}
+                        {profile && targetLevel === profile.currentLevel ? (
+                            <div className="bg-slate-50 p-4 rounded-2xl border-2 border-slate-100">
+                                <div className="flex justify-between text-sm text-slate-500 mb-1">
+                                    <span>{t('summary.levelProgress', { level: profile.currentLevel + 1 })}</span>
+                                    <span>{profile.xp} / {getXPForNextLevel(profile.currentLevel)} XP</span>
+                                </div>
+                                <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+                                    <div
+                                        className="bg-primary h-full rounded-full transition-all duration-1000"
+                                        style={{ width: `${Math.min(100, (profile.xp / getXPForNextLevel(profile.currentLevel)) * 100)}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-center">
+                                <span className="text-emerald-700 font-bold">{t('summary.practiceComplete')}</span>
+                            </div>
+                        )}
 
                         {/* Actions */}
                         <div className="flex flex-col gap-3">

@@ -79,6 +79,7 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                             <AnimatePresence>
                                 {!isAddition && step >= 2 && isBorrowOrCarry && (
                                     <motion.div
+                                        key="minus-one"
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         className="absolute text-sm text-red-500 font-bold"
@@ -92,6 +93,7 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                                 )}
                                 {!isAddition && step >= 2 && isBorrowOrCarry && (
                                     <motion.div
+                                        key="plus-ten"
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         className="absolute text-sm text-green-500 font-bold"
@@ -105,6 +107,7 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                                 )}
                                 {isAddition && step >= 2 && isBorrowOrCarry && (
                                     <motion.div
+                                        key="carry-one"
                                         initial={{ opacity: 0, scale: 0 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         className="absolute text-blue-500 font-bold"

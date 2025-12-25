@@ -28,6 +28,7 @@ export const MascotSelector: React.FC<MascotSelectorProps> = ({ selectedMascot, 
             {MASCOTS.map((mascot) => (
                 <motion.button
                     key={mascot.id}
+                    type="button"
                     onClick={() => onSelect(mascot.id)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
