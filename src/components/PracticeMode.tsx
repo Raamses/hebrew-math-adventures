@@ -18,15 +18,16 @@ import { GameMenuModal } from './GameMenuModal';
 import { SessionSummary } from './SessionSummary';
 import { SettingsModal } from './SettingsModal';
 import { SettingsMenu } from './SettingsMenu';
+import { useAnswerFlow } from '../hooks/useAnswerFlow';
 
 const SESSION_LENGTH = 10;
 
-interface GameScreenProps {
+interface PracticeModeProps {
     targetLevel: number;
     onExit: () => void;
 }
 
-export const GameScreen: React.FC<GameScreenProps> = ({ targetLevel, onExit }) => {
+export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit }) => {
     const { t, i18n } = useTranslation();
     const { profile, addXP } = useProfile();
     const { playSound, isMuted, toggleMute } = useSound();
@@ -51,6 +52,30 @@ export const GameScreen: React.FC<GameScreenProps> = ({ targetLevel, onExit }) =
     const [sessionXP, setSessionXP] = useState(0);
     const [showSummary, setShowSummary] = useState(false);
 
+    // Answer Flow Hook
+    const { isProcessing, submitAnswer } = useAnswerFlow({
+        correctDelay: 2000,
+        wrongDelay: 1000,
+        onCorrectComplete: () => {
+            setShowBubble(false);
+            setShowConfetti(false);
+            setMascotEmotion('idle');
+            setShowStars(false);
+
+            const nextSessionCount = sessionCount + 1;
+            if (nextSessionCount >= SESSION_LENGTH) {
+                playSound('levelUp');
+                setShowSummary(true);
+            } else {
+                setProblem(generateProblemForLevel(targetLevel));
+            }
+        },
+        onWrongComplete: () => {
+            setShowBubble(false);
+            setMascotEmotion('idle');
+        }
+    });
+
     useEffect(() => {
         if (!problem && profile) {
             setProblem(generateProblemForLevel(targetLevel));
@@ -67,13 +92,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({ targetLevel, onExit }) =
         }
     }, [targetLevel, profile, problem, t, sessionCount, sessionAttempts]);
 
-    const handleAnswer = (isCorrect: boolean) => {
-        if (!profile || !problem) return;
 
+    const handleAnswer = (isCorrect: boolean) => {
+        if (!profile || !problem || isProcessing) return;
+
+        submitAnswer(isCorrect);
         setSessionAttempts(prev => prev + 1);
 
-        // Rewards calculated based on the PLAYED level (`targetLevel`), not necessarily profile level (unless they match)
-        // But we pass profile.streak.
+        // Rewards calculated based on the PLAYED level (`targetLevel`)
         const xpChange = calculateRewards(targetLevel, isCorrect, profile.streak);
 
         if (isCorrect) {
@@ -82,8 +108,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({ targetLevel, onExit }) =
             setSessionXP(prev => prev + xpChange);
             setScoreToast({ points: xpChange });
 
-            const nextSessionCount = sessionCount + 1;
-            setSessionCount(nextSessionCount);
+            setSessionCount(prev => prev + 1);
 
             const phrases = t('feedback.phrases', { returnObjects: true }) as string[];
             const phrase = Array.isArray(phrases) ? phrases[Math.floor(Math.random() * phrases.length)] : "Great!";
@@ -96,26 +121,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({ targetLevel, onExit }) =
 
             addXP(xpChange);
 
-            setTimeout(() => {
-                setShowBubble(false);
-                setShowConfetti(false);
-                setMascotEmotion('idle');
-
-                if (nextSessionCount >= SESSION_LENGTH) {
-                    playSound('levelUp');
-                    setShowSummary(true);
-                } else {
-                    setProblem(generateProblemForLevel(targetLevel));
-                }
-            }, 2000);
-
-            setTimeout(() => setShowStars(false), 1500);
-
         } else {
             playSound('wrong');
-            // Depending on logic, we might penalize or not. Existing logic did not deduct XP in addXP? 
-            // Wait, existing App.tsx logic called addXP(xpChange). calculateRewards returns negative for wrong?
-            // Let's assume standard behavior.
+            // Assuming standard behavior for wrong answer XP (usually 0 or penalty if needed)
             addXP(xpChange);
 
             const phrases = t('feedback.gentle', { returnObjects: true }) as string[];
@@ -124,11 +132,6 @@ export const GameScreen: React.FC<GameScreenProps> = ({ targetLevel, onExit }) =
             setMascotEmotion('encourage');
             setMascotMessage(phrase);
             setShowBubble(true);
-
-            setTimeout(() => {
-                setShowBubble(false);
-                setMascotEmotion('idle');
-            }, 2000);
         }
     };
 
@@ -214,6 +217,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({ targetLevel, onExit }) =
                     problem={problem}
                     onAnswer={handleAnswer}
                     feedback={null}
+                    isProcessing={isProcessing}
                 />
 
                 <div className="absolute -bottom-20 -right-20 md:-right-32 md:bottom-0 z-20 pointer-events-none">

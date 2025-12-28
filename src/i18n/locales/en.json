@@ -134,7 +134,9 @@
         "totalScore": "Total Score",
         "result": "You answered <c>{{correct}}</c> out of <t>{{total}}</t> questions correctly",
         "playAgain": "Play Again",
-        "exit": "Exit"
+        "exit": "Exit",
+        "practiceComplete": "Practice Complete!",
+        "levelProgress": "Progress to Level {{level}}"
     },
     "settings": {
         "themes": "Themes",
@@ -148,6 +150,9 @@
         "progress": "Progress",
         "questionCount": "Question {{current}} of {{total}}",
         "howMuch": "How much is...?",
+        "completePattern": "Complete the pattern:",
+        "compareNumbers": "Which is bigger?",
+        "readCarefully": "Read carefully:",
         "check": "Check",
         "howTo": "Show Hint",
         "hintClose": "Got it!",
@@ -191,6 +196,24 @@
             "ones": "Ones",
             "tens": "Tens",
             "hundreds": "Hundreds"
+        }
+    },
+    "wordProblems": {
+        "apples_add": "Dan has {{n1}} apples. He gets {{n2}} more. How many apples does Dan have now?",
+        "candies_sub": "Sarah has {{n1}} candies. She eats {{n2}}. How many candies are left?"
+    },
+    "lessons": {
+        "multiplication": {
+            "title": "Intro to Multiplication",
+            "intro": "Hi! Welcome to Multiplication Mountain! Let's learn a magic trick called 'Multiplication'.",
+            "setup": "First, look at these 3 baskets. They are empty.",
+            "action": "Can you put 2 apples in EACH basket?",
+            "conclusion": "Awesome! You have 3 baskets with 2 apples each. That's 3 times 2... which equals 6!"
+        },
+        "controls": {
+            "next": "Continue",
+            "start": "Let's Start!",
+            "finish": "Finish"
         }
     }
 }

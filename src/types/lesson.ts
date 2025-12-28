@@ -32,6 +32,7 @@ export interface LessonStep {
     // Interactive Content
     items: LessonItem[];
     targets: LessonTarget[];
+    showEquation?: string;
 
     // Logic
     validationCriteria?: (items: LessonItem[], targets: LessonTarget[]) => boolean;

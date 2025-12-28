@@ -6,7 +6,7 @@ import { ProfileSelector } from './components/onboarding/ProfileSelector'
 import { ParentGate } from './components/parent/ParentGate'
 import { ParentDashboard } from './components/parent/ParentDashboard'
 import { WorldMap } from './components/WorldMap'
-import { GameScreen } from './components/GameScreen'
+import { GameOrchestrator } from './components/GameOrchestrator'
 import { type ZoneConfig } from './lib/worldConfig'
 
 
@@ -90,7 +90,7 @@ const AppContent = () => {
   }
 
   return (
-    <GameScreen
+    <GameOrchestrator
       onExit={handleGameExit}
       targetLevel={selectedLevel || profile.currentLevel}
     />
