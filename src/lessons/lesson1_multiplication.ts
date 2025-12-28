@@ -4,7 +4,7 @@ const steps: LessonStep[] = [
     {
         id: 'intro',
         type: 'dialog',
-        mascotText: "Hi! Welcome to Multiplication Mountain! Let's learn a magic trick called 'Multiplication'.",
+        mascotText: "lessons.multiplication.intro",
         mascotEmotion: 'happy',
         items: [],
         targets: []
@@ -12,7 +12,7 @@ const steps: LessonStep[] = [
     {
         id: 'setup_baskets',
         type: 'dialog',
-        mascotText: "First, look at these 3 baskets. They are empty.",
+        mascotText: "lessons.multiplication.setup",
         mascotEmotion: 'idle',
         items: [],
         targets: [
@@ -24,15 +24,15 @@ const steps: LessonStep[] = [
     {
         id: 'action_fill',
         type: 'interactive_drag',
-        mascotText: "Can you put 2 apples in EACH basket?",
+        mascotText: "lessons.multiplication.action",
         mascotEmotion: 'thinking',
         items: [
             { id: 'a1', type: 'apple', position: { x: 10, y: 20 } },
-            { id: 'a2', type: 'apple', position: { x: 20, y: 20 } },
-            { id: 'a3', type: 'apple', position: { x: 30, y: 20 } },
-            { id: 'a4', type: 'apple', position: { x: 40, y: 20 } },
-            { id: 'a5', type: 'apple', position: { x: 50, y: 20 } },
-            { id: 'a6', type: 'apple', position: { x: 60, y: 20 } }
+            { id: 'a2', type: 'apple', position: { x: 25, y: 20 } },
+            { id: 'a3', type: 'apple', position: { x: 40, y: 20 } },
+            { id: 'a4', type: 'apple', position: { x: 55, y: 20 } },
+            { id: 'a5', type: 'apple', position: { x: 70, y: 20 } },
+            { id: 'a6', type: 'apple', position: { x: 85, y: 20 } }
         ],
         targets: [
             { id: 'b1', position: { x: 20, y: 60 }, capacity: 2, currentCount: 0, accepts: ['apple'] },
@@ -47,15 +47,29 @@ const steps: LessonStep[] = [
     {
         id: 'conclusion',
         type: 'dialog',
-        mascotText: "Awesome! You have 3 baskets with 2 apples each. That's 3 times 2... which equals 6!",
+        mascotText: "lessons.multiplication.conclusion",
         mascotEmotion: 'excited',
-        items: [], // In a real engine we'd keep the items from previous step, but for MVP we might reset or persist
-        targets: []
+        // Persist final state: 3 baskets full of apples
+        targets: [
+            { id: 'b1', position: { x: 20, y: 60 }, capacity: 2, currentCount: 2, accepts: ['apple'] },
+            { id: 'b2', position: { x: 50, y: 60 }, capacity: 2, currentCount: 2, accepts: ['apple'] },
+            { id: 'b3', position: { x: 80, y: 60 }, capacity: 2, currentCount: 2, accepts: ['apple'] }
+        ],
+        items: [
+            // Apples snapped to baskets (approximate positions for visual continuity)
+            { id: 'a1', type: 'apple', position: { x: 18, y: 60 } },
+            { id: 'a2', type: 'apple', position: { x: 22, y: 60 } },
+            { id: 'a3', type: 'apple', position: { x: 48, y: 60 } },
+            { id: 'a4', type: 'apple', position: { x: 52, y: 60 } },
+            { id: 'a5', type: 'apple', position: { x: 78, y: 60 } },
+            { id: 'a6', type: 'apple', position: { x: 82, y: 60 } }
+        ],
+        showEquation: "3 × 2 = 6"
     }
 ];
 
 export const MultiplicationLesson: LessonDefinition = {
     id: 'multiplication_intro',
-    title: 'Intro to Multiplication',
+    title: 'lessons.multiplication.title',
     steps
 };

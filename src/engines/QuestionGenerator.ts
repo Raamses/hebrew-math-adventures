@@ -1,9 +1,9 @@
 import type { Problem } from '../lib/gameLogic';
 import type { IProblemFactory } from './ProblemFactory';
-import { ArithmeticFactory, AlgebraicFactory, ComparisonFactory } from './ProblemFactory';
+import { ArithmeticFactory, AlgebraicFactory, ComparisonFactory, SeriesFactory, WordProblemFactory } from './ProblemFactory';
 
 type QuestionType = 'addition_simple' | 'addition_carry' | 'sub_simple' | 'sub_borrow' | 'sub_zero' | 'multiplication' | 'division' |
-    'addition_simple_missing' | 'sub_simple_missing' | 'comparison_simple';
+    'addition_simple_missing' | 'sub_simple_missing' | 'comparison_simple' | 'series_simple' | 'word_problem_simple';
 
 export class QuestionGenerator {
     private static instance: QuestionGenerator;
@@ -14,11 +14,15 @@ export class QuestionGenerator {
     private arithmeticFactory: IProblemFactory;
     private algebraicFactory: IProblemFactory;
     private comparisonFactory: IProblemFactory;
+    private seriesFactory: IProblemFactory;
+    private wordProblemFactory: IProblemFactory;
 
     private constructor() {
         this.arithmeticFactory = new ArithmeticFactory();
         this.algebraicFactory = new AlgebraicFactory();
         this.comparisonFactory = new ComparisonFactory();
+        this.seriesFactory = new SeriesFactory();
+        this.wordProblemFactory = new WordProblemFactory();
     }
 
     public static getInstance(): QuestionGenerator {
@@ -39,17 +43,18 @@ export class QuestionGenerator {
             this.bag = [
                 'addition_simple', 'sub_simple',
                 'addition_simple', 'sub_simple',
-                'comparison_simple', 'comparison_simple' // Intro to comparison
+                'comparison_simple', 'comparison_simple'
             ];
         } else if (level === 3) {
-            // Level 3: Intro to 3-digit + Algebraic Start
+            // Level 3: Intro to 3-digit + Algebraic Start + Series
             this.bag = [
-                'addition_carry', 'addition_carry',
-                'sub_borrow', 'sub_borrow',
+                'addition_carry', 'sub_borrow',
                 'addition_simple', 'sub_simple',
                 'sub_zero',
                 'addition_simple_missing',
-                'comparison_simple'
+                'comparison_simple',
+                'series_simple',
+                'word_problem_simple'
             ];
         } else {
             // Level 4+: Full mix
@@ -58,7 +63,9 @@ export class QuestionGenerator {
                 'multiplication', 'multiplication',
                 'division', 'division',
                 'addition_simple_missing', 'sub_simple_missing',
-                'comparison_simple'
+                'comparison_simple',
+                'series_simple',
+                'word_problem_simple'
             ];
         }
 
@@ -77,11 +84,10 @@ export class QuestionGenerator {
     }
 
     private isDuplicate(problem: Problem): boolean {
-        // For comparison, duplicates matter less, but still good to avoid identical pairs
-        return this.history.some(p =>
-            (p.num1 === problem.num1 && p.num2 === problem.num2 && p.operator === problem.operator) ||
-            (p.answer === problem.answer && p.operator !== 'compare') // Allow repeated answers for comparisons (>, <, =)
-        );
+        // Simple duplicate check based on ID or answer if possible, but distinct types have different structures
+        // New approach: Check generic properties or type specific
+        // For now, simpler check
+        return this.history.some(p => p.answer === problem.answer && p.type === problem.type);
     }
 
     private addToHistory(problem: Problem) {
@@ -103,7 +109,11 @@ export class QuestionGenerator {
         do {
             const type = this.getNextType(level);
             // Factory Selection Strategy
-            if (type.includes('missing')) {
+            if (type.startsWith('series')) {
+                problem = this.seriesFactory.generate(level, type);
+            } else if (type.startsWith('word')) {
+                problem = this.wordProblemFactory.generate(level, type);
+            } else if (type.includes('missing')) {
                 problem = this.algebraicFactory.generate(level, type);
             } else if (type === 'comparison_simple') {
                 problem = this.comparisonFactory.generate(level, type);

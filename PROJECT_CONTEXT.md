@@ -1,9 +1,9 @@
 # Project Context: Hebrew Math Adventures (הרפתקאות חשבון)
 
 ## 1. Project Overview
-**Goal:** Build a gamified, engaging math learning web application for Israeli children (ages 6-11+).
+**Goal:** Build a gamified, engaging math learning web application for Israeli children (ages 5-11+).
 **Core Philosophy:** "Smart Fun" - combining rigorous math practice with game mechanics (XP, streaks, animations) in a native Hebrew (RTL) environment.
-**Target Audience:** Kids grades 1-6. UI must be intuitive, large, and text-minimal. **Mobile-First Design** is mandatory.
+**Target Audience:** Kids grades 1-7. UI must be intuitive, large, and text-minimal. **Mobile-First Design** is mandatory.
 
 ## 2. Technical Architecture
 - **Framework:** React 18 + TypeScript + Vite

@@ -6,12 +6,12 @@ import { SubtractionHint } from './SubtractionHint';
 import { MultiplicationHint } from './MultiplicationHint';
 import { DivisionHint } from './DivisionHint';
 import { BorrowingHint } from './BorrowingHint';
-import type { Problem } from '../lib/gameLogic';
+import type { ArithmeticProblem } from '../lib/gameLogic';
 import { useTranslation } from 'react-i18next';
 
 interface HintVisualizerProps {
     isOpen: boolean;
-    problem: Problem;
+    problem: ArithmeticProblem;
     onClose: () => void;
 }
 
