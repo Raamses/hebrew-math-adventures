@@ -178,58 +178,214 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ em
 
 // ... Placeholders for other animals can remain simpler for now
 // ... Bear, Ant, Lion Components ...
-const BearMascot: React.FC<{ emotion: MascotEmotion }> = ({ emotion }) => (
-    <motion.div animate={emotion} className="w-full h-full">
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl">
-            <circle cx="25" cy="25" r="10" fill="#78350f" />
-            <circle cx="75" cy="25" r="10" fill="#78350f" />
-            <circle cx="50" cy="50" r="35" fill="#92400e" stroke="#78350f" strokeWidth="3" />
-            <ellipse cx="50" cy="60" rx="12" ry="10" fill="#fcd34d" />
-            <circle cx="50" cy="56" r="3" fill="#451a03" />
-            <circle cx="40" cy="45" r="3" fill="black" />
-            <circle cx="60" cy="45" r="3" fill="black" />
-            <path d="M47 65 Q50 68 53 65" fill="none" stroke="#451a03" strokeWidth="2" />
-        </svg>
-    </motion.div>
-);
+const BearMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ emotion, blinking }) => {
+    const headVariants = {
+        idle: { y: [0, 2, 0], transition: { repeat: Infinity, duration: 3, ease: "easeInOut" } },
+        happy: { y: [0, -5, 0], rotate: [0, 2, -2, 0], transition: { repeat: Infinity, duration: 2 } },
+        excited: { scale: [1, 1.1, 1], y: [0, -10, 0], transition: { repeat: Infinity, duration: 0.8 } },
+        thinking: { rotate: [0, 5, 0], transition: { repeat: Infinity, duration: 3 } },
+        sad: { y: 10, rotate: -5 },
+        encourage: { scale: [1, 1.05, 1], transition: { repeat: Infinity, duration: 1.5 } }
+    };
 
-const AntMascot: React.FC<{ emotion: MascotEmotion }> = ({ emotion }) => (
-    <motion.div animate={emotion} className="w-full h-full">
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl">
-            <circle cx="50" cy="75" r="15" fill="#ef4444" stroke="#b91c1c" strokeWidth="2" />
-            <circle cx="50" cy="50" r="10" fill="#ef4444" stroke="#b91c1c" strokeWidth="2" />
-            <circle cx="50" cy="25" r="12" fill="#ef4444" stroke="#b91c1c" strokeWidth="2" />
-            <path d="M40 50 L20 40" stroke="#b91c1c" strokeWidth="2" />
-            <path d="M60 50 L80 40" stroke="#b91c1c" strokeWidth="2" />
-            <path d="M40 55 L20 65" stroke="#b91c1c" strokeWidth="2" />
-            <path d="M60 55 L80 65" stroke="#b91c1c" strokeWidth="2" />
-            <circle cx="45" cy="22" r="2" fill="white" />
-            <circle cx="45" cy="22" r="1" fill="black" />
-            <circle cx="55" cy="22" r="2" fill="white" />
-            <circle cx="55" cy="22" r="1" fill="black" />
-            <path d="M45 15 L35 5" stroke="#b91c1c" strokeWidth="2" />
-            <path d="M55 15 L65 5" stroke="#b91c1c" strokeWidth="2" />
-        </svg>
-    </motion.div>
-);
+    return (
+        <motion.div variants={headVariants as any} animate={emotion} className="w-full h-full">
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
+                <defs>
+                    <clipPath id="bearEyeClip">
+                        <circle cx="0" cy="0" r="10" />
+                    </clipPath>
+                    <filter id="furGlow">
+                        <feGaussianBlur stdDeviation="1" result="coloredBlur" />
+                        <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                </defs>
 
-const LionMascot: React.FC<{ emotion: MascotEmotion }> = ({ emotion }) => (
-    <motion.div animate={emotion} className="w-full h-full">
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl">
-            <circle cx="50" cy="50" r="40" fill="#f59e0b" stroke="#d97706" strokeWidth="2" />
-            <circle cx="50" cy="50" r="25" fill="#fcd34d" />
-            <circle cx="30" cy="30" r="6" fill="#fcd34d" />
-            <circle cx="70" cy="30" r="6" fill="#fcd34d" />
-            <circle cx="42" cy="45" r="3" fill="black" />
-            <circle cx="58" cy="45" r="3" fill="black" />
-            <path d="M46 55 L54 55 L50 62 Z" fill="#78350f" />
-            <path d="M30 55 L15 50" stroke="#d97706" strokeWidth="1" />
-            <path d="M30 60 L15 65" stroke="#d97706" strokeWidth="1" />
-            <path d="M70 55 L85 50" stroke="#d97706" strokeWidth="1" />
-            <path d="M70 60 L85 65" stroke="#d97706" strokeWidth="1" />
-        </svg>
-    </motion.div>
-);
+                {/* Ears */}
+                <g>
+                    <circle cx="50" cy="50" r="25" fill="#78350F" />
+                    <circle cx="50" cy="50" r="15" fill="#92400E" />
+                    <circle cx="150" cy="50" r="25" fill="#78350F" />
+                    <circle cx="150" cy="50" r="15" fill="#92400E" />
+                </g>
+
+                {/* Head */}
+                <ellipse cx="100" cy="110" rx="80" ry="75" fill="#78350F" stroke="#451A03" strokeWidth="3" />
+
+                {/* Muzzle */}
+                <ellipse cx="100" cy="135" rx="35" ry="28" fill="#FCD34D" />
+                <ellipse cx="100" cy="125" rx="15" ry="10" fill="#451A03" /> {/* Nose */}
+                <path d="M 100 135 L 100 150" stroke="#451A03" strokeWidth="3" /> {/* Mouth Line */}
+                {emotion === 'happy' || emotion === 'excited' ? (
+                    <path d="M 85 150 Q 100 160 115 150" stroke="#451A03" strokeWidth="3" fill="none" />
+                ) : emotion === 'sad' ? (
+                    <path d="M 85 155 Q 100 145 115 155" stroke="#451A03" strokeWidth="3" fill="none" />
+                ) : (
+                    <path d="M 90 150 Q 100 152 110 150" stroke="#451A03" strokeWidth="3" fill="none" />
+                )}
+
+                {/* Eyes */}
+                <g transform="translate(0, -10)">
+                    {/* Left Eye */}
+                    <g transform="translate(65, 90)">
+                        <circle cx="0" cy="0" r="10" fill="white" />
+                        <circle cx="0" cy="0" r="5" fill="black" />
+                        <motion.rect x="-10" y="-10" width="20" fill="#78350F"
+                            initial={{ height: 0 }}
+                            animate={{ height: blinking ? 20 : 0 }}
+                        />
+                    </g>
+                    {/* Right Eye */}
+                    <g transform="translate(135, 90)">
+                        <circle cx="0" cy="0" r="10" fill="white" />
+                        <circle cx="0" cy="0" r="5" fill="black" />
+                        <motion.rect x="-10" y="-10" width="20" fill="#78350F"
+                            initial={{ height: 0 }}
+                            animate={{ height: blinking ? 20 : 0 }}
+                        />
+                    </g>
+                </g>
+
+                {/* Paws (if needed for waving) */}
+                {emotion === 'excited' && (
+                    <motion.path
+                        d="M 160 140 Q 190 120 170 180"
+                        stroke="#78350F" strokeWidth="20" strokeLinecap="round" fill="none"
+                        animate={{ rotate: [0, 20, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.5 }}
+                    />
+                )}
+            </svg>
+        </motion.div>
+    );
+};
+
+const AntMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ emotion, blinking }) => {
+    // Ant Animation: Bounce and Antennae Wiggle
+    return (
+        <motion.div
+            animate={emotion === 'happy' ? { y: [0, -10, 0] } : {}}
+            transition={{ repeat: Infinity, duration: 0.5 }}
+            className="w-full h-full"
+        >
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
+                {/* Body Segments */}
+                <circle cx="100" cy="150" r="40" fill="#EF4444" stroke="#B91C1C" strokeWidth="4" />
+                <circle cx="100" cy="100" r="25" fill="#EF4444" stroke="#B91C1C" strokeWidth="4" />
+
+                {/* Head */}
+                <circle cx="100" cy="50" r="30" fill="#EF4444" stroke="#B91C1C" strokeWidth="4" />
+
+                {/* Antennae */}
+                <motion.path
+                    d="M 80 30 Q 60 0 40 10" stroke="#B91C1C" strokeWidth="3" fill="none"
+                    animate={{ rotate: [0, 5, 0] }}
+                    style={{ originX: 1, originY: 1 }}
+                    transition={{ repeat: Infinity, duration: 1 }}
+                />
+                <circle cx="40" cy="10" r="4" fill="#B91C1C" />
+
+                <motion.path
+                    d="M 120 30 Q 140 0 160 10" stroke="#B91C1C" strokeWidth="3" fill="none"
+                    animate={{ rotate: [0, -5, 0] }}
+                    style={{ originX: 0, originY: 1 }}
+                    transition={{ repeat: Infinity, duration: 1 }}
+                />
+                <circle cx="160" cy="10" r="4" fill="#B91C1C" />
+
+                {/* Eyes */}
+                <g transform="translate(0, 0)">
+                    <circle cx="85" cy="45" r="8" fill="white" />
+                    <circle cx="85" cy="45" r="4" fill="black" />
+                    <motion.rect x="75" y="35" width="20" height="20" fill="#EF4444"
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: blinking ? 1 : 0 }}
+                        style={{ transformOrigin: 'top' }}
+                    />
+
+                    <circle cx="115" cy="45" r="8" fill="white" />
+                    <circle cx="115" cy="45" r="4" fill="black" />
+                    <motion.rect x="105" y="35" width="20" height="20" fill="#EF4444"
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: blinking ? 1 : 0 }}
+                        style={{ transformOrigin: 'top' }}
+                    />
+                </g>
+
+                {/* Mouth */}
+                {emotion === 'happy' || emotion === 'excited' ? (
+                    <path d="M 85 65 Q 100 75 115 65" stroke="white" strokeWidth="3" fill="none" />
+                ) : (
+                    <path d="M 90 65 Q 100 68 110 65" stroke="white" strokeWidth="3" fill="none" />
+                )}
+            </svg>
+        </motion.div>
+    );
+};
+
+const LionMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ emotion, blinking }) => {
+    // Lion Animation
+    return (
+        <motion.div animate={emotion} className="w-full h-full">
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
+                {/* Mane */}
+                <motion.path
+                    d="M 100 20 
+                       Q 130 20 150 50 Q 180 80 160 120 Q 180 150 150 170 
+                       Q 130 190 100 180 Q 70 190 50 170 Q 20 150 40 120 
+                       Q 20 80 50 50 Q 70 20 100 20 Z"
+                    fill="#D97706"
+                    stroke="#B45309" strokeWidth="3"
+                    animate={emotion === 'excited' ? { scale: [1, 1.05, 1], rotate: [0, 5, -5, 0] } : {}}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                />
+
+                {/* Face */}
+                <circle cx="100" cy="100" r="50" fill="#FCD34D" />
+
+                {/* Ears */}
+                <circle cx="60" cy="60" r="12" fill="#FCD34D" stroke="#D97706" strokeWidth="2" />
+                <circle cx="140" cy="60" r="12" fill="#FCD34D" stroke="#D97706" strokeWidth="2" />
+
+                {/* Muzzle Area */}
+                <circle cx="100" cy="120" r="18" fill="#FFFBEB" opacity="0.6" />
+
+                {/* Nose */}
+                <path d="M 90 115 L 110 115 L 100 130 Z" fill="#78350F" />
+                <path d="M 100 130 L 100 145" stroke="#78350F" strokeWidth="2" />
+
+                {/* Mouth */}
+                {emotion === 'happy' || emotion === 'excited' ? (
+                    <path d="M 90 145 Q 100 155 110 145" stroke="#78350F" strokeWidth="2" fill="none" />
+                ) : (
+                    <path d="M 90 145 Q 100 148 110 145" stroke="#78350F" strokeWidth="2" fill="none" />
+                )}
+
+                {/* Eyes */}
+                <g>
+                    <circle cx="80" cy="90" r="6" fill="black" />
+                    <motion.rect x="70" y="80" width="20" fill="#FCD34D"
+                        initial={{ height: 0 }}
+                        animate={{ height: blinking ? 20 : 0 }}
+                    />
+
+                    <circle cx="120" cy="90" r="6" fill="black" />
+                    <motion.rect x="110" y="80" width="20" fill="#FCD34D"
+                        initial={{ height: 0 }}
+                        animate={{ height: blinking ? 20 : 0 }}
+                    />
+                </g>
+
+                {/* Whiskers */}
+                <path d="M 80 120 L 60 115" stroke="#92400E" strokeWidth="1" />
+                <path d="M 80 125 L 60 128" stroke="#92400E" strokeWidth="1" />
+                <path d="M 120 120 L 140 115" stroke="#92400E" strokeWidth="1" />
+                <path d="M 120 125 L 140 128" stroke="#92400E" strokeWidth="1" />
+
+            </svg>
+        </motion.div>
+    );
+};
 
 export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = '' }) => {
     const isBlinking = useBlink();
@@ -237,9 +393,9 @@ export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = 
     return (
         <div className={`w-32 h-32 md:w-48 md:h-48 ${className}`}>
             {character === 'owl' && <OwlMascot emotion={emotion} blinking={isBlinking} />}
-            {character === 'bear' && <BearMascot emotion={emotion} />}
-            {character === 'ant' && <AntMascot emotion={emotion} />}
-            {character === 'lion' && <LionMascot emotion={emotion} />}
+            {character === 'bear' && <BearMascot emotion={emotion} blinking={isBlinking} />}
+            {character === 'ant' && <AntMascot emotion={emotion} blinking={isBlinking} />}
+            {character === 'lion' && <LionMascot emotion={emotion} blinking={isBlinking} />}
         </div>
     );
 };
