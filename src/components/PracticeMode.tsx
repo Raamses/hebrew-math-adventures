@@ -247,7 +247,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                     isProcessing={isProcessing}
                 />
 
-                <div className="absolute -bottom-20 -right-20 md:-right-32 md:bottom-0 z-20 pointer-events-none">
+                <div className="relative mt-4 ml-auto md:absolute md:-right-32 md:bottom-0 z-20 pointer-events-none">
                     <div className="relative">
                         <SpeechBubble text={mascotMessage} isVisible={showBubble} />
                         <Mascot

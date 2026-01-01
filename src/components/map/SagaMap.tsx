@@ -60,7 +60,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout }) => {
                         </div>
 
                         {/* Render Nodes */}
-                        <div className="relative h-[600px]"> {/* Fixed height per unit for now to simplify layout */}
+                        <div className="relative" style={{ height: `${unit.nodes.length * 150 + 100}px` }}>
 
                             {/* Connector Lines (Simple SVG for now) */}
                             <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-30">
