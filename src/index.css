@@ -57,4 +57,55 @@
     position: relative;
     z-index: 1;
   }
+
+  @keyframes floatUp {
+    0% {
+      transform: translate3d(0, 110vh, 0) scale(0.5);
+      opacity: 0;
+    }
+
+    10% {
+      opacity: 1;
+      transform: translate3d(0, 90vh, 0) scale(1);
+    }
+
+    100% {
+      transform: translate3d(0, -20vh, 0) scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-float {
+    animation: floatUp 15s linear infinite;
+    will-change: transform;
+  }
+
+  /* Key interaction fix: Pause animation on specific parent hover */
+  .group:hover .animate-float-paused {
+    animation-play-state: paused;
+    z-index: 100;
+  }
+
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    50% {
+      transform: scale(1.4);
+      opacity: 0.8;
+    }
+
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  .animate-pop {
+    animation: pop 0.3s ease-out forwards !important;
+    pointer-events: none;
+    /* Prevent double clicks */
+  }
 }
