@@ -17,11 +17,13 @@ export interface UserCapabilityProfile {
 
     // Legacy mapping (optional, for UI display if needed)
     estimatedLevel: number;
+    streak: number;
 }
 
 export const INITIAL_CAPABILITY_PROFILE: UserCapabilityProfile = {
     skills: {},
     currentFocus: 'addition_sum_5',
     consecutiveFailures: 0,
-    estimatedLevel: 1
+    estimatedLevel: 1,
+    streak: 0
 };

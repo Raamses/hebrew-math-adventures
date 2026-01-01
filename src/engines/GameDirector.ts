@@ -8,7 +8,50 @@ import type { UserCapabilityProfile } from '../types/progress';
 // 3. else -> Stability Mode (Keep current Focus)
 
 export class GameDirector implements IGameDirector {
-    // Constructor removed as it was only setting unused modules
+    // The new "Decorator" method: Takes a base static config and adapts it to the user
+    tuneConfig(baseConfig: any, profile: UserCapabilityProfile): any {
+        const tuned = { ...baseConfig };
+
+        // 1. Rescue Mode (Heuristic: >2 consecutive failures)
+        // If the user is struggling, we simplify the problem temporarily.
+        if (profile.consecutiveFailures >= 2) {
+            tuned.isRescue = true;
+            tuned.isChallenge = false;
+
+            // Heuristic A: Reduce Max Number
+            if (tuned.max) {
+                tuned.max = Math.max(5, Math.floor(tuned.max * 0.8));
+            }
+
+            // Heuristic B: Simplify Sub-Types (e.g., remove borrowing)
+            if (tuned.type === 'sub_borrow') tuned.type = 'sub_simple';
+            if (tuned.type === 'addition_carry') tuned.type = 'addition_simple';
+
+            // Heuristic C: Reduce Complexity for Series
+            if (tuned.type === 'series' && !tuned.step) {
+                tuned.step = 1; // Force simple 1-step
+            }
+        }
+
+        // 2. Challenge Mode (Heuristic: >5 consecutive correct on this specific skill)
+        // Note: We need to know the *current topic* to check stats. 
+        // For now, we use a global heuristic or assume 'math_core' generic skills.
+        // Ideally: const stat = profile.skills[tuned.type];
+
+        // Simple Hot Streak Check
+        const currentSkill = profile.skills[tuned.type || 'math_core'];
+        if ((currentSkill && currentSkill.consecutiveCorrect >= 5) || (profile.streak > 5)) {
+            tuned.isChallenge = true;
+            tuned.isRescue = false;
+
+            // Heuristic A: Increase Difficulty slightly (push limits)
+            if (tuned.max) {
+                tuned.max = Math.floor(tuned.max * 1.2);
+            }
+        }
+
+        return tuned;
+    }
 
     getNextConfig(profile: UserCapabilityProfile): GameSessionConfig {
         // 1. Check for "Rescue Mode"

@@ -6,6 +6,7 @@ export interface BaseProblem {
     type: ProblemType;
     id: string;
     answer: number | string;
+    metadata?: { isChallenge?: boolean; isRescue?: boolean };
 }
 
 export interface ArithmeticProblem extends BaseProblem {

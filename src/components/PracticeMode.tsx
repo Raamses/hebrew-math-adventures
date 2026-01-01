@@ -60,7 +60,11 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
     const generateNext = () => {
         if (!profile) return null;
-        const userCaps = profile.capabilities || { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: profile.currentLevel };
+        const userCaps = {
+            ...(profile.capabilities || INITIAL_CAPABILITY_PROFILE),
+            estimatedLevel: profile.currentLevel,
+            streak: profile.streak // Pass current streak to engine
+        };
         // Merge problemConfig with the generic difficulty params
         return mathModule.generateProblem(userCaps, {
             difficulty: targetLevel,

@@ -25,3 +25,11 @@ A gamified, mobile-first math learning web application designed for Israeli chil
 1.  `npm install`
 2.  `npm run dev`
 
+## 🕹️ Game Modes
+
+| Mode | Component | Gameplay |
+| :--- | :--- | :--- |
+| **PRACTICE** | `PracticeMode` | **Core Loop:** Solves ~10 math problems (Equations, Sequences, etc.). Earns XP and Stars. |
+| **SENSORY** | `BubbleGame` | **Mini-Game:** Visual interaction (Popping bubbles). No typing required. Used for very early levels or breaks. |
+| **LESSON** | `LessonModal` | **Tutorial:** Interactive story-based learning to introduce new concepts before practicing them. |
+

@@ -3,6 +3,7 @@ import type { UserCapabilityProfile } from '../types/progress';
 import type { UserProfile } from '../types/user';
 import type { Problem } from '../lib/gameLogic';
 import { ArithmeticFactory, AlgebraicFactory, ComparisonFactory, SeriesFactory, WordProblemFactory, type IProblemFactory } from './ProblemFactory';
+import { Director } from './GameDirector';
 
 export class MathModule implements IGameModule {
     moduleId = 'math_core';
@@ -30,42 +31,23 @@ export class MathModule implements IGameModule {
         // Check for manual type override in params (e.g., from Node Config)
         const type = params?.type || this.pickProblemType(level);
 
-        // ADAPTIVE LOGIC
-        // 1. Get stats for this problem type
-        const stats = profile.skills[type];
+        // ADAPTIVE LOGIC with DIRECTOR
+        // The Director 'tunes' the static config based on the user's profile
+        const effectiveConfig = Director.tuneConfig(params || {}, profile); // Merge params with profile adaptation
 
-        // Clone params (or create new) to avoid mutation
-        const effectiveConfig = { ...params };
-
-        if (stats) {
-            // BOOST: If doing very well (>5 correct in a row), increase challenge
-            if (stats.consecutiveCorrect > 5) {
-                // Example: Increase max number by 20% if max is defined
-                if (effectiveConfig.max) {
-                    effectiveConfig.max = Math.floor(effectiveConfig.max * 1.2);
-                }
-                effectiveConfig.isBoosted = true; // Flag for UI?
-            }
-
-            // ASSIST: If struggling (>2 wrong in a row), decrease challenge
-            if (stats.consecutiveWrong > 2) {
-                if (effectiveConfig.max) {
-                    effectiveConfig.max = Math.floor(Math.max(5, effectiveConfig.max * 0.8));
-                }
-                effectiveConfig.isAssisted = true;
-            }
-        }
+        // If type changed during tuning (e.g., rescue mode downgrade), respect it
+        const finalType = effectiveConfig.type || type;
 
         // Identify correct factory
         let factory: IProblemFactory;
 
-        if (type.startsWith('series')) factory = this.factories.series;
-        else if (type.startsWith('word')) factory = this.factories.word;
-        else if (type.includes('missing')) factory = this.factories.algebraic;
-        else if (type.startsWith('compare') || type === 'comparison_simple') factory = this.factories.comparison;
+        if (finalType.startsWith('series')) factory = this.factories.series;
+        else if (finalType.startsWith('word')) factory = this.factories.word;
+        else if (finalType.includes('missing')) factory = this.factories.algebraic;
+        else if (finalType.startsWith('compare') || finalType === 'comparison_simple') factory = this.factories.comparison;
         else factory = this.factories.arithmetic;
 
-        return factory.generate(level, type, effectiveConfig);
+        return factory.generate(level, finalType, effectiveConfig);
     }
 
     evaluate(problem: Problem, answer: string | number, profile: UserProfile): GameFeedback { // Use profile: UserProfile
@@ -88,12 +70,28 @@ export class MathModule implements IGameModule {
     }
 
     private pickProblemType(level: number): string {
-        // This duplicates logic from QuestionGenerator for now. 
-        // In full refactor, this becomes granular.
-        if (level === 1) return Math.random() > 0.5 ? 'addition_simple' : 'sub_simple';
-        if (level === 2) return 'addition_simple'; // Placeholder
+        // Fallback logic if no specific type is requested in params
+        // Returns a random suitable problem type for the given difficulty level
 
-        // Fallback default
-        return 'addition_simple';
+        const types: string[] = ['addition_simple']; // Always available
+
+        if (level >= 1) {
+            types.push('sub_simple', 'comparison');
+        }
+        if (level >= 2) {
+            types.push('series');
+        }
+        if (level >= 3) {
+            types.push('addition_carry', 'sub_borrow', 'word');
+        }
+        if (level >= 4) {
+            types.push('multiplication');
+        }
+        if (level >= 5) {
+            types.push('division', 'sub_zero');
+        }
+
+        // Randomly select one
+        return types[Math.floor(Math.random() * types.length)];
     }
 }

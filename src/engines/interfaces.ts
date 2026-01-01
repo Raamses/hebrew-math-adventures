@@ -28,7 +28,7 @@ export interface GameSessionConfig {
 export interface IGameDirector {
     // The "Brain" - decides which module/difficulty to serve next
     getNextConfig(profile: UserCapabilityProfile): GameSessionConfig;
-
+    tuneConfig(baseConfig: any, profile: UserCapabilityProfile): any;
     // Notifies director of result (so it can update heuristics)
     recordResult(profile: UserCapabilityProfile, isCorrect: boolean): UserCapabilityProfile;
 }

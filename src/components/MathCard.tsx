@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Lightbulb, ArrowRight } from 'lucide-react';
+import { Check, Lightbulb, ArrowRight, Flame } from 'lucide-react';
 import { HintVisualizer } from './HintVisualizer';
 import type { Problem } from '../lib/gameLogic';
 import { useTranslation } from 'react-i18next';
@@ -208,12 +208,33 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback,
             <motion.div
                 animate={feedback && !feedback.includes('!') ? { x: [0, -10, 10, -10, 10, 0] } : {}}
                 transition={{ duration: 0.4 }}
-                className="w-full max-w-md bg-white rounded-3xl shadow-xl p-6 relative overflow-hidden"
+                className={`w-full max-w-md bg-white rounded-3xl shadow-xl p-6 relative overflow-hidden transition-all duration-500 ${problem.metadata?.isChallenge
+                        ? 'ring-4 ring-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.5)] scale-[1.02]'
+                        : ''
+                    }`}
             >
-                {/* Question Title */}
-                <h2 className="text-2xl font-bold text-slate-700 mb-4 text-center">
-                    {t(getTitleKey())}
-                </h2>
+                {/* Question Title & Challenge Badge */}
+                <div className="flex items-center justify-center gap-2 mb-4">
+                    {problem.metadata?.isChallenge && (
+                        <motion.div
+                            initial={{ scale: 0 }} animate={{ scale: 1 }}
+                            className="text-amber-500"
+                        >
+                            <Flame className="w-6 h-6 animate-pulse fill-amber-500" />
+                        </motion.div>
+                    )}
+                    <h2 className={`text-2xl font-bold text-center ${problem.metadata?.isChallenge ? 'text-amber-600' : 'text-slate-700'}`}>
+                        {t(getTitleKey())}
+                    </h2>
+                    {problem.metadata?.isChallenge && (
+                        <motion.div
+                            initial={{ scale: 0 }} animate={{ scale: 1 }}
+                            className="text-amber-500"
+                        >
+                            <Flame className="w-6 h-6 animate-pulse fill-amber-500" />
+                        </motion.div>
+                    )}
+                </div>
 
                 {problem.type !== 'compare' ? (
                     <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">

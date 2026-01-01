@@ -107,7 +107,11 @@ export class ArithmeticFactory implements IProblemFactory {
             operator,
             answer,
             missing: 'answer',
-            subType
+            subType,
+            metadata: {
+                isChallenge: config?.isChallenge,
+                isRescue: config?.isRescue
+            }
         };
     }
 }
@@ -174,7 +178,11 @@ export class SeriesFactory implements IProblemFactory {
             sequence,
             missingIndex,
             rule: `+${step}`,
-            answer
+            answer,
+            metadata: {
+                isChallenge: config?.isChallenge,
+                isRescue: config?.isRescue
+            }
         };
     }
 }
