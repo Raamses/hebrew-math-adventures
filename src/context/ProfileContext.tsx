@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { type UserProfile, XP_PER_LEVEL } from '../types/user';
+import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 
 interface ProfileContextType {
     profile: UserProfile | null;
@@ -34,7 +35,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             profiles = profiles.map(p => ({
                 ...p,
                 mascot: p.mascot || 'owl',
-                totalScore: p.totalScore ?? ((p.currentLevel - 1) * XP_PER_LEVEL + p.xp) // Estimate total score for existing users
+                totalScore: p.totalScore ?? ((p.currentLevel - 1) * XP_PER_LEVEL + p.xp), // Estimate total score for existing users
+                capabilities: p.capabilities || { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: p.currentLevel }
             }));
         } else {
             // Migration: Check for legacy single profile
@@ -74,7 +76,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             currentLevel: age <= 6 ? 1 : age === 7 ? 2 : age === 8 ? 3 : age === 9 ? 4 : age === 10 ? 5 : 6,
             xp: 0,
             streak: 0,
-            totalScore: 0
+            totalScore: 0,
+            capabilities: { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: age <= 6 ? 1 : age === 7 ? 2 : age === 8 ? 3 : age === 9 ? 4 : age === 10 ? 5 : 6 }
         };
 
         setAllProfiles(prev => [...prev, newProfile]);

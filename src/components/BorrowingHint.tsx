@@ -40,7 +40,7 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
     const prevStep = () => setStep(prev => Math.max(prev - 1, 0));
 
     return (
-        <div className="flex flex-col items-center gap-6 p-6 w-full max-w-2xl mx-auto relative">
+        <div className="flex flex-col items-center gap-2 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8 w-full max-w-2xl mx-auto relative">
             <h3 className="text-2xl font-bold text-slate-700 text-center">
                 {isAddition ? t('game.hints.stepByStepAdd') : t('game.hints.stepByStepSub')}
             </h3>
@@ -49,21 +49,21 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
             <button
                 onClick={prevStep}
                 disabled={step === 0}
-                className="absolute left-0 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-lg text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:bg-orange-50 transition-all z-10"
+                className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-lg text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:bg-orange-50 transition-all z-10"
             >
                 <ChevronLeft size={32} />
             </button>
             <button
                 onClick={nextStep}
                 disabled={step === 3}
-                className="absolute right-0 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-lg text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:bg-orange-50 transition-all z-10"
+                className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 p-3 bg-white rounded-full shadow-lg text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:bg-orange-50 transition-all z-10"
             >
                 <ChevronRight size={32} />
             </button>
 
             {/* Visual representation */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg w-full min-h-[350px] flex flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-6 w-full">
+            <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-lg w-full min-h-[350px] flex flex-col items-center justify-center">
+                <div className="flex flex-col items-center gap-3 sm:gap-6 w-full">
                     {/* Problem display */}
                     <div className="text-center space-y-2 relative" dir="ltr">
                         {/* Column Headers */}
@@ -122,7 +122,7 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                             </AnimatePresence>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-4 text-5xl font-mono w-fit mx-auto relative transition-all">
+                        <div className="grid grid-cols-4 gap-2 sm:gap-4 text-3xl sm:text-5xl font-mono w-fit mx-auto relative transition-all">
                             {/* Top Row */}
                             <div className="w-16"></div> {/* Empty space for operator column */}
                             {num1Digits.map((digit, i) => (
@@ -181,7 +181,7 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                         <div className="border-t-4 border-slate-300 mt-2 w-72 mx-auto"></div>
 
                         {/* Result Row (Animated) */}
-                        <div className="grid grid-cols-4 gap-4 text-5xl font-mono w-fit mx-auto mt-2 h-16">
+                        <div className="grid grid-cols-4 gap-2 sm:gap-4 text-3xl sm:text-5xl font-mono w-fit mx-auto mt-2 h-16">
                             <div className="w-16"></div>
                             {step === 3 && (
                                 <motion.div
@@ -292,6 +292,26 @@ export const BorrowingHint: React.FC<BorrowingHintProps> = ({ operand1, operand2
                         aria-label={`Go to step ${i + 1}`}
                     />
                 ))}
+            </div>
+
+            {/* Mobile Navigation Footer */}
+            <div className="flex sm:hidden items-center justify-between w-full gap-4 mt-4">
+                <button
+                    onClick={prevStep}
+                    disabled={step === 0}
+                    className="flex-1 p-3 bg-white rounded-xl shadow-md text-primary font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                    <ChevronLeft size={24} />
+                    {t('common.prev', 'Previous')}
+                </button>
+                <button
+                    onClick={nextStep}
+                    disabled={step === 3}
+                    className="flex-1 p-3 bg-primary text-white rounded-xl shadow-md font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                    {t('common.next', 'Next')}
+                    <ChevronRight size={24} />
+                </button>
             </div>
         </div>
     );

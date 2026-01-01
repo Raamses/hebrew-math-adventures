@@ -4,7 +4,8 @@
         "streak": "Streak",
         "streakTooltip": "Win Streak: Correct answers in a row!",
         "worldMap": "World Map",
-        "greeting": "Hi {{name}}! Ready to play?"
+        "greeting": "Hi {{name}}! Ready to play?",
+        "journey": "My Journey"
     },
     "menu": {
         "settings": "Settings",
@@ -30,6 +31,10 @@
         }
     },
     "zones": {
+        "sensory": {
+            "name": "Bubble Beach",
+            "desc": "Pop the bubbles!"
+        },
         "addition": {
             "name": "Addition Island",
             "desc": "Learn to add numbers!"
@@ -215,5 +220,19 @@
             "start": "Let's Start!",
             "finish": "Finish"
         }
+    },
+    "saga": {
+        "unit_1_title": "Beginner Beach",
+        "unit_2_title": "Forest of Numbers",
+        "n1_1_title": "Bubbles",
+        "n1_2_title": "Counting 1-5",
+        "n1_3_title": "Simple Addition",
+        "n1_4_title": "Beach Boss",
+        "n2_1_title": "Pop the 10s",
+        "n2_2_title": "Subtraction Basics",
+        "pop_instruction": "Pop all the bubbles with the number {{number}}!",
+        "locked": "Locked",
+        "play": "Play",
+        "back": "Back"
     }
 }

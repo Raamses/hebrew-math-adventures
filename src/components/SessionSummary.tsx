@@ -4,7 +4,7 @@ import { RotateCcw, Home, Star } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
 import { useProfile } from '../context/ProfileContext';
 import { getXPForNextLevel } from '../types/user';
-import { Mascot } from './mascot/Mascot';
+
 
 interface SessionSummaryProps {
     isOpen: boolean;
@@ -41,26 +41,17 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                     initial={{ opacity: 0, scale: 0.8, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                    className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border-4 border-white"
+                    className="bg-white rounded-3xl shadow-2xl w-full max-w-sm border-4 border-white relative"
                 >
                     {/* Header */}
-                    <div className="bg-primary p-6 text-center relative overflow-visible">
+                    <div className="bg-primary p-6 text-center relative overflow-visible rounded-t-[20px]">
                         <motion.div
                             animate={{ rotate: 360 }}
                             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                             className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl opacity-50"
                         />
 
-                        {/* Mascot Peaking */}
-                        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-32 h-32 z-20">
-                            {profile && (
-                                <Mascot
-                                    character={profile.mascot}
-                                    emotion={correctCount === totalCount ? 'excited' : accuracy >= 80 ? 'happy' : 'encourage'}
-                                    className="w-full h-full drop-shadow-lg"
-                                />
-                            )}
-                        </div>
+
 
                         <div className="mt-8 relative z-10">
                             <h2 className="text-3xl font-bold text-white">{t('summary.title')}</h2>

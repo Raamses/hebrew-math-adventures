@@ -1,100 +1,148 @@
-import React, { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Bubble } from './Bubble';
 import type { SensoryProblem } from '../../lib/gameLogic';
 import { useSound } from '../../hooks/useSound';
+import { useTranslation } from 'react-i18next';
+import { Zap } from 'lucide-react';
+import { useProfile } from '../../context/ProfileContext';
+import { SettingsMenu } from '../SettingsMenu';
+import { SessionProgressBar } from '../SessionProgressBar';
+import { GameMenuModal } from '../GameMenuModal';
+import { SettingsModal } from '../SettingsModal';
 
 interface BubbleGameProps {
     problem: SensoryProblem;
     onComplete: (success: boolean) => void;
+    onExit?: () => void;
+    title?: string;
+    instruction?: string;
 }
 
-export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete }) => {
-    const { playSound } = useSound();
-    const [poppedIds, setPoppedIds] = useState<Set<string>>(new Set());
-    const [poppedCount, setPoppedCount] = useState(0);
-    const [mistakes, setMistakes] = useState(0);
+export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onExit, title, instruction }) => {
+    const { playSound, isMuted, toggleMute } = useSound();
+    const { t } = useTranslation();
+    const { profile } = useProfile();
 
-    // Count how many targets exist
-    const totalTargets = problem.items.filter(b => b.value === problem.target).length;
+    // Game State
+    const [poppedIds, setPoppedIds] = useState<Set<string>>(new Set());
+    const [poppedCount, setPoppedCount] = useState(0); // Using this for progress
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     useEffect(() => {
         // Reset state when problem changes
         setPoppedIds(new Set());
         setPoppedCount(0);
-        setMistakes(0);
     }, [problem]);
 
-    // We only need the items list once. If problem changes, this recalculates.
-    // The KEY is that 'items' array reference must be stable if we want effective memoization,
-    // although with primitive keys inside, React list diffing usually handles it.
-    // But let's be safe.
+    const totalTargets = problem.items.filter(b => b.value === problem.target).length;
 
-    // Memoize the handler to prevent re-creation on every render
-    const handlePop = React.useCallback((id: string, value: number) => {
-        // We need functional updates to access latest state without adding dependencies that change often
-        // Actually, since we only need poppedIds to check 'has', but here we are setting it...
-
-        // Wait, if we use the function reference in the child, we can't depend on changing state in closure unless we use refs or functional updates.
-        // Let's use the functional update pattern for the setter, but strictly we need to check if it's correct inside.
-        // However, we need 'problem.target' which is stable per problem.
-
+    const handlePop = useCallback((id: string, value: number) => {
         let bubbleAlreadyPopped = false;
         setPoppedIds(prev => {
             if (prev.has(id)) {
                 bubbleAlreadyPopped = true;
-                return prev; // Already popped
+                return prev;
             }
-
             const newSet = new Set(prev);
             newSet.add(id);
             return newSet;
         });
 
-        if (bubbleAlreadyPopped) return; // If already popped, stop further processing
+        if (bubbleAlreadyPopped) return;
 
-        // Check Logic - We can execute this side effect because we know the ID was validly clicked
         if (value === problem.target) {
             playSound('correct');
-
             setPoppedCount(prev => {
                 const newCount = prev + 1;
-                const totalTargets = problem.items.filter(b => b.value === problem.target).length;
-
                 if (newCount >= totalTargets) {
                     setTimeout(() => onComplete(true), 1500);
                 }
                 return newCount;
             });
-
         } else {
             playSound('wrong');
-            setMistakes(prev => prev + 1);
-            // Penalize logic here is implicitly handled by adding to poppedIds
         }
-    }, [problem.target, problem.items, onComplete, playSound]);
+    }, [problem.target, totalTargets, onComplete, playSound]);
+
+    const handleExit = () => {
+        if (onExit) onExit();
+        else onComplete(false);
+    };
 
     return (
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-auto bg-blue-50">
-            {/* Instruction Overlay */}
-            <div className="absolute top-24 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur px-6 py-2 rounded-full shadow-sm z-10 pointer-events-none">
-                <h2 className="text-2xl font-bold text-slate-700">
-                    Pop all the <span className="text-blue-600 text-3xl mx-1">{problem.target}</span>s!
-                </h2>
+        <div className="w-full min-h-screen bg-blue-50 flex flex-col items-center relative overflow-hidden">
+            {/* Header Area - Matches PracticeMode */}
+            <div className="w-full max-w-md flex flex-col items-center gap-2 z-20 p-4 pb-0">
+                <div className="w-full flex items-center justify-between relative h-12">
+                    {/* Streak / Profile Info */}
+                    <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-blue-100 z-10">
+                        <Zap size={16} className="text-orange-500 fill-orange-500" />
+                        <span className="font-bold text-slate-700 text-sm">{profile?.streak || 0}</span>
+                    </div>
+
+                    <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
+                        <h1 className="text-2xl font-bold text-blue-600 whitespace-nowrap drop-shadow-sm">
+                            {title || t('saga.node_1_1_title')}
+                        </h1>
+                        {instruction && (
+                            <p className="text-sm font-medium text-blue-500 bg-white/50 px-2 rounded-full">
+                                {instruction}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Settings / Menu */}
+                    <div className="z-20">
+                        <SettingsMenu
+                            onPause={() => setIsMenuOpen(true)}
+                            onToggleMute={toggleMute}
+                            isMuted={isMuted}
+                            onOpenSettings={() => setIsSettingsOpen(true)}
+                        />
+                    </div>
+                </div>
+
+                {/* Progress Bar */}
+                <SessionProgressBar current={poppedCount} total={totalTargets} />
             </div>
 
-            {/* Render ALL bubbles, effectively static list to prevent re-renders of siblings */}
-            {problem.items.map((b, i) => (
-                <Bubble
-                    key={b.id}
-                    id={b.id}
-                    value={b.value}
-                    x={(i * 10) % 90 + 5}
-                    delay={i * 1.5}
-                    onClick={handlePop}
-                    isPopped={poppedIds.has(b.id)}
-                />
-            ))}
+
+            {/* Game Area */}
+            <div className="flex-grow w-full relative z-0 mt-4 overflow-hidden">
+                {problem.items.map((b, i) => (
+                    <Bubble
+                        key={b.id}
+                        id={b.id}
+                        value={b.value}
+                        x={(i * 10) % 90 + 5}
+                        delay={i * 1.5}
+                        onClick={handlePop}
+                        isPopped={poppedIds.has(b.id)}
+                    />
+                ))}
+            </div>
+
+            {/* Modals */}
+            <GameMenuModal
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                onRestart={() => {
+                    setPoppedIds(new Set());
+                    setPoppedCount(0);
+                    setIsMenuOpen(false);
+                }}
+                onExit={handleExit}
+                onSettings={() => {
+                    setIsMenuOpen(false);
+                    setIsSettingsOpen(true);
+                }}
+            />
+
+            <SettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+            />
         </div>
     );
 };

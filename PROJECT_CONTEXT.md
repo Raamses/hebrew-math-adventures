@@ -10,35 +10,28 @@
 - **Styling:** Tailwind CSS (with custom animations in `index.css`)
 - **State Management:** React Context (`ProfileContext`) for user session data.
 - **Persistence:** `localStorage` for user profile and progress.
+- **Architecture:** **Director & Module Pattern** (Phase 3).
+    -   `GameDirector`: Orchestrates difficulty and adaptive logic.
+    -   `GameModule`: Encapsulates logic for specific modes (Math, Sensory).
 - **Icons:** Lucide React.
 - **Animation:** Framer Motion.
 - **Localization:** `react-i18next` (he/en).
 
 ## 3. Core Systems & Rules
 
-### A. Math Engine (`src/engines/`)
--   **`QuestionGenerator.ts` (Singleton):**
-    -   **Rule:** Must cycle through question types (`addition_simple`, `sub_borrow`, etc.) using a "Bag Deck" system to ensure variety.
-    -   **Rule:** Must maintain a history of 3 questions to prevent duplicates.
-    -   **Generation Rules by Level:**
-        -   **Level 1 (Age 6):** Single-digit addition (sum ≤ 10), non-negative subtraction.
-        -   **Level 2 (Age 7):** 2-digit simple operations.
-        -   **Level 3 (Age 8):** 3-digit operations with forced carry/borrow and zero-crossing logic.
-        -   **Level 4+:** Includes multiplication and division.
--   **`MathEngine.ts`:**
-    -   **XP Rule:** Base XP (5) + (Level * 2) + (Streak * 2).
-    -   **Penalty Rule:** Incorrect answers deduct `-(2 + level)`.
+### A. Math Engine (Legacy - Refactoring to Director)
+*Note: Being replaced by Director-Module in Phase 3.*
+-   **`QuestionGenerator.ts`:** Handles "Bag Deck" shuffling.
+-   **Generation Rules:** logic moving to `MathModule`.
 
 ### B. User Profile (`src/context/ProfileContext.tsx`)
 -   **Data Model:** `UserProfile`
     -   `id`: UUID string.
-    -   `currentLevel`: 1-10.
+    -   `capabilities`: **Medical Record** (Granular skill tracking) - *New in Phase 3*.
+    -   `currentLevel`: Legacy (migrating to Capability Profile).
     -   `xp`: Progress within current level.
     -   `totalScore`: Lifetime accumulated score (never resets).
     -   `mascot`: Selected companion ('owl', 'bear', 'ant', 'lion').
--   **Business Logic:**
-    -   **Level Up:** Occurs when `xp >= XP_PER_LEVEL` (currently 100).
-    -   **Migration:** Logic exists to migrate legacy single-profile data to the new multi-profile array format.
 
 ### C. Parent Ecosystem (`src/components/parent/`)
 -   **`ParentGate.tsx`:**
@@ -82,11 +75,15 @@
 - [x] Parent Dashboard with Editing
 - [x] Visual Hint System (Carry/Borrow/Mult/Div)
 - [x] World Map Navigation
+- [x] Mobile-First Polish (Mascot fixes, Responsive Layouts)
 
-### In Progress
+### Phase 3: Adaptive Engine (In Progress)
+- [ ] **Architecture:** Refactor `MathEngine` to `GameDirector` + `MathModule`.
+- [ ] **Data:** Implement "Medical Record" capability tracking.
+- [ ] **AI:** Implement "Smart Director" heuristic logic.
+- [ ] **New Mode:** "Bubble Pop" (Sensory Mode).
+- [ ] **Debug:** Export User Data feature.
 - [ ] **Mascot Integration:** Fully interactive 3D/Animated 2D mascots.
-- [ ] **Lesson Mode:** Pre-level interactive tutorials.
-- [ ] **Mobile Optimization:** Ongoing refinement of touch targets.
 
 ## 6. Deployment API
 -   **Hosting:** Firebase Hosting (`hebrew-math-adventures-2025`).

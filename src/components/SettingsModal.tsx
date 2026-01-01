@@ -92,7 +92,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                         </div>
 
                         {/* Footer */}
-                        <div className="p-6 border-t border-slate-100">
+                        <div className="p-6 border-t border-slate-100 flex flex-col gap-4">
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(JSON.stringify(profile, null, 2));
+                                    alert(t('settings.debugCopied') || 'Debug data copied to clipboard!');
+                                }}
+                                className="text-slate-400 text-sm hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <span className="underline">Copy Debug Data</span>
+                            </button>
+
                             <button
                                 onClick={onClose}
                                 className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xl font-bold rounded-2xl transition-all"

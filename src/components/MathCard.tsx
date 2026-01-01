@@ -164,7 +164,7 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback,
     const renderSeries = () => {
         if (problem.type !== 'series') return null;
         return (
-            <div className="flex flex-nowrap items-center justify-center gap-1 sm:gap-2 w-full mb-8 px-1 sm:px-4" dir="ltr">
+            <div className="flex flex-nowrap items-center justify-start md:justify-center gap-1 sm:gap-2 w-full mb-8 px-1 sm:px-4 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-hide snap-x md:snap-none" dir="ltr">
                 {problem.sequence.map((num, idx) => (
                     <React.Fragment key={idx}>
                         {idx > 0 && (

@@ -34,7 +34,7 @@ const useBlink = () => {
 
 // --- Character Components ---
 
-const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ emotion, blinking }) => {
+const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean; uniqueId: string }> = ({ emotion, blinking, uniqueId }) => {
     // Body Animation
     const bodyVariants = {
         idle: { y: [0, -3, 0], scale: 1, transition: { repeat: Infinity, duration: 4, type: "tween", ease: "easeInOut" } },
@@ -53,32 +53,31 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ em
         encourage: { scale: [1, 1.1, 1], transition: { repeat: Infinity, duration: 1.5 } }
     };
 
-    // Wing Animation - Managed via simple transforms if needed, or static for now
-    // const wingVariants = { ... };
+    const u = uniqueId; // Short alias for template strings
 
     return (
         <motion.div variants={bodyVariants as any} animate={emotion} className="w-full h-full relative">
             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl overflow-visible">
                 <defs>
-                    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id={`bodyGrad-${u}`} x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#8B5CF6" />
                         <stop offset="100%" stopColor="#6D28D9" />
                     </linearGradient>
-                    <linearGradient id="bellyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <linearGradient id={`bellyGrad-${u}`} x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stopColor="#DDD6FE" />
                         <stop offset="100%" stopColor="#C4B5FD" />
                     </linearGradient>
-                    <filter id="glow">
+                    <filter id={`glow-${u}`}>
                         <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
                         <feMerge>
                             <feMergeNode in="coloredBlur" />
                             <feMergeNode in="SourceGraphic" />
                         </feMerge>
                     </filter>
-                    <clipPath id="leftEyeClip">
+                    <clipPath id={`leftEyeClip-${u}`}>
                         <circle cx="70" cy="80" r="24" />
                     </clipPath>
-                    <clipPath id="rightEyeClip">
+                    <clipPath id={`rightEyeClip-${u}`}>
                         <circle cx="130" cy="80" r="24" />
                     </clipPath>
                 </defs>
@@ -90,10 +89,10 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ em
                 <path d="M 160 100 Q 190 130 170 150 Q 150 140 150 100 Z" fill="#5B21B6" />
 
                 {/* Body Base */}
-                <ellipse cx="100" cy="110" rx="60" ry="70" fill="url(#bodyGrad)" stroke="#5B21B6" strokeWidth="4" />
+                <ellipse cx="100" cy="110" rx="60" ry="70" fill={`url(#bodyGrad-${u})`} stroke="#5B21B6" strokeWidth="4" />
 
                 {/* Belly Area */}
-                <ellipse cx="100" cy="130" rx="40" ry="40" fill="url(#bellyGrad)" opacity="0.9" />
+                <ellipse cx="100" cy="130" rx="40" ry="40" fill={`url(#bellyGrad-${u})`} opacity="0.9" />
 
                 {/* Feet */}
                 <path d="M 80 175 L 75 185 L 85 185 Z" fill="#F59E0B" />
@@ -115,7 +114,7 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ em
                             <motion.rect
                                 x="46" y="56" width="48"
                                 fill="#8B5CF6"
-                                clipPath="url(#leftEyeClip)"
+                                clipPath={`url(#leftEyeClip-${u})`}
                                 initial={{ height: 0 }}
                                 animate={{ height: blinking ? 48 : 0 }}
                                 transition={{ duration: 0.1 }}
@@ -134,7 +133,7 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ em
                             <motion.rect
                                 x="106" y="56" width="48"
                                 fill="#8B5CF6"
-                                clipPath="url(#rightEyeClip)"
+                                clipPath={`url(#rightEyeClip-${u})`}
                                 initial={{ height: 0 }}
                                 animate={{ height: blinking ? 48 : 0 }}
                                 transition={{ duration: 0.1 }}
@@ -167,8 +166,8 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ em
                         animate={{ opacity: 1, scale: 1, rotate: 360 }}
                         transition={{ repeat: Infinity, duration: 2 }}
                     >
-                        <path d="M 20 20 L 30 20 L 25 10 Z" fill="#FCD34D" filter="url(#glow)" />
-                        <path d="M 180 40 L 190 40 L 185 30 Z" fill="#FCD34D" filter="url(#glow)" />
+                        <path d="M 20 20 L 30 20 L 25 10 Z" fill="#FCD34D" filter={`url(#glow-${u})`} />
+                        <path d="M 180 40 L 190 40 L 185 30 Z" fill="#FCD34D" filter={`url(#glow-${u})`} />
                     </motion.g>
                 )}
             </svg>
@@ -178,7 +177,7 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ em
 
 // ... Placeholders for other animals can remain simpler for now
 // ... Bear, Ant, Lion Components ...
-const BearMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ emotion, blinking }) => {
+const BearMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean; uniqueId: string }> = ({ emotion, blinking, uniqueId }) => {
     const headVariants = {
         idle: { y: [0, 2, 0], transition: { repeat: Infinity, duration: 3, ease: "easeInOut" } },
         happy: { y: [0, -5, 0], rotate: [0, 2, -2, 0], transition: { repeat: Infinity, duration: 2 } },
@@ -188,14 +187,16 @@ const BearMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ e
         encourage: { scale: [1, 1.05, 1], transition: { repeat: Infinity, duration: 1.5 } }
     };
 
+    const u = uniqueId;
+
     return (
         <motion.div variants={headVariants as any} animate={emotion} className="w-full h-full">
             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
                 <defs>
-                    <clipPath id="bearEyeClip">
+                    <clipPath id={`bearEyeClip-${u}`}>
                         <circle cx="0" cy="0" r="10" />
                     </clipPath>
-                    <filter id="furGlow">
+                    <filter id={`furGlow-${u}`}>
                         <feGaussianBlur stdDeviation="1" result="coloredBlur" />
                         <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
                     </filter>
@@ -269,6 +270,21 @@ const AntMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ em
             className="w-full h-full"
         >
             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
+                {/* Legs (Behind Body) */}
+                <g stroke="#B91C1C" strokeWidth="4" fill="none" strokeLinecap="round">
+                    {/* Top Pair */}
+                    <path d="M 80 100 Q 50 80 30 100" />
+                    <path d="M 120 100 Q 150 80 170 100" />
+
+                    {/* Middle Pair */}
+                    <path d="M 85 125 Q 45 125 25 145" />
+                    <path d="M 115 125 Q 155 125 175 145" />
+
+                    {/* Bottom Pair */}
+                    <path d="M 90 150 Q 50 170 30 180" />
+                    <path d="M 110 150 Q 150 170 170 180" />
+                </g>
+
                 {/* Body Segments */}
                 <circle cx="100" cy="150" r="40" fill="#EF4444" stroke="#B91C1C" strokeWidth="4" />
                 <circle cx="100" cy="100" r="25" fill="#EF4444" stroke="#B91C1C" strokeWidth="4" />
@@ -389,11 +405,15 @@ const LionMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ e
 
 export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = '' }) => {
     const isBlinking = useBlink();
+    // Unique ID for SVG defs to avoid collisions, especially when multiple mascots are on screen (e.g. ProfileSelector)
+    // Using simple random string as stable ID isn't strictly required for client-side visual only, 
+    // but React.useId is better if available. Fallback to random if needed.
+    const uniqueId = React.useId ? React.useId().replace(/:/g, '') : Math.random().toString(36).substr(2, 9);
 
     return (
         <div className={`w-32 h-32 md:w-48 md:h-48 ${className}`}>
-            {character === 'owl' && <OwlMascot emotion={emotion} blinking={isBlinking} />}
-            {character === 'bear' && <BearMascot emotion={emotion} blinking={isBlinking} />}
+            {character === 'owl' && <OwlMascot emotion={emotion} blinking={isBlinking} uniqueId={uniqueId} />}
+            {character === 'bear' && <BearMascot emotion={emotion} blinking={isBlinking} uniqueId={uniqueId} />}
             {character === 'ant' && <AntMascot emotion={emotion} blinking={isBlinking} />}
             {character === 'lion' && <LionMascot emotion={emotion} blinking={isBlinking} />}
         </div>

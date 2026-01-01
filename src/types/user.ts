@@ -1,3 +1,5 @@
+import type { UserCapabilityProfile } from './progress';
+
 export type MascotId = 'owl' | 'bear' | 'ant' | 'lion';
 
 export interface UserProfile {
@@ -10,6 +12,7 @@ export interface UserProfile {
     xp: number;
     streak: number;
     totalScore: number;
+    capabilities?: UserCapabilityProfile;
 }
 
 export const getInitialLevel = (age: number): number => {

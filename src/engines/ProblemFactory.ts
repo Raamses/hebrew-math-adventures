@@ -1,46 +1,57 @@
 import type { Problem, ArithmeticProblem, ComparisonProblem, SeriesProblem, WordProblem } from '../lib/gameLogic';
 
 export interface IProblemFactory {
-    generate(level: number, type: string): Problem;
+    generate(level: number, type: string, config?: any): Problem;
 }
 
 export class ArithmeticFactory implements IProblemFactory {
-    generate(level: number, type: string): ArithmeticProblem {
+    generate(level: number, type: string, config?: any): ArithmeticProblem {
         let num1 = 0, num2 = 0, answer = 0;
         let operator: '+' | '-' | '*' | '/' = '+';
         let subType: 'simple' | 'carry' | 'borrow' | 'zero' | undefined;
+
+        // Adaptive / Config Overrides
+        const maxLimit = config?.max; // Explicit number limit
 
         switch (type) {
             case 'addition_simple':
                 operator = '+';
                 subType = 'simple';
-                if (level === 1) {
+                if (level <= 2) {
+                    const max = maxLimit || 10;
+                    num1 = Math.floor(Math.random() * (max / 2)) + 1;
+                    num2 = Math.floor(Math.random() * (max - num1)) + 1;
+                } else if (level === 3) {
+                    const max = maxLimit || 20;
                     num1 = Math.floor(Math.random() * 10) + 1;
-                    num2 = Math.floor(Math.random() * (10 - num1 + 1));
+                    num2 = Math.floor(Math.random() * (max - num1)) + 1;
                 } else {
-                    num1 = Math.floor(Math.random() * 90) + 10;
-                    num2 = Math.floor(Math.random() * (100 - num1));
+                    const max = maxLimit || 100;
+                    num1 = Math.floor(Math.random() * (max - 10)) + 10;
+                    num2 = Math.floor(Math.random() * (max - num1));
                 }
                 break;
 
             case 'addition_carry':
                 operator = '+';
                 subType = 'carry';
-                // Force carry
                 do {
-                    num1 = Math.floor(Math.random() * 400) + 100;
-                    num2 = Math.floor(Math.random() * 400) + 100;
+                    const range = maxLimit || 500;
+                    num1 = Math.floor(Math.random() * range) + 100;
+                    num2 = Math.floor(Math.random() * range) + 100;
                 } while ((num1 % 100) + (num2 % 100) < 100);
                 break;
 
             case 'sub_simple':
                 operator = '-';
                 subType = 'simple';
-                if (level === 1) {
-                    num1 = Math.floor(Math.random() * 10) + 1;
-                    num2 = Math.floor(Math.random() * num1);
+                if (level <= 3) {
+                    const max = maxLimit || 10;
+                    num1 = Math.floor(Math.random() * (max - 2)) + 2;
+                    num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
                 } else {
-                    num1 = Math.floor(Math.random() * 90) + 10;
+                    const max = maxLimit || 100;
+                    num1 = Math.floor(Math.random() * (max - 10)) + 10;
                     num2 = Math.floor(Math.random() * num1);
                 }
                 break;
@@ -69,14 +80,16 @@ export class ArithmeticFactory implements IProblemFactory {
 
             case 'multiplication':
                 operator = '*';
-                num1 = Math.floor(Math.random() * 10) + 1;
-                num2 = Math.floor(Math.random() * 10) + 1;
+                const multMax = config?.max || 10;
+                num1 = Math.floor(Math.random() * multMax) + 1;
+                num2 = Math.floor(Math.random() * multMax) + 1;
                 break;
 
             case 'division':
                 operator = '/';
+                const answerMax = config?.max || 10;
                 num2 = Math.floor(Math.random() * 9) + 2;
-                answer = Math.floor(Math.random() * 10) + 1;
+                answer = Math.floor(Math.random() * answerMax) + 1;
                 num1 = answer * num2;
                 break;
         }
@@ -100,9 +113,9 @@ export class ArithmeticFactory implements IProblemFactory {
 }
 
 export class AlgebraicFactory implements IProblemFactory {
-    generate(level: number, type: string): ArithmeticProblem {
+    generate(level: number, type: string, config?: any): ArithmeticProblem {
         const baseFactory = new ArithmeticFactory();
-        const problem = baseFactory.generate(level, type.replace('_missing', ''));
+        const problem = baseFactory.generate(level, type.replace('_missing', ''), config);
 
         problem.missing = Math.random() > 0.5 ? 'num1' : 'num2';
         return problem;
@@ -110,15 +123,17 @@ export class AlgebraicFactory implements IProblemFactory {
 }
 
 export class ComparisonFactory implements IProblemFactory {
-    generate(level: number, _type: string): ComparisonProblem {
+    generate(level: number, _type: string, config?: any): ComparisonProblem {
         let num1, num2;
 
         if (level <= 2) {
-            num1 = Math.floor(Math.random() * 10) + 1;
-            num2 = Math.floor(Math.random() * 10) + 1;
+            const max = config?.max || 10;
+            num1 = Math.floor(Math.random() * max) + 1;
+            num2 = Math.floor(Math.random() * max) + 1;
         } else {
-            num1 = Math.floor(Math.random() * 100) + 1;
-            num2 = Math.floor(Math.random() * 100) + 1;
+            const max = config?.max || 100;
+            num1 = Math.floor(Math.random() * max) + 1;
+            num2 = Math.floor(Math.random() * max) + 1;
         }
 
         let symbol: '>' | '<' | '=' = '=';
@@ -137,9 +152,9 @@ export class ComparisonFactory implements IProblemFactory {
 }
 
 export class SeriesFactory implements IProblemFactory {
-    generate(level: number, _type: string): SeriesProblem {
+    generate(level: number, _type: string, config?: any): SeriesProblem {
         // Linear series: start + n*step
-        const step = Math.floor(Math.random() * (level * 2)) + 1; // Step size increases with level
+        const step = config?.step || Math.floor(Math.random() * (level * 2)) + 1; // Step size increases with level
         const start = Math.floor(Math.random() * 20);
 
         const length = 4;
@@ -165,7 +180,7 @@ export class SeriesFactory implements IProblemFactory {
 }
 
 export class WordProblemFactory implements IProblemFactory {
-    generate(level: number, _type: string): WordProblem {
+    generate(_level: number, _type: string, config?: any): WordProblem {
         // Basic template selection
         const templates = [
             'apples_add',
@@ -173,8 +188,8 @@ export class WordProblemFactory implements IProblemFactory {
         ];
         const key = templates[Math.floor(Math.random() * templates.length)];
 
-        const n1 = Math.floor(Math.random() * 5) + 3;
-        const n2 = Math.floor(Math.random() * 3) + 1;
+        const n1 = (config?.n1) || Math.floor(Math.random() * 5) + 3;
+        const n2 = (config?.n2) || Math.floor(Math.random() * 3) + 1;
         const isAdd = key.includes('add');
         const answer = isAdd ? n1 + n2 : n1 - n2;
 

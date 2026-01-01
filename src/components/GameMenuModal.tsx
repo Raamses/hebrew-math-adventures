@@ -34,7 +34,7 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({ isOpen, onClose, o
                         exit={{ scale: 0.9, opacity: 0 }}
                         className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
                     >
-                        <div className="bg-white rounded-3xl p-8 w-[400px] shadow-2xl pointer-events-auto relative">
+                        <div className="bg-white rounded-3xl p-8 w-[90%] max-w-[400px] shadow-2xl pointer-events-auto relative">
                             {/* Header/Close */}
                             <div className="flex justify-between items-center mb-8">
                                 <h2 className="text-3xl font-bold text-slate-800">{t('menu.paused')}</h2>

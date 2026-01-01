@@ -48,6 +48,7 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, x
                     border: '2px solid rgba(255, 255, 255, 0.95)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                     backdropFilter: 'blur(6px)',
+                    animationFillMode: 'both', // Ensure initial state matches 0% keyframe (hidden at bottom)
                 }}
             >
                 <span className="text-4xl font-bold text-slate-800 drop-shadow-sm font-fredoka">

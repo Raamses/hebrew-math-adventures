@@ -18,7 +18,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ currentLevel, onZoneSelect, 
             <div className="w-full max-w-md flex items-center mb-8 px-2 relative h-12">
                 <button
                     onClick={onLogout}
-                    className="p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-red-500 transition-colors z-10"
+                    className="p-3 bg-white rounded-full shadow-md text-slate-600 hover:text-red-500 transition-colors z-10"
                     title={t('menu.logout')}
                 >
                     <LogOut size={24} />
@@ -30,8 +30,8 @@ export const WorldMap: React.FC<WorldMapProps> = ({ currentLevel, onZoneSelect, 
             </div>
 
             {/* Map Container */}
-            <div className="w-full max-w-md flex-1 overflow-y-auto pb-20 pt-6 px-6 scrollbar-hide">
-                <div className="space-y-6">
+            <div className="w-full max-w-md lg:max-w-4xl flex-1 overflow-y-auto pb-20 pt-6 px-6 scrollbar-hide">
+                <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6 lg:auto-rows-max">
                     {WORLD_ZONES.map((zone, index) => (
                         <MapZone
                             key={zone.id}

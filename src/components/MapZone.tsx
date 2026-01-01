@@ -24,7 +24,7 @@ export const MapZone: React.FC<MapZoneProps> = ({ zone, currentLevel, onSelect, 
             transition={{ delay: index * 0.1 }}
             onClick={() => !isLocked && onSelect(zone)}
             className={`
-                relative w-full p-6 rounded-2xl shadow-lg mb-6 cursor-pointer transform transition-all duration-300
+                relative w-full p-6 rounded-2xl shadow-lg cursor-pointer transform transition-all duration-300
                 ${isLocked ? 'bg-slate-100 opacity-75 grayscale' : 'bg-white hover:scale-105 hover:shadow-xl'}
                 ${isActive ? 'ring-4 ring-primary ring-offset-2' : ''}
             `}

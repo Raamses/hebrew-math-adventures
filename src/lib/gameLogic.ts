@@ -1,6 +1,6 @@
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
-export type ProblemType = 'arithmetic' | 'compare' | 'series' | 'word';
+export type ProblemType = 'arithmetic' | 'compare' | 'series' | 'word' | 'sensory';
 
 export interface BaseProblem {
     type: ProblemType;
@@ -39,7 +39,14 @@ export interface WordProblem extends BaseProblem {
     subType?: 'addition' | 'subtraction';
 }
 
-export type Problem = ArithmeticProblem | ComparisonProblem | SeriesProblem | WordProblem;
+export interface SensoryProblem extends BaseProblem {
+    type: 'sensory';
+    target: number; // The number to find/pop
+    items: Array<{ value: number; id: string }>; // The bubbles
+    duration?: number; // Optional time limit
+}
+
+export type Problem = ArithmeticProblem | ComparisonProblem | SeriesProblem | WordProblem | SensoryProblem;
 
 export const generateProblem = (streak: number): ArithmeticProblem => {
     let difficulty: Difficulty = 'easy';

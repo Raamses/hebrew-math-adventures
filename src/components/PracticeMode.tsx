@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'lucide-react';
 import { MathCard } from './MathCard';
@@ -6,7 +6,8 @@ import { FlyingStars } from './Effects';
 import { Confetti } from './Confetti';
 import { useProfile } from '../context/ProfileContext';
 import { useSound } from '../hooks/useSound';
-import { generateProblemForLevel, calculateRewards } from '../engines/MathEngine';
+import { MathModule } from '../engines/MathModule';
+import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import type { Problem } from '../lib/gameLogic';
 import { getZoneForLevel } from '../lib/worldConfig';
 import { Mascot, type MascotEmotion } from './mascot/Mascot';
@@ -25,12 +26,17 @@ const SESSION_LENGTH = 10;
 interface PracticeModeProps {
     targetLevel: number;
     onExit: () => void;
+    problemConfig?: any; // Allow passing specific node config
+    onComplete?: (success: boolean) => void;
 }
 
-export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit }) => {
+export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete }) => {
     const { t, i18n } = useTranslation();
     const { profile, addXP } = useProfile();
     const { playSound, isMuted, toggleMute } = useSound();
+
+    // Module Instance
+    const mathModule = useMemo(() => new MathModule(), []);
 
     // Game State
     const [problem, setProblem] = useState<Problem | null>(null);
@@ -52,6 +58,16 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit 
     const [sessionXP, setSessionXP] = useState(0);
     const [showSummary, setShowSummary] = useState(false);
 
+    const generateNext = () => {
+        if (!profile) return null;
+        const userCaps = profile.capabilities || { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: profile.currentLevel };
+        // Merge problemConfig with the generic difficulty params
+        return mathModule.generateProblem(userCaps, {
+            difficulty: targetLevel,
+            ...problemConfig
+        });
+    };
+
     // Answer Flow Hook
     const { isProcessing, submitAnswer } = useAnswerFlow({
         correctDelay: 2000,
@@ -66,8 +82,11 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit 
             if (nextSessionCount >= SESSION_LENGTH) {
                 playSound('levelUp');
                 setShowSummary(true);
+                // Report completion to parent
+                if (onComplete) onComplete(true);
             } else {
-                setProblem(generateProblemForLevel(targetLevel));
+                const nextProb = generateNext();
+                if (nextProb) setProblem(nextProb);
             }
         },
         onWrongComplete: () => {
@@ -78,7 +97,9 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit 
 
     useEffect(() => {
         if (!problem && profile) {
-            setProblem(generateProblemForLevel(targetLevel));
+            const next = generateNext();
+            if (next) setProblem(next);
+
             // Only show greeting if it's the very first load of the component
             if (sessionCount === 0 && sessionAttempts === 0) {
                 setMascotEmotion('happy');
@@ -99,8 +120,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit 
         submitAnswer(isCorrect);
         setSessionAttempts(prev => prev + 1);
 
-        // Rewards calculated based on the PLAYED level (`targetLevel`)
-        const xpChange = calculateRewards(targetLevel, isCorrect, profile.streak);
+        // Use MathModule to evaluate
+        const feedback = mathModule.evaluate(problem, isCorrect ? problem.answer : 'WRONG', profile);
+        // Note: evaluate currently uses profile.streak for calculation, which might be out of sync if we updated it locally only?
+        // App state profile is updated via Context.
+
+        const xpChange = feedback.xpGained;
 
         if (isCorrect) {
             playSound('correct');
@@ -141,7 +166,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit 
         setSessionAttempts(0);
         setSessionXP(0);
         setIsMenuOpen(false);
-        setProblem(generateProblemForLevel(targetLevel));
+        const next = generateNext();
+        if (next) setProblem(next);
     };
 
     const handlePlayAgain = () => {
@@ -150,7 +176,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit 
         setSessionAttempts(0);
         setSessionXP(0);
         setShowSummary(false);
-        setProblem(generateProblemForLevel(targetLevel));
+        const next = generateNext();
+        if (next) setProblem(next);
     };
 
     if (!profile || !problem) return null;

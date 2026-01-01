@@ -34,15 +34,15 @@ export const ScoreToast: React.FC<ScoreToastProps> = ({ points, isVisible, onCom
                 >
                     <div className="relative" dir="ltr">
                         {/* Shadow/Stroke effect using layered text */}
-                        <span className="absolute inset-0 text-white stroke-white stroke-[8px] blur-sm select-none font-black text-6xl tracking-wider">
+                        <span className="absolute inset-0 text-white stroke-white stroke-[8px] blur-sm select-none font-black text-4xl md:text-6xl tracking-wider whitespace-nowrap">
                             +{points} XP!
                         </span>
-                        <span className="absolute inset-0 text-white stroke-white stroke-[4px] select-none font-black text-6xl tracking-wider">
+                        <span className="absolute inset-0 text-white stroke-white stroke-[4px] select-none font-black text-4xl md:text-6xl tracking-wider whitespace-nowrap">
                             +{points} XP!
                         </span>
 
                         {/* Main Text */}
-                        <span className="relative font-black text-6xl tracking-wider bg-gradient-to-b from-yellow-300 to-orange-500 bg-clip-text text-transparent drop-shadow-lg select-none">
+                        <span className="relative font-black text-4xl md:text-6xl tracking-wider bg-gradient-to-b from-yellow-300 to-orange-500 bg-clip-text text-transparent drop-shadow-lg select-none whitespace-nowrap">
                             +{points} XP!
                         </span>
                     </div>
