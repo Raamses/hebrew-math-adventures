@@ -36,7 +36,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
         };
     }, [isOpen]);
 
-    const toggleMenu = () => setIsOpen(!isOpen);
+    const toggleMenu = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsOpen(!isOpen);
+    };
 
     const toggleLanguage = () => {
         const newLang = i18n.language === 'he' ? 'en' : 'he';

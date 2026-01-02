@@ -3,6 +3,8 @@ import { Plus, Users, Globe } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
 import { ProfileSetup } from '../ProfileSetup';
 import { useTranslation } from 'react-i18next';
+import { Mascot } from '../mascot/Mascot';
+import { SpeechBubble } from '../mascot/SpeechBubble';
 
 interface ProfileSelectorProps {
     onParentAccess: () => void;
@@ -34,8 +36,17 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-purple-50" dir={i18n.dir()}>
-            <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-8">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden" dir={i18n.dir()}>
+
+            {/* Greeter Mascot - Only on large screens or if space permits */}
+            <div className="hidden lg:block absolute bottom-0 left-10 z-0">
+                <div className="relative">
+                    <SpeechBubble text={t('onboarding.whoIsPlaying')} isVisible={true} className="mb-4" />
+                    <Mascot character="owl" emotion="happy" className="w-64 h-64" />
+                </div>
+            </div>
+
+            <div className="w-full max-w-2xl bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 z-10">
                 <div className="flex justify-between items-center mb-8">
                     {/* Language Toggle */}
                     <button
@@ -70,8 +81,16 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                             onClick={() => switchProfile(profile.id)}
                             className="group relative flex flex-col items-center p-4 bg-slate-50 hover:bg-blue-50 rounded-2xl border-2 border-transparent hover:border-blue-200 transition-all active:scale-95"
                         >
-                            <div className="text-6xl mb-3 transform group-hover:scale-110 transition-transform">
-                                {profile.avatar}
+                            <div className="w-24 h-24 mb-3 flex items-center justify-center transform group-hover:scale-110 transition-transform overflow-hidden">
+                                {profile.mascot ? (
+                                    <Mascot
+                                        character={profile.mascot}
+                                        emotion="idle"
+                                        className="w-full h-full"
+                                    />
+                                ) : (
+                                    <span className="text-6xl">{profile.avatar}</span>
+                                )}
                             </div>
                             <span className="text-xl font-bold text-slate-700 group-hover:text-blue-600">
                                 {profile.name}
@@ -79,6 +98,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                             <span className="text-sm text-slate-400 mt-1">
                                 {t('zones.level')} {profile.currentLevel}
                             </span>
+
                         </button>
                     ))}
 

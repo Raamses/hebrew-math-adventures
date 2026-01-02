@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import type { MascotId } from '../../types/user';
 import { useTranslation } from 'react-i18next';
+import { Mascot } from './Mascot';
 
 interface MascotOption {
     id: MascotId;
@@ -32,31 +33,22 @@ export const MascotSelector: React.FC<MascotSelectorProps> = ({ selectedMascot, 
                     onClick={() => onSelect(mascot.id)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`relative p-4 rounded-2xl border-2 transition-all ${selectedMascot === mascot.id
-                        ? 'border-primary bg-primary/10'
-                        : 'border-slate-200 hover:border-primary/50'
+                    className={`relative p-4 rounded-2xl border-2 transition-all overflow-hidden ${selectedMascot === mascot.id
+                        ? 'border-primary bg-primary/10 shadow-lg'
+                        : 'border-slate-200 hover:border-primary/50 hover:bg-slate-50'
                         }`}
                 >
-                    <div className="text-4xl mb-2">
-                        <img
-                            src={`/assets/mascots/${mascot.id}.png`} // Assuming you have these or use emojis/placeholders for now
-                            alt={t(`mascot.names.${mascot.id}`)}
-                            className="w-16 h-16 mx-auto object-contain"
-                            onError={(e) => {
-                                // Fallback to emoji if image missing
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                target.parentElement!.innerText =
-                                    mascot.id === 'owl' ? '🦉' :
-                                        mascot.id === 'bear' ? '🐻' :
-                                            mascot.id === 'ant' ? '🐜' : '🦁';
-                            }}
+                    <div className="mb-2 w-full flex justify-center h-24">
+                        <Mascot
+                            character={mascot.id}
+                            emotion={selectedMascot === mascot.id ? 'happy' : 'idle'}
+                            className="w-24 h-24"
                         />
                     </div>
                     <div className="font-bold text-slate-700">{t(`mascot.names.${mascot.id}`)}</div>
 
                     {selectedMascot === mascot.id && (
-                        <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1">
+                        <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1 animate-in zoom-in fade-in duration-300">
                             <Check size={16} />
                         </div>
                     )}

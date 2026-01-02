@@ -6,9 +6,10 @@ interface SpeechBubbleProps {
     isVisible: boolean;
     variant?: 'speech' | 'thought';
     position?: 'left' | 'right' | 'center';
+    className?: string;
 }
 
-export const SpeechBubble: React.FC<SpeechBubbleProps> = ({ text, isVisible, variant = 'speech', position = 'left' }) => {
+export const SpeechBubble: React.FC<SpeechBubbleProps> = ({ text, isVisible, variant = 'speech', position = 'left', className = '' }) => {
     const alignmentClass = position === 'right' ? 'end-0' :
         position === 'center' ? 'left-1/2 -translate-x-1/2' :
             'start-0';
@@ -24,7 +25,7 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({ text, isVisible, var
                     initial={{ opacity: 0, scale: 0.8, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                    className={`absolute bottom-full mb-4 ${alignmentClass} z-20 w-48 md:w-64`}
+                    className={`absolute bottom-full mb-4 ${alignmentClass} z-20 w-48 md:w-64 ${className}`}
                 >
                     <div className="bg-white rounded-2xl p-4 shadow-lg border-2 border-slate-100 relative">
                         <p className="text-lg font-bold text-slate-700 text-center leading-tight">
