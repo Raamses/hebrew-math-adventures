@@ -43,7 +43,7 @@ export interface WordProblem extends BaseProblem {
 export interface SensoryProblem extends BaseProblem {
     type: 'sensory';
     target: number; // The number to find/pop
-    items: Array<{ value: number; id: string }>; // The bubbles
+    items: Array<{ value: number; id: string; variant?: 'small' | 'medium' | 'large' }>; // The bubbles
     duration?: number; // Optional time limit
 }
 

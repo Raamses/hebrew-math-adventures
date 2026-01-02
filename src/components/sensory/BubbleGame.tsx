@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Explosion } from './Explosion';
 import { Bubble } from './Bubble';
 import type { SensoryProblem } from '../../lib/gameLogic';
 import { useSound } from '../../hooks/useSound';
@@ -26,6 +27,7 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     // Game State
     const [poppedIds, setPoppedIds] = useState<Set<string>>(new Set());
     const [poppedCount, setPoppedCount] = useState(0); // Using this for progress
+    const [explosions, setExplosions] = useState<Array<{ id: number; x: number; y: number; color: string }>>([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -33,11 +35,12 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
         // Reset state when problem changes
         setPoppedIds(new Set());
         setPoppedCount(0);
+        setExplosions([]);
     }, [problem]);
 
     const totalTargets = problem.items.filter(b => b.value === problem.target).length;
 
-    const handlePop = useCallback((id: string, value: number) => {
+    const handlePop = useCallback((id: string, value: number, x: number, y: number) => {
         let bubbleAlreadyPopped = false;
         setPoppedIds(prev => {
             if (prev.has(id)) {
@@ -51,7 +54,11 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
 
         if (bubbleAlreadyPopped) return;
 
-        if (value === problem.target) {
+        // Visual Effects
+        const isCorrect = value === problem.target;
+        if (isCorrect) {
+            console.log('Correct Pop at:', x, y);
+            setExplosions(prev => [...prev, { id: Date.now(), x, y, color: '#F59E0B' }]); // Amber-500 (Darker Gold)
             playSound('correct');
             setPoppedCount(prev => {
                 const newCount = prev + 1;
@@ -61,9 +68,14 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
                 return newCount;
             });
         } else {
+            setExplosions(prev => [...prev, { id: Date.now(), x, y, color: '#EF4444' }]); // Red for wrong
             playSound('wrong');
         }
     }, [problem.target, totalTargets, onComplete, playSound]);
+
+    const removeExplosion = (id: number) => {
+        setExplosions(prev => prev.filter(e => e.id !== id));
+    };
 
     const handleExit = () => {
         if (onExit) onExit();
@@ -86,9 +98,15 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
                             {title || t('saga.node_1_1_title')}
                         </h1>
                         {instruction && (
-                            <p className="text-sm font-medium text-blue-500 bg-white/50 px-2 rounded-full">
-                                {instruction}
-                            </p>
+                            <div className="bg-white/80 backdrop-blur-md px-6 py-2 rounded-2xl shadow-sm border border-blue-100 mt-1">
+                                <span
+                                    className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wider font-mono"
+                                    dir="ltr"
+                                    style={{ unicodeBidi: 'isolate' }}
+                                >
+                                    {instruction}
+                                </span>
+                            </div>
                         )}
                     </div>
 
@@ -119,6 +137,18 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
                         delay={i * 1.5}
                         onClick={handlePop}
                         isPopped={poppedIds.has(b.id)}
+                        variant={b.variant}
+                    />
+                ))}
+
+                {/* Particle Effects Layer */}
+                {explosions.map(e => (
+                    <Explosion
+                        key={e.id}
+                        x={e.x}
+                        y={e.y}
+                        color={e.color}
+                        onComplete={() => removeExplosion(e.id)}
                     />
                 ))}
             </div>

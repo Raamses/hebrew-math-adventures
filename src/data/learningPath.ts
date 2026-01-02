@@ -8,7 +8,7 @@ export const CURRICULUM: LearningUnit[] = [
         order: 1,
         backgroundClass: 'bg-blue-50',
         nodes: [
-            { id: 'n1_1', unitId: 'unit_1', title: 'Pop the 5s', description: 'Find the number 5', type: 'SENSORY', position: { x: 50, y: 0 }, config: { target: 5, itemCount: 8 } },
+            { id: 'n1_1', unitId: 'unit_1', title: 'Blast Off', description: 'Countdown 10-0', type: 'SENSORY', position: { x: 50, y: 0 }, config: { isMathSensory: true, target: 10, itemCount: 20 } },
             { id: 'n1_2', unitId: 'unit_1', title: 'Count to 5', description: 'Sequence 1, 2, 3...', type: 'PRACTICE', position: { x: 40, y: 120 }, targetLevel: 1, config: { type: 'series_simple', max: 5 } },
             { id: 'n1_3', unitId: 'unit_1', title: 'First Steps', description: '1 + 1 = ?', type: 'PRACTICE', position: { x: 60, y: 240 }, targetLevel: 1, config: { type: 'addition_simple', max: 5 } },
             { id: 'n1_4', unitId: 'unit_1', title: 'Pop the 7s', description: 'Find number 7', type: 'SENSORY', position: { x: 50, y: 360 }, config: { target: 7, itemCount: 10 } },
@@ -84,7 +84,7 @@ export const CURRICULUM: LearningUnit[] = [
         order: 5,
         backgroundClass: 'bg-slate-900', // Dark mode!
         nodes: [
-            { id: 'n5_1', unitId: 'unit_5', title: 'Blast Off', description: 'Countdown 10-0', type: 'SENSORY', position: { x: 50, y: 0 }, config: { target: 0, itemCount: 20 } },
+            { id: 'n5_1', unitId: 'unit_5', title: 'Blast Off', description: 'Countdown 10-0', type: 'SENSORY', position: { x: 50, y: 0 }, config: { isMathSensory: true, target: 10, itemCount: 20 } },
             { id: 'n5_2', unitId: 'unit_5', title: 'Zero Gravity', description: 'Adding 0', type: 'PRACTICE', position: { x: 30, y: 150 }, targetLevel: 7, config: { type: 'addition_simple', max: 100 } },
             { id: 'n5_3', unitId: 'unit_5', title: 'Binary Star', description: 'Compare 50 vs 20+30', type: 'PRACTICE', position: { x: 70, y: 300 }, targetLevel: 7, config: { type: 'comparison_complex' } },
             { id: 'n5_4', unitId: 'unit_5', title: 'Velocity', description: 'Speed Math', type: 'CHALLENGE', position: { x: 50, y: 450 }, targetLevel: 8 },
