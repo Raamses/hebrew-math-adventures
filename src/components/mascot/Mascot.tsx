@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 
 export type MascotCharacter = 'owl' | 'bear' | 'ant' | 'lion';
 export type MascotEmotion = 'idle' | 'happy' | 'sad' | 'thinking' | 'excited' | 'encourage';
@@ -36,7 +36,7 @@ const useBlink = () => {
 
 const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean; uniqueId: string }> = ({ emotion, blinking, uniqueId }) => {
     // Body Animation
-    const bodyVariants = {
+    const bodyVariants: Variants = {
         idle: { y: [0, -3, 0], scale: 1, transition: { repeat: Infinity, duration: 4, type: "tween", ease: "easeInOut" } },
         happy: {
             y: [0, -15, 0],
@@ -56,7 +56,7 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean; uniqueId:
     const u = uniqueId; // Short alias for template strings
 
     return (
-        <motion.div variants={bodyVariants as any} animate={emotion} className="w-full h-full relative">
+        <motion.div variants={bodyVariants} animate={emotion} className="w-full h-full relative">
             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl overflow-visible">
                 <defs>
                     <linearGradient id={`bodyGrad-${u}`} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -178,7 +178,7 @@ const OwlMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean; uniqueId:
 // ... Placeholders for other animals can remain simpler for now
 // ... Bear, Ant, Lion Components ...
 const BearMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean; uniqueId: string }> = ({ emotion, blinking, uniqueId }) => {
-    const headVariants = {
+    const headVariants: Variants = {
         idle: { y: [0, 2, 0], transition: { repeat: Infinity, duration: 3, ease: "easeInOut" } },
         happy: { y: [0, -5, 0], rotate: [0, 2, -2, 0], transition: { repeat: Infinity, duration: 2 } },
         excited: { scale: [1, 1.1, 1], y: [0, -10, 0], transition: { repeat: Infinity, duration: 0.8 } },
@@ -190,7 +190,7 @@ const BearMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean; uniqueId
     const u = uniqueId;
 
     return (
-        <motion.div variants={headVariants as any} animate={emotion} className="w-full h-full">
+        <motion.div variants={headVariants} animate={emotion} className="w-full h-full">
             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
                 <defs>
                     <clipPath id={`bearEyeClip-${u}`}>
@@ -405,10 +405,9 @@ const LionMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ e
 
 export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = '' }) => {
     const isBlinking = useBlink();
-    // Unique ID for SVG defs to avoid collisions, especially when multiple mascots are on screen (e.g. ProfileSelector)
-    // Using simple random string as stable ID isn't strictly required for client-side visual only, 
-    // but React.useId is better if available. Fallback to random if needed.
-    const uniqueId = React.useId ? React.useId().replace(/:/g, '') : Math.random().toString(36).substr(2, 9);
+    // React.useId provides a stable ID for hydration, replacing manual random strings.
+    // We strip colons because they can be problematic in SVG ID references in some contexts.
+    const uniqueId = React.useId().replace(/:/g, '');
 
     return (
         <div className={`w-32 h-32 md:w-48 md:h-48 ${className}`}>

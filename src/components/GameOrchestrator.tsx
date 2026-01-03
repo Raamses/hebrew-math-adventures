@@ -22,23 +22,21 @@ import { useTranslation } from 'react-i18next';
 
 export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node }) => {
     const { t } = useTranslation();
-    const [mode, setMode] = useState<GameMode>('PRACTICE');
+    // Derive mode directly from props to avoid unnecessary effects/renders
+    // State is only needed if we switch modes internally (e.g., exiting a lesson)
+    // For now, we initialize from props, but allow internal overrides
+    const [internalMode, setInternalMode] = useState<GameMode | null>(null);
+
+    // Determine effective mode
+    const effectiveMode: GameMode = internalMode || (node?.type === 'SENSORY' ? 'SENSORY' : 'PRACTICE');
+
     const [isLessonOpen, setIsLessonOpen] = useState(false);
     const { completeNode } = useProgress();
 
+    // Reset internal mode when node changes
     useEffect(() => {
-        // Priority: Node Config
-        if (node) {
-            // SENSORY nodes use BubbleGame
-            // LESSON/PRACTICE/CHALLENGE use PracticeMode (GameDirector handles difficulty)
-            // Note: LESSON currently falls back to Practice until we implement dynamic Lesson content loading
-            setMode(node.type === 'SENSORY' ? 'SENSORY' : 'PRACTICE');
-            return;
-        }
-
-        // Legacy Fallback (Default to Practice)
-        setMode('PRACTICE');
-    }, [targetLevel, node]);
+        setInternalMode(null);
+    }, [node]);
 
     const handleLessonComplete = () => {
         setIsLessonOpen(false);
@@ -46,11 +44,11 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
             completeNode(node.id, 3);
             onExit();
         } else {
-            setMode('PRACTICE'); // Legacy fallback
+            setInternalMode('PRACTICE'); // Legacy fallback
         }
     };
 
-    if (mode === 'SENSORY') {
+    if (effectiveMode === 'SENSORY') {
         const config = node?.config || {};
         let problem: SensoryProblem;
 
@@ -61,6 +59,7 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
             const mathModule = new MathModule();
             // Use node config ID to determine difficulty/type or fall back to generic arithmetic
             // Currently using 'arithmetic' to ensure 2+2 style
+            // Note: LESSON currently falls back to Practice until we implement dynamic Lesson content loading
 
             // Mock profile for generation (or use real one from context if available, but orchestrator uses hooks differently)
             // We can just use the targetLevel passed in props
@@ -107,7 +106,7 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         );
     }
 
-    if (mode === 'LESSON') {
+    if (effectiveMode === 'LESSON') {
         return (
             <LessonModal
                 isOpen={isLessonOpen}

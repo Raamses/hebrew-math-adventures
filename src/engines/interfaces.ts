@@ -25,10 +25,20 @@ export interface GameSessionConfig {
     params?: Record<string, any>;
 }
 
+export interface BaseGameConfig {
+    isRescue?: boolean;
+    isChallenge?: boolean;
+    max?: number;
+    type?: string;
+    step?: number;
+    density?: number;
+    [key: string]: any;
+}
+
 export interface IGameDirector {
     // The "Brain" - decides which module/difficulty to serve next
     getNextConfig(profile: UserCapabilityProfile): GameSessionConfig;
-    tuneConfig(baseConfig: any, profile: UserCapabilityProfile): any;
+    tuneConfig<T extends BaseGameConfig>(baseConfig: T, profile: UserCapabilityProfile): T;
     // Notifies director of result (so it can update heuristics)
     recordResult(profile: UserCapabilityProfile, isCorrect: boolean): UserCapabilityProfile;
 }

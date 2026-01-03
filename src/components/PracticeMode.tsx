@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'lucide-react';
 import { MathCard } from './MathCard';
@@ -20,14 +20,54 @@ import { SessionSummary } from './SessionSummary';
 import { SettingsModal } from './SettingsModal';
 import { SettingsMenu } from './SettingsMenu';
 import { useAnswerFlow } from '../hooks/useAnswerFlow';
+import type { BaseProblemConfig } from '../engines/ProblemFactory';
 
 const SESSION_LENGTH = 10;
 
 interface PracticeModeProps {
     targetLevel: number;
     onExit: () => void;
-    problemConfig?: any; // Allow passing specific node config
+    problemConfig?: BaseProblemConfig;
     onComplete?: (success: boolean) => void;
+}
+
+// --- Session State Reducer ---
+
+interface SessionState {
+    count: number;
+    correct: number;
+    attempts: number;
+    xpTotal: number;
+}
+
+type SessionAction =
+    | { type: 'RESET' }
+    | { type: 'ANSWER', isCorrect: boolean, xp: number };
+
+const initialSessionState: SessionState = {
+    count: 0,
+    correct: 0,
+    attempts: 0,
+    xpTotal: 0
+};
+
+function sessionReducer(state: SessionState, action: SessionAction): SessionState {
+    switch (action.type) {
+        case 'RESET':
+            return initialSessionState;
+        case 'ANSWER':
+            return {
+                ...state,
+                count: action.isCorrect ? state.count + 1 : state.count, // Only advance on correct? Original logic advanced on correct complete. Re-checking flow.
+                // Wait, original logic: nextSessionCount = sessionCount + 1 on CORRECT complete.
+                // handleAnswer incremented sessionCount on CORRECT.
+                correct: action.isCorrect ? state.correct + 1 : state.correct,
+                attempts: state.attempts + 1,
+                xpTotal: state.xpTotal + action.xp
+            };
+        default:
+            return state;
+    }
 }
 
 export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete }) => {
@@ -52,10 +92,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     const [showBubble, setShowBubble] = useState(false);
 
     // Session State
-    const [sessionCount, setSessionCount] = useState(0);
-    const [sessionCorrect, setSessionCorrect] = useState(0);
-    const [sessionAttempts, setSessionAttempts] = useState(0);
-    const [sessionXP, setSessionXP] = useState(0);
+    const [session, dispatch] = useReducer(sessionReducer, initialSessionState);
     const [showSummary, setShowSummary] = useState(false);
 
     const generateNext = () => {
@@ -72,6 +109,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         });
     };
 
+    // Track session state in ref for callbacks to avoid stale closures
+    const sessionRef = React.useRef(session);
+    useEffect(() => {
+        sessionRef.current = session;
+    }, [session]);
+
     // Answer Flow Hook
     const { isProcessing, submitAnswer } = useAnswerFlow({
         correctDelay: 2000,
@@ -82,11 +125,13 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             setMascotEmotion('idle');
             setShowStars(false);
 
-            const nextSessionCount = sessionCount + 1;
-            if (nextSessionCount >= SESSION_LENGTH) {
+            // Use ref to get the freshest session state after the delay
+            const currentSession = sessionRef.current;
+
+            // Check completion (we added +1 in reducer dispatch earlier)
+            if (currentSession.count >= SESSION_LENGTH) {
                 playSound('levelUp');
                 setShowSummary(true);
-                // Report completion to parent
                 if (onComplete) onComplete(true);
             } else {
                 const nextProb = generateNext();
@@ -105,7 +150,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             if (next) setProblem(next);
 
             // Only show greeting if it's the very first load of the component
-            if (sessionCount === 0 && sessionAttempts === 0) {
+            if (session.count === 0 && session.attempts === 0) {
                 setMascotEmotion('happy');
                 setMascotMessage(t('app.greeting', { name: profile.name }));
                 setShowBubble(true);
@@ -115,29 +160,24 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 }, 3000);
             }
         }
-    }, [targetLevel, profile, problem, t, sessionCount, sessionAttempts]);
-
+    }, [targetLevel, profile, problem, t]); // Removed session deps to avoid loops, handled logically
 
     const handleAnswer = (isCorrect: boolean) => {
         if (!profile || !problem || isProcessing) return;
 
         submitAnswer(isCorrect);
-        setSessionAttempts(prev => prev + 1);
 
-        // Use MathModule to evaluate
+        // Evaluate
         const feedback = mathModule.evaluate(problem, isCorrect ? problem.answer : 'WRONG', profile);
-        // Note: evaluate currently uses profile.streak for calculation, which might be out of sync if we updated it locally only?
-        // App state profile is updated via Context.
-
         const xpChange = feedback.xpGained;
+
+        // Dispatch Session Update
+        // Note: We dispatch 'ANSWER' which increments count IF correct.
+        dispatch({ type: 'ANSWER', isCorrect, xp: xpChange });
 
         if (isCorrect) {
             playSound('correct');
-            setSessionCorrect(prev => prev + 1);
-            setSessionXP(prev => prev + xpChange);
             setScoreToast({ points: xpChange });
-
-            setSessionCount(prev => prev + 1);
 
             const phrases = t('feedback.phrases', { returnObjects: true }) as string[];
             const phrase = Array.isArray(phrases) ? phrases[Math.floor(Math.random() * phrases.length)] : "Great!";
@@ -149,10 +189,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             setShowConfetti(true);
 
             addXP(xpChange);
-
         } else {
             playSound('wrong');
-            // Assuming standard behavior for wrong answer XP (usually 0 or penalty if needed)
             addXP(xpChange);
 
             const phrases = t('feedback.gentle', { returnObjects: true }) as string[];
@@ -165,20 +203,14 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     };
 
     const handleRestart = () => {
-        setSessionCount(0);
-        setSessionCorrect(0);
-        setSessionAttempts(0);
-        setSessionXP(0);
+        dispatch({ type: 'RESET' });
         setIsMenuOpen(false);
         const next = generateNext();
         if (next) setProblem(next);
     };
 
     const handlePlayAgain = () => {
-        setSessionCount(0);
-        setSessionCorrect(0);
-        setSessionAttempts(0);
-        setSessionXP(0);
+        dispatch({ type: 'RESET' });
         setShowSummary(false);
         const next = generateNext();
         if (next) setProblem(next);
@@ -240,7 +272,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 </div>
             </div>
 
-            <SessionProgressBar current={sessionCount} total={SESSION_LENGTH} />
+            <SessionProgressBar current={session.count} total={SESSION_LENGTH} />
             <ProgressBar xp={profile.xp} level={profile.currentLevel} />
 
             <div className="w-full max-w-md z-10 relative">
@@ -275,9 +307,9 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             <SessionSummary
                 isOpen={showSummary}
-                xpGained={sessionXP}
-                correctCount={sessionCorrect}
-                totalCount={sessionAttempts}
+                xpGained={session.xpTotal}
+                correctCount={session.correct}
+                totalCount={session.attempts}
                 totalScore={profile.totalScore || 0}
                 onPlayAgain={handlePlayAgain}
                 onExit={onExit}
@@ -291,3 +323,4 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         </div>
     );
 };
+

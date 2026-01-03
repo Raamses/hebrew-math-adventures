@@ -38,10 +38,11 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
         <AnimatePresence>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                    className="bg-white rounded-3xl shadow-2xl w-full max-w-sm border-4 border-white relative"
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="bg-white rounded-3xl shadow-2xl w-full max-w-sm border-4 border-white relative overflow-hidden"
                 >
                     {/* Header */}
                     <div className="bg-primary p-6 text-center relative overflow-visible rounded-t-[20px]">
@@ -113,21 +114,25 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
 
                         {/* Actions */}
                         <div className="flex flex-col gap-3">
-                            <button
+                            <motion.button
                                 onClick={onPlayAgain}
-                                className="w-full py-4 bg-primary hover:bg-orange-600 text-white text-xl font-bold rounded-2xl shadow-lg shadow-orange-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="w-full py-4 bg-primary hover:bg-orange-600 text-white text-xl font-bold rounded-2xl shadow-lg shadow-orange-500/30 transition-all flex items-center justify-center gap-2"
                             >
                                 <RotateCcw size={24} />
                                 <span>{t('summary.playAgain')}</span>
-                            </button>
+                            </motion.button>
 
-                            <button
+                            <motion.button
                                 onClick={onExit}
-                                className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xl font-bold rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xl font-bold rounded-2xl transition-all flex items-center justify-center gap-2"
                             >
                                 <Home size={24} />
                                 <span>{t('summary.exit')}</span>
-                            </button>
+                            </motion.button>
                         </div>
                     </div>
                 </motion.div>

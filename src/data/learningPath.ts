@@ -8,7 +8,7 @@ export const CURRICULUM: LearningUnit[] = [
         order: 1,
         backgroundClass: 'bg-blue-50',
         nodes: [
-            { id: 'n1_1', unitId: 'unit_1', title: 'Blast Off', description: 'Countdown 10-0', type: 'SENSORY', position: { x: 50, y: 0 }, config: { isMathSensory: true, target: 10, itemCount: 20 } },
+            { id: 'n1_1', unitId: 'unit_1', title: 'Blast Off', description: 'Countdown 10-0', type: 'SENSORY', position: { x: 50, y: 0 }, config: { isMathSensory: true, target: 10 } },
             { id: 'n1_2', unitId: 'unit_1', title: 'Count to 5', description: 'Sequence 1, 2, 3...', type: 'PRACTICE', position: { x: 40, y: 120 }, targetLevel: 1, config: { type: 'series_simple', max: 5 } },
             { id: 'n1_3', unitId: 'unit_1', title: 'First Steps', description: '1 + 1 = ?', type: 'PRACTICE', position: { x: 60, y: 240 }, targetLevel: 1, config: { type: 'addition_simple', max: 5 } },
             { id: 'n1_4', unitId: 'unit_1', title: 'Pop the 7s', description: 'Find number 7', type: 'SENSORY', position: { x: 50, y: 360 }, config: { target: 7, itemCount: 10 } },

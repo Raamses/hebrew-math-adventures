@@ -5,7 +5,8 @@
         "streakTooltip": "רצף נצחונות: תשובות נכונות ברצף!",
         "worldMap": "מפת העולם",
         "greeting": "היי {{name}}! מוכן לשחק?",
-        "journey": "המסע שלי"
+        "journey": "המסע שלי",
+        "switchLanguage": "החלף שפה"
     },
     "wordProblems": {
         "apples_add": "לדן יש {{n1}} תפוחים. הוא מקבל עוד {{n2}}. כמה תפוחים יש לדן עכשיו?",

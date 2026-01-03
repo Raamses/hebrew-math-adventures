@@ -1,50 +1,54 @@
-import type { SensoryProblem } from '../lib/gameLogic';
+import type { Problem, SensoryProblem } from '../lib/gameLogic';
+
+export interface SensoryLevelConfig {
+    target?: number;
+    itemCount?: number;
+    /** Ratio of target items to total/distractors (e.g. 0-1 or custom scale) */
+    density?: number;
+    /** Maximum value for distractors */
+    max?: number;
+}
 
 export class SensoryFactory {
-    static generateFromProblem(problem: any): SensoryProblem {
+    private static readonly DEFAULT_TARGET = 5;
+    private static readonly DEFAULT_COUNT = 15;
+    private static readonly DEFAULT_DENSITY = 0.3; // Ratio of targets (0.3 = 30%)
+    private static readonly PROBABILITY_CLOSE_DISTRACTOR = 0.3;
+
+    /**
+     * Adapts an existing (Math) problem into a Sensory problem container.
+     */
+    static generateFromProblem(problem: Problem): SensoryProblem {
         // "Math Bubble Blast" Adapter
-        const target = typeof problem.answer === 'number' ? problem.answer : parseInt(problem.answer as string) || 5;
-
-        // Dynamic Distractor Range
-        const distractorMax = Math.max(20, target * 2);
-
-        const itemCount = 20;
-        const density = 0.25;
-
-        // Generate items with Variants!
-        const items = Array.from({ length: itemCount }, (_, i) => {
-            const isTarget = i < Math.floor(itemCount * density);
-            const variant = Math.random() > 0.7 ? (Math.random() > 0.5 ? 'large' : 'small') : 'medium';
-
-            return {
-                id: `puzzle-bubble-${i}-${Date.now()}`,
-                value: isTarget ? target : SensoryFactory.generateDistractor(target, distractorMax),
-                variant: variant as 'small' | 'medium' | 'large'
-            };
-        }).sort(() => Math.random() - 0.5);
+        // MathStrategy generates bubbles dynamically, so we don't need to pre-generate items here.
+        const targetValue = typeof problem.answer === 'number' ? problem.answer : parseInt(problem.answer as string) || SensoryFactory.DEFAULT_TARGET;
 
         return {
             type: 'sensory',
             id: problem.id || `math-sensory-${Date.now()}`,
-            answer: target,
-            target: target,
-            items
+            answer: targetValue,
+            target: targetValue,
+            items: [] // Empty items, handled by Strategy
         };
     }
 
-    static generate(nodeId: string, config: any): SensoryProblem {
+    /**
+     * Generates a standalone Sensory problem (e.g., "Find the Number 5").
+     */
+    static generate(nodeId: string, config: SensoryLevelConfig): SensoryProblem {
         // Legacy/Standard Sensory Mode (Numbers only)
-        const target = config.target || 5;
-        const itemCount = config.itemCount || 20;
-        const density = config.density || 0.25; // Default 25% are correct (was 40% hardcoded)
-        const distractorMax = config.max || Math.max(20, target * 2);
+        const target = config.target ?? SensoryFactory.DEFAULT_TARGET;
+        const itemCount = config.itemCount ?? SensoryFactory.DEFAULT_COUNT;
+        const density = config.density ?? SensoryFactory.DEFAULT_DENSITY;
+        const distractorMax = config.max ?? Math.max(20, target * 2);
 
         // Generate items (bubbles)
         const items = Array.from({ length: itemCount }, (_, i) => ({
             id: `bubble-${i}`,
-            // Use density config
+            // Use density logic (simplified: first N items are targets)
+            // Note: This logic assumes simple density. Ideally use a ratio check.
             value: i < Math.floor(itemCount * density) ? target : SensoryFactory.generateDistractor(target, distractorMax),
-            variant: 'medium' as const // Default variant
+            variant: 'medium' as const
         })).sort(() => Math.random() - 0.5);
 
         return {
@@ -60,14 +64,10 @@ export class SensoryFactory {
         const r = Math.random();
         let distractor = target;
 
-        // Smart Distractors (Math Bubble Blast logic)
-        // 30% chance: Close Call (+/- 1 or 2)
-        // 10% chance: Visual Trick (inverted 6/9 etc - simplified as close range for now)
-        // 60% chance: Random in range
-
+        // Loop ensures we don't accidentally pick the target
         while (distractor === target) {
-            if (r < 0.3) {
-                // Close call
+            if (r < SensoryFactory.PROBABILITY_CLOSE_DISTRACTOR) {
+                // Close call (Target +/- small offset)
                 const offset = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 2) + 1);
                 distractor = target + offset;
             } else {

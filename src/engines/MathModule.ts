@@ -17,81 +17,79 @@ export class MathModule implements IGameModule {
     };
 
     generateProblem(profile: UserCapabilityProfile, params?: Record<string, any>): Problem {
-        // Logic to translate "Medical Record" to specific factory params
-        // Check for manual override or Director params
+        // 1. Determine Difficulty Level
         const level = params?.difficulty || profile.estimatedLevel || 1;
 
-        // If the focus is explicitly set to a difficulty level (legacy support)
-        // In the future this switches to looking at profile.skills['addition_sum_5']
+        // 2. Determine Problem Type (Manual Override -> Adaptive Selection)
+        const initialType = params?.type || this.pickProblemType(level);
 
-        // If the focus is explicitly set to a difficulty level (legacy support)
-        // In the future this switches to looking at profile.skills['addition_sum_5']
+        // 3. Apply AI Director Tuning (Adaptive Logic)
+        const effectiveConfig = Director.tuneConfig(params || {}, profile);
+        const finalType = effectiveConfig.type || initialType;
 
-        // Simple Bag-Deck logic (simplified from QuestionGenerator)
-        // Check for manual type override in params (e.g., from Node Config)
-        const type = params?.type || this.pickProblemType(level);
-
-        // ADAPTIVE LOGIC with DIRECTOR
-        // The Director 'tunes' the static config based on the user's profile
-        const effectiveConfig = Director.tuneConfig(params || {}, profile); // Merge params with profile adaptation
-
-        // If type changed during tuning (e.g., rescue mode downgrade), respect it
-        const finalType = effectiveConfig.type || type;
-
-        // Identify correct factory
-        let factory: IProblemFactory;
-
-        if (finalType.startsWith('series')) factory = this.factories.series;
-        else if (finalType.startsWith('word')) factory = this.factories.word;
-        else if (finalType.includes('missing')) factory = this.factories.algebraic;
-        else if (finalType.startsWith('compare') || finalType === 'comparison_simple') factory = this.factories.comparison;
-        else factory = this.factories.arithmetic;
-
+        // 4. Select Factory & Generate
+        const factory = this.getFactoryForType(finalType);
         return factory.generate(level, finalType, effectiveConfig);
     }
 
-    evaluate(problem: Problem, answer: string | number, profile: UserProfile): GameFeedback { // Use profile: UserProfile
-        const isCorrect = problem.answer.toString() === answer.toString();
+    private getFactoryForType(type: string): IProblemFactory {
+        if (type.startsWith('series')) return this.factories.series;
+        if (type.startsWith('word')) return this.factories.word;
+        if (type.includes('missing')) return this.factories.algebraic;
+        if (type.startsWith('compare') || type === 'comparison_simple') return this.factories.comparison;
+        return this.factories.arithmetic;
+    }
 
-        // Default XP logic (can be made smarter later)
-        let xp = 0;
-        if (isCorrect) {
-            xp = 5 + (profile.streak * 2); // Simple streak bonus
-        } else {
-            xp = -2;
-        }
+    private static readonly XP_CONFIG = {
+        BASE_XP: 5,
+        STREAK_MULTIPLIER: 2,
+        PENALTY: -2
+    };
+
+    evaluate(problem: Problem, answer: string | number, profile: UserProfile): GameFeedback {
+        const isCorrect = this.checkAnswer(problem, answer);
+        const xpGained = this.calculateXP(isCorrect, profile.streak);
 
         return {
             isCorrect,
             correctAnswer: problem.answer,
-            xpGained: xp,
+            xpGained,
             message: isCorrect ? 'Great job!' : 'Try again!'
         };
     }
 
+    private checkAnswer(problem: Problem, answer: string | number): boolean {
+        return problem.answer.toString() === answer.toString();
+    }
+
+    private calculateXP(isCorrect: boolean, currentStreak: number): number {
+        if (!isCorrect) return MathModule.XP_CONFIG.PENALTY;
+        return MathModule.XP_CONFIG.BASE_XP + (currentStreak * MathModule.XP_CONFIG.STREAK_MULTIPLIER);
+    }
+
+    // Configuration for Level Progression
+    // Maps Level -> New Problem Types introduced at that level
+    private static readonly LEVEL_PROGRESSION: Record<number, string[]> = {
+        1: ['sub_simple', 'comparison'],
+        2: ['series'],
+        3: ['addition_carry', 'sub_borrow', 'word'],
+        4: ['multiplication'],
+        5: ['division', 'sub_zero']
+    };
+
     private pickProblemType(level: number): string {
-        // Fallback logic if no specific type is requested in params
-        // Returns a random suitable problem type for the given difficulty level
+        // Start with base types available at Level 0/1
+        const availableTypes: string[] = ['addition_simple'];
 
-        const types: string[] = ['addition_simple']; // Always available
-
-        if (level >= 1) {
-            types.push('sub_simple', 'comparison');
-        }
-        if (level >= 2) {
-            types.push('series');
-        }
-        if (level >= 3) {
-            types.push('addition_carry', 'sub_borrow', 'word');
-        }
-        if (level >= 4) {
-            types.push('multiplication');
-        }
-        if (level >= 5) {
-            types.push('division', 'sub_zero');
+        // Accumulate types from all levels up to the current one
+        for (let l = 1; l <= level; l++) {
+            const newTypes = MathModule.LEVEL_PROGRESSION[l];
+            if (newTypes) {
+                availableTypes.push(...newTypes);
+            }
         }
 
         // Randomly select one
-        return types[Math.floor(Math.random() * types.length)];
+        return availableTypes[Math.floor(Math.random() * availableTypes.length)];
     }
 }

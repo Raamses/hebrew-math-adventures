@@ -1,4 +1,4 @@
-import type { IGameDirector, GameSessionConfig } from './interfaces';
+import type { IGameDirector, GameSessionConfig, BaseGameConfig } from './interfaces';
 import type { UserCapabilityProfile } from '../types/progress';
 
 // The Smart Director's Logic
@@ -8,19 +8,31 @@ import type { UserCapabilityProfile } from '../types/progress';
 // 3. else -> Stability Mode (Keep current Focus)
 
 export class GameDirector implements IGameDirector {
+    private static readonly RESCUE_THRESHOLD = 2;
+    private static readonly CHALLENGE_THRESHOLD = 5;
+    private static readonly STREAK_THRESHOLD = 5; // Global streak
+    private static readonly SKILL_STREAK_THRESHOLD = 10;
+
+    private static readonly RESCUE_MULTIPLIER = 0.8;
+    private static readonly CHALLENGE_MULTIPLIER = 1.2;
+    private static readonly MIN_MAX_VALUE = 5;
+
     // The new "Decorator" method: Takes a base static config and adapts it to the user
-    tuneConfig(baseConfig: any, profile: UserCapabilityProfile): any {
+    tuneConfig<T extends BaseGameConfig>(baseConfig: T, profile: UserCapabilityProfile): T {
         const tuned = { ...baseConfig };
 
         // 1. Rescue Mode (Heuristic: >2 consecutive failures)
         // If the user is struggling, we simplify the problem temporarily.
-        if (profile.consecutiveFailures >= 2) {
+        if (profile.consecutiveFailures >= GameDirector.RESCUE_THRESHOLD) {
             tuned.isRescue = true;
             tuned.isChallenge = false;
 
             // Heuristic A: Reduce Max Number
-            if (tuned.max) {
-                tuned.max = Math.max(5, Math.floor(tuned.max * 0.8));
+            if (typeof tuned.max === 'number') {
+                tuned.max = Math.max(
+                    GameDirector.MIN_MAX_VALUE,
+                    Math.floor(tuned.max * GameDirector.RESCUE_MULTIPLIER)
+                );
             }
 
             // Heuristic B: Simplify Sub-Types (e.g., remove borrowing)
@@ -31,22 +43,26 @@ export class GameDirector implements IGameDirector {
             if (tuned.type === 'series' && !tuned.step) {
                 tuned.step = 1; // Force simple 1-step
             }
+
+            // Heuristic D: Force simpler density for sensory if applicable
+            if (tuned.density && typeof tuned.density === 'number') {
+                tuned.density = Math.max(0.1, tuned.density * 0.8);
+            }
         }
 
         // 2. Challenge Mode (Heuristic: >5 consecutive correct on this specific skill)
         // Note: We need to know the *current topic* to check stats. 
         // For now, we use a global heuristic or assume 'math_core' generic skills.
-        // Ideally: const stat = profile.skills[tuned.type];
 
         // Simple Hot Streak Check
-        const currentSkill = profile.skills[tuned.type || 'math_core'];
-        if ((currentSkill && currentSkill.consecutiveCorrect >= 5) || (profile.streak > 5)) {
+        const currentSkill = profile.skills[tuned.type as string || 'math_core'];
+        if ((currentSkill && currentSkill.consecutiveCorrect >= GameDirector.CHALLENGE_THRESHOLD) || (profile.streak > GameDirector.STREAK_THRESHOLD)) {
             tuned.isChallenge = true;
             tuned.isRescue = false;
 
             // Heuristic A: Increase Difficulty slightly (push limits)
-            if (tuned.max) {
-                tuned.max = Math.floor(tuned.max * 1.2);
+            if (typeof tuned.max === 'number') {
+                tuned.max = Math.floor(tuned.max * GameDirector.CHALLENGE_MULTIPLIER);
             }
         }
 
@@ -55,7 +71,7 @@ export class GameDirector implements IGameDirector {
 
     getNextConfig(profile: UserCapabilityProfile): GameSessionConfig {
         // 1. Check for "Rescue Mode"
-        if (profile.consecutiveFailures >= 2) {
+        if (profile.consecutiveFailures >= GameDirector.RESCUE_THRESHOLD) {
             // Heuristic: If 2 failures in a row (meaning 3-6 bad questions), drop 'estimatedLevel' temporary
             // Note: In full implementation, we would switch 'currentFocus' to a mapped easier skill
             return {
@@ -67,7 +83,7 @@ export class GameDirector implements IGameDirector {
         // 2. Check for "Challenge Mode" (Hot Streak)
         // We verify this by looking at successful stats for the *currentFocus*
         const currentSkill = profile.skills[profile.currentFocus];
-        if (currentSkill && currentSkill.consecutiveCorrect >= 10) {
+        if (currentSkill && currentSkill.consecutiveCorrect >= GameDirector.SKILL_STREAK_THRESHOLD) {
             return {
                 moduleId: 'math_core',
                 params: { mode: 'challenge', difficulty: (profile.estimatedLevel || 1) + 1 }

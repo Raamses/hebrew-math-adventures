@@ -146,15 +146,18 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback,
                 </div>
                 <div className="flex gap-3 sm:gap-4 w-full justify-center" dir="ltr" style={{ direction: 'ltr' }}>
                     {['>', '=', '<'].map((symbol) => (
-                        <button
+                        <motion.button
                             key={symbol}
                             type="button"
                             disabled={isProcessing}
                             onClick={() => handleCompare(symbol)}
-                            className={`w-16 h-16 sm:w-20 sm:h-20 bg-slate-100 hover:bg-indigo-100 text-slate-800 hover:text-indigo-600 text-3xl sm:text-4xl font-bold rounded-2xl border-4 border-slate-300 hover:border-indigo-400 shadow-sm active:scale-95 transition-all ${isProcessing ? 'opacity-50 cursor-not-allowed transform-none' : ''}`}
+                            className={`w-16 h-16 sm:w-20 sm:h-20 bg-slate-100 hover:bg-indigo-100 text-slate-800 hover:text-indigo-600 text-3xl sm:text-4xl font-bold rounded-2xl border-4 border-slate-300 hover:border-indigo-400 shadow-sm transition-colors ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            aria-label={t('game.compareSymbol', { symbol })}
                         >
                             {symbol}
-                        </button>
+                        </motion.button>
                     ))}
                 </div>
             </div>
@@ -209,8 +212,8 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback,
                 animate={feedback && !feedback.includes('!') ? { x: [0, -10, 10, -10, 10, 0] } : {}}
                 transition={{ duration: 0.4 }}
                 className={`w-full max-w-md bg-white rounded-3xl shadow-xl p-6 relative overflow-hidden transition-all duration-500 ${problem.metadata?.isChallenge
-                        ? 'ring-4 ring-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.5)] scale-[1.02]'
-                        : ''
+                    ? 'ring-4 ring-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.5)] scale-[1.02]'
+                    : ''
                     }`}
             >
                 {/* Question Title & Challenge Badge */}
@@ -242,14 +245,16 @@ export const MathCard: React.FC<MathCardProps> = ({ problem, onAnswer, feedback,
                         {problem.type === 'series' && renderSeries()}
                         {problem.type === 'word' && renderWord()}
 
-                        <button
+                        <motion.button
                             type="submit"
                             disabled={isProcessing}
-                            className={`w-full py-4 bg-primary hover:bg-orange-600 text-white text-2xl font-bold rounded-2xl shadow-lg shadow-orange-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 ${isProcessing ? 'opacity-50 cursor-not-allowed transform-none' : ''}`}
+                            className={`w-full py-4 bg-primary hover:bg-orange-600 text-white text-2xl font-bold rounded-2xl shadow-lg shadow-orange-500/30 transition-colors flex items-center justify-center gap-2 ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                         >
                             <Check size={32} />
                             <span>{t('game.check')}</span>
-                        </button>
+                        </motion.button>
                     </form>
                 ) : (
                     renderComparison()

@@ -29,9 +29,10 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({ isOpen, onClose, o
 
                     {/* Modal */}
                     <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
                         className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
                     >
                         <div className="bg-white rounded-3xl p-8 w-[90%] max-w-[400px] shadow-2xl pointer-events-auto relative">

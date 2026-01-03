@@ -14,10 +14,10 @@ const ProgressContext = createContext<ProgressContextType | undefined>(undefined
 const STORAGE_KEY = 'hebrew_game_saga_progress_v1';
 
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [progress, setProgress] = useState<SagaProgress>({});
+    // Load from storage on mount (Lazy Initialization)
+    const [progress, setProgress] = useState<SagaProgress>(() => {
+        if (typeof window === 'undefined') return {}; // SSR safety
 
-    // Load from storage on mount
-    useEffect(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
         let currentProgress: SagaProgress = {};
 
@@ -39,8 +39,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             };
         }
 
-        setProgress(currentProgress);
-    }, []);
+        return currentProgress;
+    });
 
     // Save on change
     useEffect(() => {
@@ -49,7 +49,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
     }, [progress]);
 
-    const completeNode = (nodeId: string, stars: number) => {
+    const completeNode = (nodeId: string, stars: number): void => {
         setProgress(prev => {
             const current = prev[nodeId] || { isLocked: false, stars: 0 };
 
@@ -62,11 +62,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             };
 
             // Unlock next node logic
-            // Find current node index
+            // Simple traversal (Flatten the curriculum)
             let found = false;
             let nextNodeId: string | null = null;
 
-            // Simple traversal (Flatten the curriculum)
             for (const unit of CURRICULUM) {
                 for (const node of unit.nodes) {
                     if (found) {
@@ -90,13 +89,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
     };
 
-    const isNodeLocked = (nodeId: string) => {
+    const isNodeLocked = (nodeId: string): boolean => {
         // If not in progress map, it's locked (unless it's the very first one logic handled in init)
         // Actually simpler: defaults to locked if not in map
         return !progress[nodeId] || progress[nodeId].isLocked;
     };
 
-    const getStars = (nodeId: string) => progress[nodeId]?.stars || 0;
+    const getStars = (nodeId: string): number => progress[nodeId]?.stars || 0;
 
     return (
         <ProgressContext.Provider value={{ progress, completeNode, isNodeLocked, getStars }}>

@@ -31,6 +31,8 @@ export const ScoreToast: React.FC<ScoreToastProps> = ({ points, isVisible, onCom
                         ease: "easeOut"
                     }}
                     className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+                    role="status"
+                    aria-live="polite"
                 >
                     <div className="relative" dir="ltr">
                         {/* Shadow/Stroke effect using layered text */}

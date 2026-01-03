@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
 import { isThemeUnlocked, type Theme } from '../lib/themes';
 import { useTranslation } from 'react-i18next';
+import { cn } from '../lib/cn';
 
 export const ThemeSelector: React.FC = () => {
     const { currentTheme, setTheme, availableThemes } = useTheme();
@@ -26,15 +27,18 @@ export const ThemeSelector: React.FC = () => {
                 const isActive = currentTheme.id === theme.id;
 
                 return (
-                    <motion.div
+                    <motion.button
                         key={theme.id}
+                        type="button"
                         whileHover={unlocked ? { scale: 1.05 } : {}}
+                        whileTap={unlocked ? { scale: 0.95 } : {}}
                         onClick={() => handleThemeSelect(theme)}
-                        className={`
-                            relative p-3 rounded-xl border-2 cursor-pointer transition-all
-                            ${unlocked ? 'border-transparent hover:shadow-lg' : 'border-slate-200 opacity-60'}
-                            ${isActive ? 'ring-2 ring-offset-1 ring-primary' : ''}
-                        `}
+                        disabled={!unlocked}
+                        className={cn(
+                            "relative p-3 rounded-xl border-2 transition-all w-full text-left",
+                            unlocked ? 'border-transparent hover:shadow-lg cursor-pointer' : 'border-slate-200 opacity-60 cursor-not-allowed',
+                            isActive && 'ring-2 ring-offset-1 ring-primary'
+                        )}
                         style={{
                             background: unlocked
                                 ? `linear-gradient(135deg, ${theme.colors.background} 0%, ${theme.colors.surface} 100%)`
@@ -93,7 +97,7 @@ export const ThemeSelector: React.FC = () => {
                                 {t('settings.unlockLevel', { level: theme.unlockLevel })}
                             </p>
                         )}
-                    </motion.div>
+                    </motion.button>
                 );
             })}
         </div>

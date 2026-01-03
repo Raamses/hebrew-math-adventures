@@ -48,9 +48,15 @@ export const MascotSelector: React.FC<MascotSelectorProps> = ({ selectedMascot, 
                     <div className="font-bold text-slate-700">{t(`mascot.names.${mascot.id}`)}</div>
 
                     {selectedMascot === mascot.id && (
-                        <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1 animate-in zoom-in fade-in duration-300">
+                        <motion.div
+                            className="absolute top-2 right-2 bg-primary text-white rounded-full p-1"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        >
                             <Check size={16} />
-                        </div>
+                        </motion.div>
                     )}
                 </motion.button>
             ))}

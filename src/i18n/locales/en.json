@@ -5,7 +5,8 @@
         "streakTooltip": "Win Streak: Correct answers in a row!",
         "worldMap": "World Map",
         "greeting": "Hi {{name}}! Ready to play?",
-        "journey": "My Journey"
+        "journey": "My Journey",
+        "switchLanguage": "Switch Language"
     },
     "menu": {
         "settings": "Settings",
