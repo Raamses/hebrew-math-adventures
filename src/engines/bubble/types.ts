@@ -96,4 +96,5 @@ export interface GameState {
     timeLeft?: number;
     isGameOver: boolean;
     isVictory: boolean;
+    isFrenzy: boolean;
 }

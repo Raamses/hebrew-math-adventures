@@ -2,7 +2,9 @@ import React, { useEffect } from 'react';
 import type { GameConfig, IGameBehavior } from '../../engines/bubble/types';
 import { useGameEngine } from '../../engines/bubble/useGameEngine';
 import { Bubble } from '../sensory/Bubble';
+import { Explosion } from '../sensory/Explosion';
 import { SessionProgressBar } from '../SessionProgressBar';
+import { FrenzyOverlay } from './FrenzyOverlay';
 import { Zap } from 'lucide-react';
 import { SettingsMenu } from '../SettingsMenu';
 import { useSound } from '../../hooks/useSound';
@@ -41,8 +43,15 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const { entities, gameState, handlePop: enginePop, handleOffScreen } = useGameEngine(config, behavior);
     const { playSound } = useSound();
 
-    const onPopWrapper = (id: string) => {
+    // Visual Effects State
+    const [explosions, setExplosions] = React.useState<{ id: string; x: number; y: number }[]>([]);
+
+    const onPopWrapper = (id: string, _val: number, x: number, y: number) => {
         const isCorrect = enginePop(id);
+
+        // Add explosion at click coordinates
+        setExplosions(prev => [...prev, { id: `${id}-exp`, x, y }]);
+
         if (isCorrect) {
             playSound('correct');
         } else if (isCorrect === false) { // distinct from undefined
@@ -116,7 +125,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         value={e.content as number} // Cast for now, Bubble expects number
                         x={e.x} // Note: Bubble component uses 'left: xvw', engine uses 0-100 scale
                         delay={0} // Managed by engine/CSS
-                        onClick={(id) => onPopWrapper(id)}
+                        onClick={onPopWrapper}
                         onOffScreen={(id) => handleOffScreen(id)}
                         isPopped={e.isPopped}
                         variant={e.variant}
@@ -124,7 +133,16 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 ))}
             </div>
 
-            {/* TODO: Add Explosion Layer here if we want visuals */}
+            {/* Explosion Layer */}
+            {explosions.map(exp => (
+                <Explosion
+                    key={exp.id}
+                    x={exp.x}
+                    y={exp.y}
+                    onComplete={() => setExplosions(prev => prev.filter(e => e.id !== exp.id))}
+                />
+            ))}
+            <FrenzyOverlay isActive={gameState.isFrenzy} />
         </div>
     );
 };

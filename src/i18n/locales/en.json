@@ -202,7 +202,8 @@
             "ones": "Ones",
             "tens": "Tens",
             "hundreds": "Hundreds"
-        }
+        },
+        "frenzy": "FRENZY!"
     },
     "wordProblems": {
         "apples_add": "Dan has {{n1}} apples. He gets {{n2}} more. How many apples does Dan have now?",

@@ -13,7 +13,8 @@ export const useGameEngine = (
         targetsPopped: 0,
         timeLeft: config.winCondition.type === 'time_limit' ? config.winCondition.value : undefined,
         isGameOver: false,
-        isVictory: false
+        isVictory: false,
+        isFrenzy: false
     });
 
     const [entities, setEntities] = useState<BubbleEntity[]>([]);
@@ -31,7 +32,12 @@ export const useGameEngine = (
     // --- Systems ---
 
     const spawnSystem = (time: number) => {
-        if (time - lastSpawnTime.current <= config.spawnIntervalMs) return;
+        // frenzy multiplier: 0.6x interval (40% faster)
+        const currentInterval = gameStateRef.current.isFrenzy
+            ? config.spawnIntervalMs * 0.6
+            : config.spawnIntervalMs;
+
+        if (time - lastSpawnTime.current <= currentInterval) return;
 
         const currentCount = entitiesRef.current.length;
         if (currentCount >= config.maxOnScreen) return;
@@ -100,12 +106,15 @@ export const useGameEngine = (
             const newCombo = isCorrect ? prev.combo + 1 : 0;
             const scoreBonus = isCorrect ? (10 * (1 + newCombo * 0.1)) : 0;
 
+            const isFrenzy = newCombo >= 5;
+
             const nextmnState = {
                 ...prev,
                 combo: newCombo,
                 score: prev.score + scoreBonus,
                 strikes: isCorrect ? prev.strikes : prev.strikes + 1,
-                targetsPopped: isCorrect ? prev.targetsPopped + 1 : prev.targetsPopped
+                targetsPopped: isCorrect ? prev.targetsPopped + 1 : prev.targetsPopped,
+                isFrenzy
             };
 
             // Win Condition
