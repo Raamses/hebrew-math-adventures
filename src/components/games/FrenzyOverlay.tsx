@@ -28,12 +28,15 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive }) => {
                         animate={{
                             opacity: [0.5, 1, 0.5],
                             scale: [1, 1.02, 1],
+                            transition: {
+                                duration: 1.5,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }
                         }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                            duration: 1.5,
-                            repeat: Infinity,
-                            ease: "easeInOut"
+                        exit={{
+                            opacity: 0,
+                            transition: { duration: 0.2 }
                         }}
                     />
 

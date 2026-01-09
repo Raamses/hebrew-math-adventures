@@ -66,6 +66,8 @@ export interface BubbleEntity<T = any> {
     isPopped: boolean;
     /** Creation timestamp (ms) for lifecycle management */
     createdAt: number;
+    /** Timestamp when popped (ms) for cleanup */
+    poppedAt?: number;
 }
 
 // --- Interfaces ---

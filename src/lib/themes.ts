@@ -2,7 +2,7 @@ export interface Theme {
     id: string;
     name: string;
     nameHebrew: string;
-    unlockLevel: number;
+    unlockStars: number;
     colors: {
         primary: string;
         secondary: string;
@@ -20,7 +20,7 @@ export const THEMES: Theme[] = [
         id: 'default',
         name: 'Default',
         nameHebrew: 'בְּרִירַת מֶחְדָּל',
-        unlockLevel: 1,
+        unlockStars: 0,
         colors: {
             primary: '#f97316', // Orange
             secondary: '#3b82f6', // Blue
@@ -34,7 +34,7 @@ export const THEMES: Theme[] = [
         id: 'forest',
         name: 'Forest',
         nameHebrew: 'יַעַר',
-        unlockLevel: 3,
+        unlockStars: 30,
         colors: {
             primary: '#10b981', // Green
             secondary: '#84cc16', // Lime
@@ -50,7 +50,7 @@ export const THEMES: Theme[] = [
         id: 'space',
         name: 'Space',
         nameHebrew: 'חָלָל',
-        unlockLevel: 5,
+        unlockStars: 60,
         colors: {
             primary: '#8b5cf6', // Purple
             secondary: '#06b6d4', // Cyan
@@ -66,7 +66,7 @@ export const THEMES: Theme[] = [
         id: 'candy',
         name: 'Candy',
         nameHebrew: 'סוּכָּרִיָּה',
-        unlockLevel: 7,
+        unlockStars: 90,
         colors: {
             primary: '#ec4899', // Pink
             secondary: '#fbbf24', // Yellow
@@ -84,11 +84,11 @@ export const getThemeById = (id: string): Theme | undefined => {
     return THEMES.find(theme => theme.id === id);
 };
 
-export const getUnlockedThemes = (currentLevel: number): Theme[] => {
-    return THEMES.filter(theme => currentLevel >= theme.unlockLevel);
+export const getUnlockedThemes = (currentStars: number): Theme[] => {
+    return THEMES.filter(theme => currentStars >= theme.unlockStars);
 };
 
-export const isThemeUnlocked = (themeId: string, currentLevel: number): boolean => {
+export const isThemeUnlocked = (themeId: string, currentStars: number): boolean => {
     const theme = getThemeById(themeId);
-    return theme ? currentLevel >= theme.unlockLevel : false;
+    return theme ? currentStars >= theme.unlockStars : false;
 };

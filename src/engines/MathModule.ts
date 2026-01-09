@@ -1,6 +1,5 @@
 import type { IGameModule, GameFeedback } from './interfaces';
 import type { UserCapabilityProfile } from '../types/progress';
-import type { UserProfile } from '../types/user';
 import type { Problem } from '../lib/gameLogic';
 import { ArithmeticFactory, AlgebraicFactory, ComparisonFactory, SeriesFactory, WordProblemFactory, type IProblemFactory } from './ProblemFactory';
 import { Director } from './GameDirector';
@@ -40,31 +39,19 @@ export class MathModule implements IGameModule {
         return this.factories.arithmetic;
     }
 
-    private static readonly XP_CONFIG = {
-        BASE_XP: 5,
-        STREAK_MULTIPLIER: 2,
-        PENALTY: -2
-    };
-
-    evaluate(problem: Problem, answer: string | number, profile: UserProfile): GameFeedback {
+    evaluate(problem: Problem, answer: string | number): GameFeedback {
         const isCorrect = this.checkAnswer(problem, answer);
-        const xpGained = this.calculateXP(isCorrect, profile.streak);
 
         return {
             isCorrect,
             correctAnswer: problem.answer,
-            xpGained,
-            message: isCorrect ? 'Great job!' : 'Try again!'
+            xpGained: 0, // Deprecated, preserved for interface compat until full cleanup
+            message: isCorrect ? 'feedback.correct' : 'feedback.defaultError'
         };
     }
 
     private checkAnswer(problem: Problem, answer: string | number): boolean {
         return problem.answer.toString() === answer.toString();
-    }
-
-    private calculateXP(isCorrect: boolean, currentStreak: number): number {
-        if (!isCorrect) return MathModule.XP_CONFIG.PENALTY;
-        return MathModule.XP_CONFIG.BASE_XP + (currentStreak * MathModule.XP_CONFIG.STREAK_MULTIPLIER);
     }
 
     // Configuration for Level Progression

@@ -11,7 +11,16 @@ import { SagaMap } from './components/map/SagaMap'
 import { GameOrchestrator } from './components/GameOrchestrator'
 import type { LearningNode } from './types/learningPath'
 
+import { useAnalytics } from './hooks/useAnalytics';
+
 const AppContent = () => {
+  const { logEvent } = useAnalytics();
+
+  // Log app open on mount
+  useEffect(() => {
+    logEvent('app_open', { page_title: 'App Entry' });
+  }, [logEvent]);
+
   const { profile, logout } = useProfile();
   const [view, setView] = useState<'select' | 'map' | 'game' | 'parent'>('select');
   const [showParentGate, setShowParentGate] = useState(false);
@@ -76,7 +85,7 @@ const AppContent = () => {
 
   // Map Node to Legacy Level for Orchestrator compatibility
   // In the future, Orchestrator should take 'node' directly
-  let effectiveLevel = profile.currentLevel;
+  let effectiveLevel = 1; // Default to Level 1 for practice if unrelated to node
 
   if (selectedNode) {
     if (selectedNode.type === 'SENSORY') {

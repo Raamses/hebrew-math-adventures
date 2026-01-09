@@ -115,6 +115,8 @@
             "!אין עליך",
             "!מלך/מלכת החשבון"
         ],
+        "correct": "!נכון",
+        "defaultError": "נסה שוב",
         "gentle": [
             "בוא ננסה שוב",
             "כמעט...",
@@ -149,6 +151,10 @@
         "levelProgress": "התקדמות לרמה {{level}}"
     },
     "settings": {
+        "tabs": {
+            "mascot": "דמות",
+            "theme": "ערכת נושא"
+        },
         "themes": "ערכות נושא",
         "mascot": "החבר שלי",
         "mascotPrompt": "בחר את החבר שילווה אותך במסע:",
@@ -162,6 +168,7 @@
         "howMuch": "?כמה זה",
         "completePattern": ":השלימו את הסדרה",
         "compareNumbers": "?מי יותר גדול",
+        "compareSymbol": "בחר {{symbol}}",
         "readCarefully": ":קראו בהקפדה",
         "check": "בדיקה",
         "howTo": "?איך עושים את זה",

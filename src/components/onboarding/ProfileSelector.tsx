@@ -108,21 +108,21 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                             className="group relative flex flex-col items-center p-4 bg-slate-50 hover:bg-blue-50 rounded-2xl border-2 border-transparent hover:border-blue-200 transition-all active:scale-95"
                         >
                             <div className="w-24 h-24 mb-3 flex items-center justify-center transform group-hover:scale-110 transition-transform overflow-hidden">
-                                {profile.mascot ? (
+                                {profile.mascotId ? (
                                     <Mascot
-                                        character={profile.mascot}
+                                        character={profile.mascotId}
                                         emotion="idle"
                                         className="w-full h-full"
                                     />
                                 ) : (
-                                    <span className="text-6xl">{profile.avatar}</span>
+                                    <span className="text-6xl">{profile.avatarId}</span>
                                 )}
                             </div>
                             <span className="text-xl font-bold text-slate-700 group-hover:text-blue-600">
                                 {profile.name}
                             </span>
-                            <span className="text-sm text-slate-400 mt-1">
-                                {t('zones.level')} {profile.currentLevel}
+                            <span className="text-sm text-slate-400 mt-1 flex items-center gap-1">
+                                {profile.streak > 0 && <span>⚡ {profile.streak}</span>}
                             </span>
 
                         </button>

@@ -7,6 +7,7 @@ interface ProgressContextType {
     completeNode: (nodeId: string, stars: number) => void;
     isNodeLocked: (nodeId: string) => boolean;
     getStars: (nodeId: string) => number;
+    totalStars: number;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -47,6 +48,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (Object.keys(progress).length > 0) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
         }
+    }, [progress]);
+
+    // Derived State: Total Stars
+    const totalStars = React.useMemo(() => {
+        return Object.values(progress).reduce((acc, node) => acc + (node.stars || 0), 0);
     }, [progress]);
 
     const completeNode = (nodeId: string, stars: number): void => {
@@ -98,7 +104,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const getStars = (nodeId: string): number => progress[nodeId]?.stars || 0;
 
     return (
-        <ProgressContext.Provider value={{ progress, completeNode, isNodeLocked, getStars }}>
+        <ProgressContext.Provider value={{ progress, completeNode, isNodeLocked, getStars, totalStars }}>
             {children}
         </ProgressContext.Provider>
     );

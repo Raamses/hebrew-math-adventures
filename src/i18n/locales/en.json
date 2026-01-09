@@ -111,6 +111,8 @@
             "Unbeatable!",
             "Math King/Queen!"
         ],
+        "correct": "Correct!",
+        "defaultError": "Try again",
         "gentle": [
             "Let's try again",
             "Almost...",
@@ -145,6 +147,10 @@
         "levelProgress": "Progress to Level {{level}}"
     },
     "settings": {
+        "tabs": {
+            "mascot": "Mascot",
+            "theme": "Theme"
+        },
         "themes": "Themes",
         "mascot": "My Friend",
         "mascotPrompt": "Choose your companion:",
@@ -158,6 +164,7 @@
         "howMuch": "How much is...?",
         "completePattern": "Complete the pattern:",
         "compareNumbers": "Which is bigger?",
+        "compareSymbol": "Select {{symbol}}",
         "readCarefully": "Read carefully:",
         "check": "Check",
         "howTo": "Show Hint",

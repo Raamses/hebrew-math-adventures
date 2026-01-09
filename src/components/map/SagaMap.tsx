@@ -35,9 +35,12 @@ const nodeVariants: Variants = {
     }
 };
 
+import { useAnalytics } from '../../hooks/useAnalytics';
+
 export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout }) => {
     const { isNodeLocked, getStars } = useProgress();
     const { t, i18n } = useTranslation();
+    const { logEvent } = useAnalytics();
 
     const isRtl = i18n.language === 'he';
 
@@ -123,7 +126,17 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout }) => {
                                         key={node.id}
                                         className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer"
                                         style={{ left: `${node.position.x}%`, top: `${150 * (index + 0.5)}px` }} // Simple vertical spacing
-                                        onClick={() => !locked && onNodeSelect(node)}
+                                        onClick={() => {
+                                            if (!locked) {
+                                                logEvent('node_select', {
+                                                    node_id: node.id,
+                                                    unit_id: unit.id,
+                                                    node_type: node.type,
+                                                    is_locked: false
+                                                });
+                                                onNodeSelect(node);
+                                            }
+                                        }}
                                         variants={nodeVariants}
                                         whileHover={{ scale: locked ? 1 : 1.1 }}
                                         whileTap={{ scale: locked ? 1 : 0.95 }}

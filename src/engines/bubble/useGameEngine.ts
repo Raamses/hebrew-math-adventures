@@ -33,14 +33,21 @@ export const useGameEngine = (
 
     const spawnSystem = (time: number) => {
         // frenzy multiplier: 0.6x interval (40% faster)
-        const currentInterval = gameStateRef.current.isFrenzy
+        let currentInterval = gameStateRef.current.isFrenzy
             ? config.spawnIntervalMs * 0.6
             : config.spawnIntervalMs;
 
+        // Catch-Up Mechanic:
+        // If screen is empty (low count), spawn faster to refill
+        const activeCount = entitiesRef.current.filter(e => !e.isPopped).length;
+        if (activeCount < config.maxOnScreen - 2) {
+            // 50% faster if we have gaps to fill
+            currentInterval = currentInterval * 0.5;
+        }
+
         if (time - lastSpawnTime.current <= currentInterval) return;
 
-        const currentCount = entitiesRef.current.length;
-        if (currentCount >= config.maxOnScreen) return;
+        if (activeCount >= config.maxOnScreen) return;
 
         // Create new bubble
         const newBubbleProps = behavior.generateNext(config);
@@ -64,10 +71,20 @@ export const useGameEngine = (
 
     const cleanupSystem = () => {
         const now = Date.now();
-        // Remove entities older than 30s to prevent memory leaks
+        // Remove entities older than 30s OR popped more than 1s ago
         setEntities(prev => {
-            const next = prev.filter(e => (now - e.createdAt) < 30000);
-            return next;
+            const next = prev.filter(e => {
+                const isOld = (now - e.createdAt) > 30000;
+                const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+                return !isOld && !isPoppedAndDone;
+            });
+
+            // Performance Fix: Only update state if length changed
+            if (next.length !== prev.length) {
+                entitiesRef.current = next; // Sync ref immediately
+                return next;
+            }
+            return prev;
         });
     };
 
@@ -99,14 +116,14 @@ export const useGameEngine = (
         const isCorrect = behavior.validate(target);
 
         // 2. Visual Update (Optimistic)
-        setEntities(prev => prev.map(e => e.id === id ? { ...e, isPopped: true } : e));
+        setEntities(prev => prev.map(e => e.id === id ? { ...e, isPopped: true, poppedAt: Date.now() } : e));
 
         // 3. Game State Update
         setGameState(prev => {
             const newCombo = isCorrect ? prev.combo + 1 : 0;
             const scoreBonus = isCorrect ? (10 * (1 + newCombo * 0.1)) : 0;
 
-            const isFrenzy = newCombo >= 5;
+            const isFrenzy = isCorrect ? newCombo >= 5 : false;
 
             const nextmnState = {
                 ...prev,

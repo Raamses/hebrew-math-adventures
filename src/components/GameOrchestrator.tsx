@@ -20,11 +20,13 @@ type GameMode = 'LESSON' | 'PRACTICE' | 'SENSORY';
 
 import { useTranslation } from 'react-i18next';
 
+import { useAnalytics } from '../hooks/useAnalytics';
+
 export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node }) => {
     const { t } = useTranslation();
-    // Derive mode directly from props to avoid unnecessary effects/renders
-    // State is only needed if we switch modes internally (e.g., exiting a lesson)
-    // For now, we initialize from props, but allow internal overrides
+    const { logEvent } = useAnalytics();
+
+    // ... (existing state) ...
     const [internalMode, setInternalMode] = useState<GameMode | null>(null);
 
     // Determine effective mode
@@ -32,6 +34,17 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
 
     const [isLessonOpen, setIsLessonOpen] = useState(false);
     const { completeNode } = useProgress();
+
+    // Log node start
+    useEffect(() => {
+        if (node) {
+            logEvent('node_start', {
+                node_id: node.id,
+                node_type: node.type,
+                target_level: targetLevel
+            });
+        }
+    }, [node, targetLevel, logEvent]);
 
     // Reset internal mode when node changes
     useEffect(() => {
@@ -96,8 +109,16 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
                 instruction={equation || (node ? t('saga.pop_instruction', { number: config.target || 5 }) : undefined)}
                 onComplete={(success) => {
                     console.log('Bubble Game Complete:', success);
-                    if (success && node) {
-                        completeNode(node.id, 3);
+                    if (node) {
+                        if (success) {
+                            completeNode(node.id, 3);
+                        }
+                        logEvent('node_complete', {
+                            node_id: node.id,
+                            success,
+                            stars_earned: success ? 3 : 0,
+                            node_type: 'SENSORY'
+                        });
                     }
                     onExit();
                 }}
@@ -123,8 +144,16 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
             onExit={onExit}
             problemConfig={node?.config}
             onComplete={(success) => {
-                if (success && node) {
-                    completeNode(node.id, 3);
+                if (node) {
+                    if (success) {
+                        completeNode(node.id, 3);
+                    }
+                    logEvent('node_complete', {
+                        node_id: node.id,
+                        success,
+                        stars_earned: success ? 3 : 0,
+                        node_type: 'PRACTICE'
+                    });
                 }
             }}
         />

@@ -1,6 +1,5 @@
 import type { Problem } from '../lib/gameLogic';
 import type { UserCapabilityProfile } from '../types/progress';
-import type { UserProfile } from '../types/user';
 
 export interface GameFeedback {
     isCorrect: boolean;
@@ -16,7 +15,7 @@ export interface IGameModule {
     generateProblem(profile: UserCapabilityProfile, params?: Record<string, any>): Problem;
 
     // Evaluate answer (returns XP, feedback, etc.)
-    evaluate(problem: Problem, answer: string | number, profile: UserProfile): GameFeedback;
+    evaluate(problem: Problem, answer: string | number): GameFeedback;
 }
 
 export interface GameSessionConfig {

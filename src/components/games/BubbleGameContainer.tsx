@@ -8,6 +8,7 @@ import { FrenzyOverlay } from './FrenzyOverlay';
 import { Zap } from 'lucide-react';
 import { SettingsMenu } from '../SettingsMenu';
 import { useSound } from '../../hooks/useSound';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface BubbleGameContainerProps {
     config: GameConfig;
@@ -42,12 +43,23 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     // Hook into Engine
     const { entities, gameState, handlePop: enginePop, handleOffScreen } = useGameEngine(config, behavior);
     const { playSound } = useSound();
+    const { logEvent } = useAnalytics();
 
     // Visual Effects State
     const [explosions, setExplosions] = React.useState<{ id: string; x: number; y: number }[]>([]);
 
-    const onPopWrapper = (id: string, _val: number, x: number, y: number) => {
+    const onPopWrapper = React.useCallback((id: string, val: number, x: number, y: number) => {
         const isCorrect = enginePop(id);
+
+        // Log Analytics
+        if (isCorrect !== undefined) {
+            logEvent('question_answered', {
+                is_correct: isCorrect,
+                value: val,
+                mode: 'sensory',
+                node_type: 'SENSORY'
+            });
+        }
 
         // Add explosion at click coordinates
         setExplosions(prev => [...prev, { id: `${id}-exp`, x, y }]);
@@ -57,7 +69,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         } else if (isCorrect === false) { // distinct from undefined
             playSound('wrong');
         }
-    };
+    }, [enginePop, playSound, logEvent]);
 
     // Monitor Game Over / Victory
     useEffect(() => {

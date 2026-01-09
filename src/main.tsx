@@ -4,8 +4,12 @@ import './index.css'
 import App from './App.tsx'
 import './i18n'; // Import i18n configuration
 
+import { ErrorBoundary } from './components/ErrorBoundary'
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

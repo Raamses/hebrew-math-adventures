@@ -79,7 +79,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                         {t('settings.mascotPrompt')}
                                     </p>
                                     <MascotSelector
-                                        selectedMascot={profile.mascot || 'owl'}
+                                        selectedMascot={profile.mascotId}
                                         onSelect={(mascot) => updateMascot(mascot)}
                                     />
 

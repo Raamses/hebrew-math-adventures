@@ -52,9 +52,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit }) => {
                                 <div className="grid grid-cols-12 bg-slate-50 border-b border-slate-100 py-3 px-4 text-sm font-bold text-slate-500">
                                     <div className="col-span-4">{t('parent.table.name')}</div>
                                     <div className="col-span-1 text-center">{t('parent.table.age')}</div>
-                                    <div className="col-span-1 text-center">{t('parent.table.level')}</div>
-                                    <div className="col-span-2 text-center">{t('parent.table.xp')}</div>
-                                    <div className="col-span-2 text-center">{t('parent.table.totalScore')}</div>
+                                    <div className="col-span-3 text-center">{t('settings.tabs.mascot')}</div>
+                                    <div className="col-span-2 text-center">{t('app.streakTooltip')}</div>
                                     <div className="col-span-2 text-center">{t('parent.table.actions')}</div>
                                 </div>
 
@@ -65,16 +64,17 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit }) => {
                                             {/* Name & Avatar */}
                                             <div className="col-span-4 flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-xl shadow-sm border border-indigo-100">
-                                                    {profile.avatar}
+                                                    {profile.avatarId}
                                                 </div>
                                                 <div className="font-bold text-slate-700 truncate">{profile.name}</div>
                                             </div>
 
                                             {/* Stats */}
                                             <div className="col-span-1 text-center font-bold text-slate-600 bg-slate-100/50 py-1 rounded-lg mx-1">{profile.age}</div>
-                                            <div className="col-span-1 text-center font-bold text-slate-600 bg-slate-100/50 py-1 rounded-lg mx-1">{profile.currentLevel}</div>
-                                            <div className="col-span-2 text-center text-slate-600">{profile.xp}</div>
-                                            <div className="col-span-2 text-center font-bold text-primary">{profile.totalScore || 0}</div>
+                                            <div className="col-span-3 text-center text-slate-600 capitalize">{profile.mascotId}</div>
+                                            <div className="col-span-2 text-center font-bold text-primary flex items-center justify-center gap-1">
+                                                <span>⚡</span> {profile.streak || 0}
+                                            </div>
 
                                             {/* Actions */}
                                             <div className="col-span-2 flex justify-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
