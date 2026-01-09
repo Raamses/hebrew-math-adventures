@@ -35,9 +35,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
                     {/* Modal */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
                         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-3xl shadow-2xl z-50 w-full max-w-2xl max-h-[90vh] flex flex-col"
                     >
                         {/* Header & Tabs */}
@@ -78,7 +79,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                         {t('settings.mascotPrompt')}
                                     </p>
                                     <MascotSelector
-                                        selectedMascot={profile.mascot || 'owl'}
+                                        selectedMascot={profile.mascotId}
                                         onSelect={(mascot) => updateMascot(mascot)}
                                     />
 
@@ -92,7 +93,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                         </div>
 
                         {/* Footer */}
-                        <div className="p-6 border-t border-slate-100">
+                        <div className="p-6 border-t border-slate-100 flex flex-col gap-4">
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(JSON.stringify(profile, null, 2));
+                                    alert(t('settings.debugCopied') || 'Debug data copied to clipboard!');
+                                }}
+                                className="text-slate-400 text-sm hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <span className="underline">Copy Debug Data</span>
+                            </button>
+
                             <button
                                 onClick={onClose}
                                 className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xl font-bold rounded-2xl transition-all"

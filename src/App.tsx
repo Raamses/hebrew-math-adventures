@@ -1,61 +1,59 @@
 import { useState, useEffect } from 'react'
+import './i18n'; // Initialize translations
 
 import { ProfileProvider, useProfile } from './context/ProfileContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { ProgressProvider } from './context/ProgressContext'
 import { ProfileSelector } from './components/onboarding/ProfileSelector'
 import { ParentGate } from './components/parent/ParentGate'
 import { ParentDashboard } from './components/parent/ParentDashboard'
-import { WorldMap } from './components/WorldMap'
+import { SagaMap } from './components/map/SagaMap'
 import { GameOrchestrator } from './components/GameOrchestrator'
-import { type ZoneConfig } from './lib/worldConfig'
+import type { LearningNode } from './types/learningPath'
 
-
-
-
-
-
-
+import { useAnalytics } from './hooks/useAnalytics';
 
 const AppContent = () => {
+  const { logEvent } = useAnalytics();
+
+  // Log app open on mount
+  useEffect(() => {
+    logEvent('app_open', { page_title: 'App Entry' });
+  }, [logEvent]);
+
   const { profile, logout } = useProfile();
   const [view, setView] = useState<'select' | 'map' | 'game' | 'parent'>('select');
   const [showParentGate, setShowParentGate] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [selectedNode, setSelectedNode] = useState<LearningNode | null>(null);
 
   // Effect to sync view with profile state
   useEffect(() => {
     if (profile) {
-      // If we have a profile, we go to map (unless we're already in game)
       if (view === 'select') {
         setView('map');
       }
     } else {
-      // No profile = selection screen
       if (view !== 'parent') {
         setView('select');
       }
     }
   }, [profile, view]);
 
-  const handleZoneSelect = (zone: ZoneConfig) => {
+  const handleNodeSelect = (node: LearningNode) => {
     if (!profile) return;
-    // Auto-select max level logic:
-    // Play the highest unlocked level in this zone, OR the zone's max if higher than user level (which shouldn't happen if locked),
-    // actually: cap at profile.currentLevel.
-    const targetLevel = Math.min(profile.currentLevel, zone.maxLevel);
-    setSelectedLevel(targetLevel);
+    setSelectedNode(node);
     setView('game');
   };
 
   const handleGameExit = () => {
     setView('map');
-    setSelectedLevel(null);
+    setSelectedNode(null);
   };
 
   const handleLogout = () => {
     logout();
     setView('select');
-    setSelectedLevel(null);
+    setSelectedNode(null);
   };
 
   if (view === 'parent') {
@@ -81,30 +79,39 @@ const AppContent = () => {
 
   if (view === 'map') {
     return (
-      <WorldMap
-        currentLevel={profile.currentLevel}
-        onZoneSelect={handleZoneSelect}
-        onLogout={handleLogout}
-      />
+      <SagaMap onNodeSelect={handleNodeSelect} onLogout={handleLogout} />
     );
+  }
+
+  // Map Node to Legacy Level for Orchestrator compatibility
+  // In the future, Orchestrator should take 'node' directly
+  let effectiveLevel = 1; // Default to Level 1 for practice if unrelated to node
+
+  if (selectedNode) {
+    if (selectedNode.type === 'SENSORY') {
+      effectiveLevel = -1; // Sentinel for Sensory Mode
+    } else if (selectedNode.targetLevel) {
+      effectiveLevel = selectedNode.targetLevel;
+    }
   }
 
   return (
     <GameOrchestrator
       onExit={handleGameExit}
-      targetLevel={selectedLevel || profile.currentLevel}
+      targetLevel={effectiveLevel}
+      node={selectedNode}
     />
   );
 };
 
-
-
 const App = () => {
   return (
     <ProfileProvider>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
+      <ProgressProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </ProgressProvider>
     </ProfileProvider>
   );
 }

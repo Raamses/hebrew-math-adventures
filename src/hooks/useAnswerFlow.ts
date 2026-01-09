@@ -16,54 +16,49 @@ export const useAnswerFlow = ({
     wrongDelay = 500,
 }: UseAnswerFlowProps = {}) => {
     const [status, setStatus] = useState<AnswerStatus>('idle');
-    const [isProcessing, setIsProcessing] = useState(false);
-    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const timeoutRef = useRef<number | null>(null);
 
-    // Clear timeout on unmount
-    useEffect(() => {
-        return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-        };
+    // Clear timeout on unmount or reset
+    const clearFlowTimeout = useCallback(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
     }, []);
 
-    const submitAnswer = useCallback((isCorrect: boolean) => {
-        if (isProcessing) return;
+    useEffect(() => {
+        return clearFlowTimeout;
+    }, [clearFlowTimeout]);
 
-        setIsProcessing(true);
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    const submitAnswer = useCallback((isCorrect: boolean) => {
+        // Prevent double submission if already processing a result
+        if (status !== 'idle') return;
+
+        clearFlowTimeout();
 
         if (isCorrect) {
             setStatus('correct');
-            timeoutRef.current = setTimeout(() => {
+            timeoutRef.current = window.setTimeout(() => {
                 setStatus('idle');
-                setIsProcessing(false);
                 onCorrectComplete?.();
             }, correctDelay);
         } else {
             setStatus('wrong');
-            // For wrong answers, logic is:
-            // 1. Show 'wrong' state (feedback)
-            // 2. Wait for delay
-            // 3. Return to 'idle' to allow retry
-            timeoutRef.current = setTimeout(() => {
+            timeoutRef.current = window.setTimeout(() => {
                 setStatus('idle');
-                setIsProcessing(false);
                 onWrongComplete?.();
             }, wrongDelay);
         }
-    }, [isProcessing, correctDelay, wrongDelay, onCorrectComplete, onWrongComplete]);
+    }, [status, correctDelay, wrongDelay, onCorrectComplete, onWrongComplete, clearFlowTimeout]);
 
     const reset = useCallback(() => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        clearFlowTimeout();
         setStatus('idle');
-        setIsProcessing(false);
-    }, []);
+    }, [clearFlowTimeout]);
 
     return {
         status,
-        isProcessing,
+        isProcessing: status !== 'idle',
         submitAnswer,
         reset
     };

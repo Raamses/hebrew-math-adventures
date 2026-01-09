@@ -1,20 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Check } from 'lucide-react';
+import { Lock, Check, Star } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { useProfile } from '../context/ProfileContext';
+import { useProgress } from '../context/ProgressContext';
 import { isThemeUnlocked, type Theme } from '../lib/themes';
-import { useTranslation } from 'react-i18next';
+import { cn } from '../lib/cn';
 
 export const ThemeSelector: React.FC = () => {
     const { currentTheme, setTheme, availableThemes } = useTheme();
-    const { profile } = useProfile();
-    const { t } = useTranslation();
-
-    if (!profile) return null;
+    const { totalStars } = useProgress();
 
     const handleThemeSelect = (theme: Theme) => {
-        if (isThemeUnlocked(theme.id, profile.currentLevel)) {
+        if (isThemeUnlocked(theme.id, totalStars)) {
             setTheme(theme.id);
         }
     };
@@ -22,19 +19,22 @@ export const ThemeSelector: React.FC = () => {
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {availableThemes.map((theme) => {
-                const unlocked = isThemeUnlocked(theme.id, profile.currentLevel);
+                const unlocked = isThemeUnlocked(theme.id, totalStars);
                 const isActive = currentTheme.id === theme.id;
 
                 return (
-                    <motion.div
+                    <motion.button
                         key={theme.id}
+                        type="button"
                         whileHover={unlocked ? { scale: 1.05 } : {}}
+                        whileTap={unlocked ? { scale: 0.95 } : {}}
                         onClick={() => handleThemeSelect(theme)}
-                        className={`
-                            relative p-3 rounded-xl border-2 cursor-pointer transition-all
-                            ${unlocked ? 'border-transparent hover:shadow-lg' : 'border-slate-200 opacity-60'}
-                            ${isActive ? 'ring-2 ring-offset-1 ring-primary' : ''}
-                        `}
+                        disabled={!unlocked}
+                        className={cn(
+                            "relative p-3 rounded-xl border-2 transition-all w-full text-left",
+                            unlocked ? 'border-transparent hover:shadow-lg cursor-pointer' : 'border-slate-200 opacity-60 cursor-not-allowed',
+                            isActive && 'ring-2 ring-offset-1 ring-primary'
+                        )}
                         style={{
                             background: unlocked
                                 ? `linear-gradient(135deg, ${theme.colors.background} 0%, ${theme.colors.surface} 100%)`
@@ -89,11 +89,12 @@ export const ThemeSelector: React.FC = () => {
 
                         {/* Unlock Info */}
                         {!unlocked && (
-                            <p className="text-xs text-slate-500 mt-1">
-                                {t('settings.unlockLevel', { level: theme.unlockLevel })}
-                            </p>
+                            <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+                                <Star size={12} className="fill-slate-400" />
+                                <span>{theme.unlockStars}</span>
+                            </div>
                         )}
-                    </motion.div>
+                    </motion.button>
                 );
             })}
         </div>

@@ -16,10 +16,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
     const [formData, setFormData] = useState({
         name: profile.name,
         age: profile.age,
-        currentLevel: profile.currentLevel,
-        xp: profile.xp,
-        avatar: profile.avatar,
-        mascot: profile.mascot
+        avatarId: profile.avatarId,
+        mascotId: profile.mascotId
     });
     const [error, setError] = useState('');
 
@@ -34,14 +32,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
         }
         if (formData.age < 4 || formData.age > 12) {
             setError(t('parent.edit.errorAge'));
-            return;
-        }
-        if (formData.currentLevel < 1 || formData.currentLevel > 10) {
-            setError(t('parent.edit.errorLevel'));
-            return;
-        }
-        if (formData.xp < 0) {
-            setError(t('parent.edit.errorXP'));
             return;
         }
 
@@ -99,31 +89,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                 </div>
                             </div>
 
-                            {/* Level & XP */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-sm font-bold text-slate-500">{t('parent.table.level')} (1-10)</label>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={10}
-                                        value={formData.currentLevel}
-                                        onChange={e => setFormData({ ...formData, currentLevel: Number(e.target.value) })}
-                                        className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-sm font-bold text-slate-500">XP</label>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        value={formData.xp}
-                                        onChange={e => setFormData({ ...formData, xp: Number(e.target.value) })}
-                                        className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700"
-                                    />
-                                </div>
-                            </div>
-
                             {/* Avatar Selection */}
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-slate-500">{t('onboarding.selectAvatar')}</label>
@@ -131,8 +96,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                     {avatars.map(av => (
                                         <button
                                             key={av}
-                                            onClick={() => setFormData({ ...formData, avatar: av })}
-                                            className={`w-10 h-10 text-2xl rounded-full flex items-center justify-center border-2 transition-all ${formData.avatar === av ? 'border-primary bg-orange-50 scale-110' : 'border-transparent hover:bg-slate-50'
+                                            onClick={() => setFormData({ ...formData, avatarId: av })}
+                                            className={`w-10 h-10 text-2xl rounded-full flex items-center justify-center border-2 transition-all ${formData.avatarId === av ? 'border-primary bg-orange-50 scale-110' : 'border-transparent hover:bg-slate-50'
                                                 }`}
                                         >
                                             {av}
@@ -148,8 +113,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                     {mascots.map(m => (
                                         <button
                                             key={m}
-                                            onClick={() => setFormData({ ...formData, mascot: m })}
-                                            className={`p-2 rounded-xl border-2 transition-all text-center ${formData.mascot === m ? 'border-primary bg-orange-50' : 'border-slate-100 hover:border-slate-300'
+                                            onClick={() => setFormData({ ...formData, mascotId: m })}
+                                            className={`p-2 rounded-xl border-2 transition-all text-center ${formData.mascotId === m ? 'border-primary bg-orange-50' : 'border-slate-100 hover:border-slate-300'
                                                 }`}
                                         >
                                             <div className="text-xs font-bold capitalize">{t(`mascot.names.${m}`)}</div>

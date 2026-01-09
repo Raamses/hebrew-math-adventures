@@ -1,4 +1,4 @@
-import { type LucideIcon, Palmtree, Trees, Mountain } from 'lucide-react';
+import { type LucideIcon, Palmtree, Trees, Mountain, Sparkles } from 'lucide-react';
 
 export interface ZoneConfig {
     id: string;
@@ -12,6 +12,16 @@ export interface ZoneConfig {
 }
 
 export const WORLD_ZONES: ZoneConfig[] = [
+    {
+        id: 'sensory_beach',
+        name: 'zones.sensory.name',
+        description: 'zones.sensory.desc',
+        minLevel: 0,
+        maxLevel: 10, // Always active for current levels
+        icon: Sparkles,
+        themeColor: 'text-blue-400',
+        backgroundClass: 'bg-blue-50'
+    },
     {
         id: 'addition_island',
         name: 'zones.addition.name',

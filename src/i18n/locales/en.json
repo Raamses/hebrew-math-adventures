@@ -4,7 +4,9 @@
         "streak": "Streak",
         "streakTooltip": "Win Streak: Correct answers in a row!",
         "worldMap": "World Map",
-        "greeting": "Hi {{name}}! Ready to play?"
+        "greeting": "Hi {{name}}! Ready to play?",
+        "journey": "My Journey",
+        "switchLanguage": "Switch Language"
     },
     "menu": {
         "settings": "Settings",
@@ -30,6 +32,10 @@
         }
     },
     "zones": {
+        "sensory": {
+            "name": "Bubble Beach",
+            "desc": "Pop the bubbles!"
+        },
         "addition": {
             "name": "Addition Island",
             "desc": "Learn to add numbers!"
@@ -105,6 +111,8 @@
             "Unbeatable!",
             "Math King/Queen!"
         ],
+        "correct": "Correct!",
+        "defaultError": "Try again",
         "gentle": [
             "Let's try again",
             "Almost...",
@@ -139,6 +147,10 @@
         "levelProgress": "Progress to Level {{level}}"
     },
     "settings": {
+        "tabs": {
+            "mascot": "Mascot",
+            "theme": "Theme"
+        },
         "themes": "Themes",
         "mascot": "My Friend",
         "mascotPrompt": "Choose your companion:",
@@ -152,6 +164,7 @@
         "howMuch": "How much is...?",
         "completePattern": "Complete the pattern:",
         "compareNumbers": "Which is bigger?",
+        "compareSymbol": "Select {{symbol}}",
         "readCarefully": "Read carefully:",
         "check": "Check",
         "howTo": "Show Hint",
@@ -196,7 +209,8 @@
             "ones": "Ones",
             "tens": "Tens",
             "hundreds": "Hundreds"
-        }
+        },
+        "frenzy": "FRENZY!"
     },
     "wordProblems": {
         "apples_add": "Dan has {{n1}} apples. He gets {{n2}} more. How many apples does Dan have now?",
@@ -215,5 +229,66 @@
             "start": "Let's Start!",
             "finish": "Finish"
         }
+    },
+    "saga": {
+        "unit_1_title": "Beginner Beach",
+        "unit_2_title": "Forest of Numbers",
+        "unit_3_title": "Multiplication Mountain",
+        "unit_4_title": "Division Desert",
+        "unit_5_title": "Space Station",
+        "n1_1_title": "Bubbles",
+        "n1_2_title": "Counting 1-5",
+        "n1_3_title": "Simple Addition",
+        "n1_4_title": "Beach Boss",
+        "n1_5_title": "Big & Small",
+        "n1_6_title": "Sum to 10",
+        "n1_7_title": "Missing Link",
+        "n1_8_title": "Pop the 9s",
+        "n1_9_title": "Beach Master",
+        "n1_10_title": "Boss: Octopus",
+        "n2_1_title": "Pop the 12s",
+        "n2_2_title": "Teen Numbers",
+        "n2_3_title": "Addition 20",
+        "n2_4_title": "Take Away",
+        "n2_5_title": "Story Time",
+        "n2_6_title": "Missing Number",
+        "n2_7_title": "Comparison",
+        "n2_8_title": "Sub Master",
+        "n2_9_title": "Forest Challenge",
+        "n2_10_title": "Boss: Bear",
+        "n3_1_title": "Groups of 2",
+        "n3_2_title": "Double Trouble",
+        "n3_3_title": "Times Two",
+        "n3_4_title": "Skip Counting",
+        "n3_5_title": "Times Five",
+        "n3_6_title": "Big Addition",
+        "n3_7_title": "Pop the 50s",
+        "n3_8_title": "Times Ten",
+        "n3_9_title": "Climb Higher",
+        "n3_10_title": "Boss: Eagle",
+        "n4_1_title": "Sharing is Caring",
+        "n4_2_title": "Divide by 2",
+        "n4_3_title": "Subtraction 20",
+        "n4_4_title": "Missing Part",
+        "n4_5_title": "Divide by 5",
+        "n4_6_title": "Logic Pattern",
+        "n4_7_title": "Word Problems",
+        "n4_8_title": "Sub Master",
+        "n4_9_title": "Oasis Challenge",
+        "n4_10_title": "Boss: Scorpion",
+        "n5_1_title": "Blast Off",
+        "n5_2_title": "Zero Gravity",
+        "n5_3_title": "Binary Star",
+        "n5_4_title": "Velocity",
+        "n5_5_title": "Black Hole",
+        "n5_6_title": "Galaxy Brain",
+        "n5_7_title": "Nebula",
+        "n5_8_title": "Supernova",
+        "n5_9_title": "The Void",
+        "n5_10_title": "Boss: Alien King",
+        "pop_instruction": "Pop all the bubbles with the number {{number}}!",
+        "locked": "Locked",
+        "play": "Play",
+        "back": "Back"
     }
 }

@@ -1,27 +1,29 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { type UserProfile, XP_PER_LEVEL } from '../types/user';
+import { type UserProfile } from '../types/user';
+import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 interface ProfileContextType {
     profile: UserProfile | null;
     allProfiles: UserProfile[];
-    createProfile: (name: string, age: number, avatar: string, mascot: 'owl' | 'bear' | 'ant' | 'lion') => Promise<void>;
+    createProfile: (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => Promise<void>;
     switchProfile: (profileId: string) => void;
     deleteProfile: (profileId: string) => void;
     logout: () => void;
-    addXP: (amount: number) => void;
     resetStreak: () => void;
-    updateMascot: (mascot: 'owl' | 'bear' | 'ant' | 'lion') => void;
+    incrementStreak: () => void;
+    updateMascot: (mascotId: 'owl' | 'bear' | 'ant' | 'lion') => void;
     updateProfile: (id: string, updates: Partial<UserProfile>) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
-const LEGACY_PROFILE_KEY = 'userProfile';
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
     const [profile, setProfileState] = useState<UserProfile | null>(null);
+    const { logEvent } = useAnalytics();
 
     // Load profiles and handle migration on mount
     useEffect(() => {
@@ -29,29 +31,21 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         let profiles: UserProfile[] = [];
 
         if (savedProfiles) {
-            profiles = JSON.parse(savedProfiles);
-            // Ensure all profiles have new fields (migration)
-            profiles = profiles.map(p => ({
-                ...p,
-                mascot: p.mascot || 'owl',
-                totalScore: p.totalScore ?? ((p.currentLevel - 1) * XP_PER_LEVEL + p.xp) // Estimate total score for existing users
-            }));
-        } else {
-            // Migration: Check for legacy single profile
-            const legacyProfile = localStorage.getItem(LEGACY_PROFILE_KEY);
-            if (legacyProfile) {
-                const parsedLegacy = JSON.parse(legacyProfile);
-                // Convert legacy to new format with ID and default avatar
-                const migratedProfile: UserProfile = {
-                    ...parsedLegacy,
-                    id: crypto.randomUUID(),
-                    avatar: '🦁', // Default avatar for migrated users
-                    mascot: 'owl', // Default mascot
-                    totalScore: 0
-                };
-                profiles = [migratedProfile];
-                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(profiles));
-                localStorage.removeItem(LEGACY_PROFILE_KEY); // Clean up legacy
+            try {
+                profiles = JSON.parse(savedProfiles);
+                // Ensure all profiles have new fields (migration)
+                profiles = profiles.map(p => ({
+                    ...p,
+                    mascotId: p.mascotId || (p as any).mascot || 'owl',
+                    avatarId: p.avatarId || (p as any).avatar || '🦁',
+                    settings: p.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false },
+                    capabilities: p.capabilities || { ...INITIAL_CAPABILITY_PROFILE },
+                    streak: p.streak || 0
+                }));
+            } catch (error) {
+                console.error('Failed to parse profiles from local storage:', error);
+                // Fallback creates an empty list, so corrupted data is effectively reset to avoid perma-crash
+                profiles = [];
             }
         }
         setAllProfiles(profiles);
@@ -64,27 +58,37 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [allProfiles]);
 
-    const createProfile = async (name: string, age: number, avatar: string, mascot: 'owl' | 'bear' | 'ant' | 'lion') => {
+    const createProfile = async (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
         const newProfile: UserProfile = {
             id: crypto.randomUUID(),
             name,
             age,
-            avatar,
-            mascot,
-            currentLevel: age <= 6 ? 1 : age === 7 ? 2 : age === 8 ? 3 : age === 9 ? 4 : age === 10 ? 5 : 6,
-            xp: 0,
+            avatarId,
+            mascotId,
+            themeId: 'default',
             streak: 0,
-            totalScore: 0
+            createdAt: Date.now(),
+            lastPlayedAt: Date.now(),
+            settings: {
+                musicVolume: 1,
+                sfxVolume: 1,
+                isMuted: false
+            },
+            capabilities: { ...INITIAL_CAPABILITY_PROFILE }
         };
 
         setAllProfiles(prev => [...prev, newProfile]);
         setProfileState(newProfile); // Auto-login new user
+
+        logEvent('signup', { age, avatar_id: avatarId, mascot_id: mascotId });
+        logEvent('login', { profile_id: newProfile.id, mascot_id: mascotId, age_group: age < 6 ? 'pre-k' : 'primary' });
     };
 
     const switchProfile = (profileId: string) => {
         const selected = allProfiles.find(p => p.id === profileId);
         if (selected) {
             setProfileState(selected);
+            logEvent('login', { profile_id: selected.id, mascot_id: selected.mascotId });
         }
     };
 
@@ -99,50 +103,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setProfileState(null);
     };
 
-    const addXP = (amount: number) => {
+    const incrementStreak = () => {
         if (!profile) return;
-
-        const updatedProfile = { ...profile };
-        let newXP = updatedProfile.xp + amount;
-        let newLevel = updatedProfile.currentLevel;
-        let newStreak = updatedProfile.streak;
-
-        if (amount > 0) {
-            newStreak += 1;
-            updatedProfile.totalScore = (updatedProfile.totalScore || 0) + amount;
-        } else {
-            newStreak = 0;
-            // No penalty to totalScore for now, or maybe small penalty? User asked for total score to "keep going up" implies only positive?
-            // "total score to xp, xp should be reset after a level up but not score"
-            // Let's assume we ADD amount even if it's negative? No, calculateRewards returns negative for wrong answers.
-            // If amount is negative, totalScore would decrease. 
-            // "i want to show me where the changes should be to support this change" -> "xp should be reset ... but not score"
-            // This implies score accumulates. If we subtract points, it should probably subtract from total too, or maybe Total Score is "Lifetime XP"?
-            // Usually "Score" means "Current Game Score" or "Lifetime Accumulated".
-            // If I subtract, it might go down.
-            // Let's implement: Total Score is separate accumulator. 
-            // If amount is negative, do we subtract? Yes, consistent with XP.
-            if (amount < 0 && updatedProfile.totalScore + amount < 0) {
-                updatedProfile.totalScore = 0; // Clamp at 0
-            } else if (amount < 0) {
-                updatedProfile.totalScore += amount;
-            }
-        }
-
-        if (newXP < 0) newXP = 0;
-
-        while (newXP >= XP_PER_LEVEL) {
-            newXP -= XP_PER_LEVEL;
-            newLevel += 1;
-        }
-
-        updatedProfile.xp = newXP;
-        updatedProfile.currentLevel = newLevel;
-        updatedProfile.streak = newStreak;
-
-        // Update both current state and the list
+        const newStreak = (profile.streak || 0) + 1;
+        const updatedProfile = { ...profile, streak: newStreak };
         setProfileState(updatedProfile);
         setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
+
+        if (newStreak % 5 === 0) {
+            logEvent('streak_milestone', { streak_count: newStreak, profile_id: profile.id });
+        }
     };
 
     const resetStreak = () => {
@@ -152,11 +122,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
     };
 
-    const updateMascot = (mascot: 'owl' | 'bear' | 'ant' | 'lion') => {
+    const updateMascot = (mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
         if (!profile) return;
-        const updatedProfile = { ...profile, mascot };
+        const oldMascot = profile.mascotId;
+        const updatedProfile = { ...profile, mascotId };
         setProfileState(updatedProfile);
         setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
+
+        logEvent('mascot_change', { old_mascot: oldMascot, new_mascot: mascotId, profile_id: profile.id });
     };
 
     const updateProfile = (id: string, updates: Partial<UserProfile>) => {
@@ -181,8 +154,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             switchProfile,
             deleteProfile,
             logout,
-            addXP,
             resetStreak,
+            incrementStreak,
             updateMascot,
             updateProfile
         }}>

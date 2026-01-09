@@ -47,31 +47,57 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
             </div>
 
             <div className="w-full max-w-2xl bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 z-10">
-                <div className="flex justify-between items-center mb-8">
-                    {/* Language Toggle */}
-                    <button
-                        onClick={toggleLanguage}
-                        className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-bold"
-                        title="Switch Language"
-                    >
-                        <Globe size={20} />
-                        <span className="text-sm">{i18n.language === 'he' ? 'English' : 'עברית'}</span>
-                    </button>
+                {/* Header Section */}
+                <div className="mb-8">
+                    {/* Mobile Layout: Buttons Top, Title Below */}
+                    <div className="md:hidden flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                            <button
+                                onClick={toggleLanguage}
+                                className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-bold"
+                                title="Switch Language"
+                            >
+                                <Globe size={20} />
+                                <span className="text-sm">{i18n.language === 'he' ? 'English' : 'עברית'}</span>
+                            </button>
 
-                    <h1 className="text-3xl font-bold text-primary absolute left-1/2 -translate-x-1/2 whitespace-nowrap hidden md:block">
-                        {t('onboarding.whoIsPlaying')}
-                    </h1>
-                    <h1 className="text-2xl font-bold text-primary md:hidden">
-                        {t('onboarding.whoIsPlaying')}
-                    </h1>
+                            <button
+                                onClick={onParentAccess}
+                                className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <Users size={20} />
+                                <span className="text-sm font-bold">{t('onboarding.parentsAccess')}</span>
+                            </button>
+                        </div>
 
-                    <button
-                        onClick={onParentAccess}
-                        className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                        <Users size={20} />
-                        <span className="text-sm font-bold">{t('onboarding.parentsAccess')}</span>
-                    </button>
+                        <h1 className="text-2xl font-bold text-primary text-center whitespace-nowrap">
+                            {t('onboarding.whoIsPlaying')}
+                        </h1>
+                    </div>
+
+                    {/* Desktop Layout: Single Row with Centered Title */}
+                    <div className="hidden md:flex justify-between items-center relative">
+                        <button
+                            onClick={toggleLanguage}
+                            className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-bold z-10"
+                            title="Switch Language"
+                        >
+                            <Globe size={20} />
+                            <span className="text-sm">{i18n.language === 'he' ? 'English' : 'עברית'}</span>
+                        </button>
+
+                        <h1 className="text-3xl font-bold text-primary absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            {t('onboarding.whoIsPlaying')}
+                        </h1>
+
+                        <button
+                            onClick={onParentAccess}
+                            className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors z-10"
+                        >
+                            <Users size={20} />
+                            <span className="text-sm font-bold">{t('onboarding.parentsAccess')}</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -82,21 +108,21 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                             className="group relative flex flex-col items-center p-4 bg-slate-50 hover:bg-blue-50 rounded-2xl border-2 border-transparent hover:border-blue-200 transition-all active:scale-95"
                         >
                             <div className="w-24 h-24 mb-3 flex items-center justify-center transform group-hover:scale-110 transition-transform overflow-hidden">
-                                {profile.mascot ? (
+                                {profile.mascotId ? (
                                     <Mascot
-                                        character={profile.mascot}
+                                        character={profile.mascotId}
                                         emotion="idle"
                                         className="w-full h-full"
                                     />
                                 ) : (
-                                    <span className="text-6xl">{profile.avatar}</span>
+                                    <span className="text-6xl">{profile.avatarId}</span>
                                 )}
                             </div>
                             <span className="text-xl font-bold text-slate-700 group-hover:text-blue-600">
                                 {profile.name}
                             </span>
-                            <span className="text-sm text-slate-400 mt-1">
-                                {t('zones.level')} {profile.currentLevel}
+                            <span className="text-sm text-slate-400 mt-1 flex items-center gap-1">
+                                {profile.streak > 0 && <span>⚡ {profile.streak}</span>}
                             </span>
 
                         </button>
