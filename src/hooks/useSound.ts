@@ -21,10 +21,10 @@ export const useSound = () => {
     const playSound = useCallback((type: SoundType) => {
         if (isMuted) return;
 
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContext) return;
+        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (!AudioContextClass) return;
 
-        const ctx = new AudioContext();
+        const ctx = new AudioContextClass();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 

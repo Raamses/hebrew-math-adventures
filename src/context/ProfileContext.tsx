@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { type UserProfile } from '../types/user';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -14,6 +14,7 @@ interface ProfileContextType {
     incrementStreak: () => void;
     updateMascot: (mascotId: 'owl' | 'bear' | 'ant' | 'lion') => void;
     updateProfile: (id: string, updates: Partial<UserProfile>) => void;
+    updateArcadeBestScore: (mode: string, score: number) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -40,7 +41,9 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     avatarId: p.avatarId || (p as any).avatar || '🦁',
                     settings: p.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false },
                     capabilities: p.capabilities || { ...INITIAL_CAPABILITY_PROFILE },
-                    streak: p.streak || 0
+
+                    streak: p.streak || 0,
+                    arcadeStats: p.arcadeStats || {}
                 }));
             } catch (error) {
                 console.error('Failed to parse profiles from local storage:', error);
@@ -58,7 +61,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [allProfiles]);
 
-    const createProfile = async (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
+    const createProfile = useCallback(async (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
         const newProfile: UserProfile = {
             id: crypto.randomUUID(),
             name,
@@ -74,7 +77,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 sfxVolume: 1,
                 isMuted: false
             },
-            capabilities: { ...INITIAL_CAPABILITY_PROFILE }
+            capabilities: { ...INITIAL_CAPABILITY_PROFILE },
+            arcadeStats: {}
         };
 
         setAllProfiles(prev => [...prev, newProfile]);
@@ -82,28 +86,28 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         logEvent('signup', { age, avatar_id: avatarId, mascot_id: mascotId });
         logEvent('login', { profile_id: newProfile.id, mascot_id: mascotId, age_group: age < 6 ? 'pre-k' : 'primary' });
-    };
+    }, [logEvent]);
 
-    const switchProfile = (profileId: string) => {
+    const switchProfile = useCallback((profileId: string) => {
         const selected = allProfiles.find(p => p.id === profileId);
         if (selected) {
             setProfileState(selected);
             logEvent('login', { profile_id: selected.id, mascot_id: selected.mascotId });
         }
-    };
+    }, [allProfiles, logEvent]);
 
-    const deleteProfile = (profileId: string) => {
+    const deleteProfile = useCallback((profileId: string) => {
         setAllProfiles(prev => prev.filter(p => p.id !== profileId));
         if (profile?.id === profileId) {
             setProfileState(null);
         }
-    };
+    }, [profile]);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         setProfileState(null);
-    };
+    }, []);
 
-    const incrementStreak = () => {
+    const incrementStreak = useCallback(() => {
         if (!profile) return;
         const newStreak = (profile.streak || 0) + 1;
         const updatedProfile = { ...profile, streak: newStreak };
@@ -113,16 +117,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (newStreak % 5 === 0) {
             logEvent('streak_milestone', { streak_count: newStreak, profile_id: profile.id });
         }
-    };
+    }, [profile, logEvent]);
 
-    const resetStreak = () => {
+    const resetStreak = useCallback(() => {
         if (!profile) return;
         const updatedProfile = { ...profile, streak: 0 };
         setProfileState(updatedProfile);
         setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
-    };
+    }, [profile]);
 
-    const updateMascot = (mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
+    const updateMascot = useCallback((mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
         if (!profile) return;
         const oldMascot = profile.mascotId;
         const updatedProfile = { ...profile, mascotId };
@@ -130,35 +134,57 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
 
         logEvent('mascot_change', { old_mascot: oldMascot, new_mascot: mascotId, profile_id: profile.id });
-    };
+    }, [profile, logEvent]);
 
-    const updateProfile = (id: string, updates: Partial<UserProfile>) => {
+    const updateProfile = useCallback((id: string, updates: Partial<UserProfile>) => {
         setAllProfiles(prev => prev.map(p => {
             if (p.id === id) {
                 const updated = { ...p, ...updates };
                 // If we updated the currently logged-in profile, update state
-                if (profile && profile.id === id) {
-                    setProfileState(updated);
-                }
+                // Use functional update to avoid dependency on 'profile' if possible, or just accept it.
+                // But wait, here we are inside setAllProfiles. We need external access to 'profile' state to update it.
+                // We can't access 'profile' state inside setAllProfiles easily without closure.
                 return updated;
             }
             return p;
         }));
-    };
+
+        // Also update local profile state if it matches
+        if (profile && profile.id === id) {
+            setProfileState(prev => prev ? { ...prev, ...updates } : null);
+        }
+    }, [profile]);
+
+    const updateArcadeBestScore = useCallback((mode: string, score: number) => {
+        if (!profile) return;
+        const currentBest = profile.arcadeStats?.[mode] || 0;
+        if (score > currentBest) {
+            updateProfile(profile.id, {
+                arcadeStats: {
+                    ...(profile.arcadeStats || {}),
+                    [mode]: score
+                }
+            });
+            // Optional: You could log an event here 'new_high_score'
+        }
+    }, [profile, updateProfile]);
+
+    const value = useMemo(() => ({
+        profile,
+        allProfiles,
+        createProfile,
+        switchProfile,
+        deleteProfile,
+        logout,
+        resetStreak,
+        incrementStreak,
+        updateMascot,
+        updateProfile,
+        updateArcadeBestScore
+    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore]);
 
     return (
-        <ProfileContext.Provider value={{
-            profile,
-            allProfiles,
-            createProfile,
-            switchProfile,
-            deleteProfile,
-            logout,
-            resetStreak,
-            incrementStreak,
-            updateMascot,
-            updateProfile
-        }}>
+        <ProfileContext.Provider value={value}>
             {children}
         </ProfileContext.Provider>
     );

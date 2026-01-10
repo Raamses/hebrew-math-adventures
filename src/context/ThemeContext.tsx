@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { getThemeById, THEMES, type Theme } from '../lib/themes';
+import { useProfile } from './ProfileContext';
+import type { ThemeId } from '../types/user';
 
 interface ThemeContextType {
     currentTheme: Theme;
-    setTheme: (themeId: string) => void;
+    setTheme: (themeId: ThemeId) => void;
     availableThemes: Theme[];
 }
 
@@ -12,18 +14,25 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const THEME_STORAGE_KEY = 'hebrew-math-theme';
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [currentTheme, setCurrentThemeState] = useState<Theme>(THEMES[0]); // Default theme
+    // Default to first theme or valid localStorage fallback
+    const [currentTheme, setCurrentThemeState] = useState<Theme>(() => {
+        const saved = localStorage.getItem(THEME_STORAGE_KEY);
+        return (saved && getThemeById(saved)) || THEMES[0];
+    });
 
-    // Load theme from localStorage on mount
+    // We consume ProfileContext to sync theme
+    // Note: ProfileProvider must wrap ThemeProvider in App.tsx
+    const { profile, updateProfile } = useProfile();
+
+    // Sync state with Profile when logged in
     useEffect(() => {
-        const savedThemeId = localStorage.getItem(THEME_STORAGE_KEY);
-        if (savedThemeId) {
-            const theme = getThemeById(savedThemeId);
-            if (theme) {
-                setCurrentThemeState(theme);
+        if (profile?.themeId) {
+            const profileTheme = getThemeById(profile.themeId);
+            if (profileTheme && profileTheme.id !== currentTheme.id) {
+                setCurrentThemeState(profileTheme);
             }
         }
-    }, []);
+    }, [profile?.themeId]);
 
     // Apply theme CSS variables whenever theme changes
     useEffect(() => {
@@ -44,14 +53,22 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             root.style.setProperty('--background-pattern', 'none');
         }
 
-        // Save to localStorage
-        localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
-    }, [currentTheme]);
+        // If NO profile is logged in, persist to localStorage for next guest visit
+        if (!profile) {
+            localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
+        }
+    }, [currentTheme, profile]);
 
-    const setTheme = (themeId: string) => {
+    const setTheme = (themeId: ThemeId) => {
         const theme = getThemeById(themeId);
         if (theme) {
+            // Immediate UI update
             setCurrentThemeState(theme);
+
+            // If logged in, persist to profile
+            if (profile) {
+                updateProfile(profile.id, { themeId });
+            }
         }
     };
 

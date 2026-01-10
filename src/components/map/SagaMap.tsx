@@ -9,6 +9,7 @@ import { motion, type Variants } from 'framer-motion';
 interface SagaMapProps {
     onNodeSelect: (node: LearningNode) => void;
     onLogout: () => void;
+    onArcadeMode: () => void;
 }
 
 const containerVariants: Variants = {
@@ -37,7 +38,7 @@ const nodeVariants: Variants = {
 
 import { useAnalytics } from '../../hooks/useAnalytics';
 
-export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout }) => {
+export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode }) => {
     const { isNodeLocked, getStars } = useProgress();
     const { t, i18n } = useTranslation();
     const { logEvent } = useAnalytics();
@@ -70,14 +71,24 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout }) => {
                     {t('app.journey')}
                 </h1>
 
-                <button
-                    onClick={onLogout}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                    title={t('menu.logout')}
-                    aria-label={t('menu.logout')}
-                >
-                    <LogOut size={20} aria-hidden="true" />
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={onArcadeMode}
+                        className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-bold shadow-sm transition-colors flex items-center gap-1"
+                    >
+                        <Globe size={16} /> {/* Should probably import Joystick or Gamepad icon but Globe is available */}
+                        <span>{t('app.arcade')}</span>
+                    </button>
+
+                    <button
+                        onClick={onLogout}
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        title={t('menu.logout')}
+                        aria-label={t('menu.logout')}
+                    >
+                        <LogOut size={20} aria-hidden="true" />
+                    </button>
+                </div>
             </header>
 
             <motion.div

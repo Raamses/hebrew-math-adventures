@@ -2,15 +2,15 @@
     "app": {
         "title": "הרפתקאות חשבון",
         "streak": "רצף",
-        "streakTooltip": "רצף נצחונות: תשובות נכונות ברצף!",
+        "streakTooltip": "רצף ימים",
         "worldMap": "מפת העולם",
         "greeting": "היי {{name}}! מוכן לשחק?",
         "journey": "המסע שלי",
-        "switchLanguage": "החלף שפה"
-    },
-    "wordProblems": {
-        "apples_add": "לדן יש {{n1}} תפוחים. הוא מקבל עוד {{n2}}. כמה תפוחים יש לדן עכשיו?",
-        "candies_sub": "לשרה יש {{n1}} סוכריות. היא אוכלת {{n2}}. כמה סוכריות נשארו?"
+        "arcade": "משחקי ארקייד",
+        "switchLanguage": "החלף שפה",
+        "common": {
+            "close": "סגור"
+        }
     },
     "menu": {
         "settings": "הגדרות",
@@ -216,6 +216,10 @@
         },
         "frenzy": "טירוף!"
     },
+    "wordProblems": {
+        "apples_add": "לדן יש {{n1}} תפוחים. הוא מקבל עוד {{n2}}. כמה תפוחים יש לדן עכשיו?",
+        "candies_sub": "לשרה יש {{n1}} סוכריות. היא אוכלת {{n2}}. כמה סוכריות נשארו?"
+    },
     "lessons": {
         "multiplication": {
             "title": "הקדמה לכפל",
@@ -290,5 +294,21 @@
         "locked": "נעול",
         "play": "שחק",
         "back": "חזור"
+    },
+    "practice": {
+        "chooseMode": "בחר/י איך תרצה/י לשחק היום",
+        "noRecord": "אין שיא",
+        "zen": {
+            "title": "Zen Math",
+            "desc": "קחו את הזמן. בלי טיימרים, רק למידה."
+        },
+        "time": {
+            "title": "Time Attack",
+            "desc": "נגד השעון! +2 שניות לכל תשובה נכונה."
+        },
+        "survival": {
+            "title": "Survival",
+            "desc": "3 פסילות. אסור לטעות!"
+        }
     }
 }

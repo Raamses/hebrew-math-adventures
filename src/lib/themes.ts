@@ -1,5 +1,7 @@
+import type { ThemeId } from '../types/user';
+
 export interface Theme {
-    id: string;
+    id: ThemeId;
     name: string;
     nameHebrew: string;
     unlockStars: number;

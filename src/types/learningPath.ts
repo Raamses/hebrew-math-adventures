@@ -16,7 +16,7 @@ export interface LearningNode {
 
     // Configuration for the engine
     targetLevel?: number; // Mapping to legacy system if needed
-    config?: any; // Specific config for the problem generator (e.g. target number: 5)
+    config?: Record<string, unknown>; // Specific config for the problem generator (e.g. target number: 5)
 }
 
 export interface LearningUnit {

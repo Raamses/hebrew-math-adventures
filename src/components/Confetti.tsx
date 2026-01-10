@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
@@ -18,11 +18,12 @@ interface Particle {
 }
 
 export const Confetti = () => {
-    const [particles, setParticles] = useState<Particle[]>([]);
+    // Generate particles lazy-only logic (runs once on mount)
+    // We check window availability to be safe for SSR, though this app is CSR.
+    const [particles] = useState<Particle[]>(() => {
+        if (typeof window === 'undefined') return [];
 
-    useEffect(() => {
-        // Generate particles only on the client to avoid hydration mismatch
-        const newParticles = Array.from({ length: PARTICLE_COUNT }).map((_, i) => ({
+        return Array.from({ length: PARTICLE_COUNT }).map((_, i) => ({
             id: i,
             x: (Math.random() - 0.5) * window.innerWidth * 1.5,
             y: (Math.random() - 0.5) * window.innerHeight * 1.5,
@@ -32,8 +33,7 @@ export const Confetti = () => {
             delay: Math.random() * 0.2,
             color: COLORS[i % COLORS.length],
         }));
-        setParticles(newParticles);
-    }, []);
+    });
 
     // Don't render anything until we have particles (client-side only)
     if (particles.length === 0) return null;
