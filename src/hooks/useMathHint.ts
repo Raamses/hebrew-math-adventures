@@ -7,6 +7,7 @@ export function useMathHint(operand1: number, operand2: number, operator: string
     const num2Digits = operand2.toString().padStart(3, '0').split('').map(Number);
     const isAddition = operator === '+';
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const { focusIndex, isBorrowOrCarry } = useMemo(() => {
         // Evaluate from right (Ones) to left
         for (let i = 2; i >= 0; i--) {

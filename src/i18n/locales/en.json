@@ -2,11 +2,15 @@
     "app": {
         "title": "Math Adventures",
         "streak": "Streak",
-        "streakTooltip": "Win Streak: Correct answers in a row!",
+        "streakTooltip": "Day Streak",
         "worldMap": "World Map",
         "greeting": "Hi {{name}}! Ready to play?",
         "journey": "My Journey",
-        "switchLanguage": "Switch Language"
+        "arcade": "Arcade Games",
+        "switchLanguage": "Switch Language",
+        "common": {
+            "close": "Close"
+        }
     },
     "menu": {
         "settings": "Settings",
@@ -290,5 +294,22 @@
         "locked": "Locked",
         "play": "Play",
         "back": "Back"
+    },
+    "practice": {
+        "chooseMode": "Choose Your Challenge",
+        "chooseModeDesc": "Select how you want to play today",
+        "noRecord": "No Record",
+        "zen": {
+            "title": "Zen Math",
+            "desc": "Take your time. No timers, just learning."
+        },
+        "time": {
+            "title": "Time Attack",
+            "desc": "Race the clock! +2s for correct answers."
+        },
+        "survival": {
+            "title": "Survival",
+            "desc": "3 Lives. Don't make a mistake!"
+        }
     }
 }

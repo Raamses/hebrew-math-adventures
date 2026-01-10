@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { SagaProgress } from '../types/learningPath';
 import { CURRICULUM } from '../data/learningPath';
+import { useProfile } from './ProfileContext';
+import { getInitialProgress } from '../lib/progression';
 
 interface ProgressContextType {
     progress: SagaProgress;
@@ -15,40 +17,62 @@ const ProgressContext = createContext<ProgressContextType | undefined>(undefined
 const STORAGE_KEY = 'hebrew_game_saga_progress_v1';
 
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    // Load from storage on mount (Lazy Initialization)
-    const [progress, setProgress] = useState<SagaProgress>(() => {
-        if (typeof window === 'undefined') return {}; // SSR safety
+    const { profile } = useProfile();
+    const [progress, setProgress] = useState<SagaProgress>({});
+    const [isLoaded, setIsLoaded] = useState(false);
 
-        const saved = localStorage.getItem(STORAGE_KEY);
-        let currentProgress: SagaProgress = {};
+    // Load progress when profile changes
+    useEffect(() => {
+        if (!profile) {
+            setProgress({});
+            setIsLoaded(false);
+            return;
+        }
+
+        const userKey = `${STORAGE_KEY}_${profile.id}`;
+        const saved = localStorage.getItem(userKey);
 
         if (saved) {
             try {
-                currentProgress = JSON.parse(saved);
+                setProgress(JSON.parse(saved));
             } catch (e) {
-                console.error("Failed to load progress", e);
+                console.error("Failed to load progress for user", profile.id, e);
+                // Fallback to age-based init on corruption
+                setProgress(getInitialProgress(profile.age || 5));
+            }
+        } else {
+            // New User or Migration
+            // Check for legacy global progress to migrate
+            const legacyGlobal = localStorage.getItem(STORAGE_KEY);
+            if (legacyGlobal) {
+                try {
+                    const legacyProgress = JSON.parse(legacyGlobal);
+                    // Only migrate if it looks valid
+                    if (Object.keys(legacyProgress).length > 0) {
+                        setProgress(legacyProgress);
+                        // Optional: Clear legacy? Better to keep as backup for now.
+                        // localStorage.removeItem(STORAGE_KEY); 
+                    } else {
+                        throw new Error("Empty legacy");
+                    }
+                } catch {
+                    setProgress(getInitialProgress(profile.age || 5));
+                }
+            } else {
+                // Brand new user, no legacy
+                setProgress(getInitialProgress(profile.age || 5));
             }
         }
+        setIsLoaded(true);
+    }, [profile]);
 
-        // Ensure first node is always unlocked (migration/fallback)
-        const firstNodeId = CURRICULUM[0]?.nodes[0]?.id;
-        if (firstNodeId && (!currentProgress[firstNodeId] || currentProgress[firstNodeId].isLocked)) {
-            // If missing or locked (shouldn't be), unlock it
-            currentProgress = {
-                ...currentProgress,
-                [firstNodeId]: { stars: 0, isLocked: false, mistakes: 0 }
-            };
-        }
-
-        return currentProgress;
-    });
-
-    // Save on change
+    // Save on change (Debounced slightly by React batching, but good to be safe)
     useEffect(() => {
-        if (Object.keys(progress).length > 0) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        if (profile && isLoaded && Object.keys(progress).length > 0) {
+            const userKey = `${STORAGE_KEY}_${profile.id}`;
+            localStorage.setItem(userKey, JSON.stringify(progress));
         }
-    }, [progress]);
+    }, [progress, profile, isLoaded]);
 
     // Derived State: Total Stars
     const totalStars = React.useMemo(() => {
@@ -56,6 +80,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, [progress]);
 
     const completeNode = (nodeId: string, stars: number): void => {
+        if (!profile) return; // Guard: No anonymous progress
+
         setProgress(prev => {
             const current = prev[nodeId] || { isLocked: false, stars: 0 };
 
@@ -96,8 +122,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const isNodeLocked = (nodeId: string): boolean => {
-        // If not in progress map, it's locked (unless it's the very first one logic handled in init)
-        // Actually simpler: defaults to locked if not in map
+        // If not in progress map, it's locked
         return !progress[nodeId] || progress[nodeId].isLocked;
     };
 

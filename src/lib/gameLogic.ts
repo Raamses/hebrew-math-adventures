@@ -47,3 +47,19 @@ export interface SensoryProblem extends BaseProblem {
 
 export type Problem = ArithmeticProblem | ComparisonProblem | SeriesProblem | WordProblem | SensoryProblem;
 
+export const formatProblemEquation = (p: Problem): string => {
+    if (p.type === 'arithmetic') {
+        const ap = p as ArithmeticProblem;
+        return `${ap.num1} ${ap.operator} ${ap.num2}`;
+    }
+    if (p.type === 'compare') {
+        return `${(p as ComparisonProblem).num1} ? ${(p as ComparisonProblem).num2}`;
+    }
+    if (p.type === 'series') {
+        return `Series: ${(p as SeriesProblem).sequence.join(', ')}`;
+    }
+    if (p.type === 'word') {
+        return `Word Problem: ${(p as WordProblem).questionKey}`;
+    }
+    return 'Unknown Problem';
+};

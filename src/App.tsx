@@ -26,22 +26,25 @@ const AppContent = () => {
   const [showParentGate, setShowParentGate] = useState(false);
   const [selectedNode, setSelectedNode] = useState<LearningNode | null>(null);
 
-  // Effect to sync view with profile state
-  useEffect(() => {
-    if (profile) {
-      if (view === 'select') {
-        setView('map');
-      }
-    } else {
-      if (view !== 'parent') {
-        setView('select');
-      }
-    }
-  }, [profile, view]);
+  console.log('App Render:', { view, profileId: profile?.id, selectedNode });
+
+  // Derived View State (replaces synchronization effect)
+  let effectiveView = view;
+  if (!profile && view !== 'parent') {
+    effectiveView = 'select';
+  } else if (profile && view === 'select') {
+    effectiveView = 'map';
+  }
 
   const handleNodeSelect = (node: LearningNode) => {
     if (!profile) return;
     setSelectedNode(node);
+    setView('game');
+  };
+
+  const handleArcadeMode = () => {
+    if (!profile) return;
+    setSelectedNode(null); // Explicitly null for Free Play
     setView('game');
   };
 
@@ -56,7 +59,7 @@ const AppContent = () => {
     setSelectedNode(null);
   };
 
-  if (view === 'parent') {
+  if (effectiveView === 'parent') {
     return <ParentDashboard onExit={() => setView('select')} />;
   }
 
@@ -77,9 +80,9 @@ const AppContent = () => {
     );
   }
 
-  if (view === 'map') {
+  if (effectiveView === 'map') {
     return (
-      <SagaMap onNodeSelect={handleNodeSelect} onLogout={handleLogout} />
+      <SagaMap onNodeSelect={handleNodeSelect} onLogout={handleLogout} onArcadeMode={handleArcadeMode} />
     );
   }
 
@@ -95,13 +98,19 @@ const AppContent = () => {
     }
   }
 
-  return (
-    <GameOrchestrator
-      onExit={handleGameExit}
-      targetLevel={effectiveLevel}
-      node={selectedNode}
-    />
-  );
+  if (effectiveView === 'game') {
+    return (
+      <GameOrchestrator
+        onExit={handleGameExit}
+        targetLevel={effectiveLevel}
+        node={selectedNode}
+      />
+    );
+  }
+
+  // Fallback / Loading / Error State
+  // This prevents accidental rendering of the Game during transitions
+  return null;
 };
 
 const App = () => {
