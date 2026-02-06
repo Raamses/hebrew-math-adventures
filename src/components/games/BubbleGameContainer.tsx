@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { GameConfig, IGameBehavior } from '../../engines/bubble/types';
 import { useGameEngine } from '../../engines/bubble/useGameEngine';
 import { Bubble } from '../sensory/Bubble';
@@ -45,10 +46,14 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const { playSound } = useSound();
     const { logEvent } = useAnalytics();
 
-    // Visual Effects State
-    const [explosions, setExplosions] = React.useState<{ id: string; x: number; y: number }[]>([]);
+    const { t } = useTranslation();
 
-    const onPopWrapper = React.useCallback((id: string, val: number, x: number, y: number) => {
+    // ... (rest of the hook calls)
+
+    // Visual Effects State
+    const [explosions, setExplosions] = useState<{ id: string; x: number; y: number }[]>([]);
+
+    const onPopWrapper = useCallback((id: string, val: number, x: number, y: number) => {
         const isCorrect = enginePop(id);
 
         // Log Analytics
@@ -99,12 +104,12 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
                     <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
                         <h1 className="text-2xl font-bold text-blue-600 whitespace-nowrap drop-shadow-sm">
-                            {title || 'Blast Off'}
+                            {title || t('game.bubble.title', 'Blast Off')}
                         </h1>
                         {instruction && (
                             <div className="bg-white/80 backdrop-blur-md px-6 py-2 rounded-2xl shadow-sm border border-blue-100 mt-1">
                                 <span className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wider font-mono">
-                                    {instruction}
+                                    {t(instruction.key, instruction.params as any)}
                                 </span>
                             </div>
                         )}

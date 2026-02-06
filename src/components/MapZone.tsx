@@ -36,8 +36,8 @@ export const MapZone: React.FC<MapZoneProps> = ({ zone, currentLevel, onSelect, 
                         <zone.icon size={32} className={isLocked ? 'text-slate-400' : zone.themeColor} />
                     </div>
                     <div className="text-start">
-                        <h3 className="text-xl font-bold text-slate-800">{t(zone.name)}</h3>
-                        <p className="text-sm text-slate-500">{t(zone.description)}</p>
+                        <h3 className="text-xl font-bold text-slate-800">{t(zone.name as any)}</h3>
+                        <p className="text-sm text-slate-500">{t(zone.description as any)}</p>
                         <span className="text-xs font-medium text-slate-400 mt-1 block">
                             {t('zones.stages')} {zone.minLevel}-{zone.maxLevel}
                         </span>

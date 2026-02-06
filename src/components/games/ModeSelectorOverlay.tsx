@@ -106,8 +106,8 @@ export const ModeSelectorOverlay: React.FC<ModeSelectorOverlayProps> = ({ onSele
                         className="relative w-full max-w-6xl flex flex-col items-center"
                     >
                         {/* Header */}
-                        <motion.div variants={itemVariants} className="mb-8 md:mb-12">
-                            <h1 className="text-4xl md:text-6xl font-black text-white drop-shadow-lg mb-2 tracking-tight">
+                        <motion.div variants={itemVariants} className="mb-8 md:mb-12 w-full text-center">
+                            <h1 className="text-4xl md:text-6xl font-black text-white drop-shadow-lg mb-2 tracking-tight w-full text-center">
                                 {t('practice.chooseMode', 'Choose Your Challenge')}
                             </h1>
                             <p className="text-white/80 font-medium text-lg max-w-lg mx-auto leading-relaxed">

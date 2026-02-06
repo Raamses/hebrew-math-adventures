@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 // --- Constants & Config ---
@@ -46,11 +46,12 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
     const bubbleRef = useRef<HTMLButtonElement>(null);
 
     // Stable random duration based on variant
-    const randomDuration = useMemo(() => {
+    // Stable random duration based on variant
+    const [randomDuration] = React.useState(() => {
         const base = variant === 'small' ? 8 : variant === 'large' ? 16 : 12;
         const range = variant === 'small' ? 6 : variant === 'large' ? 8 : 8;
         return base + Math.random() * range;
-    }, [variant]);
+    });
 
     // Off-Screen Detection
     // We keep the IntersectionObserver because Framer Motion's onViewportLeave is for *layout* elements, 

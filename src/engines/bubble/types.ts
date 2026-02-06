@@ -48,7 +48,7 @@ export interface GameConfig {
 
 // --- Entities ---
 
-export interface BubbleEntity<T = any> {
+export interface BubbleEntity<T = unknown> {
     id: string;
     /** Horizontal position (0-100%) */
     x: number;
@@ -86,8 +86,16 @@ export interface IGameBehavior {
      */
     initializeLevel(level: number, config: GameConfig): void;
 
-    /** Optional: Get current objective instruction (e.g. "2 + 2 = ?") */
-    getInstruction?(): string;
+    /** 
+     * Optional: Get current objective instruction 
+     * Returns a translation key and params payload.
+     */
+    getInstruction?(): InstructionPayload;
+}
+
+export interface InstructionPayload {
+    key: string;
+    params?: Record<string, string | number>;
 }
 
 export interface GameState {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,17 +9,15 @@ interface ParentGateProps {
 
 export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) => {
     const { t, i18n } = useTranslation();
-    const [problem, setProblem] = useState<{ n1: number, n2: number } | null>(null);
+
+    // Lazy init for random problem generation to avoid effect-state-update warnings
+    const [problem] = useState<{ n1: number, n2: number }>(() => ({
+        n1: Math.floor(Math.random() * 40) + 10,
+        n2: Math.floor(Math.random() * 40) + 10
+    }));
+
     const [answer, setAnswer] = useState('');
     const [error, setError] = useState(false);
-
-    useEffect(() => {
-        // Generate random 2-digit addition problem
-        setProblem({
-            n1: Math.floor(Math.random() * 40) + 10,
-            n2: Math.floor(Math.random() * 40) + 10
-        });
-    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

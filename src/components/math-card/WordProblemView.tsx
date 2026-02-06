@@ -22,7 +22,7 @@ export function WordProblemView({
     return (
         <div className="flex flex-col items-center w-full max-w-lg mb-8">
             <p className="text-xl sm:text-2xl text-slate-700 font-medium text-center mb-6 leading-relaxed">
-                {t(problem.questionKey, problem.params)}
+                {t(problem.questionKey, problem.params as any)}
             </p>
             <div className="flex items-center gap-3">
                 <span className="text-2xl font-bold text-slate-400">=</span>

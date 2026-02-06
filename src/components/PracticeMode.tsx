@@ -14,7 +14,7 @@ import { SessionProgressBar } from './SessionProgressBar';
 import { GameMenuModal } from './GameMenuModal';
 import { SessionSummary } from './SessionSummary';
 import { SettingsModal } from './SettingsModal';
-import { ModeSelectorOverlay } from './games/ModeSelectorOverlay';
+import { SagaModeSelect } from './games/SagaModeSelect';
 import { ArcadeHUD } from './games/ArcadeHUD';
 import type { GameMode } from '../hooks/usePracticeSession';
 import { PracticeHeader } from './practice/PracticeHeader';
@@ -40,7 +40,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     const { logEvent } = useAnalytics();
 
     // Track start time for current problem
-    const problemStartTime = useRef(Date.now());
+    // Track start time for current problem
+    const problemStartTime = useRef<number>(0);
+    // Initialize on mount if needed, though effect handles updates
+    useEffect(() => {
+        if (problemStartTime.current === 0) problemStartTime.current = Date.now();
+    }, []);
 
     // Reset timer when problem changes
     useEffect(() => {
@@ -54,7 +59,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         initSession,
         restartSession,
         submitResult,
-        evaluateAnswer
+        evaluateAnswer,
+        nextProblem
     } = usePracticeSession({ targetLevel, problemConfig });
 
     // UI Feedback State
@@ -68,8 +74,11 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     // Mode Selection State
     // If problemConfig is present, we are in a Lesson/Saga context -> Auto Standard Mode
     // If absent, we are in Free Play -> Show Mode Selector
+    // Mode Selection State
+    // If problemConfig is present, we are in a Lesson/Saga context -> Auto Standard Mode
+    // If absent, we are in Free Play -> Show Mode Selector
     const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(!problemConfig);
-    const hasInitializedRef = useRef(!!problemConfig);
+    const [hasInitialized, setHasInitialized] = useState(!!problemConfig);
 
     // Mascot State
     const [mascotEmotion, setMascotEmotion] = useState<MascotEmotion>('idle');
@@ -100,7 +109,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 setShowSummary(true);
                 if (onComplete) onComplete(true);
             } else {
-                initSession(currentSession.mode); // Generate next
+                nextProblem(); // Generate next without reset
             }
         },
         onWrongComplete: () => {
@@ -151,7 +160,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
     const handleModeSelect = (mode: GameMode) => {
         setIsModeSelectorOpen(false);
-        hasInitializedRef.current = true;
+        setHasInitialized(true);
         initSession(mode);
     };
 
@@ -193,7 +202,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         } else {
             playSound('wrong');
             const evalResult = evaluateAnswer(problem, 'WRONG');
-            setFeedback(t(evalResult.message || 'feedback.defaultError'));
+            setFeedback(t((evalResult.message || 'feedback.defaultError') as any));
 
             if (resetStreak) resetStreak();
 
@@ -230,15 +239,17 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center p-4 relative overflow-hidden" dir={i18n.dir()}>
             {/* Mode Selector Overlay */}
-            <ModeSelectorOverlay
-                isOpen={isModeSelectorOpen}
-                onSelectMode={handleModeSelect}
-                bestScores={profile.arcadeStats}
-                onClose={onExit}
-            />
+            {/* Mode Selector Overlay - Saga Style */}
+            {isModeSelectorOpen && (
+                <SagaModeSelect
+                    onSelectMode={handleModeSelect}
+                    onClose={onExit}
+                    bestScores={profile.arcadeStats}
+                />
+            )}
 
             {/* Game Content - Only render if initialized (to prevent flash of empty state behind selector) */}
-            {hasInitializedRef.current && problem && (
+            {hasInitialized && problem && (
                 <>
                     <PracticeFeedback
                         mascotEmotion={mascotEmotion}
@@ -258,7 +269,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                     {/* Header with Settings - Increased Z-index to 30 to stay above MathCard (z-10) */}
                     <div className="w-full max-w-md z-30 relative mb-2">
                         <PracticeHeader
-                            targetLevel={targetLevel}
+                            combo={session.combo}
                             onPause={() => setIsMenuOpen(true)}
                             onOpenSettings={() => setIsSettingsOpen(true)}
                         />
@@ -273,7 +284,6 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                             score={session.score}
                             lives={session.lives}
                             timeLeft={session.timeLeft}
-                            combo={session.combo}
                         />
                     )}
 

@@ -116,8 +116,14 @@ export const DivisionHint: React.FC<DivisionHintProps> = ({ operand1, operand2, 
                         const itemsInBasketSoFar = Math.floor(i / operand2);
                         // Stack apples in the basket
                         const targetY = basketY - 15 - (itemsInBasketSoFar * 15);
-                        // Offset slightly for natural look
-                        const offsetX = (i % 2 === 0 ? -10 : 10) * (Math.random() * 0.5 + 0.5);
+
+                        // Use deterministic pseudo-random or simple math for stability if useMemo is too heavy refactor?
+                        // Better: just us a standard offset pattern without random, OR simplistic hash.
+                        // (i % 2 === 0 ? -10 : 10) is deterministic. * (Math.random()...) is not.
+                        // Replaced with deterministic variation based on index
+                        const randomFactor = ((i * 1337) % 100) / 100; // Pseudo-random 0-1
+                        const offsetX = (i % 2 === 0 ? -10 : 10) * (randomFactor * 0.5 + 0.5);
+
                         const appleColor = basketColors[targetBasketIndex % basketColors.length];
 
                         return (

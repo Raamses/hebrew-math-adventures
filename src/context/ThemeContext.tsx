@@ -25,14 +25,17 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const { profile, updateProfile } = useProfile();
 
     // Sync state with Profile when logged in
-    useEffect(() => {
+    // Sync state with Profile when logged in (Render-time update pattern)
+    const [prevProfileThemeId, setPrevProfileThemeId] = useState(profile?.themeId);
+    if (profile?.themeId !== prevProfileThemeId) {
+        setPrevProfileThemeId(profile?.themeId);
         if (profile?.themeId) {
             const profileTheme = getThemeById(profile.themeId);
             if (profileTheme && profileTheme.id !== currentTheme.id) {
                 setCurrentThemeState(profileTheme);
             }
         }
-    }, [profile?.themeId]);
+    }
 
     // Apply theme CSS variables whenever theme changes
     useEffect(() => {

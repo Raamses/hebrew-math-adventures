@@ -97,7 +97,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                             <button
                                 onClick={() => {
                                     navigator.clipboard.writeText(JSON.stringify(profile, null, 2));
-                                    alert(t('settings.debugCopied') || 'Debug data copied to clipboard!');
+                                    console.log(t('settings.debugCopied') || 'Debug data copied to clipboard!');
                                 }}
                                 className="text-slate-400 text-sm hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
                             >

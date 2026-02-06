@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { NumberInput } from "./NumberInput";
 import type { Problem } from "../../lib/gameLogic";
 
@@ -16,12 +17,18 @@ export function SeriesView({
     setAnswer,
     isProcessing,
 }: SeriesViewProps) {
+    const { t } = useTranslation();
+
     if (problem.type !== "series") return null;
+
+    const sequenceString = problem.sequence.join(', ');
 
     return (
         <div
             className="flex flex-nowrap items-center justify-start md:justify-center gap-1 sm:gap-2 w-full mb-8 px-1 sm:px-4 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-hide snap-x md:snap-none"
             dir="ltr"
+            role="group"
+            aria-label={t('math.completeSequence', { sequence: sequenceString } as any)}
         >
             {problem.sequence.map((num, idx) => (
                 <React.Fragment key={idx}>

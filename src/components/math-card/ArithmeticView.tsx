@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { NumberInput } from "./NumberInput";
 import type { Problem } from "../../lib/gameLogic";
 
@@ -17,6 +18,8 @@ export function ArithmeticView({
     isProcessing,
     wrongAttempts,
 }: ArithmeticViewProps) {
+    const { t } = useTranslation();
+
     if (problem.type !== "arithmetic") return null;
 
     const renderNum1 = () => {
@@ -91,6 +94,8 @@ export function ArithmeticView({
             className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-3xl sm:text-5xl font-bold text-slate-800 mb-6"
             dir="ltr"
             style={{ direction: "ltr" }}
+            role="img"
+            aria-label={`${problem.num1} ${t(`math.${problem.operator === '+' ? 'plus' : problem.operator === '-' ? 'minus' : problem.operator === '*' ? 'times' : 'divide'}` as any)} ${problem.num2} ${t('math.equals')} ${problem.missing === 'answer' ? '?' : problem.answer}`}
         >
             {renderNum1()}
             <span className="text-primary mx-1">{operatorSymbol}</span>

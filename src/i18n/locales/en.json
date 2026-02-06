@@ -7,10 +7,13 @@
         "greeting": "Hi {{name}}! Ready to play?",
         "journey": "My Journey",
         "arcade": "Arcade Games",
-        "switchLanguage": "Switch Language",
-        "common": {
-            "close": "Close"
-        }
+        "switchLanguage": "Switch Language"
+    },
+    "common": {
+        "close": "Close",
+        "prev": "Previous",
+        "next": "Next",
+        "step": "Step {{step}}"
     },
     "menu": {
         "settings": "Settings",
@@ -160,7 +163,8 @@
         "mascotPrompt": "Choose your companion:",
         "mascotNote": "Your friend will join you and cheer you on!",
         "close": "Close",
-        "unlockLevel": "🔒 Unlocks at level {{level}}"
+        "unlockLevel": "🔒 Unlocks at level {{level}}",
+        "debugCopied": "Debug data copied to clipboard!"
     },
     "game": {
         "progress": "Progress",
@@ -187,6 +191,7 @@
             "weHad": "We had ",
             "weRemoved": "We removed ",
             "weHaveLeft": "We have {{count}} circles left!",
+            "simpleCalc": "Now perform the calculation",
             "stepByStepAdd": "Step by Step - Vertical Addition",
             "stepByStepSub": "Step by Step - Subtraction with Borrowing",
             "step1": "Step 1: Start",
@@ -214,7 +219,10 @@
             "tens": "Tens",
             "hundreds": "Hundreds"
         },
-        "frenzy": "FRENZY!"
+        "frenzy": "FRENZY!",
+        "bubble": {
+            "title": "Blast Off"
+        }
     },
     "wordProblems": {
         "apples_add": "Dan has {{n1}} apples. He gets {{n2}} more. How many apples does Dan have now?",
@@ -301,15 +309,42 @@
         "noRecord": "No Record",
         "zen": {
             "title": "Zen Math",
-            "desc": "Take your time. No timers, just learning."
+            "desc": "Take your time. No timers, just learning.",
+            "rule1": "Solve 10 problems",
+            "rule2": "No time limit",
+            "rule3": "Earn stars for accuracy"
         },
         "time": {
             "title": "Time Attack",
-            "desc": "Race the clock! +2s for correct answers."
+            "desc": "Race the clock! +2s for correct answers.",
+            "rule1": "Start with 60 seconds",
+            "rule2": "+2 seconds per correct answer",
+            "rule3": "Game over when time runs out"
         },
         "survival": {
             "title": "Survival",
-            "desc": "3 Lives. Don't make a mistake!"
+            "desc": "3 Lives. Don't make a mistake!",
+            "rule1": "You have 3 hearts",
+            "rule2": "Wrong answer loses a heart",
+            "rule3": "Survive as long as you can"
+        }
+    },
+    "score": "Score",
+    "combo": "COMBO",
+    "math": {
+        "plus": "plus",
+        "minus": "minus",
+        "times": "times",
+        "divide": "divided by",
+        "equals": "equals",
+        "blank": "blank",
+        "completeSequence": "Complete the sequence: {{sequence}}, blank"
+    },
+    "bubble": {
+        "instruction": {
+            "pop": "Pop bubbles!",
+            "popTarget": "Pop {{target}}",
+            "solve": "{{num1}} {{operator}} {{num2}} = ?"
         }
     }
 }

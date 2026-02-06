@@ -86,7 +86,7 @@ export class ArithmeticFactory implements IProblemFactory {
                 } while ((num1 % 100) + (num2 % 100) < 100);
                 break;
 
-            case ProblemTypes.SUBTRACTION_SIMPLE:
+            case ProblemTypes.SUBTRACTION_SIMPLE: {
                 operator = '-';
                 subType = 'simple';
                 if (level <= 3) {
@@ -99,8 +99,9 @@ export class ArithmeticFactory implements IProblemFactory {
                     num2 = RandomUtils.intInRange(0, num1);
                 }
                 break;
+            }
 
-            case ProblemTypes.SUBTRACTION_BORROW:
+            case ProblemTypes.SUBTRACTION_BORROW: {
                 operator = '-';
                 subType = 'borrow';
                 num1 = RandomUtils.intInRange(100, 900);
@@ -111,8 +112,9 @@ export class ArithmeticFactory implements IProblemFactory {
                 num2 = (Math.floor(num2 / 10) * 10) + digit2; // Adjust last digit
                 if (num2 > num1) num2 -= 10; // Ensure subtraction validity
                 break;
+            }
 
-            case ProblemTypes.SUBTRACTION_ZERO:
+            case ProblemTypes.SUBTRACTION_ZERO: {
                 operator = '-';
                 subType = 'zero';
                 const hundreds = RandomUtils.intInRange(1, 10);
@@ -121,21 +123,24 @@ export class ArithmeticFactory implements IProblemFactory {
                 num2 = RandomUtils.intInRange(10, 100);
                 if (num2 > num1) num2 = Math.floor(num1 / 2);
                 break;
+            }
 
-            case ProblemTypes.MULTIPLICATION:
+            case ProblemTypes.MULTIPLICATION: {
                 operator = '*';
                 const multMax = config?.max || 10;
                 num1 = RandomUtils.intInRange(1, multMax + 1);
                 num2 = RandomUtils.intInRange(1, multMax + 1);
                 break;
+            }
 
-            case ProblemTypes.DIVISION:
+            case ProblemTypes.DIVISION: {
                 operator = '/';
                 const answerMax = config?.max || 10;
                 num2 = RandomUtils.intInRange(2, 11);
                 answer = RandomUtils.intInRange(1, answerMax + 1);
                 num1 = answer * num2;
                 break;
+            }
         }
 
         // Calculate answer if not pre-calculated (like inside division)
@@ -175,11 +180,9 @@ export class AlgebraicFactory implements IProblemFactory {
 
 export class ComparisonFactory implements IProblemFactory {
     generate(level: number, _type: string, config?: BaseProblemConfig): ComparisonProblem {
-        let num1, num2;
-
         const max = config?.max || (level <= 2 ? 10 : 100);
-        num1 = RandomUtils.intInRange(1, max + 1);
-        num2 = RandomUtils.intInRange(1, max + 1);
+        const num1 = RandomUtils.intInRange(1, max + 1);
+        const num2 = RandomUtils.intInRange(1, max + 1);
 
         let symbol: '>' | '<' | '=' = '=';
         if (num1 > num2) symbol = '>';

@@ -68,7 +68,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                             className="absolute top-1/4 left-0 w-full text-center z-10 px-4"
                         >
                             <h1 className="text-5xl md:text-7xl font-black text-indigo-600 drop-shadow-sm tracking-tight">
-                                {t(lesson.title)}
+                                {t(lesson.title as any)}
                             </h1>
                             <div className="mt-4 w-24 h-2 bg-orange-400 mx-auto rounded-full opacity-80" />
                         </motion.div>
@@ -187,7 +187,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                     {/* Speech Bubble Container */}
                     <div className="absolute left-32 bottom-32 w-80">
                         <SpeechBubble
-                            text={t(currentStep.mascotText)}
+                            text={t(currentStep.mascotText as any)}
                             isVisible={true}
                             position="right"
                         />

@@ -47,9 +47,12 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
     }, [node, targetLevel, logEvent]);
 
     // Reset internal mode when node changes
-    useEffect(() => {
+    // Reset internal mode when node changes (Render-time update pattern)
+    const [prevNodeId, setPrevNodeId] = useState(node?.id);
+    if (node?.id !== prevNodeId) {
+        setPrevNodeId(node?.id);
         setInternalMode(null);
-    }, [node]);
+    }
 
     const handleLessonComplete = () => {
         setIsLessonOpen(false);
@@ -105,7 +108,7 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         return (
             <BubbleGame
                 problem={problem}
-                title={node ? t(`saga.${node.id}_title`) : undefined}
+                title={node ? t(`saga.${node.id}_title` as any) : undefined}
                 instruction={equation || (node ? t('saga.pop_instruction', { number: config.target || 5 }) : undefined)}
                 onComplete={(success) => {
                     console.log('Bubble Game Complete:', success);

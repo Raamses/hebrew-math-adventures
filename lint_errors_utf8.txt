@@ -1,0 +1,257 @@
+﻿
+> temp_project@0.0.0 lint
+> eslint .
+
+
+D:\Projects\Hebrew Educational Game\src\components\DivisionHint.tsx
+  120:69  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\Projects\Hebrew Educational Game\src\components\DivisionHint.tsx:120:69
+  118 |                         const targetY = basketY - 15 - (itemsInBasketSoFar * 15);
+  119 |                         // Offset slightly for natural look
+> 120 |                         const offsetX = (i % 2 === 0 ? -10 : 10) * (Math.random() * 0.5 + 0.5);
+      |                                                                     ^^^^^^^^^^^^^ Cannot call impure function
+  121 |                         const appleColor = basketColors[targetBasketIndex % basketColors.length];
+  122 |
+  123 |                         return (  react-hooks/purity
+
+D:\Projects\Hebrew Educational Game\src\components\GameOrchestrator.tsx
+   51:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Projects\Hebrew Educational Game\src\components\GameOrchestrator.tsx:51:9
+  49 |     // Reset internal mode when node changes
+  50 |     useEffect(() => {
+> 51 |         setInternalMode(null);
+     |         ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  52 |     }, [node]);
+  53 |
+  54 |     const handleLessonComplete = () => {  react-hooks/set-state-in-effect
+  108:60  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\MapZone.tsx
+  39:90  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\PracticeMode.tsx
+   43:37  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\Projects\Hebrew Educational Game\src\components\PracticeMode.tsx:43:37
+  41 |
+  42 |     // Track start time for current problem
+> 43 |     const problemStartTime = useRef(Date.now());
+     |                                     ^^^^^^^^^^ Cannot call impure function
+  44 |
+  45 |     // Reset timer when problem changes
+  46 |     useEffect(() => {  react-hooks/purity
+  196:78  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\games\BubbleGameContainer.tsx
+  112:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\games\FrenzyOverlay.tsx
+  68:36  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\Projects\Hebrew Educational Game\src\components\games\FrenzyOverlay.tsx:68:36
+  66 |                                 y: -500,
+  67 |                                 opacity: 0,
+> 68 |                                 x: Math.random() * 50 - 25
+     |                                    ^^^^^^^^^^^^^ Cannot call impure function
+  69 |                             }}
+  70 |                             transition={{
+  71 |                                 duration: 1 + Math.random(),               react-hooks/purity
+  71:47  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\Projects\Hebrew Educational Game\src\components\games\FrenzyOverlay.tsx:71:47
+  69 |                             }}
+  70 |                             transition={{
+> 71 |                                 duration: 1 + Math.random(),
+     |                                               ^^^^^^^^^^^^^ Cannot call impure function
+  72 |                                 repeat: Infinity,
+  73 |                                 delay: i * 0.2,
+  74 |                                 ease: "easeOut"  react-hooks/purity
+
+D:\Projects\Hebrew Educational Game\src\components\games\ModeSelectorOverlay.tsx
+  35:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\lessons\LessonModal.tsx
+   71:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\math-card\ArithmeticView.tsx
+  98:178  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\math-card\SeriesView.tsx
+  31:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\math-card\WordProblemView.tsx
+  25:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\parent\ParentGate.tsx
+  18:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Projects\Hebrew Educational Game\src\components\parent\ParentGate.tsx:18:9
+  16 |     useEffect(() => {
+  17 |         // Generate random 2-digit addition problem
+> 18 |         setProblem({
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  19 |             n1: Math.floor(Math.random() * 40) + 10,
+  20 |             n2: Math.floor(Math.random() * 40) + 10
+  21 |         });  react-hooks/set-state-in-effect
+
+D:\Projects\Hebrew Educational Game\src\components\practice\PracticeHeader.tsx
+  63:91  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\sensory\Bubble.tsx
+  52:23  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\Projects\Hebrew Educational Game\src\components\sensory\Bubble.tsx:52:23
+  50 |         const base = variant === 'small' ? 8 : variant === 'large' ? 16 : 12;
+  51 |         const range = variant === 'small' ? 6 : variant === 'large' ? 8 : 8;
+> 52 |         return base + Math.random() * range;
+     |                       ^^^^^^^^^^^^^ Cannot call impure function
+  53 |     }, [variant]);
+  54 |
+  55 |     // Off-Screen Detection  react-hooks/purity
+
+D:\Projects\Hebrew Educational Game\src\context\ProfileContext.tsx
+   40:51  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+   41:51  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+   54:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Projects\Hebrew Educational Game\src\context\ProfileContext.tsx:54:9
+  52 |             }
+  53 |         }
+> 54 |         setAllProfiles(profiles);
+     |         ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  55 |     }, []);
+  56 |
+  57 |     // Persist profiles whenever they change  react-hooks/set-state-in-effect
+  193:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-refresh/only-export-components
+
+D:\Projects\Hebrew Educational Game\src\context\ProgressContext.tsx
+  138:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Projects\Hebrew Educational Game\src\context\ThemeContext.test.tsx
+  48:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  73:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\context\ThemeContext.tsx
+  32:17  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Projects\Hebrew Educational Game\src\context\ThemeContext.tsx:32:17
+  30 |             const profileTheme = getThemeById(profile.themeId);
+  31 |             if (profileTheme && profileTheme.id !== currentTheme.id) {
+> 32 |                 setCurrentThemeState(profileTheme);
+     |                 ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  33 |             }
+  34 |         }
+  35 |     }, [profile?.themeId]);  react-hooks/set-state-in-effect
+  35:8   warning  React Hook useEffect has a missing dependency: 'currentTheme.id'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react-hooks/exhaustive-deps
+  82:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-refresh/only-export-components
+
+D:\Projects\Hebrew Educational Game\src\engines\LessonEngine.ts
+  12:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\engines\MathModule.ts
+  18:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\engines\ProblemFactory.ts
+   11:20  error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  107:17  error  Unexpected lexical declaration in case block     no-case-declarations
+  109:17  error  Unexpected lexical declaration in case block     no-case-declarations
+  118:17  error  Unexpected lexical declaration in case block     no-case-declarations
+  119:17  error  Unexpected lexical declaration in case block     no-case-declarations
+  127:17  error  Unexpected lexical declaration in case block     no-case-declarations
+  134:17  error  Unexpected lexical declaration in case block     no-case-declarations
+  181:9   error  'num1' is never reassigned. Use 'const' instead  prefer-const
+  182:9   error  'num2' is never reassigned. Use 'const' instead  prefer-const
+
+D:\Projects\Hebrew Educational Game\src\engines\bubble\types.ts
+  46:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\engines\bubble\useGameEngine.ts
+  101:52  error    Error: Cannot access variable before it is declared
+
+`update` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+D:\Projects\Hebrew Educational Game\src\engines\bubble\useGameEngine.ts:101:52
+   99 |         cleanupSystem();
+  100 |
+> 101 |         requestRef.current = requestAnimationFrame(update);
+      |                                                    ^^^^^^ `update` accessed before it is declared
+  102 |     }, [config, behavior]);
+  103 |
+  104 |     // Start/Stop Loop
+
+D:\Projects\Hebrew Educational Game\src\engines\bubble\useGameEngine.ts:95:5
+   93 |
+   94 |     // --- Game Loop ---
+>  95 |     const update = useCallback((time: number) => {
+      |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  96 |         if (gameStateRef.current.isGameOver) return;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  97 |
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  98 |         spawnSystem(time);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  99 |         cleanupSystem();
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 100 |
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 101 |         requestRef.current = requestAnimationFrame(update);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 102 |     }, [config, behavior]);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `update` is declared here
+  103 |
+  104 |     // Start/Stop Loop
+  105 |     useEffect(() => {  react-hooks/immutability
+  102:8   warning  React Hook useCallback has a missing dependency: 'spawnSystem'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+
+D:\Projects\Hebrew Educational Game\src\engines\interfaces.ts
+  15:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\types\i18next.d.ts
+  5:8  error  'he' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 51 problems (46 errors, 5 warnings)
+

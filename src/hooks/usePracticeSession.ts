@@ -163,8 +163,14 @@ export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSe
         });
     }, [profile, targetLevel, problemConfig, mathModule]);
 
+    const nextProblem = useCallback(() => {
+        const next = generateNext();
+        if (next) setProblem(next);
+        // We do NOT dispatch RESET here, so score/lives persist
+    }, [generateNext]);
+
     const initSession = useCallback((mode: GameMode = 'STANDARD') => {
-        // Only reset if mode changed or explicitly requested
+        // Full Reset
         dispatch({ type: 'RESET', mode });
         const next = generateNext();
         if (next) setProblem(next);
@@ -189,6 +195,7 @@ export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSe
         problem,
         setProblem,
         generateNext,
+        nextProblem,
         restartSession,
         submitResult,
         evaluateAnswer,

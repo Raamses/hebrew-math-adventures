@@ -31,9 +31,16 @@ export const PracticeFeedback: React.FC<PracticeFeedbackProps> = ({
             {showStars && <FlyingStars onComplete={onStarsComplete} />}
             {showConfetti && <Confetti />}
 
-            <div className="relative mt-4 ml-auto md:absolute md:right-4 md:bottom-12 z-20 pointer-events-none">
+            {/* Mascot - Hidden on Mobile, Fixed Bottom-Right on Desktop */}
+            <div className="hidden md:block fixed bottom-4 right-4 z-0 pointer-events-none">
                 <div className="relative">
-                    <SpeechBubble text={mascotMessage} isVisible={showBubble} />
+                    {/* Speech Bubble pops UP from the bottom */}
+                    <SpeechBubble
+                        text={mascotMessage}
+                        isVisible={showBubble}
+                        position="center"
+                        className="mb-2"
+                    />
                     <Mascot
                         character={profile?.mascotId || 'owl'}
                         emotion={mascotEmotion}

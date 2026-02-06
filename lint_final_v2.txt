@@ -1,0 +1,96 @@
+
+> temp_project@0.0.0 lint
+> eslint .
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+D:\Projects\Hebrew Educational Game\src\components\GameOrchestrator.tsx
+  111:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\MapZone.tsx
+  39:90  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\PracticeMode.tsx
+  141:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Projects\Hebrew Educational Game\src\components\PracticeMode.tsx:141:13
+  139 |
+  140 |             playSound('levelUp'); // Or 'gameOver' sound if we had one
+> 141 |             setShowSummary(true);
+      |             ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  142 |             if (onComplete) onComplete(false); // Game Over isn't necessarily a "Win"
+  143 |         }
+  144 |     }, [session, showSummary, onComplete, playSound, isProcessing, updateArcadeBestScore]);  react-hooks/set-state-in-effect
+  204:78  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\games\BubbleGameContainer.tsx
+  112:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\games\ModeSelectorOverlay.tsx
+  35:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\lessons\LessonModal.tsx
+   71:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\math-card\ArithmeticView.tsx
+  98:178  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\math-card\SeriesView.tsx
+  31:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\math-card\WordProblemView.tsx
+  25:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\components\practice\PracticeHeader.tsx
+  63:91  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\context\ProfileContext.tsx
+   29:21  error    'profiles' is never reassigned. Use 'const' instead                                                                             prefer-const
+   31:41  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  187:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Projects\Hebrew Educational Game\src\context\ProgressContext.tsx
+  138:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Projects\Hebrew Educational Game\src\context\ThemeContext.test.tsx
+  48:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  73:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\context\ThemeContext.tsx
+  85:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Projects\Hebrew Educational Game\src\engines\LessonEngine.ts
+  12:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\engines\MathModule.ts
+  18:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\engines\ProblemFactory.ts
+  11:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\engines\bubble\types.ts
+  46:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Projects\Hebrew Educational Game\src\engines\bubble\useGameEngine.ts
+  107:8  warning  React Hook useCallback has unnecessary dependencies: 'behavior' and 'config'. Either exclude them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\Projects\Hebrew Educational Game\src\engines\interfaces.ts
+  15:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 32 problems (28 errors, 4 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

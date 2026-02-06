@@ -22,37 +22,31 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
-    const [profile, setProfileState] = useState<UserProfile | null>(null);
-    const { logEvent } = useAnalytics();
-
-    // Load profiles and handle migration on mount
-    useEffect(() => {
+    const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
         const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
-        let profiles: UserProfile[] = [];
-
         if (savedProfiles) {
             try {
-                profiles = JSON.parse(savedProfiles);
+                let profiles = JSON.parse(savedProfiles);
                 // Ensure all profiles have new fields (migration)
-                profiles = profiles.map(p => ({
+                return profiles.map((p: any) => ({
                     ...p,
-                    mascotId: p.mascotId || (p as any).mascot || 'owl',
-                    avatarId: p.avatarId || (p as any).avatar || '🦁',
+                    mascotId: p.mascotId || p.mascot || 'owl',
+                    avatarId: p.avatarId || p.avatar || '🦁',
                     settings: p.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false },
                     capabilities: p.capabilities || { ...INITIAL_CAPABILITY_PROFILE },
-
                     streak: p.streak || 0,
                     arcadeStats: p.arcadeStats || {}
                 }));
             } catch (error) {
                 console.error('Failed to parse profiles from local storage:', error);
-                // Fallback creates an empty list, so corrupted data is effectively reset to avoid perma-crash
-                profiles = [];
+                return [];
             }
         }
-        setAllProfiles(profiles);
-    }, []);
+        return [];
+    });
+
+    const [profile, setProfileState] = useState<UserProfile | null>(null);
+    const { logEvent } = useAnalytics();
 
     // Persist profiles whenever they change
     useEffect(() => {

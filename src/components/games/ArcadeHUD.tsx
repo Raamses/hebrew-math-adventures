@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { Heart, Clock, Trophy } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { GameMode } from '../../hooks/usePracticeSession';
@@ -9,10 +10,11 @@ interface ArcadeHUDProps {
     score: number;
     lives: number;
     timeLeft: number;
-    combo: number;
 }
 
-export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLeft, combo }) => {
+export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLeft }) => {
+    const { t } = useTranslation();
+
     // Local state to animate score increments
     const [displayScore, setDisplayScore] = useState(score);
 
@@ -34,7 +36,7 @@ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLe
             <div className="bg-white/95 backdrop-blur shadow-lg rounded-2xl p-4 flex items-center justify-between border border-slate-100">
 
                 {/* Left: Mode Specific Stat (Time or Lives) */}
-                <div className="flex items-center w-1/3">
+                <div className="flex items-center w-1/2 justify-start">
                     {mode === 'TIME_ATTACK' ? (
                         <div className={cn("flex items-center gap-2 font-mono font-bold text-2xl",
                             timeLeft < 10 ? "text-red-500 animate-pulse" : "text-slate-700"
@@ -56,27 +58,10 @@ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLe
                     )}
                 </div>
 
-                {/* Center: Combo Badge */}
-                <div className="flex items-center justify-center w-1/3">
-                    <AnimatePresence mode='popLayout'>
-                        {combo > 1 && (
-                            <motion.div
-                                key={combo}
-                                initial={{ scale: 0, rotate: -15 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                exit={{ scale: 0 }}
-                                className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-black px-4 py-1 rounded-full shadow-md text-sm whitespace-nowrap"
-                            >
-                                {combo}x COMBO!
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-
                 {/* Right: Score */}
-                <div className="flex items-center justify-end w-1/3 gap-3">
+                <div className="flex items-center justify-end w-1/2 gap-3">
                     <div className="flex flex-col items-end">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Score</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('score')}</span>
                         <motion.span
                             key={score}
                             initial={{ scale: 1.2, color: '#f59e0b' }}

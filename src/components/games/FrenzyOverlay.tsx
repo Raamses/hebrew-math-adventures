@@ -7,10 +7,17 @@ interface FrenzyOverlayProps {
 }
 
 const PARTICLE_COUNT = 5;
-const PARTICLES = Array.from({ length: PARTICLE_COUNT }, (_, i) => i);
+
 
 export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive }) => {
     const { t } = useTranslation();
+
+    const [particles] = React.useState(() => Array.from({ length: PARTICLE_COUNT }).map((_, i) => ({
+        id: i,
+        xTarget: Math.random() * 50 - 25,
+        duration: 1 + Math.random(),
+        left: 20 + i * 15
+    })));
 
     return (
         <AnimatePresence>
@@ -54,23 +61,23 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive }) => {
                     </motion.div>
 
                     {/* Ember Particles (Lightweight) */}
-                    {PARTICLES.map((i) => (
+                    {particles.map((p) => (
                         <motion.div
-                            key={i}
+                            key={p.id}
                             className="absolute bottom-0 w-2 h-2 bg-orange-400 rounded-full"
                             style={{
-                                left: `${20 + i * 15}%`,
+                                left: `${p.left}%`,
                             }}
                             initial={{ y: 0, opacity: 1 }}
                             animate={{
                                 y: -500,
                                 opacity: 0,
-                                x: Math.random() * 50 - 25
+                                x: p.xTarget
                             }}
                             transition={{
-                                duration: 1 + Math.random(),
+                                duration: p.duration,
                                 repeat: Infinity,
-                                delay: i * 0.2,
+                                delay: p.id * 0.2,
                                 ease: "easeOut"
                             }}
                         />

@@ -1,4 +1,4 @@
-import type { IGameBehavior, GameConfig, BubbleEntity } from '../types';
+import type { IGameBehavior, GameConfig, BubbleEntity, InstructionPayload } from '../types';
 import { MathModule } from '../../MathModule';
 import { INITIAL_CAPABILITY_PROFILE } from '../../../types/progress';
 import type { ArithmeticProblem, Problem, SensoryProblem } from '../../../lib/gameLogic';
@@ -104,16 +104,28 @@ export class MathBehaviorStrategy implements IGameBehavior {
         return entity.internalValue === this.targetValue;
     }
 
-    getInstruction(): string {
-        if (!this.currentProblem) return "Pop bubbles!";
+    getInstruction(): InstructionPayload {
+        if (!this.currentProblem) {
+            return { key: 'bubble.instruction.pop' };
+        }
 
         const p = this.currentProblem;
 
         if (p.type === 'sensory') {
-            return `Pop ${p.target}`;
+            return {
+                key: 'bubble.instruction.popTarget',
+                params: { target: p.target }
+            };
         }
 
         // Arithmetic
-        return `${p.num1} ${p.operator} ${p.num2} = ?`;
+        return {
+            key: 'bubble.instruction.solve',
+            params: {
+                num1: p.num1,
+                operator: p.operator,
+                num2: p.num2
+            }
+        };
     }
 }
