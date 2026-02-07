@@ -50,10 +50,20 @@ export const useGameEngine = (
         if (activeCount >= config.maxOnScreen) return;
 
         // Create new bubble
+        // Calculate spawn range to keep bubbles fully visible
+        // The bubble uses `left: x vw` which positions the LEFT edge of the hit-area
+        // Largest hit-area is 150px = 40vw on 375px mobile, 20vw on 750px, etc.
+        // We use percentage-based calculation for responsive behavior:
+        // - Min X: Small buffer from left edge (2%)
+        // - Max X: 100% - (largestBubbleVw) where largestBubbleVw ≈ 40% on smallest supported mobile
+        const MIN_X = 2; // 2% buffer from left
+        const MAX_BUBBLE_WIDTH_PERCENT = 40; // 150px / 375px viewport = 40%
+        const MAX_X = 100 - MAX_BUBBLE_WIDTH_PERCENT; // 60% to ensure right edge stays visible
+
         const newBubbleProps = behavior.generateNext(config);
         const newBubble: BubbleEntity = {
             id: `bubble-${Date.now()}-${Math.random()}`,
-            x: Math.random() * 90 + 5, // 5% to 95% width
+            x: Math.random() * (MAX_X - MIN_X) + MIN_X, // 2% to 60% range
             y: 110, // Start below screen
             velocity: config.baseVelocity,
             isPopped: false,

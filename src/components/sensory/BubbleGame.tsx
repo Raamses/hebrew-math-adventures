@@ -6,6 +6,8 @@ import type { SensoryProblem } from '../../lib/gameLogic';
 import { useSound } from '../../hooks/useSound';
 import { GameMenuModal } from '../GameMenuModal';
 import { SettingsModal } from '../SettingsModal';
+import { SessionSummary } from '../SessionSummary';
+import { Confetti } from '../Confetti';
 
 interface BubbleGameProps {
     problem: SensoryProblem;
@@ -15,10 +17,21 @@ interface BubbleGameProps {
     instruction?: string;
 }
 
+interface GameResult {
+    readonly success: boolean;
+    readonly score: number;
+    readonly targetsPopped: number;
+}
+
 export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onExit, title }) => {
     const { isMuted, toggleMute } = useSound();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+    // End-game feedback state
+    const [showSummary, setShowSummary] = useState(false);
+    const [gameResult, setGameResult] = useState<GameResult | null>(null);
+    const [gameKey, setGameKey] = useState(0); // Key-change pattern for engine restart
 
     // 1. Configure the Game Rule
     const config: GameConfig = useMemo(() => ({
@@ -51,12 +64,39 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     // Handlers
     const handlePause = () => setIsMenuOpen(true);
 
+    const handleGameComplete = (success: boolean, score: number, targetsPopped: number) => {
+        setGameResult({ success, score, targetsPopped });
+        setShowSummary(true);
+    };
+
+    const handlePlayAgain = () => {
+        setShowSummary(false);
+        setGameResult(null);
+        setGameKey(k => k + 1); // Force engine remount
+    };
+
+    const handleExitWithResult = () => {
+        if (gameResult) {
+            onComplete(gameResult.success);
+        }
+        onExit();
+    };
+
+    const handleRestart = () => {
+        setIsMenuOpen(false);
+        setGameKey(k => k + 1); // Force engine remount
+    };
+
     return (
         <>
+            {/* Victory Confetti */}
+            {showSummary && gameResult?.success && <Confetti />}
+
             <BubbleGameContainer
+                key={gameKey}
                 config={config}
                 behavior={behavior}
-                onComplete={onComplete}
+                onComplete={handleGameComplete}
                 title={title}
 
                 // Settings Bindings
@@ -66,14 +106,22 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
                 onPause={handlePause}
             />
 
+            {/* End-Game Feedback */}
+            <SessionSummary
+                isOpen={showSummary}
+                starsGained={gameResult?.success ? 3 : 1}
+                correctCount={gameResult?.targetsPopped || 0}
+                totalCount={config.winCondition.value}
+                totalScore={gameResult?.score || 0}
+                onPlayAgain={handlePlayAgain}
+                onExit={handleExitWithResult}
+            />
+
             {/* Modals */}
             <GameMenuModal
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
-                onRestart={() => {
-                    // TODO: How to restart engine? Key change might be easiest for now
-                    setIsMenuOpen(false);
-                }}
+                onRestart={handleRestart}
                 onExit={onExit}
                 onSettings={() => {
                     setIsMenuOpen(false);

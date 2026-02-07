@@ -14,7 +14,7 @@ import { useAnalytics } from '../../hooks/useAnalytics';
 interface BubbleGameContainerProps {
     config: GameConfig;
     behavior: IGameBehavior;
-    onComplete: (success: boolean) => void;
+    onComplete: (success: boolean, score: number, targetsPopped: number) => void;
     title?: string;
     // Settings Props
     isMuted?: boolean;
@@ -80,19 +80,18 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     useEffect(() => {
         if (gameState.isVictory) {
             playSound('levelUp');
-            setTimeout(() => onComplete(true), 1500);
+            // Pass game state for summary display
+            onComplete(true, gameState.score, gameState.targetsPopped);
         } else if (gameState.isGameOver) {
-            // Handle Loss - Retry?
-            // For now just exit false
             playSound('wrong');
-            setTimeout(() => onComplete(false), 1500);
+            onComplete(false, gameState.score, gameState.targetsPopped);
         }
-    }, [gameState.isVictory, gameState.isGameOver, onComplete, playSound]);
+    }, [gameState.isVictory, gameState.isGameOver, gameState.score, gameState.targetsPopped, onComplete, playSound]);
 
     const instruction = behavior.getInstruction ? behavior.getInstruction() : undefined;
 
     return (
-        <div className="w-full min-h-screen bg-blue-50 flex flex-col items-center relative overflow-hidden">
+        <div className="w-full min-h-screen min-h-dvh bg-blue-50 flex flex-col items-center relative overflow-hidden pt-safe">
             {/* Header Area */}
             <div className="w-full max-w-md flex flex-col items-center gap-2 z-20 p-4 pb-0">
                 <div className="w-full flex items-center justify-between relative h-12">
@@ -109,6 +108,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         {instruction && (
                             <div className="bg-white/80 backdrop-blur-md px-6 py-2 rounded-2xl shadow-sm border border-blue-100 mt-1">
                                 <span className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wider font-mono">
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                     {t(instruction.key, instruction.params as any)}
                                 </span>
                             </div>
@@ -133,7 +133,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             </div>
 
             {/* Game Area & Entities */}
-            <div className="flex-grow w-full relative z-0 mt-4 overflow-hidden"
+            <div className="flex-grow w-full max-w-3xl mx-auto relative z-0 mt-4 overflow-hidden"
                 style={{ perspective: '1000px' }}>
                 {entities.map(e => (
                     <Bubble
