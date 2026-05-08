@@ -9,6 +9,7 @@ interface NumberInputProps {
     className?: string;
     autoFocus?: boolean;
     inputMode?: "numeric" | "text" | "tel" | "search" | "email" | "url" | "decimal" | "none";
+    "aria-label"?: string;
 }
 
 export function NumberInput({
@@ -18,7 +19,8 @@ export function NumberInput({
     placeholder = "?",
     className,
     autoFocus = false,
-    inputMode = "numeric"
+    inputMode = "numeric",
+    "aria-label": ariaLabel = "Enter number"
 }: NumberInputProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -43,6 +45,7 @@ export function NumberInput({
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             placeholder={placeholder}
+            aria-label={ariaLabel}
             className={cn(
                 "w-16 h-16 sm:w-24 sm:h-24 text-center font-bold text-indigo-600 bg-indigo-50",
                 "rounded-2xl border-4 border-indigo-300",
