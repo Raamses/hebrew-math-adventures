@@ -70,21 +70,23 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                             {/* Name & Age */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-sm font-bold text-slate-500">{t('parent.table.name')}</label>
+                                    <label htmlFor="edit-name" className="text-sm font-bold text-slate-500">{t('parent.table.name')}</label>
                                     <input
+                                        id="edit-name"
                                         type="text"
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700"
+                                        className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700 focus-visible:ring-2"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-sm font-bold text-slate-500">{t('parent.table.age')}</label>
+                                    <label htmlFor="edit-age" className="text-sm font-bold text-slate-500">{t('parent.table.age')}</label>
                                     <input
+                                        id="edit-age"
                                         type="number"
                                         value={formData.age}
                                         onChange={e => setFormData({ ...formData, age: Number(e.target.value) })}
-                                        className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700"
+                                        className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700 focus-visible:ring-2"
                                     />
                                 </div>
                             </div>
@@ -97,7 +99,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                         <button
                                             key={av}
                                             onClick={() => setFormData({ ...formData, avatarId: av })}
-                                            className={`w-10 h-10 text-2xl rounded-full flex items-center justify-center border-2 transition-all ${formData.avatarId === av ? 'border-primary bg-orange-50 scale-110' : 'border-transparent hover:bg-slate-50'
+                                            aria-label={`Select avatar ${av}`}
+                                            aria-pressed={formData.avatarId === av}
+                                            className={`w-10 h-10 text-2xl rounded-full flex items-center justify-center border-2 transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none ${formData.avatarId === av ? 'border-primary bg-orange-50 scale-110' : 'border-transparent hover:bg-slate-50'
                                                 }`}
                                         >
                                             {av}
@@ -114,10 +118,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                         <button
                                             key={m}
                                             onClick={() => setFormData({ ...formData, mascotId: m })}
-                                            className={`p-2 rounded-xl border-2 transition-all text-center ${formData.mascotId === m ? 'border-primary bg-orange-50' : 'border-slate-100 hover:border-slate-300'
+                                            aria-label={`Select mascot ${t(`mascot.names.${m}`)}`}
+                                            aria-pressed={formData.mascotId === m}
+                                            className={`p-2 rounded-xl border-2 transition-all text-center focus-visible:ring-2 focus-visible:ring-primary outline-none ${formData.mascotId === m ? 'border-primary bg-orange-50' : 'border-slate-100 hover:border-slate-300'
                                                 }`}
                                         >
-                                            <div className="text-xs font-bold capitalize">{t(`mascot.names.${m}`)}</div>
+                                            <div className="text-xs font-bold capitalize" aria-hidden="true">{t(`mascot.names.${m}`)}</div>
                                         </button>
                                     ))}
                                 </div>

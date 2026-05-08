@@ -50,7 +50,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
         <div className="relative z-50" ref={menuRef}>
             <button
                 onClick={toggleMenu}
-                className={`p-2 rounded-full shadow-md transition-all ${isOpen ? 'bg-primary text-white' : 'bg-white text-slate-600 hover:text-primary'
+                aria-label={t('menu.settings')}
+                aria-expanded={isOpen}
+                aria-haspopup="true"
+                className={`p-2 rounded-full shadow-md transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none ${isOpen ? 'bg-primary text-white' : 'bg-white text-slate-600 hover:text-primary'
                     }`}
             >
                 <Settings size={28} />
@@ -59,6 +62,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
+                        role="menu"
                         initial={{ opacity: 0, y: -10, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.9 }}
@@ -66,43 +70,51 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     >
                         {/* Sound Toggle */}
                         <button
+                            role="menuitem"
                             onClick={onToggleMute}
-                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3"
+                            aria-label={isMuted ? t('menu.unmute') : t('menu.mute')}
+                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3 focus-visible:ring-2 focus-visible:ring-primary outline-none"
                         >
-                            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                            {isMuted ? <VolumeX size={20} aria-hidden="true" /> : <Volume2 size={20} aria-hidden="true" />}
                             <span className="font-medium text-sm">{isMuted ? t('menu.unmute') : t('menu.mute')}</span>
                         </button>
 
                         {/* Pause / Menu */}
                         <button
+                            role="menuitem"
                             onClick={() => {
                                 onPause();
                                 setIsOpen(false);
                             }}
-                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3"
+                            aria-label={t('menu.pause')}
+                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3 focus-visible:ring-2 focus-visible:ring-primary outline-none"
                         >
-                            <Pause size={20} />
+                            <Pause size={20} aria-hidden="true" />
                             <span className="font-medium text-sm">{t('menu.pause')}</span>
                         </button>
 
                         {/* Language Toggle */}
                         <button
+                            role="menuitem"
                             onClick={toggleLanguage}
-                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3"
+                            aria-label={i18n.language === 'he' ? 'Switch to English' : 'עבור לעברית'}
+                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3 focus-visible:ring-2 focus-visible:ring-primary outline-none"
                         >
-                            <span className="font-bold text-lg w-5 text-center">{i18n.language === 'he' ? 'EN' : 'עב'}</span>
+                            <span className="font-bold text-lg w-5 text-center" aria-hidden="true">{i18n.language === 'he' ? 'EN' : 'עב'}</span>
                             <span className="font-medium text-sm">{i18n.language === 'he' ? 'Switch to English' : 'עבור לעברית'}</span>
                         </button>
 
                         {/* Full Settings */}
                         <button
+                            role="menuitem"
                             onClick={() => {
                                 onOpenSettings();
                                 setIsOpen(false);
                             }}
-                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3 border-t-2 border-slate-100 mt-1"
+                            aria-label={t('menu.settings')}
+                            className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3 border-t-2 border-slate-100 mt-1 focus-visible:ring-2 focus-visible:ring-primary outline-none"
                         >
-                            <Settings size={20} />
+                            <Settings size={20} aria-hidden="true" />
                             <span className="font-medium text-sm">{t('menu.settings')}</span>
                         </button>
                     </motion.div>

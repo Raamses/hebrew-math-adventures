@@ -33,19 +33,21 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Avatar Selection */}
                 <div>
-                    <label className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.selectAvatar')}</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <label className="block text-slate-600 font-bold mb-2 text-lg" id="avatar-label">{t('onboarding.selectAvatar')}</label>
+                    <div className="grid grid-cols-5 gap-2" role="group" aria-labelledby="avatar-label">
                         {AVATARS.map(avatar => (
                             <button
                                 key={avatar}
                                 type="button"
                                 onClick={() => setSelectedAvatar(avatar)}
-                                className={`text-3xl p-2 rounded-xl transition-all ${selectedAvatar === avatar
+                                aria-label={`Select avatar ${avatar}`}
+                                aria-pressed={selectedAvatar === avatar}
+                                className={`text-3xl p-2 rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none ${selectedAvatar === avatar
                                     ? 'bg-blue-100 scale-110 ring-2 ring-blue-400'
                                     : 'hover:bg-slate-50'
                                     }`}
                             >
-                                {avatar}
+                                <span aria-hidden="true">{avatar}</span>
                             </button>
                         ))}
                     </div>
@@ -58,32 +60,35 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
                 </div>
 
                 <div>
-                    <label className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.nameLabel')}</label>
+                    <label htmlFor="setup-name" className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.nameLabel')}</label>
                     <input
+                        id="setup-name"
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none text-xl text-start"
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-xl text-start"
                         placeholder={t('onboarding.namePlaceholder')}
                         required
                     />
                 </div>
 
                 <div>
-                    <label className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.ageLabel')}</label>
-                    <div className="flex items-center justify-center gap-4 bg-slate-50 p-4 rounded-xl">
+                    <label className="block text-slate-600 font-bold mb-2 text-lg" id="age-label">{t('onboarding.ageLabel')}</label>
+                    <div className="flex items-center justify-center gap-4 bg-slate-50 p-4 rounded-xl" role="group" aria-labelledby="age-label">
                         <button
                             type="button"
                             onClick={() => setAge(Math.max(4, age - 1))}
-                            className="w-10 h-10 rounded-full bg-white shadow text-primary font-bold text-xl hover:bg-orange-50"
+                            aria-label="Decrease age"
+                            className="w-10 h-10 rounded-full bg-white shadow text-primary font-bold text-xl hover:bg-orange-50 focus-visible:ring-2 focus-visible:ring-primary outline-none"
                         >
                             -
                         </button>
-                        <span className="text-3xl font-bold text-slate-700 w-12 text-center">{age}</span>
+                        <span className="text-3xl font-bold text-slate-700 w-12 text-center" aria-live="polite">{age}</span>
                         <button
                             type="button"
                             onClick={() => setAge(Math.min(12, age + 1))}
-                            className="w-10 h-10 rounded-full bg-white shadow text-primary font-bold text-xl hover:bg-orange-50"
+                            aria-label="Increase age"
+                            className="w-10 h-10 rounded-full bg-white shadow text-primary font-bold text-xl hover:bg-orange-50 focus-visible:ring-2 focus-visible:ring-primary outline-none"
                         >
                             +
                         </button>

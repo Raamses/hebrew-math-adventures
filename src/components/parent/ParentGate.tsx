@@ -58,6 +58,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
                         type="number"
                         value={answer}
                         onChange={(e) => setAnswer(e.target.value)}
+                        aria-label={t('parent.gateDesc')}
                         className={`w-full text-center text-3xl py-3 rounded-xl border-2 mb-4 focus:outline-none ${error ? 'border-red-500 bg-red-50' : 'border-slate-200 focus:border-primary'
                             }`}
                         placeholder="?"
