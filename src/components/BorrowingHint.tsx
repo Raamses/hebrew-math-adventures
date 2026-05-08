@@ -13,6 +13,7 @@ interface BorrowingHintProps {
 
 const DigitColumn = ({
     label,
+    layoutIdPrefix,
     topDigit,
     bottomDigit,
     isActive,
@@ -26,6 +27,7 @@ const DigitColumn = ({
     showMinusOne
 }: {
     label: string;
+    layoutIdPrefix: string;
     topDigit: number;
     bottomDigit: number;
     isActive: boolean;
@@ -78,7 +80,7 @@ const DigitColumn = ({
             {/* Top Digit Area */}
             <div className="relative text-3xl sm:text-5xl font-mono text-center h-12 flex items-center justify-center">
                 <motion.span
-                    layoutId={`top-${label}`} // Ensure smooth transition if layout changes
+                    layoutId={`top-${layoutIdPrefix}`} // Ensure smooth transition if layout changes
                     animate={{
                         color: isBorrowSource ? '#ef4444' : // Red if borrowing from
                             isBorrowTarget ? '#22c55e' : // Green if borrowing to
@@ -119,7 +121,7 @@ const DigitColumn = ({
             {/* Bottom Digit */}
             <div className="relative text-3xl sm:text-5xl font-mono text-center h-12 flex items-center justify-center">
                 <motion.span
-                    layoutId={`bottom-${label}`}
+                    layoutId={`bottom-${layoutIdPrefix}`}
                     animate={{
                         color: isActive ? '#3b82f6' : '#1e293b',
                         scale: isActive ? 1.1 : 1
@@ -165,6 +167,8 @@ export const BorrowingHint = ({ operand1, operand2, answer, operator }: Borrowin
         t('game.placeValues.tens'),
         t('game.placeValues.ones')
     ];
+
+    const columnIds = ['hundreds', 'tens', 'ones'];
 
     return (
         <div className="flex flex-col items-center gap-6 lg:gap-8 p-6 lg:p-8 w-full max-w-2xl mx-auto relative bg-white/50 rounded-3xl backdrop-blur-sm">
@@ -224,6 +228,7 @@ export const BorrowingHint = ({ operand1, operand2, answer, operator }: Borrowin
                                 <DigitColumn
                                     key={i}
                                     label={placeValues[i]}
+                                    layoutIdPrefix={columnIds[i]}
                                     topDigit={digit}
                                     bottomDigit={num2Digits[i]}
                                     isActive={isColActive}
