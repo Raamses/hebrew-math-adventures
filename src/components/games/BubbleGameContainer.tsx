@@ -46,7 +46,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const { logEvent } = useAnalytics();
 
     // Visual Effects State
-    const [explosions, setExplosions] = React.useState<{ id: string; x: number; y: number }[]>([]);
+    const [explosions, setExplosions] = React.useState<Record<string, { id: string; x: number; y: number }>>({});
 
     const onPopWrapper = React.useCallback((id: string, val: number, x: number, y: number) => {
         const isCorrect = enginePop(id);
@@ -62,7 +62,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         }
 
         // Add explosion at click coordinates
-        setExplosions(prev => [...prev, { id: `${id}-exp`, x, y }]);
+        const expId = `${id}-exp`;
+        setExplosions(prev => ({
+            ...prev,
+            [expId]: { id: expId, x, y }
+        }));
 
         if (isCorrect) {
             playSound('correct');
@@ -146,12 +150,16 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             </div>
 
             {/* Explosion Layer */}
-            {explosions.map(exp => (
+            {Object.values(explosions).map(exp => (
                 <Explosion
                     key={exp.id}
                     x={exp.x}
                     y={exp.y}
-                    onComplete={() => setExplosions(prev => prev.filter(e => e.id !== exp.id))}
+                    onComplete={() => setExplosions(prev => {
+                        const next = { ...prev };
+                        delete next[exp.id];
+                        return next;
+                    })}
                 />
             ))}
             <FrenzyOverlay isActive={gameState.isFrenzy} />
