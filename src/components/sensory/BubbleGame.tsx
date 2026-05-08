@@ -19,6 +19,7 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     const { isMuted, toggleMute } = useSound();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [gameKey, setGameKey] = useState(0);
 
     // 1. Configure the Game Rule
     const config: GameConfig = useMemo(() => ({
@@ -54,6 +55,7 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     return (
         <>
             <BubbleGameContainer
+                key={gameKey}
                 config={config}
                 behavior={behavior}
                 onComplete={onComplete}
@@ -71,7 +73,7 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onRestart={() => {
-                    // TODO: How to restart engine? Key change might be easiest for now
+                    setGameKey(prev => prev + 1);
                     setIsMenuOpen(false);
                 }}
                 onExit={onExit}
