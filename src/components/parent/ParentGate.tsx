@@ -13,12 +13,18 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
     const [answer, setAnswer] = useState('');
     const [error, setError] = useState(false);
 
-    useEffect(() => {
-        // Generate random 2-digit addition problem
+    const generateProblem = () => {
+        // Use crypto for secure random generation (authorization gate)
+        const array = new Uint32Array(2);
+        crypto.getRandomValues(array);
         setProblem({
-            n1: Math.floor(Math.random() * 40) + 10,
-            n2: Math.floor(Math.random() * 40) + 10
+            n1: (array[0] % 40) + 10,
+            n2: (array[1] % 40) + 10
         });
+    };
+
+    useEffect(() => {
+        generateProblem();
     }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -30,6 +36,8 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
         } else {
             setError(true);
             setAnswer('');
+            // Regenerate problem to prevent brute force
+            generateProblem();
             setTimeout(() => setError(false), 1000);
         }
     };
@@ -57,7 +65,8 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
                     <input
                         type="number"
                         value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
+                        onChange={(e) => setAnswer(e.target.value.slice(0, 3))}
+                        maxLength={3}
                         aria-label={t('parent.gateDesc')}
                         className={`w-full text-center text-3xl py-3 rounded-xl border-2 mb-4 focus:outline-none ${error ? 'border-red-500 bg-red-50' : 'border-slate-200 focus:border-primary'
                             }`}
