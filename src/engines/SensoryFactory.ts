@@ -21,7 +21,7 @@ export class SensoryFactory {
     static generateFromProblem(problem: Problem): SensoryProblem {
         // "Math Bubble Blast" Adapter
         // MathStrategy generates bubbles dynamically, so we don't need to pre-generate items here.
-        const targetValue = typeof problem.answer === 'number' ? problem.answer : parseInt(problem.answer as string) || SensoryFactory.DEFAULT_TARGET;
+        const targetValue = typeof problem.answer === 'number' ? problem.answer : parseInt(problem.answer as string, 10) || SensoryFactory.DEFAULT_TARGET;
 
         return {
             type: 'sensory',
