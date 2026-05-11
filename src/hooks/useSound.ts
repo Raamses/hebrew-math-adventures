@@ -8,6 +8,19 @@ import { useState, useEffect, useCallback } from 'react';
 
 type SoundType = 'correct' | 'wrong' | 'levelUp' | 'click';
 
+// Lazily-initialized global AudioContext to prevent exhausting browser instance limits
+let audioContextInstance: AudioContext | null = null;
+
+const getAudioContext = (): AudioContext | null => {
+    if (audioContextInstance) return audioContextInstance;
+
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return null;
+
+    audioContextInstance = new AudioContextClass();
+    return audioContextInstance;
+};
+
 export const useSound = () => {
     const [isMuted, setIsMuted] = useState<boolean>(() => {
         const saved = localStorage.getItem('isMuted');
@@ -21,10 +34,9 @@ export const useSound = () => {
     const playSound = useCallback((type: SoundType) => {
         if (isMuted) return;
 
-        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        if (!AudioContextClass) return;
+        const ctx = getAudioContext();
+        if (!ctx) return;
 
-        const ctx = new AudioContextClass();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
