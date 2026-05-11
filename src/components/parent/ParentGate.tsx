@@ -31,7 +31,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
         e.preventDefault();
         if (!problem) return;
 
-        if (parseInt(answer) === problem.n1 + problem.n2) {
+        if (parseInt(answer, 10) === problem.n1 + problem.n2) {
             onSuccess();
         } else {
             setError(true);
