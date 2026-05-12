@@ -1,3 +1,7 @@
+## 2024-05-18 - parseInt Radix Safety
+**Vulnerability:** Use of `parseInt` without an explicitly specified radix (e.g., `parseInt(answer)`).
+**Learning:** While modern engines default to decimal, omitting the radix can lead to unexpected parsing results, especially if strings start with '0', risking logic flaws in components like `ParentGate`.
+**Prevention:** Always explicitly define a radix when using `parseInt`, typically 10 (e.g., `parseInt(answer, 10)`), to ensure deterministic behavior across all environments.
 ## 2025-05-09 - Math.random() usage in authorization context
 **Vulnerability:** The application used `Math.random()` to generate the math problem challenges for the `ParentGate` component which gates the `ParentDashboard`. Furthermore, there was no brute-force prevention mechanism (the problem remained the same on incorrect answers), and no input limits.
 **Learning:** While `Math.random()` is fine for simple animations, using it to generate an authorization gate (like checking if the user is a parent) poses a minor security risk due to its predictability. Also, static challenges allow for simple script-based brute forcing.
