@@ -8,17 +8,15 @@ import { useState, useEffect, useCallback } from 'react';
 
 type SoundType = 'correct' | 'wrong' | 'levelUp' | 'click';
 
-// Lazily-initialized global AudioContext to prevent exhausting browser instance limits
-let audioContextInstance: AudioContext | null = null;
 
-const getAudioContext = (): AudioContext | null => {
-    if (audioContextInstance) return audioContextInstance;
-
+let globalAudioContext: AudioContext | null = null;
+const getAudioContext = () => {
+    if (globalAudioContext) return globalAudioContext;
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextClass) return null;
-
-    audioContextInstance = new AudioContextClass();
-    return audioContextInstance;
+    if (AudioContextClass) {
+        globalAudioContext = new AudioContextClass();
+    }
+    return globalAudioContext;
 };
 
 export const useSound = () => {
@@ -36,7 +34,6 @@ export const useSound = () => {
 
         const ctx = getAudioContext();
         if (!ctx) return;
-
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
