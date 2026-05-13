@@ -62,9 +62,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, [allProfiles]);
 
     const createProfile = useCallback(async (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
+        const sanitizedName = name.trim().substring(0, 50);
         const newProfile: UserProfile = {
             id: crypto.randomUUID(),
-            name,
+            name: sanitizedName,
             age,
             avatarId,
             mascotId,
@@ -137,9 +138,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, [profile, logEvent]);
 
     const updateProfile = useCallback((id: string, updates: Partial<UserProfile>) => {
+        // Sanitize name if provided in updates
+        const safeUpdates = { ...updates };
+        if (safeUpdates.name !== undefined) {
+            safeUpdates.name = safeUpdates.name.trim().substring(0, 50);
+        }
+
         setAllProfiles(prev => prev.map(p => {
             if (p.id === id) {
-                const updated = { ...p, ...updates };
+                const updated = { ...p, ...safeUpdates };
                 // If we updated the currently logged-in profile, update state
                 // Use functional update to avoid dependency on 'profile' if possible, or just accept it.
                 // But wait, here we are inside setAllProfiles. We need external access to 'profile' state to update it.
@@ -151,7 +158,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         // Also update local profile state if it matches
         if (profile && profile.id === id) {
-            setProfileState(prev => prev ? { ...prev, ...updates } : null);
+            setProfileState(prev => prev ? { ...prev, ...safeUpdates } : null);
         }
     }, [profile]);
 

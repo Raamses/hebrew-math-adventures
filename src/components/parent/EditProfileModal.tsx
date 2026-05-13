@@ -26,7 +26,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
 
     const handleSave = () => {
         // Validation
-        if (!formData.name.trim()) {
+        const sanitizedName = formData.name.trim();
+        if (!sanitizedName) {
             setError(t('parent.edit.errorName'));
             return;
         }
@@ -35,7 +36,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
             return;
         }
 
-        onSave(profile.id, formData);
+        onSave(profile.id, { ...formData, name: sanitizedName });
         onClose();
     };
 
@@ -77,6 +78,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                                         className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700 focus-visible:ring-2"
+                                        maxLength={50}
                                     />
                                 </div>
                                 <div className="space-y-1">

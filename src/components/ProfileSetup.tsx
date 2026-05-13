@@ -20,8 +20,9 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (name.trim().length > 0) {
-            await createProfile(name, age, selectedAvatar, selectedMascot);
+        const sanitizedName = name.trim();
+        if (sanitizedName.length > 0) {
+            await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
             if (onComplete) onComplete();
         }
     };
@@ -69,6 +70,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
                         className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-xl text-start"
                         placeholder={t('onboarding.namePlaceholder')}
                         required
+                        maxLength={50}
                     />
                 </div>
 
