@@ -14,25 +14,18 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const THEME_STORAGE_KEY = 'hebrew-math-theme';
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    // Default to first theme or valid localStorage fallback
-    const [currentTheme, setCurrentThemeState] = useState<Theme>(() => {
-        const saved = localStorage.getItem(THEME_STORAGE_KEY);
-        return (saved && getThemeById(saved)) || THEMES[0];
-    });
-
     // We consume ProfileContext to sync theme
     // Note: ProfileProvider must wrap ThemeProvider in App.tsx
     const { profile, updateProfile } = useProfile();
 
-    // Sync state with Profile when logged in
-    useEffect(() => {
-        if (profile?.themeId) {
-            const profileTheme = getThemeById(profile.themeId);
-            if (profileTheme && profileTheme.id !== currentTheme.id) {
-                setCurrentThemeState(profileTheme);
-            }
-        }
-    }, [profile?.themeId]);
+    // Default to first theme or valid localStorage fallback (only for guests)
+    const [guestTheme, setGuestTheme] = useState<Theme>(() => {
+        const saved = localStorage.getItem(THEME_STORAGE_KEY);
+        return (saved && getThemeById(saved)) || THEMES[0];
+    });
+
+    // ⚡ Bolt: Derived state instead of useEffect syncing to prevent cascading renders
+    const currentTheme = (profile?.themeId && getThemeById(profile.themeId)) || guestTheme;
 
     // Apply theme CSS variables whenever theme changes
     useEffect(() => {
@@ -62,12 +55,12 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const setTheme = (themeId: ThemeId) => {
         const theme = getThemeById(themeId);
         if (theme) {
-            // Immediate UI update
-            setCurrentThemeState(theme);
-
             // If logged in, persist to profile
             if (profile) {
                 updateProfile(profile.id, { themeId });
+            } else {
+                // Otherwise update guest state
+                setGuestTheme(theme);
             }
         }
     };
