@@ -31,7 +31,7 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
         e.preventDefault();
         if (isProcessing) return;
 
-        const val = parseInt(answer);
+        const val = parseInt(answer, 10);
         if (isNaN(val)) return;
 
         let isCorrect = false;
