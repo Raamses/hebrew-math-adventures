@@ -35,7 +35,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
             return;
         }
 
-        onSave(profile.id, formData);
+        const sanitizedData = {
+            ...formData,
+            name: formData.name.slice(0, 30)
+        };
+
+        onSave(profile.id, sanitizedData);
         onClose();
     };
 
@@ -77,6 +82,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                                         className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700 focus-visible:ring-2"
+                                        maxLength={30}
                                     />
                                 </div>
                                 <div className="space-y-1">
@@ -87,6 +93,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                         value={formData.age}
                                         onChange={e => setFormData({ ...formData, age: Number(e.target.value) })}
                                         className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700 focus-visible:ring-2"
+                                        min={4}
+                                        max={12}
                                     />
                                 </div>
                             </div>
