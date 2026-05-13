@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { cn } from "../../lib/utils";
 
 interface NumberInputProps {
@@ -12,7 +12,9 @@ interface NumberInputProps {
     "aria-label"?: string;
 }
 
-export function NumberInput({
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
+// (like `answer` in MathCard/ArithmeticView/SeriesView) change, reducing React reconciliation.
+export const NumberInput = React.memo(function NumberInput({
     value,
     onChange,
     disabled = false,
@@ -55,4 +57,4 @@ export function NumberInput({
             )}
         />
     );
-}
+});

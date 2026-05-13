@@ -35,15 +35,15 @@ vi.mock('../../context/ProfileContext', () => ({
 // Mock MathModule
 vi.mock('../../engines/MathModule', () => {
     return {
-        MathModule: class {
-            generateProblem = vi.fn().mockReturnValue({
+        MathModule: vi.fn().mockImplementation(function() { return {
+            generateProblem: vi.fn().mockReturnValue({
                 type: 'arithmetic',
                 question: '1 + 1',
                 answer: 2,
                 options: [1, 2, 3, 4]
-            });
-            evaluate = vi.fn().mockReturnValue({ isCorrect: true });
-        }
+            }),
+            evaluate: vi.fn().mockReturnValue({ isCorrect: true })
+        }; })
     };
 });
 
