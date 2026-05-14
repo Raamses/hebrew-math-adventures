@@ -1,0 +1,46 @@
+--- src/components/games/ArcadeHUD.tsx
++++ src/components/games/ArcadeHUD.tsx
+@@ -1,4 +1,4 @@
+-import React, { useEffect, useState } from 'react';
++import React, { useEffect, useState, useRef } from 'react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import { Heart, Clock, Trophy } from 'lucide-react';
+ import { cn } from '../../lib/utils';
+@@ -14,16 +14,23 @@
+ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLeft, combo }) => {
+     // Local state to animate score increments
+     const [displayScore, setDisplayScore] = useState(score);
++    const displayScoreRef = useRef(displayScore);
+
+     useEffect(() => {
+-        // Simple lerp effect for score
+-        const interval = setInterval(() => {
+-            setDisplayScore(prev => {
+-                if (prev < score) return prev + Math.ceil((score - prev) / 5);
+-                return score;
+-            });
+-        }, 16);
+-        return () => clearInterval(interval);
++        let animationFrameId: number;
++
++        // ⚡ Bolt: Optimized lerp effect using requestAnimationFrame instead of setInterval.
++        // This syncs with the display refresh rate, prevents execution when the tab is hidden,
++        // and completely stops running once the target score is reached, saving CPU cycles.
++        const updateScore = () => {
++            if (displayScoreRef.current < score) {
++                const next = displayScoreRef.current + Math.ceil((score - displayScoreRef.current) / 5);
++                displayScoreRef.current = next;
++                setDisplayScore(next);
++                animationFrameId = requestAnimationFrame(updateScore);
++            } else if (displayScoreRef.current > score) {
++                displayScoreRef.current = score;
++                setDisplayScore(score);
++            }
++        };
++
++        animationFrameId = requestAnimationFrame(updateScore);
++
++        return () => cancelAnimationFrame(animationFrameId);
+     }, [score]);
+
+     if (mode === 'STANDARD') return null;
