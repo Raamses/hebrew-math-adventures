@@ -26,7 +26,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
 
     const handleSave = () => {
         // Validation
-        if (!formData.name.trim()) {
+        const sanitizedName = formData.name.trim();
+        if (!sanitizedName) {
             setError(t('parent.edit.errorName'));
             return;
         }
