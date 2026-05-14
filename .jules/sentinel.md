@@ -1,4 +1,4 @@
-## 2024-05-08 - Add input length limits to prevent storage exhaustion
-**Vulnerability:** Missing input validation and length limits on user-provided profile names. This allowed creation of extremely long strings which would be persisted to `localStorage`, potentially leading to storage exhaustion or application crashes when parsing the JSON payload.
-**Learning:** LocalStorage has strict quota limits (~5MB). Unbounded inputs persisted directly to it are a vector for local DoS and state corruption.
-**Prevention:** Added `maxLength={50}` to all relevant HTML input fields for UX defense, and implemented server/context-side validation in `ProfileContext.tsx` to truncate names and enforce fallback values.
+## 2025-02-14 - Crypto API in Non-Secure Contexts
+**Vulnerability:** Unnecessary use of `crypto.randomUUID()` to replace `Math.random()` in transient game logic.
+**Learning:** Adding Web Crypto APIs for non-sensitive ID generation (like visual bubble IDs in a game) provides no real security benefit ("security theater") and causes immediate runtime crashes when testing on local networks (HTTP instead of HTTPS), as `crypto.randomUUID()` is undefined in non-secure contexts.
+**Prevention:** Only use Web Crypto APIs when generating authenticators, secrets, or secure authorization tokens. For UI/game transient IDs, stick to simpler generators like `Date.now() + Math.random()` or specific libraries. Focus on real security threats like DoS via unconstrained inputs (fixed in this session via truncations).
