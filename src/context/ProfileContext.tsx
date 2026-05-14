@@ -62,8 +62,12 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, [allProfiles]);
 
     const createProfile = useCallback(async (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
+        const newProfileId = typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
+
         const newProfile: UserProfile = {
-            id: crypto.randomUUID(),
+            id: newProfileId,
             name,
             age,
             avatarId,
