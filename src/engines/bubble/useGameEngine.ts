@@ -71,6 +71,16 @@ export const useGameEngine = (
 
     const cleanupSystem = () => {
         const now = Date.now();
+
+        // Pre-check using ref to avoid enqueueing state updates 60 times a second
+        const needsCleanup = entitiesRef.current.some(e => {
+            const isOld = (now - e.createdAt) > 30000;
+            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+            return isOld || isPoppedAndDone;
+        });
+
+        if (!needsCleanup) return;
+
         // Remove entities older than 30s OR popped more than 1s ago
         setEntities(prev => {
             const next = prev.filter(e => {
@@ -89,13 +99,13 @@ export const useGameEngine = (
     };
 
     // --- Game Loop ---
-    const update = useCallback((time: number) => {
+    const update = useCallback(function loop(time: number) {
         if (gameStateRef.current.isGameOver) return;
 
         spawnSystem(time);
         cleanupSystem();
 
-        requestRef.current = requestAnimationFrame(update);
+        requestRef.current = requestAnimationFrame(loop);
     }, [config, behavior]);
 
     // Start/Stop Loop
