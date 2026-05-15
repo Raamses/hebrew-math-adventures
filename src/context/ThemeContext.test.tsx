@@ -68,7 +68,7 @@ describe('ThemeContext', () => {
         const profile = { id: '123', themeId: 'default' };
 
         // Mock updateProfile to update the mock profile state so it reflects the change
-        const mockUpdateProfileFn = vi.fn().mockImplementation((id, updates) => {
+        const mockUpdateProfileFn = vi.fn().mockImplementation((_id, updates) => {
             Object.assign(profile, updates);
         });
 
