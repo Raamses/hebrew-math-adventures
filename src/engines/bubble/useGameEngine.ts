@@ -71,6 +71,15 @@ export const useGameEngine = (
 
     const cleanupSystem = () => {
         const now = Date.now();
+
+        // ⚡ Bolt: Pre-check with mutable ref to avoid unconditional setState
+        // inside requestAnimationFrame loop, preventing React evaluation overhead at 60fps.
+        const needsCleanup = entitiesRef.current.some(e => {
+            return ((now - e.createdAt) > 30000) || (e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000);
+        });
+
+        if (!needsCleanup) return;
+
         // Remove entities older than 30s OR popped more than 1s ago
         setEntities(prev => {
             const next = prev.filter(e => {
@@ -89,14 +98,14 @@ export const useGameEngine = (
     };
 
     // --- Game Loop ---
-    const update = useCallback((time: number) => {
+    const update = useCallback(function update(time: number) {
         if (gameStateRef.current.isGameOver) return;
 
         spawnSystem(time);
         cleanupSystem();
 
         requestRef.current = requestAnimationFrame(update);
-    }, [config, behavior]);
+    }, [config, behavior]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Start/Stop Loop
     useEffect(() => {
