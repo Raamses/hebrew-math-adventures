@@ -31,7 +31,7 @@ export const useGameEngine = (
 
     // --- Systems ---
 
-    const spawnSystem = (time: number) => {
+    const spawnSystem = useCallback((time: number) => {
         // frenzy multiplier: 0.6x interval (40% faster)
         let currentInterval = gameStateRef.current.isFrenzy
             ? config.spawnIntervalMs * 0.6
@@ -67,11 +67,21 @@ export const useGameEngine = (
             return next;
         });
         lastSpawnTime.current = time;
-    };
+    }, [config, behavior]);
 
     const cleanupSystem = () => {
         const now = Date.now();
         // Remove entities older than 30s OR popped more than 1s ago
+
+        // ⚡ Bolt: Pre-check to avoid unconditional setEntities call in RAF loop
+        const needsCleanup = entitiesRef.current.some(e => {
+            const isOld = (now - e.createdAt) > 30000;
+            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+            return isOld || isPoppedAndDone;
+        });
+
+        if (!needsCleanup) return;
+
         setEntities(prev => {
             const next = prev.filter(e => {
                 const isOld = (now - e.createdAt) > 30000;
@@ -89,14 +99,14 @@ export const useGameEngine = (
     };
 
     // --- Game Loop ---
-    const update = useCallback((time: number) => {
+    const update = useCallback(function loop(time: number) {
         if (gameStateRef.current.isGameOver) return;
 
         spawnSystem(time);
         cleanupSystem();
 
-        requestRef.current = requestAnimationFrame(update);
-    }, [config, behavior]);
+        requestRef.current = requestAnimationFrame(loop);
+    }, [spawnSystem]);
 
     // Start/Stop Loop
     useEffect(() => {
