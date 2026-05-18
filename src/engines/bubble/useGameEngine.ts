@@ -71,6 +71,18 @@ export const useGameEngine = (
 
     const cleanupSystem = () => {
         const now = Date.now();
+
+        // ⚡ Bolt: Performance Fix
+        // Pre-check using mutable ref to avoid calling setState unconditionally
+        // 60 times a second. Only enqueue React updates when cleanup is actually needed.
+        const needsCleanup = entitiesRef.current.some(e => {
+            const isOld = (now - e.createdAt) > 30000;
+            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+            return isOld || isPoppedAndDone;
+        });
+
+        if (!needsCleanup) return;
+
         // Remove entities older than 30s OR popped more than 1s ago
         setEntities(prev => {
             const next = prev.filter(e => {
@@ -79,23 +91,21 @@ export const useGameEngine = (
                 return !isOld && !isPoppedAndDone;
             });
 
-            // Performance Fix: Only update state if length changed
-            if (next.length !== prev.length) {
-                entitiesRef.current = next; // Sync ref immediately
-                return next;
-            }
-            return prev;
+            // Sync ref immediately
+            entitiesRef.current = next;
+            return next;
         });
     };
 
     // --- Game Loop ---
-    const update = useCallback((time: number) => {
+    const update = useCallback(function loop(time: number) {
         if (gameStateRef.current.isGameOver) return;
 
         spawnSystem(time);
         cleanupSystem();
 
-        requestRef.current = requestAnimationFrame(update);
+        requestRef.current = requestAnimationFrame(loop);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [config, behavior]);
 
     // Start/Stop Loop
