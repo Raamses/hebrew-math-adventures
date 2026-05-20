@@ -10,6 +10,7 @@ interface NumberInputProps {
     autoFocus?: boolean;
     inputMode?: "numeric" | "text" | "tel" | "search" | "email" | "url" | "decimal" | "none";
     "aria-label"?: string;
+    maxLength?: number;
 }
 
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
@@ -22,7 +23,8 @@ export const NumberInput = React.memo(function NumberInput({
     className,
     autoFocus = false,
     inputMode = "numeric",
-    "aria-label": ariaLabel = "Enter number"
+    "aria-label": ariaLabel = "Enter number",
+    maxLength = 10
 }: NumberInputProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
