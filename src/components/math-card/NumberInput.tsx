@@ -46,8 +46,7 @@ export const NumberInput = React.memo(function NumberInput({
             inputMode={inputMode}
             pattern="[0-9]*"
             value={value}
-            maxLength={maxLength}
-            onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+            onChange={(e) => onChange(e.target.value.slice(0, 10))}
             disabled={disabled}
             placeholder={placeholder}
             aria-label={ariaLabel}

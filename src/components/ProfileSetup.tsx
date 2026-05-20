@@ -3,6 +3,7 @@ import { useProfile } from '../context/ProfileContext';
 import { type MascotCharacter } from './mascot/Mascot';
 import { MascotSelector } from './mascot/MascotSelector';
 import { useTranslation } from 'react-i18next';
+import { isValidProfileName } from '../lib/validation';
 
 const AVATARS = ['🦁', '🐯', '🐻', '🐨', '🐼', '🐸', '🦄', '🐲', '🚀', '⭐'];
 
@@ -18,13 +19,22 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
     const [selectedMascot, setSelectedMascot] = useState<MascotCharacter>('owl');
     const { t } = useTranslation();
 
+    const [error, setError] = useState('');
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (name.trim().length > 0) {
-            const sanitizedName = name.slice(0, 30);
-            await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
-            if (onComplete) onComplete();
+        const trimmedName = name.trim();
+        if (!trimmedName) return;
+
+        if (!isValidProfileName(trimmedName)) {
+            setError(t('parent.edit.errorName') || 'Invalid name. Use only letters, numbers and spaces.');
+            return;
         }
+
+        setError('');
+        const sanitizedName = trimmedName.slice(0, 30);
+        await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
+        if (onComplete) onComplete();
     };
 
     return (
@@ -62,6 +72,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
                 <div>
                     <label htmlFor="setup-name" className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.nameLabel')}</label>
+                    {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
                     <input
                         id="setup-name"
                         type="text"
