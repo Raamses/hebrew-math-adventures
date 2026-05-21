@@ -82,6 +82,16 @@ export const useGameEngine = (
         if (!needsCleanup) return;
 
         // Remove entities older than 30s OR popped more than 1s ago
+
+        // ⚡ Bolt: Pre-check to avoid unconditional setEntities call in RAF loop
+        const needsCleanup = entitiesRef.current.some(e => {
+            const isOld = (now - e.createdAt) > 30000;
+            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+            return isOld || isPoppedAndDone;
+        });
+
+        if (!needsCleanup) return;
+
         setEntities(prev => {
             const next = prev.filter(e => {
                 const isOld = (now - e.createdAt) > 30000;
