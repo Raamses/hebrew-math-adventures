@@ -31,7 +31,7 @@ export const useGameEngine = (
 
     // --- Systems ---
 
-    const spawnSystem = (time: number) => {
+    const spawnSystem = useCallback((time: number) => {
         // frenzy multiplier: 0.6x interval (40% faster)
         let currentInterval = gameStateRef.current.isFrenzy
             ? config.spawnIntervalMs * 0.6
@@ -67,11 +67,31 @@ export const useGameEngine = (
             return next;
         });
         lastSpawnTime.current = time;
-    };
+    }, [config, behavior]);
 
-    const cleanupSystem = () => {
+    const cleanupSystem = useCallback(() => {
         const now = Date.now();
+
+        // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
+        const needsCleanup = entitiesRef.current.some(e => {
+            const isOld = (now - e.createdAt) > 30000;
+            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+            return isOld || isPoppedAndDone;
+        });
+
+        if (!needsCleanup) return;
+
         // Remove entities older than 30s OR popped more than 1s ago
+
+        // ⚡ Bolt: Pre-check to avoid unconditional setEntities call in RAF loop
+        const needsCleanup = entitiesRef.current.some(e => {
+            const isOld = (now - e.createdAt) > 30000;
+            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+            return isOld || isPoppedAndDone;
+        });
+
+        if (!needsCleanup) return;
+
         setEntities(prev => {
             const next = prev.filter(e => {
                 const isOld = (now - e.createdAt) > 30000;
@@ -79,24 +99,21 @@ export const useGameEngine = (
                 return !isOld && !isPoppedAndDone;
             });
 
-            // Performance Fix: Only update state if length changed
-            if (next.length !== prev.length) {
-                entitiesRef.current = next; // Sync ref immediately
-                return next;
-            }
-            return prev;
+            // Sync ref immediately and return next state
+            entitiesRef.current = next;
+            return next;
         });
-    };
+    }, []);
 
     // --- Game Loop ---
-    const update = useCallback((time: number) => {
+    const update = useCallback(function loop(time: number) {
         if (gameStateRef.current.isGameOver) return;
 
         spawnSystem(time);
         cleanupSystem();
 
-        requestRef.current = requestAnimationFrame(update);
-    }, [config, behavior]);
+        requestRef.current = requestAnimationFrame(loop);
+    }, [spawnSystem, cleanupSystem]);
 
     // Start/Stop Loop
     useEffect(() => {
