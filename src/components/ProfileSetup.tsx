@@ -77,7 +77,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
                         id="setup-name"
                         type="text"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => setName(e.target.value.slice(0, 30))}
                         className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-xl text-start"
                         placeholder={t('onboarding.namePlaceholder')}
                         required

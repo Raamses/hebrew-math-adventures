@@ -82,7 +82,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                         id="edit-name"
                                         type="text"
                                         value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value.slice(0, 30) })}
                                         className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700 focus-visible:ring-2"
                                         maxLength={30}
                                     />
