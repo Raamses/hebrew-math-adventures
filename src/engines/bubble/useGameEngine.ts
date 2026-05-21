@@ -31,7 +31,7 @@ export const useGameEngine = (
 
     // --- Systems ---
 
-    const spawnSystem = (time: number) => {
+    const spawnSystem = useCallback((time: number) => {
         // frenzy multiplier: 0.6x interval (40% faster)
         let currentInterval = gameStateRef.current.isFrenzy
             ? config.spawnIntervalMs * 0.6
@@ -67,14 +67,12 @@ export const useGameEngine = (
             return next;
         });
         lastSpawnTime.current = time;
-    };
+    }, [config, behavior]);
 
-    const cleanupSystem = () => {
+    const cleanupSystem = useCallback(() => {
         const now = Date.now();
 
-        // ⚡ Bolt: Performance Fix
-        // Pre-check using mutable ref to avoid calling setState unconditionally
-        // 60 times a second. Only enqueue React updates when cleanup is actually needed.
+        // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
         const needsCleanup = entitiesRef.current.some(e => {
             const isOld = (now - e.createdAt) > 30000;
             const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
@@ -91,11 +89,11 @@ export const useGameEngine = (
                 return !isOld && !isPoppedAndDone;
             });
 
-            // Sync ref immediately
+            // Sync ref immediately and return next state
             entitiesRef.current = next;
             return next;
         });
-    };
+    }, []);
 
     // --- Game Loop ---
     const update = useCallback(function loop(time: number) {
@@ -105,8 +103,7 @@ export const useGameEngine = (
         cleanupSystem();
 
         requestRef.current = requestAnimationFrame(loop);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [config, behavior]);
+    }, [spawnSystem, cleanupSystem]);
 
     // Start/Stop Loop
     useEffect(() => {
