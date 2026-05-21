@@ -69,8 +69,18 @@ export const useGameEngine = (
         lastSpawnTime.current = time;
     }, [config, behavior]);
 
-    const cleanupSystem = () => {
+    const cleanupSystem = useCallback(() => {
         const now = Date.now();
+
+        // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
+        const needsCleanup = entitiesRef.current.some(e => {
+            const isOld = (now - e.createdAt) > 30000;
+            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+            return isOld || isPoppedAndDone;
+        });
+
+        if (!needsCleanup) return;
+
         // Remove entities older than 30s OR popped more than 1s ago
 
         // ⚡ Bolt: Pre-check to avoid unconditional setEntities call in RAF loop
@@ -89,14 +99,11 @@ export const useGameEngine = (
                 return !isOld && !isPoppedAndDone;
             });
 
-            // Performance Fix: Only update state if length changed
-            if (next.length !== prev.length) {
-                entitiesRef.current = next; // Sync ref immediately
-                return next;
-            }
-            return prev;
+            // Sync ref immediately and return next state
+            entitiesRef.current = next;
+            return next;
         });
-    };
+    }, []);
 
     // --- Game Loop ---
     const update = useCallback(function loop(time: number) {
@@ -106,7 +113,7 @@ export const useGameEngine = (
         cleanupSystem();
 
         requestRef.current = requestAnimationFrame(loop);
-    }, [spawnSystem]);
+    }, [spawnSystem, cleanupSystem]);
 
     // Start/Stop Loop
     useEffect(() => {
