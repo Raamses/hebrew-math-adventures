@@ -16,67 +16,71 @@ const ProgressContext = createContext<ProgressContextType | undefined>(undefined
 
 const STORAGE_KEY = 'hebrew_game_saga_progress_v1';
 
+const loadProgressForProfile = (profile: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (!profile) return {};
+
+    const userKey = `${STORAGE_KEY}_${profile.id}`;
+    const saved = localStorage.getItem(userKey);
+
+    if (saved) {
+        try {
+            return JSON.parse(saved);
+        } catch (e) {
+            console.error("Failed to load progress for user", profile.id, e);
+            // Fallback to age-based init on corruption
+            return getInitialProgress(profile.age || 5);
+        }
+    } else {
+        // New User or Migration
+        // Check for legacy global progress to migrate
+        const legacyGlobal = localStorage.getItem(STORAGE_KEY);
+        if (legacyGlobal) {
+            try {
+                const legacyProgress = JSON.parse(legacyGlobal);
+                // Only migrate if it looks valid
+                if (Object.keys(legacyProgress).length > 0) {
+                    return legacyProgress;
+                    // Optional: Clear legacy? Better to keep as backup for now.
+                    // localStorage.removeItem(STORAGE_KEY);
+                }
+            } catch {
+                return getInitialProgress(profile.age || 5);
+            }
+        }
+
+        // Brand new user, no legacy
+        return getInitialProgress(profile.age || 5);
+    }
+};
+
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { profile } = useProfile();
-    const [progress, setProgress] = useState<SagaProgress>({});
-    const [isLoaded, setIsLoaded] = useState(false);
+    // Use undefined so it strictly matches `profile?.id` when there is no profile initially
+    const [prevProfileId, setPrevProfileId] = useState<string | undefined>(profile?.id);
+    const [progress, setProgress] = useState<SagaProgress>(() => loadProgressForProfile(profile));
 
-    // Load progress when profile changes
-    useEffect(() => {
-        if (!profile) {
-            setProgress({});
-            setIsLoaded(false);
-            return;
-        }
-
-        const userKey = `${STORAGE_KEY}_${profile.id}`;
-        const saved = localStorage.getItem(userKey);
-
-        if (saved) {
-            try {
-                setProgress(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to load progress for user", profile.id, e);
-                // Fallback to age-based init on corruption
-                setProgress(getInitialProgress(profile.age || 5));
-            }
-        } else {
-            // New User or Migration
-            // Check for legacy global progress to migrate
-            const legacyGlobal = localStorage.getItem(STORAGE_KEY);
-            if (legacyGlobal) {
-                try {
-                    const legacyProgress = JSON.parse(legacyGlobal);
-                    // Only migrate if it looks valid
-                    if (Object.keys(legacyProgress).length > 0) {
-                        setProgress(legacyProgress);
-                        // Optional: Clear legacy? Better to keep as backup for now.
-                        // localStorage.removeItem(STORAGE_KEY); 
-                    } else {
-                        throw new Error("Empty legacy");
-                    }
-                } catch {
-                    setProgress(getInitialProgress(profile.age || 5));
-                }
-            } else {
-                // Brand new user, no legacy
-                setProgress(getInitialProgress(profile.age || 5));
-            }
-        }
-        setIsLoaded(true);
-    }, [profile]);
+    // Handle profile switch during render to avoid cascading re-renders
+    if (profile?.id !== prevProfileId) {
+        setPrevProfileId(profile?.id);
+        setProgress(loadProgressForProfile(profile));
+    }
 
     // Save on change (Debounced slightly by React batching, but good to be safe)
     useEffect(() => {
-        if (profile && isLoaded && Object.keys(progress).length > 0) {
+        if (profile && Object.keys(progress).length > 0) {
             const userKey = `${STORAGE_KEY}_${profile.id}`;
             localStorage.setItem(userKey, JSON.stringify(progress));
         }
-    }, [progress, profile, isLoaded]);
+    }, [progress, profile]);
 
     // Derived State: Total Stars
     const totalStars = React.useMemo(() => {
-        return Object.values(progress).reduce((acc, node) => acc + (node.stars || 0), 0);
+        let sum = 0;
+        for (const key in progress) {
+            // progress[key] might not have stars defined or it could be 0
+            sum += progress[key].stars || 0;
+        }
+        return sum;
     }, [progress]);
 
     const completeNode = (nodeId: string, stars: number): void => {

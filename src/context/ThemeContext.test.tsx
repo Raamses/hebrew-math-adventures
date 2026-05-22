@@ -66,22 +66,31 @@ describe('ThemeContext', () => {
 
     it('updates profile when theme changes (logged in)', () => {
         const profile = { id: '123', themeId: 'default' };
+
+        // Mock updateProfile to update the mock profile state so it reflects the change
+        const mockUpdateProfileFn = vi.fn().mockImplementation((_id, updates) => {
+            Object.assign(profile, updates);
+        });
+
         mockUseProfile.mockReturnValue({
             profile: profile as any,
             // ... other mocks
-            updateProfile: mockUpdateProfile,
+            updateProfile: mockUpdateProfileFn,
         } as any);
 
-        const { result } = renderHook(() => useTheme(), { wrapper: ThemeProvider });
+        const { result, rerender } = renderHook(() => useTheme(), { wrapper: ThemeProvider });
 
         act(() => {
             result.current.setTheme('candy');
         });
 
+        // Simulate App re-rendering because profile context updated
+        rerender();
+
         // Should call updateProfile
-        expect(mockUpdateProfile).toHaveBeenCalledWith('123', { themeId: 'candy' });
-        // Local state updates immediately? Yes, but mostly relies on profile sync in real app.
-        // In our implementation, we update local state immediately too.
+        expect(mockUpdateProfileFn).toHaveBeenCalledWith('123', { themeId: 'candy' });
+
+        // After profile changes, derived state updates
         expect(result.current.currentTheme.id).toBe('candy');
     });
 
