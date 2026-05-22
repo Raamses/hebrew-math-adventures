@@ -58,9 +58,13 @@ export const useGameEngine = (
 
         // Create new bubble
         const newBubbleProps = behavior.generateNext(config);
+        const randomValues = new Uint32Array(1);
+        crypto.getRandomValues(randomValues);
+        const secureRandom = randomValues[0] / 4294967296; // 0xFFFFFFFF + 1
+
         const newBubble: BubbleEntity = {
-            id: `bubble-${Date.now()}-${Math.random()}`,
-            x: Math.random() * 90 + 5, // 5% to 95% width
+            id: `bubble-${Date.now()}-${crypto.randomUUID()}`,
+            x: secureRandom * 90 + 5, // 5% to 95% width
             y: 110, // Start below screen
             velocity: config.baseVelocity,
             isPopped: false,
