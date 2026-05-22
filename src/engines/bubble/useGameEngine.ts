@@ -31,7 +31,7 @@ export const useGameEngine = (
 
     // --- Systems ---
 
-    const spawnSystem = (time: number) => {
+    const spawnSystem = useCallback((time: number) => {
         // frenzy multiplier: 0.6x interval (40% faster)
         let currentInterval = gameStateRef.current.isFrenzy
             ? config.spawnIntervalMs * 0.6
@@ -39,7 +39,14 @@ export const useGameEngine = (
 
         // Catch-Up Mechanic:
         // If screen is empty (low count), spawn faster to refill
-        const activeCount = entitiesRef.current.filter(e => !e.isPopped).length;
+        let activeCount = 0;
+        const currentEntities = entitiesRef.current;
+        for (let i = 0; i < currentEntities.length; i++) {
+            if (!currentEntities[i].isPopped) {
+                activeCount++;
+            }
+        }
+
         if (activeCount < config.maxOnScreen - 2) {
             // 50% faster if we have gaps to fill
             currentInterval = currentInterval * 0.5;
@@ -71,26 +78,42 @@ export const useGameEngine = (
             return next;
         });
         lastSpawnTime.current = time;
-    };
+    }, [config, behavior]);
 
-    const cleanupSystem = () => {
+    const cleanupSystem = useCallback(() => {
         const now = Date.now();
-        // Remove entities older than 30s OR popped more than 1s ago
+
+        // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
+        let needsCleanup = false;
+        const currentEntities = entitiesRef.current;
+        for (let i = 0; i < currentEntities.length; i++) {
+            const e = currentEntities[i];
+            const isOld = (now - e.createdAt) > 30000;
+            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
+            if (isOld || isPoppedAndDone) {
+                needsCleanup = true;
+                break;
+            }
+        }
+
+        if (!needsCleanup) return;
+
         setEntities(prev => {
-            const next = prev.filter(e => {
+            const next = [];
+            for (let i = 0; i < prev.length; i++) {
+                const e = prev[i];
                 const isOld = (now - e.createdAt) > 30000;
                 const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
-                return !isOld && !isPoppedAndDone;
-            });
-
-            // Performance Fix: Only update state if length changed
-            if (next.length !== prev.length) {
-                entitiesRef.current = next; // Sync ref immediately
-                return next;
+                if (!isOld && !isPoppedAndDone) {
+                    next.push(e);
+                }
             }
-            return prev;
+
+            // Sync ref immediately and return next state
+            entitiesRef.current = next;
+            return next;
         });
-    };
+    }, []);
 
     // --- Game Loop ---
     const update = useCallback(function loop(time: number) {
@@ -100,7 +123,7 @@ export const useGameEngine = (
         cleanupSystem();
 
         requestRef.current = requestAnimationFrame(loop);
-    }, [config, behavior]);
+    }, [spawnSystem, cleanupSystem]);
 
     // Start/Stop Loop
     useEffect(() => {
