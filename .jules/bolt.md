@@ -4,6 +4,9 @@
 ## 2024-05-19 - [Cascading Renders in Context]
 **Learning:** Using `useEffect` to synchronize props (like `profile.themeId`) into local state (like `currentTheme`) causes an immediate secondary render, slowing down context updates and triggering ESLint warnings.
 **Action:** Derive state directly during the render phase (e.g. `const currentTheme = profile?.themeId ? getThemeById(profile.themeId) : guestTheme;`) to ensure components render with the correct state on the first pass.
-## 2024-05-19 - [useGameEngine Unconditional setEntities]
-**Learning:** In high-frequency loops like `requestAnimationFrame` running at 60fps, unconditionally calling `setEntities(prev => ...)` triggers React queue updates and causes execution overhead even if the state array remains structurally identical, severely impacting JS thread performance.
-**Action:** Always perform a pre-check using a mutable ref (e.g., `entitiesRef.current.some(...)`) before calling state setters in animation frames to skip unnecessary React reconciliation.
+## 2024-05-19 - [60fps React State Updates in Game Loops]
+**Learning:** Calling React state setters (like `setEntities`) unconditionally inside a `requestAnimationFrame` loop forces React to process an update queue 60 times per second, causing significant cascading render overhead, even if the new state evaluates as identical to the previous one due to object reference changes from filtering/mapping.
+**Action:** When working with 60fps loops in React, always perform a fast, synchronous pre-check (e.g., using `.some()`) on mutable refs to determine if a state mutation is genuinely required before calling the state setter function.
+## 2024-05-19 - [Lazy State Initialization]
+**Learning:** Using `useEffect` to initialize state synchronously on mount (like reading from `localStorage` or generating initial random numbers) causes an unnecessary double-render sequence (cascading re-render).
+**Action:** Always prefer lazy state initialization (`useState(() => { return initialState })`) to perform these initial synchronous setups. This avoids the extra render and correctly sets up the initial state without empty/null flashes.
