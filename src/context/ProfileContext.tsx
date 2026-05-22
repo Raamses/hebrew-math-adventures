@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { type UserProfile } from '../types/user';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { isValidProfileName } from '../lib/validation';
 
 interface ProfileContextType {
     profile: UserProfile | null;
@@ -62,7 +63,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, [allProfiles]);
 
     const createProfile = useCallback(async (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
-        const sanitizedName = name.trim().substring(0, 50);
+        const sanitizedName = name.trim();
+        if (!isValidProfileName(sanitizedName)) {
+            throw new Error('Invalid profile name');
+        }
+
         const newProfile: UserProfile = {
             id: crypto.randomUUID(),
             name: sanitizedName,
@@ -141,7 +146,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // Sanitize name if provided in updates
         const safeUpdates = { ...updates };
         if (safeUpdates.name !== undefined) {
-            safeUpdates.name = safeUpdates.name.trim().substring(0, 50);
+            const sanitizedName = safeUpdates.name.trim();
+            if (!isValidProfileName(sanitizedName)) {
+                console.warn('Attempted to update profile with invalid name, skipping name update');
+                delete safeUpdates.name;
+            } else {
+                safeUpdates.name = sanitizedName;
+            }
         }
 
         setAllProfiles(prev => prev.map(p => {

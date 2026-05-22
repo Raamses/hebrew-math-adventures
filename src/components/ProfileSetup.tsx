@@ -3,6 +3,8 @@ import { useProfile } from '../context/ProfileContext';
 import { type MascotCharacter } from './mascot/Mascot';
 import { MascotSelector } from './mascot/MascotSelector';
 import { useTranslation } from 'react-i18next';
+import { isValidProfileName } from '../lib/validation';
+import { AlertCircle } from 'lucide-react';
 
 const AVATARS = ['🦁', '🐯', '🐻', '🐨', '🐼', '🐸', '🦄', '🐲', '🚀', '⭐'];
 
@@ -16,20 +18,38 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
     const [age, setAge] = useState<number>(6);
     const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
     const [selectedMascot, setSelectedMascot] = useState<MascotCharacter>('owl');
+    const [error, setError] = useState('');
     const { t } = useTranslation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (name.trim().length > 0) {
-            const sanitizedName = name.slice(0, 30);
-            await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
-            if (onComplete) onComplete();
+        const trimmedName = name.trim();
+
+        if (trimmedName.length === 0) {
+            setError(t('parent.edit.errorName'));
+            return;
         }
+
+        if (!isValidProfileName(trimmedName)) {
+            setError(t('onboarding.errorNameInvalid'));
+            return;
+        }
+
+        setError('');
+        await createProfile(trimmedName, age, selectedAvatar, selectedMascot);
+        if (onComplete) onComplete();
     };
 
     return (
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
             <h1 className="text-3xl font-bold text-center text-primary mb-8">{t('onboarding.title')}</h1>
+
+            {error && (
+                <div className="mb-6 bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2 text-sm font-bold animate-in fade-in slide-in-from-top-1">
+                    <AlertCircle size={16} />
+                    {error}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Avatar Selection */}
