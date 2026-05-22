@@ -16,7 +16,7 @@ const ProgressContext = createContext<ProgressContextType | undefined>(undefined
 
 const STORAGE_KEY = 'hebrew_game_saga_progress_v1';
 
-const loadProgressForProfile = (profile: any) => {
+const loadProgressForProfile = (profile: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!profile) return {};
 
     const userKey = `${STORAGE_KEY}_${profile.id}`;
@@ -75,7 +75,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Derived State: Total Stars
     const totalStars = React.useMemo(() => {
-        return Object.values(progress).reduce((acc, node) => acc + (node.stars || 0), 0);
+        let sum = 0;
+        for (const key in progress) {
+            // progress[key] might not have stars defined or it could be 0
+            sum += progress[key].stars || 0;
+        }
+        return sum;
     }, [progress]);
 
     const completeNode = (nodeId: string, stars: number): void => {
