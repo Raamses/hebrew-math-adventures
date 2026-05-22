@@ -21,8 +21,9 @@ export class LessonEngine {
         const step = this.lesson.steps[index];
 
         // Deep copy items/targets to reset state for the step
-        this.items = JSON.parse(JSON.stringify(step.items));
-        this.targets = JSON.parse(JSON.stringify(step.targets));
+        // structuredClone is natively supported and faster than JSON.stringify/parse
+        this.items = structuredClone(step.items);
+        this.targets = structuredClone(step.targets);
 
         this.notify();
     }
