@@ -23,8 +23,8 @@ export const NumberInput = React.memo(function NumberInput({
     className,
     autoFocus = false,
     inputMode = "numeric",
-    maxLength = 10,
-    "aria-label": ariaLabel = "Enter number"
+    "aria-label": ariaLabel = "Enter number",
+    maxLength = 10
 }: NumberInputProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -46,7 +46,7 @@ export const NumberInput = React.memo(function NumberInput({
             inputMode={inputMode}
             pattern="[0-9]*"
             value={value}
-            onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+            onChange={(e) => onChange(e.target.value.slice(0, 10))}
             disabled={disabled}
             placeholder={placeholder}
             aria-label={ariaLabel}

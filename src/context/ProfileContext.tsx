@@ -22,12 +22,7 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
-    const [profile, setProfileState] = useState<UserProfile | null>(null);
-    const { logEvent } = useAnalytics();
-
-    // Load profiles and handle migration on mount
-    useEffect(() => {
+    const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
         const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
         let profiles: UserProfile[] = [];
 
@@ -51,8 +46,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 profiles = [];
             }
         }
-        setAllProfiles(profiles);
-    }, []);
+        return profiles;
+    });
+    const [profile, setProfileState] = useState<UserProfile | null>(null);
+    const { logEvent } = useAnalytics();
 
     // Persist profiles whenever they change
     useEffect(() => {

@@ -109,22 +109,19 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                             key={item.id}
                             drag={currentStep.type === 'interactive_drag'}
                             dragMomentum={false}
-                            whileDrag={{ scale: 1.2, zIndex: 100, rotate: 10 }}
+                            whileDrag={{ scale: 1.2, zIndex: 100, rotate: 10, pointerEvents: 'none' }}
 
                             onDragEnd={(_e, info) => {
 
                                 const point = info.point;
-                                const elements = document.elementsFromPoint(point.x, point.y);
-                                const targetEl = elements.find(el => el.getAttribute('data-target-id'));
+                                const element = document.elementFromPoint(point.x, point.y);
+                                const targetEl = element?.closest('[data-target-id]');
 
                                 if (targetEl) {
                                     const targetId = targetEl.getAttribute('data-target-id');
                                     if (targetId) engine.onItemDropped(item.id, targetId);
                                 }
                             }}
-                            // Remove pointer events while dragging other items? No.
-                            // But we need to ensure the dragged item doesn't BLOCK the drop target from elementsFromPoint?
-                            // elementsFromPoint returns ALL layers. So it finds the target even if item is on top.
                             className="absolute w-20 h-20 flex items-center justify-center cursor-grab active:cursor-grabbing -ml-10 -mt-10 touch-none"
                             style={{
                                 left: `${item.position.x}%`,
