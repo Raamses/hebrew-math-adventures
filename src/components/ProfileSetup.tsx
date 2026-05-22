@@ -4,7 +4,6 @@ import { type MascotCharacter } from './mascot/Mascot';
 import { MascotSelector } from './mascot/MascotSelector';
 import { useTranslation } from 'react-i18next';
 import { isValidProfileName } from '../lib/validation';
-import { AlertCircle } from 'lucide-react';
 
 const AVATARS = ['🦁', '🐯', '🐻', '🐨', '🐼', '🐸', '🦄', '🐲', '🚀', '⭐'];
 
@@ -21,22 +20,21 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
     const [error, setError] = useState('');
     const { t } = useTranslation();
 
+    const [error, setError] = useState('');
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const trimmedName = name.trim();
-
-        if (trimmedName.length === 0) {
-            setError(t('parent.edit.errorName'));
-            return;
-        }
+        if (!trimmedName) return;
 
         if (!isValidProfileName(trimmedName)) {
-            setError(t('onboarding.errorNameInvalid'));
+            setError(t('parent.edit.errorName') || 'Invalid name. Use only letters, numbers and spaces.');
             return;
         }
 
         setError('');
-        await createProfile(trimmedName, age, selectedAvatar, selectedMascot);
+        const sanitizedName = trimmedName.slice(0, 30);
+        await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
         if (onComplete) onComplete();
     };
 
@@ -82,11 +80,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
                 <div>
                     <label htmlFor="setup-name" className="block text-slate-600 font-bold mb-2 text-lg">{t('onboarding.nameLabel')}</label>
+                    {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
                     <input
                         id="setup-name"
                         type="text"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => setName(e.target.value.slice(0, 30))}
                         className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-xl text-start"
                         placeholder={t('onboarding.namePlaceholder')}
                         required
