@@ -39,7 +39,14 @@ export const useGameEngine = (
 
         // Catch-Up Mechanic:
         // If screen is empty (low count), spawn faster to refill
-        const activeCount = entitiesRef.current.filter(e => !e.isPopped).length;
+        let activeCount = 0;
+        const currentEntities = entitiesRef.current;
+        for (let i = 0; i < currentEntities.length; i++) {
+            if (!currentEntities[i].isPopped) {
+                activeCount++;
+            }
+        }
+
         if (activeCount < config.maxOnScreen - 2) {
             // 50% faster if we have gaps to fill
             currentInterval = currentInterval * 0.5;
@@ -73,31 +80,30 @@ export const useGameEngine = (
         const now = Date.now();
 
         // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
-        const needsCleanup = entitiesRef.current.some(e => {
+        let needsCleanup = false;
+        const currentEntities = entitiesRef.current;
+        for (let i = 0; i < currentEntities.length; i++) {
+            const e = currentEntities[i];
             const isOld = (now - e.createdAt) > 30000;
             const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
-            return isOld || isPoppedAndDone;
-        });
-
-        if (!needsCleanup) return;
-
-        // Remove entities older than 30s OR popped more than 1s ago
-
-        // ⚡ Bolt: Pre-check to avoid unconditional setEntities call in RAF loop
-        const needsCleanup = entitiesRef.current.some(e => {
-            const isOld = (now - e.createdAt) > 30000;
-            const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
-            return isOld || isPoppedAndDone;
-        });
+            if (isOld || isPoppedAndDone) {
+                needsCleanup = true;
+                break;
+            }
+        }
 
         if (!needsCleanup) return;
 
         setEntities(prev => {
-            const next = prev.filter(e => {
+            const next = [];
+            for (let i = 0; i < prev.length; i++) {
+                const e = prev[i];
                 const isOld = (now - e.createdAt) > 30000;
                 const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
-                return !isOld && !isPoppedAndDone;
-            });
+                if (!isOld && !isPoppedAndDone) {
+                    next.push(e);
+                }
+            }
 
             // Sync ref immediately and return next state
             entitiesRef.current = next;
