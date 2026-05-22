@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { logEvent as firebaseLogEvent } from 'firebase/analytics';
 import { analyticsReady } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 
 // Standardized event types based on @analytics_strategy.md
 export type AnalyticsEvent =
@@ -64,19 +65,15 @@ export const useAnalytics = () => {
         const instance = await analyticsReady;
 
         if (!instance) {
-            if (import.meta.env.DEV) {
-                console.log(`[Analytics Dev Mock] Event: ${eventName}`, params);
-            }
+            logger.log(`[Analytics Dev Mock] Event: ${eventName}`, params);
             return;
         }
 
         try {
             firebaseLogEvent(instance, eventName, params);
-            if (import.meta.env.DEV) {
-                console.log(`[Analytics] Logged: ${eventName}`, params);
-            }
+            logger.log(`[Analytics] Logged: ${eventName}`, params);
         } catch (error) {
-            console.warn('Failed to log analytics event:', error);
+            logger.warn('Failed to log analytics event:', error);
         }
     }, []);
 
