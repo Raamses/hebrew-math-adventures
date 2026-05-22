@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { UserProfile, MascotId } from '../../types/user';
+import { isValidProfileName } from '../../lib/validation';
 
 interface EditProfileModalProps {
     profile: UserProfile;
@@ -27,10 +28,16 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
     const handleSave = () => {
         // Validation
         const sanitizedName = formData.name.trim();
-        if (!sanitizedName) {
+        if (!sanitizedName || !isValidProfileName(sanitizedName)) {
             setError(t('parent.edit.errorName'));
             return;
         }
+
+        if (!isValidProfileName(sanitizedName)) {
+            setError(t('parent.edit.errorNameInvalid'));
+            return;
+        }
+
         if (formData.age < 4 || formData.age > 12) {
             setError(t('parent.edit.errorAge'));
             return;
@@ -38,7 +45,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
 
         const sanitizedData = {
             ...formData,
-            name: formData.name.slice(0, 30)
+            name: sanitizedName
         };
 
         onSave(profile.id, sanitizedData);
@@ -81,7 +88,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                         id="edit-name"
                                         type="text"
                                         value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value.slice(0, 30) })}
                                         className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700 focus-visible:ring-2"
                                         maxLength={30}
                                     />
