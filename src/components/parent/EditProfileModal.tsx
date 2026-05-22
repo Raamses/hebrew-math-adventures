@@ -32,6 +32,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
             setError(t('parent.edit.errorName'));
             return;
         }
+
+        if (!isValidProfileName(sanitizedName)) {
+            setError(t('parent.edit.errorNameInvalid'));
+            return;
+        }
+
         if (formData.age < 4 || formData.age > 12) {
             setError(t('parent.edit.errorAge'));
             return;
@@ -39,7 +45,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
 
         const sanitizedData = {
             ...formData,
-            name: formData.name.slice(0, 30)
+            name: sanitizedName
         };
 
         onSave(profile.id, sanitizedData);

@@ -17,6 +17,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
     const [age, setAge] = useState<number>(6);
     const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
     const [selectedMascot, setSelectedMascot] = useState<MascotCharacter>('owl');
+    const [error, setError] = useState('');
     const { t } = useTranslation();
 
     const [error, setError] = useState('');
@@ -40,6 +41,13 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
     return (
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
             <h1 className="text-3xl font-bold text-center text-primary mb-8">{t('onboarding.title')}</h1>
+
+            {error && (
+                <div className="mb-6 bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2 text-sm font-bold animate-in fade-in slide-in-from-top-1">
+                    <AlertCircle size={16} />
+                    {error}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Avatar Selection */}
