@@ -66,7 +66,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
 
         const newProfile: UserProfile = {
-            id: crypto.randomUUID(),
+            id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `profile-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             name: sanitizedName,
             age,
             avatarId,
