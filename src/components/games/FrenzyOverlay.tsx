@@ -54,27 +54,34 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive }) => {
                     </motion.div>
 
                     {/* Ember Particles (Lightweight) */}
-                    {PARTICLES.map((i) => (
-                        <motion.div
-                            key={i}
-                            className="absolute bottom-0 w-2 h-2 bg-orange-400 rounded-full"
-                            style={{
-                                left: `${20 + i * 15}%`,
-                            }}
-                            initial={{ y: 0, opacity: 1 }}
-                            animate={{
-                                y: -500,
-                                opacity: 0,
-                                x: Math.random() * 50 - 25
-                            }}
-                            transition={{
-                                duration: 1 + Math.random(),
-                                repeat: Infinity,
-                                delay: i * 0.2,
-                                ease: "easeOut"
-                            }}
-                        />
-                    ))}
+                    {PARTICLES.map((i) => {
+                        // Use pseudo-random deterministic values based on index 'i'
+                        // to prevent React renders from updating unpredictably and causing lint errors
+                        const pseudoRandomX = (Math.sin(i * 100) * 0.5 + 0.5) * 50 - 25;
+                        const pseudoRandomDuration = 1 + (Math.cos(i * 50) * 0.5 + 0.5);
+
+                        return (
+                            <motion.div
+                                key={i}
+                                className="absolute bottom-0 w-2 h-2 bg-orange-400 rounded-full"
+                                style={{
+                                    left: `${20 + i * 15}%`,
+                                }}
+                                initial={{ y: 0, opacity: 1 }}
+                                animate={{
+                                    y: -500,
+                                    opacity: 0,
+                                    x: pseudoRandomX
+                                }}
+                                transition={{
+                                    duration: pseudoRandomDuration,
+                                    repeat: Infinity,
+                                    delay: i * 0.2,
+                                    ease: "easeOut"
+                                }}
+                            />
+                        );
+                    })}
                 </div>
             )}
         </AnimatePresence>
