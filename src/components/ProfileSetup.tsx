@@ -20,8 +20,6 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
     const [error, setError] = useState('');
     const { t } = useTranslation();
 
-    const [error, setError] = useState('');
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const trimmedName = name.trim();
