@@ -42,11 +42,14 @@ export const NumberInput = React.memo(function NumberInput({
     return (
         <input
             ref={inputRef}
-            type="number"
+            type="text"
             inputMode={inputMode}
             pattern="[0-9]*"
             value={value}
-            onChange={(e) => onChange(e.target.value.slice(0, maxLength))}
+            onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, "");
+                onChange(val.slice(0, maxLength));
+            }}
             disabled={disabled}
             placeholder={placeholder}
             aria-label={ariaLabel}

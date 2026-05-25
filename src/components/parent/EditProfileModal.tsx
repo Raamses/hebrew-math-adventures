@@ -97,9 +97,14 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                                     <label htmlFor="edit-age" className="text-sm font-bold text-slate-500">{t('parent.table.age')}</label>
                                     <input
                                         id="edit-age"
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         value={formData.age}
-                                        onChange={e => setFormData({ ...formData, age: Number(e.target.value.slice(0, 3)) })}
+                                        onChange={e => {
+                                            const val = e.target.value.replace(/[^0-9]/g, "");
+                                            setFormData({ ...formData, age: Number(val.slice(0, 3)) });
+                                        }}
                                         className="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none font-bold text-slate-700 focus-visible:ring-2"
                                         min={4}
                                         max={12}

@@ -4,6 +4,7 @@ import { type MascotCharacter } from './mascot/Mascot';
 import { MascotSelector } from './mascot/MascotSelector';
 import { useTranslation } from 'react-i18next';
 import { isValidProfileName } from '../lib/validation';
+import { AlertCircle } from 'lucide-react';
 
 const AVATARS = ['🦁', '🐯', '🐻', '🐨', '🐼', '🐸', '🦄', '🐲', '🚀', '⭐'];
 
