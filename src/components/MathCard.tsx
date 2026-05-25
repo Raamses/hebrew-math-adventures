@@ -54,12 +54,12 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
         onAnswer(isCorrect);
     };
 
-    const handleCompare = (symbol: string) => {
+    const handleCompare = React.useCallback((symbol: string) => {
         if (isProcessing) return;
         const isCorrect = symbol === problem.answer;
         if (!isCorrect) setWrongAttempts(prev => prev + 1);
         onAnswer(isCorrect);
-    };
+    }, [isProcessing, problem.answer, onAnswer]);
 
     const getTitleKey = () => {
         switch (problem.type) {
