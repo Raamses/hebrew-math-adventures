@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { type UserProfile } from '../types/user';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { isValidProfileName } from '../lib/validation';
 
 interface ProfileContextType {
     profile: UserProfile | null;
@@ -22,12 +23,7 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
-    const [profile, setProfileState] = useState<UserProfile | null>(null);
-    const { logEvent } = useAnalytics();
-
-    // Load profiles and handle migration on mount
-    useEffect(() => {
+    const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
         const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
         let profiles: UserProfile[] = [];
 
@@ -51,8 +47,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 profiles = [];
             }
         }
-        setAllProfiles(profiles);
-    }, []);
+        return profiles;
+    });
+    const [profile, setProfileState] = useState<UserProfile | null>(null);
+    const { logEvent } = useAnalytics();
 
     // Persist profiles whenever they change
     useEffect(() => {
@@ -62,9 +60,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, [allProfiles]);
 
     const createProfile = useCallback(async (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
-        const sanitizedName = name.trim().substring(0, 50);
+        const sanitizedName = name.trim();
+        if (!isValidProfileName(sanitizedName)) {
+            throw new Error('Invalid profile name');
+        }
+
         const newProfile: UserProfile = {
-            id: crypto.randomUUID(),
+            id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `profile-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             name: sanitizedName,
             age,
             avatarId,
@@ -141,7 +143,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // Sanitize name if provided in updates
         const safeUpdates = { ...updates };
         if (safeUpdates.name !== undefined) {
-            safeUpdates.name = safeUpdates.name.trim().substring(0, 50);
+            const sanitizedName = safeUpdates.name.trim();
+            if (!isValidProfileName(sanitizedName)) {
+                console.warn('Attempted to update profile with invalid name, skipping name update');
+                delete safeUpdates.name;
+            } else {
+                safeUpdates.name = sanitizedName;
+            }
         }
 
         setAllProfiles(prev => prev.map(p => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,23 +9,39 @@ interface ParentGateProps {
 
 export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) => {
     const { t, i18n } = useTranslation();
-    const [problem, setProblem] = useState<{ n1: number, n2: number } | null>(null);
+    const [problem, setProblem] = useState<{ n1: number, n2: number }>(() => {
+        // Use crypto for secure random generation (authorization gate), fallback for HTTP contexts
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+            const array = new Uint32Array(2);
+            crypto.getRandomValues(array);
+            return {
+                n1: (array[0] % 40) + 10,
+                n2: (array[1] % 40) + 10
+            };
+        }
+        return {
+            n1: Math.floor(Math.random() * 40) + 10,
+            n2: Math.floor(Math.random() * 40) + 10
+        };
+    });
     const [answer, setAnswer] = useState('');
     const [error, setError] = useState(false);
 
     const generateProblem = () => {
-        // Use crypto for secure random generation (authorization gate)
-        const array = new Uint32Array(2);
-        crypto.getRandomValues(array);
-        setProblem({
-            n1: (array[0] % 40) + 10,
-            n2: (array[1] % 40) + 10
-        });
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+            const array = new Uint32Array(2);
+            crypto.getRandomValues(array);
+            setProblem({
+                n1: (array[0] % 40) + 10,
+                n2: (array[1] % 40) + 10
+            });
+        } else {
+            setProblem({
+                n1: Math.floor(Math.random() * 40) + 10,
+                n2: Math.floor(Math.random() * 40) + 10
+            });
+        }
     };
-
-    useEffect(() => {
-        generateProblem();
-    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,8 +57,6 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
             setTimeout(() => setError(false), 1000);
         }
     };
-
-    if (!problem) return null;
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
