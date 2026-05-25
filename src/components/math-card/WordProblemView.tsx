@@ -1,3 +1,4 @@
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { NumberInput } from "./NumberInput";
 import type { Problem } from "../../lib/gameLogic";
@@ -9,7 +10,9 @@ interface WordProblemViewProps {
     isProcessing?: boolean;
 }
 
-export function WordProblemView({
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent MathCardInner
+// state updates (like `showHintModal` or `wrongAttempts`) that don't affect this view.
+export const WordProblemView = React.memo(function WordProblemView({
     problem,
     answer,
     setAnswer,
@@ -35,4 +38,4 @@ export function WordProblemView({
             </div>
         </div>
     );
-}
+});

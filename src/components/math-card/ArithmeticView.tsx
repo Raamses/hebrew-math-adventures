@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { NumberInput } from "./NumberInput";
 import type { Problem } from "../../lib/gameLogic";
@@ -10,7 +11,9 @@ interface ArithmeticViewProps {
     wrongAttempts: number;
 }
 
-export function ArithmeticView({
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent MathCardInner
+// state updates (like `showHintModal`) that don't affect this view.
+export const ArithmeticView = React.memo(function ArithmeticView({
     problem,
     answer,
     setAnswer,
@@ -120,4 +123,4 @@ export function ArithmeticView({
             )}
         </div>
     );
-}
+});
