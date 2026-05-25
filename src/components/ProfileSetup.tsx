@@ -33,8 +33,20 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
         setError('');
         const sanitizedName = trimmedName.slice(0, 30);
-        await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
-        if (onComplete) onComplete();
+
+        try {
+            await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
+            if (onComplete) onComplete();
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'An error occurred while creating profile';
+            if (errorMessage === 'Maximum number of profiles reached') {
+                // i18n t() returns the key if not found, so fallback is handled via exact match check or inline.
+                // Using hardcoded string since translation key doesn't exist yet to prevent showing raw key.
+                setError('Maximum limit of 10 profiles reached. Please delete an existing profile first.');
+            } else {
+                setError(errorMessage);
+            }
+        }
     };
 
     return (

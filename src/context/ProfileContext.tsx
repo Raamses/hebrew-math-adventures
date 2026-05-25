@@ -60,6 +60,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, [allProfiles]);
 
     const createProfile = useCallback(async (name: string, age: number, avatarId: string, mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
+        // Enforce maximum profiles limit (10) to prevent LocalStorage quota exhaustion
+        if (allProfiles.length >= 10) {
+            throw new Error('Maximum number of profiles reached');
+        }
+
         const sanitizedName = name.trim();
         if (!isValidProfileName(sanitizedName)) {
             throw new Error('Invalid profile name');
@@ -89,7 +94,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         logEvent('signup', { age, avatar_id: avatarId, mascot_id: mascotId });
         logEvent('login', { profile_id: newProfile.id, mascot_id: mascotId, age_group: age < 6 ? 'pre-k' : 'primary' });
-    }, [logEvent]);
+    }, [logEvent, allProfiles]);
 
     const switchProfile = useCallback((profileId: string) => {
         const selected = allProfiles.find(p => p.id === profileId);
