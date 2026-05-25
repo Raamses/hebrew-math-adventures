@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import type { Problem } from "../../lib/gameLogic";
@@ -9,7 +10,7 @@ interface ComparisonViewProps {
     onCompare: (symbol: string) => void;
 }
 
-export function ComparisonView({
+export const ComparisonView = React.memo(function ComparisonView({
     problem,
     isProcessing,
     onCompare,
@@ -58,4 +59,4 @@ export function ComparisonView({
             </div>
         </div>
     );
-}
+});

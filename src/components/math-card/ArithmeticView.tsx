@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { NumberInput } from "./NumberInput";
 import type { Problem } from "../../lib/gameLogic";
@@ -10,7 +11,7 @@ interface ArithmeticViewProps {
     wrongAttempts: number;
 }
 
-export function ArithmeticView({
+export const ArithmeticView = React.memo(function ArithmeticView({
     problem,
     answer,
     setAnswer,
@@ -120,4 +121,4 @@ export function ArithmeticView({
             )}
         </div>
     );
-}
+});
