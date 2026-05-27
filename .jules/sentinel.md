@@ -6,3 +6,7 @@
 **Vulnerability:** Unconstrained length on `<input type="number">` fields across the application.
 **Learning:** Browsers often ignore the native `maxLength` attribute on `type="number"` inputs. This can lead to users (or scripts) pasting massively long numeric strings, which are then parsed by React/JavaScript, potentially causing performance issues or Application-Level Denial of Service (DoS) due to CPU spikes during parsing or state updates.
 **Prevention:** Always explicitly enforce length limits for numeric inputs in the `onChange` handler using string manipulation (e.g., `e.target.value.slice(0, MAX_LENGTH)`) before passing the value to `setState` or `Number()`.
+## 2025-02-14 - LocalStorage Quota Exhaustion
+**Vulnerability:** Unbounded collections saved to LocalStorage, which has a tight quota (usually 5MB).
+**Learning:** Automatically saving arrays or collections directly to LocalStorage without enforcing constraints or hard limits can lead to quota exhaustion. Once LocalStorage is full, any subsequent writes fail, which often breaks other state logic or causes silent unhandled Promise rejections that degrade the UI.
+**Prevention:** Always enforce a hard limit on the number of items that can be created in a persisted collection (e.g., max 10 profiles). Wrap actions that modify these collections in `try...catch` blocks to gracefully handle limits and provide actionable error messages to the user.
