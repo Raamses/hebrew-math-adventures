@@ -63,7 +63,7 @@ describe('LessonEngine', () => {
         engine.onItemDropped('item-2', null); // invalid drop still notifies
 
         expect(notifiedState).not.toBeNull();
-        expect(notifiedState.items.length).toBe(2);
+        expect(notifiedState!.items.length).toBe(2);
 
         unsubscribe();
     });

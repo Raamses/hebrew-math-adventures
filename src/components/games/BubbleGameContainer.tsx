@@ -138,7 +138,9 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         x={e.x} // Note: Bubble component uses 'left: xvw', engine uses 0-100 scale
                         delay={0} // Managed by engine/CSS
                         onClick={onPopWrapper}
-                        onOffScreen={(id) => handleOffScreen(id)}
+                        // ⚡ Bolt: Pass memoized handleOffScreen directly instead of inline arrow function
+                        // to prevent breaking React.memo shallow equality check on every render.
+                        onOffScreen={handleOffScreen}
                         isPopped={e.isPopped}
                         variant={e.variant}
                     />
