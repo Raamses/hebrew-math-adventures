@@ -143,7 +143,11 @@ export const useGameEngine = (
         const isCorrect = behavior.validate(target);
 
         // 2. Visual Update (Optimistic)
-        setEntities(prev => prev.map(e => e.id === id ? { ...e, isPopped: true, poppedAt: Date.now() } : e));
+        setEntities(prev => {
+            const next = prev.map(e => e.id === id ? { ...e, isPopped: true, poppedAt: Date.now() } : e);
+            entitiesRef.current = next; // Synchronize immediately
+            return next;
+        });
 
         // 3. Game State Update
         setGameState(prev => {
@@ -152,7 +156,7 @@ export const useGameEngine = (
 
             const isFrenzy = isCorrect ? newCombo >= 5 : false;
 
-            const nextmnState = {
+            const nextGameState = {
                 ...prev,
                 combo: newCombo,
                 score: prev.score + scoreBonus,
@@ -162,24 +166,29 @@ export const useGameEngine = (
             };
 
             // Win Condition
-            if (config.winCondition.type === 'target_count' && nextmnState.targetsPopped >= config.winCondition.value) {
-                nextmnState.isVictory = true;
-                nextmnState.isGameOver = true;
+            if (config.winCondition.type === 'target_count' && nextGameState.targetsPopped >= config.winCondition.value) {
+                nextGameState.isVictory = true;
+                nextGameState.isGameOver = true;
             }
 
             // Fail Condition
-            if (config.failCondition.type === 'strikes' && config.failCondition.value && nextmnState.strikes >= config.failCondition.value) {
-                nextmnState.isGameOver = true;
+            if (config.failCondition.type === 'strikes' && config.failCondition.value && nextGameState.strikes >= config.failCondition.value) {
+                nextGameState.isGameOver = true;
             }
 
-            return nextmnState;
+            gameStateRef.current = nextGameState; // Synchronize immediately
+            return nextGameState;
         });
 
         return isCorrect;
     }, [config, behavior]);
 
     const handleOffScreen = useCallback((id: string) => {
-        setEntities(prev => prev.filter(e => e.id !== id));
+        setEntities(prev => {
+            const next = prev.filter(e => e.id !== id);
+            entitiesRef.current = next; // Synchronize immediately
+            return next;
+        });
     }, []);
 
     return {
