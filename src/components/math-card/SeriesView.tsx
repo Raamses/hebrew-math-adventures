@@ -10,8 +10,6 @@ interface SeriesViewProps {
     isProcessing?: boolean;
 }
 
-// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent MathCardInner
-// state updates (like `showHintModal` or `wrongAttempts`) that don't affect this view.
 export const SeriesView = React.memo(function SeriesView({
     problem,
     answer,
