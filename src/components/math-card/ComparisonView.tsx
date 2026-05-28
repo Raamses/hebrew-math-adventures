@@ -10,8 +10,6 @@ interface ComparisonViewProps {
     onCompare: (symbol: string) => void;
 }
 
-// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent MathCardInner
-// state updates (like `showHintModal` or `answer`) that don't affect this view.
 export const ComparisonView = React.memo(function ComparisonView({
     problem,
     isProcessing,
