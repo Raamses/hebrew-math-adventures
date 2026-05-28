@@ -7,7 +7,9 @@ interface SessionProgressBarProps {
     total: number;
 }
 
-export const SessionProgressBar: React.FC<SessionProgressBarProps> = ({ current, total }) => {
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
+// like combo or visual effects update in the game loop.
+export const SessionProgressBar = React.memo(function SessionProgressBar({ current, total }: SessionProgressBarProps) {
     const { t } = useTranslation();
     const progress = Math.min(current / total, 1) * 100;
 
@@ -27,4 +29,4 @@ export const SessionProgressBar: React.FC<SessionProgressBarProps> = ({ current,
             </div>
         </div>
     );
-};
+});
