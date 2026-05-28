@@ -33,12 +33,11 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
         setError('');
         const sanitizedName = trimmedName.slice(0, 30);
-
         try {
             await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
             if (onComplete) onComplete();
-        } catch (err: any) {
-            setError(err.message || 'An error occurred while creating the profile');
+        } catch (err) {
+            setError((err as Error).message);
         }
     };
 

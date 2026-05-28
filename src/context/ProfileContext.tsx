@@ -93,7 +93,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         logEvent('signup', { age, avatar_id: avatarId, mascot_id: mascotId });
         logEvent('login', { profile_id: newProfile.id, mascot_id: mascotId, age_group: age < 6 ? 'pre-k' : 'primary' });
-    }, [logEvent, allProfiles.length]);
+    }, [logEvent, allProfiles]);
 
     const switchProfile = useCallback((profileId: string) => {
         const selected = allProfiles.find(p => p.id === profileId);
