@@ -69,7 +69,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     useEffect(() => {
         if (profile && Object.keys(progress).length > 0) {
             const userKey = `${STORAGE_KEY}_${profile.id}`;
-            localStorage.setItem(userKey, JSON.stringify(progress));
+            try { localStorage.setItem(userKey, JSON.stringify(progress)); } catch (e) { console.warn('Failed to save progress', e); }
         }
     }, [progress, profile]);
 

@@ -48,7 +48,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         // If NO profile is logged in, persist to localStorage for next guest visit
         if (!profile) {
-            localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
+            try { localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id); } catch (e) { console.warn('Failed to save theme', e); }
         }
     }, [currentTheme, profile]);
 

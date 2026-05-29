@@ -26,7 +26,7 @@ export const useSound = () => {
     });
 
     useEffect(() => {
-        localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        try { localStorage.setItem('isMuted', JSON.stringify(isMuted)); } catch (e) { console.warn('Failed to save mute preference', e); }
     }, [isMuted]);
 
     const playSound = useCallback((type: SoundType) => {
