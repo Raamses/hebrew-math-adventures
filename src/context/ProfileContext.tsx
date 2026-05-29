@@ -121,12 +121,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setProfileState(updatedProfile);
         setAllProfiles(prev => {
             const index = prev.findIndex(p => p.id === profile.id);
-            if (index !== -1) {
-                const next = [...prev];
-                next[index] = updatedProfile;
-                return next;
-            }
-            return prev;
+            if (index === -1) return prev;
+            const next = [...prev];
+            next[index] = updatedProfile;
+            return next;
         });
 
         if (newStreak % 5 === 0) {
@@ -140,12 +138,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setProfileState(updatedProfile);
         setAllProfiles(prev => {
             const index = prev.findIndex(p => p.id === profile.id);
-            if (index !== -1) {
-                const next = [...prev];
-                next[index] = updatedProfile;
-                return next;
-            }
-            return prev;
+            if (index === -1) return prev;
+            const next = [...prev];
+            next[index] = updatedProfile;
+            return next;
         });
     }, [profile]);
 
@@ -156,12 +152,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setProfileState(updatedProfile);
         setAllProfiles(prev => {
             const index = prev.findIndex(p => p.id === profile.id);
-            if (index !== -1) {
-                const next = [...prev];
-                next[index] = updatedProfile;
-                return next;
-            }
-            return prev;
+            if (index === -1) return prev;
+            const next = [...prev];
+            next[index] = updatedProfile;
+            return next;
         });
 
         logEvent('mascot_change', { old_mascot: oldMascot, new_mascot: mascotId, profile_id: profile.id });
@@ -182,12 +176,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         setAllProfiles(prev => {
             const index = prev.findIndex(p => p.id === id);
-            if (index !== -1) {
-                const next = [...prev];
-                next[index] = { ...next[index], ...safeUpdates };
-                return next;
-            }
-            return prev;
+            if (index === -1) return prev;
+            const next = [...prev];
+            next[index] = { ...next[index], ...safeUpdates };
+            return next;
         });
 
         // Also update local profile state if it matches

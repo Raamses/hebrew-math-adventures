@@ -144,7 +144,10 @@ export const useGameEngine = (
 
         // 2. Visual Update (Optimistic)
         setEntities(prev => {
-            const next = prev.map(e => e.id === id ? { ...e, isPopped: true, poppedAt: Date.now() } : e);
+            const index = prev.findIndex(e => e.id === id);
+            if (index === -1) return prev;
+            const next = [...prev];
+            next[index] = { ...next[index], isPopped: true, poppedAt: Date.now() };
             entitiesRef.current = next; // Synchronize immediately
             return next;
         });
