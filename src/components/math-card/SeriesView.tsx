@@ -10,7 +10,7 @@ interface SeriesViewProps {
     isProcessing?: boolean;
 }
 
-export function SeriesView({
+export const SeriesView = React.memo(function SeriesView({
     problem,
     answer,
     setAnswer,
@@ -47,4 +47,4 @@ export function SeriesView({
             ))}
         </div>
     );
-}
+});

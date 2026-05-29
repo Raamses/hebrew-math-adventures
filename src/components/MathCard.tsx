@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Lightbulb, Flame } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -54,12 +54,12 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
         onAnswer(isCorrect);
     };
 
-    const handleCompare = (symbol: string) => {
+    const handleCompare = useCallback((symbol: string) => {
         if (isProcessing) return;
         const isCorrect = symbol === problem.answer;
         if (!isCorrect) setWrongAttempts(prev => prev + 1);
         onAnswer(isCorrect);
-    };
+    }, [isProcessing, problem.answer, onAnswer]);
 
     const getTitleKey = () => {
         switch (problem.type) {

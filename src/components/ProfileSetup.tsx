@@ -4,6 +4,7 @@ import { type MascotCharacter } from './mascot/Mascot';
 import { MascotSelector } from './mascot/MascotSelector';
 import { useTranslation } from 'react-i18next';
 import { isValidProfileName } from '../lib/validation';
+import { AlertCircle } from 'lucide-react';
 
 const AVATARS = ['🦁', '🐯', '🐻', '🐨', '🐼', '🐸', '🦄', '🐲', '🚀', '⭐'];
 
@@ -32,8 +33,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ onComplete }) => {
 
         setError('');
         const sanitizedName = trimmedName.slice(0, 30);
-        await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
-        if (onComplete) onComplete();
+        try {
+            await createProfile(sanitizedName, age, selectedAvatar, selectedMascot);
+            if (onComplete) onComplete();
+        } catch (err) {
+            setError((err as Error).message);
+        }
     };
 
     return (
