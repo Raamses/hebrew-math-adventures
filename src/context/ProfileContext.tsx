@@ -119,7 +119,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const newStreak = (profile.streak || 0) + 1;
         const updatedProfile = { ...profile, streak: newStreak };
         setProfileState(updatedProfile);
-        setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
+        setAllProfiles(prev => {
+            const index = prev.findIndex(p => p.id === profile.id);
+            if (index !== -1) {
+                const next = [...prev];
+                next[index] = updatedProfile;
+                return next;
+            }
+            return prev;
+        });
 
         if (newStreak % 5 === 0) {
             logEvent('streak_milestone', { streak_count: newStreak, profile_id: profile.id });
@@ -130,7 +138,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (!profile) return;
         const updatedProfile = { ...profile, streak: 0 };
         setProfileState(updatedProfile);
-        setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
+        setAllProfiles(prev => {
+            const index = prev.findIndex(p => p.id === profile.id);
+            if (index !== -1) {
+                const next = [...prev];
+                next[index] = updatedProfile;
+                return next;
+            }
+            return prev;
+        });
     }, [profile]);
 
     const updateMascot = useCallback((mascotId: 'owl' | 'bear' | 'ant' | 'lion') => {
@@ -138,7 +154,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const oldMascot = profile.mascotId;
         const updatedProfile = { ...profile, mascotId };
         setProfileState(updatedProfile);
-        setAllProfiles(prev => prev.map(p => p.id === profile.id ? updatedProfile : p));
+        setAllProfiles(prev => {
+            const index = prev.findIndex(p => p.id === profile.id);
+            if (index !== -1) {
+                const next = [...prev];
+                next[index] = updatedProfile;
+                return next;
+            }
+            return prev;
+        });
 
         logEvent('mascot_change', { old_mascot: oldMascot, new_mascot: mascotId, profile_id: profile.id });
     }, [profile, logEvent]);
@@ -156,17 +180,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             }
         }
 
-        setAllProfiles(prev => prev.map(p => {
-            if (p.id === id) {
-                const updated = { ...p, ...safeUpdates };
-                // If we updated the currently logged-in profile, update state
-                // Use functional update to avoid dependency on 'profile' if possible, or just accept it.
-                // But wait, here we are inside setAllProfiles. We need external access to 'profile' state to update it.
-                // We can't access 'profile' state inside setAllProfiles easily without closure.
-                return updated;
+        setAllProfiles(prev => {
+            const index = prev.findIndex(p => p.id === id);
+            if (index !== -1) {
+                const next = [...prev];
+                next[index] = { ...next[index], ...safeUpdates };
+                return next;
             }
-            return p;
-        }));
+            return prev;
+        });
 
         // Also update local profile state if it matches
         if (profile && profile.id === id) {
