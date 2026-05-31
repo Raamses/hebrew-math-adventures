@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import { getThemeById, THEMES, type Theme } from '../lib/themes';
 import { useProfile } from './ProfileContext';
 import type { ThemeId } from '../types/user';
+import { logger } from '../lib/logger';
 
 interface ThemeContextType {
     currentTheme: Theme;
@@ -48,7 +49,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         // If NO profile is logged in, persist to localStorage for next guest visit
         if (!profile) {
-            localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
+            try {
+                localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
+            } catch (error) {
+                logger.warn('Failed to save guest theme to local storage:', error);
+            }
         }
     }, [currentTheme, profile]);
 

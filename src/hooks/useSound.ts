@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '../lib/logger';
 
 // Placeholder sounds (using short, pleasant beeps/chimes from online sources or data URIs could be better, 
 // but for now we'll use simple reliable URLs or just empty strings if we want to simulate)
@@ -26,7 +27,11 @@ export const useSound = () => {
     });
 
     useEffect(() => {
-        localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        try {
+            localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        } catch (error) {
+            logger.warn('Failed to save mute preference to local storage:', error);
+        }
     }, [isMuted]);
 
     const playSound = useCallback((type: SoundType) => {

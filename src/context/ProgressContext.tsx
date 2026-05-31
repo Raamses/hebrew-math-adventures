@@ -3,6 +3,7 @@ import type { SagaProgress } from '../types/learningPath';
 import { CURRICULUM } from '../data/learningPath';
 import { useProfile } from './ProfileContext';
 import { getInitialProgress } from '../lib/progression';
+import { logger } from '../lib/logger';
 
 interface ProgressContextType {
     progress: SagaProgress;
@@ -68,8 +69,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Save on change (Debounced slightly by React batching, but good to be safe)
     useEffect(() => {
         if (profile && Object.keys(progress).length > 0) {
-            const userKey = `${STORAGE_KEY}_${profile.id}`;
-            localStorage.setItem(userKey, JSON.stringify(progress));
+            try {
+                const userKey = `${STORAGE_KEY}_${profile.id}`;
+                localStorage.setItem(userKey, JSON.stringify(progress));
+            } catch (error) {
+                logger.warn('Failed to save progress to local storage:', error);
+            }
         }
     }, [progress, profile]);
 
