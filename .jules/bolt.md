@@ -4,3 +4,6 @@
 ## 2023-10-27 - React Array Updates Optimization
 **Learning:** For React state that manages arrays of objects (e.g., `allProfiles`), updating a single specific item by its ID using `.map()` creates unnecessary iterations over the entire collection. Benchmarking showed that using `.findIndex()` and only modifying the copied array index when found is roughly ~35% faster (313ms vs 263ms for 1M iterations) and prevents unnecessary object allocations.
 **Action:** When updating a specific element in an array by a unique identifier, use `.findIndex()` combined with array spreading (`const next = [...prev]; next[index] = updatedItem;`) instead of `.map()`.
+## 2024-05-19 - Conditional Rendering over Internal Early Returns
+**Learning:** Even when a memoized component immediately returns `null` based on a prop check (`if (type !== expected) return null;`), React still evaluates its props and executes its function body on every render if the parent passes rapidly changing state (like an `answer` input value on every keystroke).
+**Action:** Always conditionally render exclusive views (`{type === 'x' && <X />}`) in the parent instead of rendering them all and relying on internal `null` returns, to fully skip React evaluation overhead for inactive components during high-frequency updates.
