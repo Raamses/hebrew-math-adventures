@@ -3,6 +3,7 @@ import { type UserProfile } from '../types/user';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { isValidProfileName } from '../lib/validation';
+import { logger } from '../lib/logger';
 
 interface ProfileContextType {
     profile: UserProfile | null;
@@ -55,7 +56,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Persist profiles whenever they change
     useEffect(() => {
         if (allProfiles.length > 0) {
-            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            try {
+                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            } catch (error) {
+                logger.warn('Failed to save profiles to local storage:', error);
+            }
         }
     }, [allProfiles]);
 
