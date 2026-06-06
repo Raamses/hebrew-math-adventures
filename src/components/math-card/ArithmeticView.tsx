@@ -18,8 +18,6 @@ export const ArithmeticView = React.memo(function ArithmeticView({
     isProcessing,
     wrongAttempts,
 }: ArithmeticViewProps) {
-    if (problem.type !== "arithmetic") return null;
-
     const renderNum1 = () => {
         if (problem.missing === "num1") {
             return (

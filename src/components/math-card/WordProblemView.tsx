@@ -18,8 +18,6 @@ export const WordProblemView = React.memo(function WordProblemView({
 }: WordProblemViewProps) {
     const { t } = useTranslation();
 
-    if (problem.type !== "word") return null;
-
     return (
         <div className="flex flex-col items-center w-full max-w-lg mb-8">
             <p className="text-xl sm:text-2xl text-slate-700 font-medium text-center mb-6 leading-relaxed">

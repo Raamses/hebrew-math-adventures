@@ -16,8 +16,6 @@ export const SeriesView = React.memo(function SeriesView({
     setAnswer,
     isProcessing,
 }: SeriesViewProps) {
-    if (problem.type !== "series") return null;
-
     return (
         <div
             className="flex flex-nowrap items-center justify-start md:justify-center gap-1 sm:gap-2 w-full mb-8 px-1 sm:px-4 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-hide snap-x md:snap-none"
