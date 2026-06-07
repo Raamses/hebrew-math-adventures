@@ -20,7 +20,18 @@ const loadProgressForProfile = (profile: any) => { // eslint-disable-line @types
     if (!profile) return {};
 
     const userKey = `${STORAGE_KEY}_${profile.id}`;
-    const saved = localStorage.getItem(userKey);
+    let saved: string | null = null;
+    let legacyGlobal: string | null = null;
+
+    try {
+        saved = localStorage.getItem(userKey);
+        if (!saved) {
+            legacyGlobal = localStorage.getItem(STORAGE_KEY);
+        }
+    } catch (e) {
+        console.error("Failed to read progress from localStorage", e);
+        return getInitialProgress(profile.age || 5);
+    }
 
     if (saved) {
         try {
@@ -33,7 +44,6 @@ const loadProgressForProfile = (profile: any) => { // eslint-disable-line @types
     } else {
         // New User or Migration
         // Check for legacy global progress to migrate
-        const legacyGlobal = localStorage.getItem(STORAGE_KEY);
         if (legacyGlobal) {
             try {
                 const legacyProgress = JSON.parse(legacyGlobal);
@@ -68,8 +78,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Save on change (Debounced slightly by React batching, but good to be safe)
     useEffect(() => {
         if (profile && Object.keys(progress).length > 0) {
-            const userKey = `${STORAGE_KEY}_${profile.id}`;
-            localStorage.setItem(userKey, JSON.stringify(progress));
+            try {
+                const userKey = `${STORAGE_KEY}_${profile.id}`;
+                localStorage.setItem(userKey, JSON.stringify(progress));
+            } catch (error) {
+                console.error("Failed to save progress to localStorage:", error);
+            }
         }
     }, [progress, profile]);
 
