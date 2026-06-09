@@ -10,3 +10,7 @@
 **Vulnerability:** Unbounded collections saved to LocalStorage, which has a tight quota (usually 5MB).
 **Learning:** Automatically saving arrays or collections directly to LocalStorage without enforcing constraints or hard limits can lead to quota exhaustion. Once LocalStorage is full, any subsequent writes fail, which often breaks other state logic or causes silent unhandled Promise rejections that degrade the UI.
 **Prevention:** Always enforce a hard limit on the number of items that can be created in a persisted collection (e.g., max 10 profiles). Wrap actions that modify these collections in `try...catch` blocks to gracefully handle limits and provide actionable error messages to the user.
+## 2025-02-14 - LocalStorage Quota Exhaustion DoS
+**Vulnerability:** Unbounded collections and unhandled localStorage calls that fail due to quota exhaustion.
+**Learning:** Automatically saving arrays or collections directly to LocalStorage without enforcing constraints or hard limits can lead to quota exhaustion. Once LocalStorage is full, any subsequent writes fail, which often breaks other state logic or causes silent unhandled Promise rejections that degrade the UI. The same applies to `getItem` failing if access is blocked by security settings.
+**Prevention:** Always enforce a hard limit on the number of items that can be created in a persisted collection (e.g., max 10 profiles). Wrap actions that modify these collections and all `localStorage.getItem` and `localStorage.setItem` calls in `try...catch` blocks to gracefully handle limits and exceptions.
