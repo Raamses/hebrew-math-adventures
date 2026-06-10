@@ -24,11 +24,11 @@ const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
-        const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
         let profiles: UserProfile[] = [];
+        try {
+            const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
 
-        if (savedProfiles) {
-            try {
+            if (savedProfiles) {
                 profiles = JSON.parse(savedProfiles);
                 // Ensure all profiles have new fields (migration)
                 profiles = profiles.map(p => ({
@@ -41,11 +41,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     streak: p.streak || 0,
                     arcadeStats: p.arcadeStats || {}
                 }));
-            } catch (error) {
-                console.error('Failed to parse profiles from local storage:', error);
-                // Fallback creates an empty list, so corrupted data is effectively reset to avoid perma-crash
-                profiles = [];
             }
+        } catch (error) {
+            console.error('Failed to parse profiles from local storage:', error);
+            // Fallback creates an empty list, so corrupted data is effectively reset to avoid perma-crash
+            profiles = [];
         }
         return profiles;
     });
@@ -55,7 +55,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Persist profiles whenever they change
     useEffect(() => {
         if (allProfiles.length > 0) {
-            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            try {
+                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            } catch (error) {
+                console.error('Failed to save profiles to local storage:', error);
+            }
         }
     }, [allProfiles]);
 
