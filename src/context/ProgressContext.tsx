@@ -68,8 +68,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Save on change (Debounced slightly by React batching, but good to be safe)
     useEffect(() => {
         if (profile && Object.keys(progress).length > 0) {
-            const userKey = `${STORAGE_KEY}_${profile.id}`;
-            localStorage.setItem(userKey, JSON.stringify(progress));
+            try {
+                const userKey = `${STORAGE_KEY}_${profile.id}`;
+                localStorage.setItem(userKey, JSON.stringify(progress));
+            } catch (e) {
+                console.error('Failed to save progress to local storage', e);
+            }
         }
     }, [progress, profile]);
 
