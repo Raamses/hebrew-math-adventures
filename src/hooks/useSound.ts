@@ -21,12 +21,21 @@ const getAudioContext = () => {
 
 export const useSound = () => {
     const [isMuted, setIsMuted] = useState<boolean>(() => {
-        const saved = localStorage.getItem('isMuted');
-        return saved ? JSON.parse(saved) : false;
+        try {
+            const saved = localStorage.getItem('isMuted');
+            return saved ? JSON.parse(saved) : false;
+        } catch (e) {
+            console.error('Failed to read isMuted from localStorage', e);
+            return false;
+        }
     });
 
     useEffect(() => {
-        localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        try {
+            localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        } catch (e) {
+            console.error('Failed to save isMuted to localStorage', e);
+        }
     }, [isMuted]);
 
     const playSound = useCallback((type: SoundType) => {

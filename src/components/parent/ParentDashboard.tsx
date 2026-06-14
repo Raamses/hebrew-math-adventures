@@ -118,7 +118,11 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit }) => {
                         <button
                             onClick={() => {
                                 if (confirm(t('parent.danger.resetConfirm'))) {
-                                    localStorage.clear();
+                                    try {
+                                        localStorage.clear();
+                                    } catch (e) {
+                                        console.error('Failed to clear localStorage', e);
+                                    }
                                     window.location.reload();
                                 }
                             }}
