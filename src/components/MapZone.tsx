@@ -11,7 +11,8 @@ interface MapZoneProps {
     index: number;
 }
 
-export const MapZone: React.FC<MapZoneProps> = ({ zone, currentLevel, onSelect, index }) => {
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states change, reducing React reconciliation.
+export const MapZone: React.FC<MapZoneProps> = React.memo(({ zone, currentLevel, onSelect, index }) => {
     const { t } = useTranslation();
     const isLocked = currentLevel < zone.minLevel;
     const isCompleted = currentLevel > zone.maxLevel;
@@ -67,4 +68,4 @@ export const MapZone: React.FC<MapZoneProps> = ({ zone, currentLevel, onSelect, 
             )}
         </motion.div>
     );
-};
+});

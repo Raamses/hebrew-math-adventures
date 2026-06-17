@@ -7,7 +7,8 @@ interface ScoreToastProps {
     onComplete: () => void;
 }
 
-export const ScoreToast: React.FC<ScoreToastProps> = ({ message, isVisible, onComplete }) => {
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states change, reducing React reconciliation.
+export const ScoreToast: React.FC<ScoreToastProps> = React.memo(({ message, isVisible, onComplete }) => {
     useEffect(() => {
         if (isVisible) {
             const timer = setTimeout(onComplete, 2000); // Allow animation to play out
@@ -52,4 +53,4 @@ export const ScoreToast: React.FC<ScoreToastProps> = ({ message, isVisible, onCo
             )}
         </AnimatePresence>
     );
-};
+});
