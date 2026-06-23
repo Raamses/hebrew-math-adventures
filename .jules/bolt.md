@@ -4,3 +4,6 @@
 ## 2023-10-27 - React Array Updates Optimization
 **Learning:** For React state that manages arrays of objects (e.g., `allProfiles`), updating a single specific item by its ID using `.map()` creates unnecessary iterations over the entire collection. Benchmarking showed that using `.findIndex()` and only modifying the copied array index when found is roughly ~35% faster (313ms vs 263ms for 1M iterations) and prevents unnecessary object allocations.
 **Action:** When updating a specific element in an array by a unique identifier, use `.findIndex()` combined with array spreading (`const next = [...prev]; next[index] = updatedItem;`) instead of `.map()`.
+## 2023-10-28 - React 60fps Lerp Optimization
+**Learning:** Animating primitive numeric values (like scores or timers) for display using `setInterval` with React state updates (`setState`) causes a 60fps reconciliation loop. This severely impacts performance in a game/arcade context.
+**Action:** For UI display-only animations of numeric values, use Framer Motion's `useSpring` and `useTransform` to bypass React's render phase entirely. This delegates the animation to the browser's compositor layer and keeps the React tree stable.
