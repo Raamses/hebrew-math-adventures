@@ -24,7 +24,12 @@ const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
-        const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        let savedProfiles: string | null = null;
+        try {
+            savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        } catch (error) {
+            console.error('Failed to access localStorage:', error);
+        }
         let profiles: UserProfile[] = [];
 
         if (savedProfiles) {
@@ -55,7 +60,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Persist profiles whenever they change
     useEffect(() => {
         if (allProfiles.length > 0) {
-            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            try {
+                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            } catch (error) {
+                console.error('Failed to save profiles to localStorage:', error);
+            }
         }
     }, [allProfiles]);
 
