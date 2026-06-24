@@ -4,3 +4,6 @@
 ## 2023-10-27 - React Array Updates Optimization
 **Learning:** For React state that manages arrays of objects (e.g., `allProfiles`), updating a single specific item by its ID using `.map()` creates unnecessary iterations over the entire collection. Benchmarking showed that using `.findIndex()` and only modifying the copied array index when found is roughly ~35% faster (313ms vs 263ms for 1M iterations) and prevents unnecessary object allocations.
 **Action:** When updating a specific element in an array by a unique identifier, use `.findIndex()` combined with array spreading (`const next = [...prev]; next[index] = updatedItem;`) instead of `.map()`.
+## 2025-02-09 - Performance Optimization: Framer Motion Spring vs React State Interval
+**Learning:** Using `setInterval` with `setState` for UI animations (like lerping a score) causes 60fps React reconciliations, which is a major performance bottleneck. React is not designed to handle high-frequency layout updates efficiently.
+**Action:** When animating or lerping primitive numeric values (like scores or timers) for display purposes, use Framer Motion's `useSpring` and `useTransform` with `<motion.div>` or `<motion.span>`. This updates the DOM directly and bypasses React's render phase entirely.
