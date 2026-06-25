@@ -19,36 +19,39 @@ const STORAGE_KEY = 'hebrew_game_saga_progress_v1';
 const loadProgressForProfile = (profile: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!profile) return {};
 
-    const userKey = `${STORAGE_KEY}_${profile.id}`;
-    const saved = localStorage.getItem(userKey);
+    try {
+        const userKey = `${STORAGE_KEY}_${profile.id}`;
+        const saved = localStorage.getItem(userKey);
 
-    if (saved) {
-        try {
-            return JSON.parse(saved);
-        } catch (e) {
-            console.error("Failed to load progress for user", profile.id, e);
-            // Fallback to age-based init on corruption
-            return getInitialProgress(profile.age || 5);
-        }
-    } else {
-        // New User or Migration
-        // Check for legacy global progress to migrate
-        const legacyGlobal = localStorage.getItem(STORAGE_KEY);
-        if (legacyGlobal) {
+        if (saved) {
             try {
-                const legacyProgress = JSON.parse(legacyGlobal);
-                // Only migrate if it looks valid
-                if (Object.keys(legacyProgress).length > 0) {
-                    return legacyProgress;
-                    // Optional: Clear legacy? Better to keep as backup for now.
-                    // localStorage.removeItem(STORAGE_KEY);
-                }
-            } catch {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to parse progress for user", profile.id, e);
+                // Fallback to age-based init on corruption
                 return getInitialProgress(profile.age || 5);
             }
-        }
+        } else {
+            // New User or Migration
+            // Check for legacy global progress to migrate
+            const legacyGlobal = localStorage.getItem(STORAGE_KEY);
+            if (legacyGlobal) {
+                try {
+                    const legacyProgress = JSON.parse(legacyGlobal);
+                    // Only migrate if it looks valid
+                    if (Object.keys(legacyProgress).length > 0) {
+                        return legacyProgress;
+                    }
+                } catch {
+                    return getInitialProgress(profile.age || 5);
+                }
+            }
 
-        // Brand new user, no legacy
+            // Brand new user, no legacy
+            return getInitialProgress(profile.age || 5);
+        }
+    } catch (e) {
+        console.error("Failed to load progress from localStorage", e);
         return getInitialProgress(profile.age || 5);
     }
 };
@@ -68,8 +71,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Save on change (Debounced slightly by React batching, but good to be safe)
     useEffect(() => {
         if (profile && Object.keys(progress).length > 0) {
-            const userKey = `${STORAGE_KEY}_${profile.id}`;
-            localStorage.setItem(userKey, JSON.stringify(progress));
+            try {
+                const userKey = `${STORAGE_KEY}_${profile.id}`;
+                localStorage.setItem(userKey, JSON.stringify(progress));
+            } catch (e) {
+                console.error("Failed to save progress to localStorage", e);
+            }
         }
     }, [progress, profile]);
 
