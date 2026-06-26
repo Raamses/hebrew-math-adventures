@@ -10,3 +10,7 @@
 **Vulnerability:** Unbounded collections saved to LocalStorage, which has a tight quota (usually 5MB).
 **Learning:** Automatically saving arrays or collections directly to LocalStorage without enforcing constraints or hard limits can lead to quota exhaustion. Once LocalStorage is full, any subsequent writes fail, which often breaks other state logic or causes silent unhandled Promise rejections that degrade the UI.
 **Prevention:** Always enforce a hard limit on the number of items that can be created in a persisted collection (e.g., max 10 profiles). Wrap actions that modify these collections in `try...catch` blocks to gracefully handle limits and provide actionable error messages to the user.
+## 2025-02-14 - LocalStorage Parsing & Storage Exceptions
+**Vulnerability:** Unhandled exceptions during `localStorage` operations and `JSON.parse` causing component crashes and breaking the UI.
+**Learning:** `localStorage.setItem` can throw `QuotaExceededError`, `localStorage.getItem` can throw `SecurityError` (if cookies are blocked), and `JSON.parse()` on `localStorage` data can throw `SyntaxError` if data is corrupted. Not wrapping these in `try...catch` blocks within React hooks or component initialization functions leads to fatal white-screen crashes that completely break the user experience and can cause denial of service.
+**Prevention:** Wrap all `localStorage` reads, writes, and associated `JSON.parse()` calls in `try...catch` blocks, providing safe fallbacks (like default states) so the application remains functional even if persistence fails.

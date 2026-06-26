@@ -20,8 +20,13 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // Default to first theme or valid localStorage fallback (only for guests)
     const [guestTheme, setGuestTheme] = useState<Theme>(() => {
-        const saved = localStorage.getItem(THEME_STORAGE_KEY);
-        return (saved && getThemeById(saved)) || THEMES[0];
+        try {
+            const saved = localStorage.getItem(THEME_STORAGE_KEY);
+            return (saved && getThemeById(saved)) || THEMES[0];
+        } catch (error) {
+            console.error('Failed to access localStorage for theme settings:', error);
+            return THEMES[0];
+        }
     });
 
     // ⚡ Bolt: Derived state instead of useEffect syncing to prevent cascading renders
@@ -48,7 +53,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         // If NO profile is logged in, persist to localStorage for next guest visit
         if (!profile) {
-            localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
+            try {
+                localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
+            } catch (error) {
+                console.error('Failed to save theme settings to localStorage:', error);
+            }
         }
     }, [currentTheme, profile]);
 
