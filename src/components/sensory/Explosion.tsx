@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface ExplosionProps {
+    id: string;
     x: number;
     y: number;
     color?: string;
-    onComplete: () => void;
+    onComplete: (id: string) => void;
 }
 
-export const Explosion: React.FC<ExplosionProps> = ({ x, y, color = '#FFD700', onComplete }) => {
+export const Explosion = React.memo(function Explosion({ id, x, y, color = '#FFD700', onComplete }: ExplosionProps) {
     // We only need to generate the random trajectories once
     const [particles] = useState(() => {
         return Array.from({ length: 12 }).map((_, i) => {
@@ -53,11 +54,11 @@ export const Explosion: React.FC<ExplosionProps> = ({ x, y, color = '#FFD700', o
                     onAnimationComplete={() => {
                         // When the last particle finishes, trigger complete
                         if (p.id === particles.length - 1) {
-                            onComplete();
+                            onComplete(id);
                         }
                     }}
                 />
             ))}
         </div>
     );
-};
+});
