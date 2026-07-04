@@ -123,25 +123,32 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
                     >
                         {problem.type !== 'compare' ? (
                             <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
-                                <ArithmeticView
-                                    problem={problem}
-                                    answer={answer}
-                                    setAnswer={setAnswer}
-                                    isProcessing={isProcessing}
-                                    wrongAttempts={wrongAttempts}
-                                />
-                                <SeriesView
-                                    problem={problem}
-                                    answer={answer}
-                                    setAnswer={setAnswer}
-                                    isProcessing={isProcessing}
-                                />
-                                <WordProblemView
-                                    problem={problem}
-                                    answer={answer}
-                                    setAnswer={setAnswer}
-                                    isProcessing={isProcessing}
-                                />
+                                {/* ⚡ Bolt: Conditional rendering based on problem type to prevent needless function execution of inactive views */}
+                                {problem.type === 'arithmetic' && (
+                                    <ArithmeticView
+                                        problem={problem}
+                                        answer={answer}
+                                        setAnswer={setAnswer}
+                                        isProcessing={isProcessing}
+                                        wrongAttempts={wrongAttempts}
+                                    />
+                                )}
+                                {problem.type === 'series' && (
+                                    <SeriesView
+                                        problem={problem}
+                                        answer={answer}
+                                        setAnswer={setAnswer}
+                                        isProcessing={isProcessing}
+                                    />
+                                )}
+                                {problem.type === 'word' && (
+                                    <WordProblemView
+                                        problem={problem}
+                                        answer={answer}
+                                        setAnswer={setAnswer}
+                                        isProcessing={isProcessing}
+                                    />
+                                )}
 
                                 <motion.button
                                     type="submit"
