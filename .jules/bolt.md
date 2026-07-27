@@ -4,3 +4,7 @@
 ## 2023-10-27 - React Array Updates Optimization
 **Learning:** For React state that manages arrays of objects (e.g., `allProfiles`), updating a single specific item by its ID using `.map()` creates unnecessary iterations over the entire collection. Benchmarking showed that using `.findIndex()` and only modifying the copied array index when found is roughly ~35% faster (313ms vs 263ms for 1M iterations) and prevents unnecessary object allocations.
 **Action:** When updating a specific element in an array by a unique identifier, use `.findIndex()` combined with array spreading (`const next = [...prev]; next[index] = updatedItem;`) instead of `.map()`.
+
+## 2025-02-09 - React Performance Optimization: Conditional Rendering in Parent vs Child
+**Learning:** Rendering all child views and having inactive ones return `null` internally (e.g., `if (problem.type !== "arithmetic") return null;`) causes React to needlessly execute the function bodies and prop comparisons of inactive components on every state update, increasing reconciliation overhead.
+**Action:** Use conditional rendering (`&&`) in parent components to only render the active child view, preventing unnecessary React evaluation of inactive components.
