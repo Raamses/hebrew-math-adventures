@@ -23,6 +23,13 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
     const [answer, setAnswer] = useState('');
     const [wrongAttempts, setWrongAttempts] = useState(0);
     const [showHintModal, setShowHintModal] = useState(false);
+    const [isEmptySubmitted, setIsEmptySubmitted] = useState(false);
+    const [isShaking, setIsShaking] = useState(false);
+
+    const handleAnswerChange = useCallback((newAnswer: string | ((prev: string) => string)) => {
+        setIsEmptySubmitted(false);
+        setAnswer(newAnswer);
+    }, []);
 
     // The state is now reset by the wrapper component remounting MathCardInner with a new key.
     // No need for useEffect here.
@@ -32,7 +39,11 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
         if (isProcessing) return;
 
         const val = parseInt(answer, 10);
-        if (isNaN(val)) return;
+        if (isNaN(val)) {
+            setIsShaking(true);
+            setIsEmptySubmitted(true);
+            return;
+        }
 
         let isCorrect = false;
 
@@ -79,8 +90,15 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
     return (
         <>
             <motion.div
-                animate={feedback && !feedback.includes('!') ? { x: [0, -10, 10, -10, 10, 0] } : {}}
+                animate={
+                    isShaking
+                        ? { x: [0, -10, 10, -10, 10, 0] }
+                        : feedback && !feedback.includes('!')
+                        ? { x: [0, -10, 10, -10, 10, 0] }
+                        : {}
+                }
                 transition={{ duration: 0.4 }}
+                onAnimationComplete={() => setIsShaking(false)}
                 layout
                 className={cn(
                     "w-full max-w-md bg-white rounded-3xl shadow-xl p-6 relative overflow-hidden transition-all duration-500",
@@ -126,22 +144,35 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
                                 <ArithmeticView
                                     problem={problem}
                                     answer={answer}
-                                    setAnswer={setAnswer}
+                                    setAnswer={handleAnswerChange}
                                     isProcessing={isProcessing}
                                     wrongAttempts={wrongAttempts}
                                 />
                                 <SeriesView
                                     problem={problem}
                                     answer={answer}
-                                    setAnswer={setAnswer}
+                                    setAnswer={handleAnswerChange}
                                     isProcessing={isProcessing}
                                 />
                                 <WordProblemView
                                     problem={problem}
                                     answer={answer}
-                                    setAnswer={setAnswer}
+                                    setAnswer={handleAnswerChange}
                                     isProcessing={isProcessing}
                                 />
+
+                                <AnimatePresence>
+                                    {isEmptySubmitted && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                                            className="text-amber-600 font-bold text-center my-2 text-lg bg-amber-50 px-4 py-1.5 rounded-full border border-amber-200 shadow-sm"
+                                        >
+                                            {t('game.emptyInput', 'מספר?')}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
 
                                 <motion.button
                                     type="submit"

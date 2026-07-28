@@ -38,10 +38,10 @@ const loadProgressForProfile = (profile: any) => { // eslint-disable-line @types
             try {
                 const legacyProgress = JSON.parse(legacyGlobal);
                 // Only migrate if it looks valid
-                if (Object.keys(legacyProgress).length > 0) {
+                if (legacyProgress && typeof legacyProgress === 'object' && Object.keys(legacyProgress).length > 0) {
+                    localStorage.setItem(userKey, JSON.stringify(legacyProgress));
+                    localStorage.removeItem(STORAGE_KEY);
                     return legacyProgress;
-                    // Optional: Clear legacy? Better to keep as backup for now.
-                    // localStorage.removeItem(STORAGE_KEY);
                 }
             } catch {
                 return getInitialProgress(profile.age || 5);
