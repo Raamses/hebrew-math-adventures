@@ -21,6 +21,10 @@ export class GameDirector implements IGameDirector {
     tuneConfig<T extends BaseGameConfig>(baseConfig: T, profile: UserCapabilityProfile): T {
         const tuned = { ...baseConfig };
 
+        // Simple Hot Streak Check (computed up front; only used if rescue doesn't fire,
+        // so it's safe to read before rescue's type-simplification heuristics run)
+        const currentSkill = profile.skills[tuned.type as string || 'math_core'];
+
         // 1. Rescue Mode (Heuristic: >2 consecutive failures)
         // If the user is struggling, we simplify the problem temporarily.
         if (profile.consecutiveFailures >= GameDirector.RESCUE_THRESHOLD) {
@@ -51,12 +55,9 @@ export class GameDirector implements IGameDirector {
         }
 
         // 2. Challenge Mode (Heuristic: >5 consecutive correct on this specific skill)
-        // Note: We need to know the *current topic* to check stats. 
+        // Note: We need to know the *current topic* to check stats.
         // For now, we use a global heuristic or assume 'math_core' generic skills.
-
-        // Simple Hot Streak Check
-        const currentSkill = profile.skills[tuned.type as string || 'math_core'];
-        if ((currentSkill && currentSkill.consecutiveCorrect >= GameDirector.CHALLENGE_THRESHOLD) || (profile.streak > GameDirector.STREAK_THRESHOLD)) {
+        else if ((currentSkill && currentSkill.consecutiveCorrect >= GameDirector.CHALLENGE_THRESHOLD) || (profile.streak > GameDirector.STREAK_THRESHOLD)) {
             tuned.isChallenge = true;
             tuned.isRescue = false;
 
@@ -101,6 +102,7 @@ export class GameDirector implements IGameDirector {
     // Returns the UPDATED profile
     recordResult(profile: UserCapabilityProfile, isCorrect: boolean): UserCapabilityProfile {
         const newProfile = { ...profile }; // Shallow copy
+        newProfile.skills = { ...profile.skills }; // Deep copy skills map so we don't mutate profile.skills
 
         // 1. Update Global Heuristics
         if (isCorrect) {
@@ -112,11 +114,10 @@ export class GameDirector implements IGameDirector {
         // 2. Update Specific Skill Stats
         // For now, we assume 'currentFocus' is the skill key being played
         const focusKey = profile.currentFocus;
-        if (!newProfile.skills[focusKey]) {
-            newProfile.skills[focusKey] = {
-                attempts: 0, correct: 0, consecutiveCorrect: 0, consecutiveWrong: 0, lastPlayedAt: 0, avgSpeedMs: 0
-            };
-        }
+        const existingSkill = newProfile.skills[focusKey];
+        newProfile.skills[focusKey] = existingSkill
+            ? { ...existingSkill }
+            : { attempts: 0, correct: 0, consecutiveCorrect: 0, consecutiveWrong: 0, lastPlayedAt: 0, avgSpeedMs: 0 };
 
         const skill = newProfile.skills[focusKey];
         skill.attempts++;

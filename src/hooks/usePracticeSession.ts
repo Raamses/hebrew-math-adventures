@@ -1,5 +1,6 @@
 import { useReducer, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { MathModule } from '../engines/MathModule';
+import { Director } from '../engines/GameDirector';
 import { useProfile } from '../context/ProfileContext';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import type { Problem } from '../lib/gameLogic';
@@ -111,7 +112,7 @@ interface UsePracticeSessionProps {
 }
 
 export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSessionProps) => {
-    const { profile } = useProfile();
+    const { profile, updateProfile } = useProfile();
     // Default to STANDARD, but PracticeMode component will allow selector to override via restart logic
     const [session, dispatch] = useReducer(sessionReducer, getInitialState('STANDARD'));
     const [problem, setProblem] = useState<Problem | null>(null);
@@ -178,7 +179,13 @@ export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSe
 
     const submitResult = useCallback((isCorrect: boolean) => {
         dispatch({ type: 'ANSWER', isCorrect });
-    }, []);
+
+        if (profile) {
+            const currentCapabilities = profile.capabilities || INITIAL_CAPABILITY_PROFILE;
+            const updatedCapabilities = Director.recordResult(currentCapabilities, isCorrect);
+            updateProfile(profile.id, { capabilities: updatedCapabilities });
+        }
+    }, [profile, updateProfile]);
 
     const evaluateAnswer = useCallback((currentProblem: Problem, userAnswer: string | number) => {
         return mathModule.evaluate(currentProblem, userAnswer);
