@@ -28,7 +28,8 @@ const mockProfile: UserProfile = {
 
 vi.mock('../../context/ProfileContext', () => ({
     useProfile: () => ({
-        profile: mockProfile
+        profile: mockProfile,
+        updateProfile: vi.fn()
     })
 }));
 
