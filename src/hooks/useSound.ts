@@ -21,8 +21,12 @@ const getAudioContext = () => {
 
 export const useSound = () => {
     const [isMuted, setIsMuted] = useState<boolean>(() => {
-        const saved = localStorage.getItem('isMuted');
-        return saved ? JSON.parse(saved) : false;
+        try {
+            const saved = localStorage.getItem('isMuted');
+            return saved ? JSON.parse(saved) : false;
+        } catch {
+            return false;
+        }
     });
 
     useEffect(() => {
@@ -51,6 +55,10 @@ export const useSound = () => {
                 gain.gain.setValueAtTime(0.3, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
                 osc.start(now);
+                osc.onended = () => {
+                    osc.disconnect();
+                    gain.disconnect();
+                };
                 osc.stop(now + 0.5);
                 break;
 
@@ -62,6 +70,10 @@ export const useSound = () => {
                 gain.gain.setValueAtTime(0.3, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                 osc.start(now);
+                osc.onended = () => {
+                    osc.disconnect();
+                    gain.disconnect();
+                };
                 osc.stop(now + 0.3);
                 break;
 
@@ -74,6 +86,10 @@ export const useSound = () => {
                 gain.gain.setValueAtTime(0.2, now);
                 gain.gain.linearRampToValueAtTime(0, now + 0.6);
                 osc.start(now);
+                osc.onended = () => {
+                    osc.disconnect();
+                    gain.disconnect();
+                };
                 osc.stop(now + 0.6);
                 break;
 
@@ -84,6 +100,10 @@ export const useSound = () => {
                 gain.gain.setValueAtTime(0.1, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
                 osc.start(now);
+                osc.onended = () => {
+                    osc.disconnect();
+                    gain.disconnect();
+                };
                 osc.stop(now + 0.05);
                 break;
         }
