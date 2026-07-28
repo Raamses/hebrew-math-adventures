@@ -22,6 +22,106 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
 
+const VALID_MASCOT_IDS: UserProfile['mascotId'][] = ['owl', 'bear', 'ant', 'lion'];
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+// Only known, mutable UserProfile fields pass through; everything else (including
+// id/createdAt/lastPlayedAt and any unrecognized keys) is stripped.
+const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfile> => {
+    const sanitized: Partial<UserProfile> = {};
+
+    if (updates.name !== undefined) {
+        const sanitizedName = updates.name.trim();
+        if (isValidProfileName(sanitizedName)) {
+            sanitized.name = sanitizedName;
+        } else {
+            console.warn('Attempted to update profile with invalid name, skipping name update');
+        }
+    }
+
+    if (updates.avatarId !== undefined) {
+        if (typeof updates.avatarId === 'string') {
+            sanitized.avatarId = updates.avatarId;
+        } else {
+            console.warn('Attempted to update profile with invalid avatarId, skipping update');
+        }
+    }
+
+    if (updates.themeId !== undefined) {
+        if (typeof updates.themeId === 'string') {
+            sanitized.themeId = updates.themeId;
+        } else {
+            console.warn('Attempted to update profile with invalid themeId, skipping update');
+        }
+    }
+
+    if (updates.mascotId !== undefined) {
+        if (VALID_MASCOT_IDS.includes(updates.mascotId)) {
+            sanitized.mascotId = updates.mascotId;
+        } else {
+            console.warn('Attempted to update profile with invalid mascotId, skipping update');
+        }
+    }
+
+    if (updates.arcadeStats !== undefined) {
+        if (isPlainObject(updates.arcadeStats) && Object.values(updates.arcadeStats).every(v => typeof v === 'number')) {
+            sanitized.arcadeStats = updates.arcadeStats;
+        } else {
+            console.warn('Attempted to update profile with invalid arcadeStats, skipping update');
+        }
+    }
+
+    if (updates.settings !== undefined) {
+        const s = updates.settings;
+        if (
+            isPlainObject(s) &&
+            typeof s.musicVolume === 'number' &&
+            typeof s.sfxVolume === 'number' &&
+            typeof s.isMuted === 'boolean'
+        ) {
+            sanitized.settings = { musicVolume: s.musicVolume, sfxVolume: s.sfxVolume, isMuted: s.isMuted };
+        } else {
+            console.warn('Attempted to update profile with invalid settings, skipping update');
+        }
+    }
+
+    if (updates.age !== undefined) {
+        if (typeof updates.age === 'number' && Number.isFinite(updates.age) && updates.age > 0) {
+            sanitized.age = updates.age;
+        } else {
+            console.warn('Attempted to update profile with invalid age, skipping update');
+        }
+    }
+
+    if (updates.capabilities !== undefined) {
+        if (isPlainObject(updates.capabilities)) {
+            sanitized.capabilities = updates.capabilities;
+        } else {
+            console.warn('Attempted to update profile with invalid capabilities, skipping update');
+        }
+    }
+
+    if (updates.streak !== undefined) {
+        if (typeof updates.streak === 'number' && Number.isFinite(updates.streak)) {
+            sanitized.streak = updates.streak;
+        } else {
+            console.warn('Attempted to update profile with invalid streak, skipping update');
+        }
+    }
+
+    if (updates.isParent !== undefined) {
+        if (typeof updates.isParent === 'boolean') {
+            sanitized.isParent = updates.isParent;
+        } else {
+            console.warn('Attempted to update profile with invalid isParent, skipping update');
+        }
+    }
+
+    return sanitized;
+};
+
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
         const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
@@ -162,17 +262,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, [profile, logEvent]);
 
     const updateProfile = useCallback((id: string, updates: Partial<UserProfile>) => {
-        // Sanitize name if provided in updates
-        const safeUpdates = { ...updates };
-        if (safeUpdates.name !== undefined) {
-            const sanitizedName = safeUpdates.name.trim();
-            if (!isValidProfileName(sanitizedName)) {
-                console.warn('Attempted to update profile with invalid name, skipping name update');
-                delete safeUpdates.name;
-            } else {
-                safeUpdates.name = sanitizedName;
-            }
-        }
+        const safeUpdates = validateProfileUpdate(updates);
 
         setAllProfiles(prev => {
             const index = prev.findIndex(p => p.id === id);
