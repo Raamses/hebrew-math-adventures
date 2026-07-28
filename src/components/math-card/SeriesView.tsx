@@ -39,7 +39,7 @@ export const SeriesView = React.memo(function SeriesView({
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-lg sm:text-4xl font-bold text-slate-700 bg-white rounded-lg sm:rounded-2xl border-2 sm:border-4 border-slate-200 shadow-sm">
-                                {num}
+                                {num ?? '?'}
                             </div>
                         )}
                     </div>

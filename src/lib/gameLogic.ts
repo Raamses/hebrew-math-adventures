@@ -26,7 +26,7 @@ export interface ComparisonProblem extends BaseProblem {
 
 export interface SeriesProblem extends BaseProblem {
     type: 'series';
-    sequence: number[]; // e.g. [2, 4, 6, 0] where 0 is the missing slot
+    sequence: (number | null)[]; // e.g. [2, 4, 6, null] where null is the missing slot
     missingIndex: number; // index of the answer in the sequence
     rule: string;
 }

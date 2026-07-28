@@ -103,7 +103,9 @@ export class ArithmeticFactory implements IProblemFactory {
             case ProblemTypes.SUBTRACTION_BORROW:
                 operator = '-';
                 subType = 'borrow';
-                num1 = RandomUtils.intInRange(100, 900);
+                do {
+                    num1 = RandomUtils.intInRange(100, 900);
+                } while (num1 % 10 === 9); // digit1 must leave room for a larger digit2 (0-9)
                 const digit1 = num1 % 10;
                 // Force digit2 > digit1 for borrowing
                 const digit2 = RandomUtils.intInRange(digit1 + 1, 10);
@@ -203,15 +205,15 @@ export class SeriesFactory implements IProblemFactory {
         const start = RandomUtils.intInRange(0, 20);
 
         const length = config?.length || 4;
-        const sequence: number[] = [];
+        const sequence: (number | null)[] = [];
         for (let i = 0; i < length; i++) {
             sequence.push(start + (i * step));
         }
 
         // Hide one
         const missingIndex = RandomUtils.intInRange(0, length);
-        const answer = sequence[missingIndex];
-        sequence[missingIndex] = 0; // Placeholder
+        const answer = sequence[missingIndex] as number;
+        sequence[missingIndex] = null; // Placeholder (0 would collide with legitimate 0 answers)
 
         return {
             type: 'series',
