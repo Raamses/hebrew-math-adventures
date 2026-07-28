@@ -48,6 +48,12 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     // Visual Effects State
     const [explosions, setExplosions] = React.useState<{ id: string; x: number; y: number }[]>([]);
 
+    // ⚡ Bolt: Extracted explosion completion to a stable callback to prevent passing inline
+    // closures to mapped components, which invalidates their React.memo caching.
+    const handleExplosionComplete = React.useCallback((explosionId: string) => {
+        setExplosions(prev => prev.filter(e => e.id !== explosionId));
+    }, []);
+
     const onPopWrapper = React.useCallback((id: string, val: number, x: number, y: number) => {
         const isCorrect = enginePop(id);
 
@@ -151,9 +157,10 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             {explosions.map(exp => (
                 <Explosion
                     key={exp.id}
+                    id={exp.id}
                     x={exp.x}
                     y={exp.y}
-                    onComplete={() => setExplosions(prev => prev.filter(e => e.id !== exp.id))}
+                    onComplete={handleExplosionComplete}
                 />
             ))}
             <FrenzyOverlay isActive={gameState.isFrenzy} />
