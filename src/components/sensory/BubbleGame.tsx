@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { BubbleGameContainer } from '../games/BubbleGameContainer';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
 import type { GameConfig } from '../../engines/bubble/types';
@@ -43,11 +43,12 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     }), [problem]);
 
     // 2. Define Behavior
-    const behavior = useMemo(() => {
-        const strategy = new MathBehaviorStrategy();
-        strategy.setProblem(problem);
-        return strategy;
-    }, [problem]);
+    const behaviorRef = useRef<MathBehaviorStrategy | null>(null);
+    if (!behaviorRef.current) {
+        behaviorRef.current = new MathBehaviorStrategy();
+    }
+    behaviorRef.current.setProblem(problem);
+    const behavior = behaviorRef.current;
 
     // Handlers
     const handlePause = () => setIsMenuOpen(true);
