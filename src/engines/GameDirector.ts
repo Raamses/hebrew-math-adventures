@@ -1,4 +1,4 @@
-import type { IGameDirector, GameSessionConfig, BaseGameConfig } from './interfaces';
+import type { IGameDirector, BaseGameConfig } from './interfaces';
 import type { UserCapabilityProfile } from '../types/progress';
 
 // The Smart Director's Logic
@@ -11,7 +11,6 @@ export class GameDirector implements IGameDirector {
     private static readonly RESCUE_THRESHOLD = 2;
     private static readonly CHALLENGE_THRESHOLD = 5;
     private static readonly STREAK_THRESHOLD = 5; // Global streak
-    private static readonly SKILL_STREAK_THRESHOLD = 10;
 
     private static readonly RESCUE_MULTIPLIER = 0.8;
     private static readonly CHALLENGE_MULTIPLIER = 1.2;
@@ -68,34 +67,6 @@ export class GameDirector implements IGameDirector {
         }
 
         return tuned;
-    }
-
-    getNextConfig(profile: UserCapabilityProfile): GameSessionConfig {
-        // 1. Check for "Rescue Mode"
-        if (profile.consecutiveFailures >= GameDirector.RESCUE_THRESHOLD) {
-            // Heuristic: If 2 failures in a row (meaning 3-6 bad questions), drop 'estimatedLevel' temporary
-            // Note: In full implementation, we would switch 'currentFocus' to a mapped easier skill
-            return {
-                moduleId: 'math_core',
-                params: { mode: 'rescue', difficulty: Math.max(1, (profile.estimatedLevel || 1) - 1) }
-            };
-        }
-
-        // 2. Check for "Challenge Mode" (Hot Streak)
-        // We verify this by looking at successful stats for the *currentFocus*
-        const currentSkill = profile.skills[profile.currentFocus];
-        if (currentSkill && currentSkill.consecutiveCorrect >= GameDirector.SKILL_STREAK_THRESHOLD) {
-            return {
-                moduleId: 'math_core',
-                params: { mode: 'challenge', difficulty: (profile.estimatedLevel || 1) + 1 }
-            };
-        }
-
-        // 3. Default: Stability
-        return {
-            moduleId: 'math_core',
-            params: { difficulty: profile.estimatedLevel || 1 }
-        };
     }
 
     // Called *after* the user answers a question in App.tsx

@@ -18,6 +18,14 @@ export const useAnswerFlow = ({
     const [status, setStatus] = useState<AnswerStatus>('idle');
     const timeoutRef = useRef<number | null>(null);
 
+    const onCorrectCompleteRef = useRef(onCorrectComplete);
+    const onWrongCompleteRef = useRef(onWrongComplete);
+
+    useEffect(() => {
+        onCorrectCompleteRef.current = onCorrectComplete;
+        onWrongCompleteRef.current = onWrongComplete;
+    }, [onCorrectComplete, onWrongComplete]);
+
     // Clear timeout on unmount or reset
     const clearFlowTimeout = useCallback(() => {
         if (timeoutRef.current) {
@@ -40,16 +48,16 @@ export const useAnswerFlow = ({
             setStatus('correct');
             timeoutRef.current = window.setTimeout(() => {
                 setStatus('idle');
-                onCorrectComplete?.();
+                onCorrectCompleteRef.current?.();
             }, correctDelay);
         } else {
             setStatus('wrong');
             timeoutRef.current = window.setTimeout(() => {
                 setStatus('idle');
-                onWrongComplete?.();
+                onWrongCompleteRef.current?.();
             }, wrongDelay);
         }
-    }, [status, correctDelay, wrongDelay, onCorrectComplete, onWrongComplete, clearFlowTimeout]);
+    }, [status, correctDelay, wrongDelay, clearFlowTimeout]);
 
     const reset = useCallback(() => {
         clearFlowTimeout();
