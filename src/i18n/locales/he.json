@@ -299,6 +299,7 @@
     },
     "practice": {
         "chooseMode": "בחר/י איך תרצה/י לשחק היום",
+        "chooseModeDesc": "בחר/י כיצד תרצה/י לשחק היום",
         "noRecord": "אין שיא",
         "zen": {
             "title": "Zen Math",

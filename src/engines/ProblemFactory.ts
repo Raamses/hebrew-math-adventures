@@ -100,7 +100,7 @@ export class ArithmeticFactory implements IProblemFactory {
                 }
                 break;
 
-            case ProblemTypes.SUBTRACTION_BORROW:
+            case ProblemTypes.SUBTRACTION_BORROW: {
                 operator = '-';
                 subType = 'borrow';
                 do {
@@ -113,8 +113,9 @@ export class ArithmeticFactory implements IProblemFactory {
                 num2 = (Math.floor(num2 / 10) * 10) + digit2; // Adjust last digit
                 if (num2 > num1) num2 -= 10; // Ensure subtraction validity
                 break;
+            }
 
-            case ProblemTypes.SUBTRACTION_ZERO:
+            case ProblemTypes.SUBTRACTION_ZERO: {
                 operator = '-';
                 subType = 'zero';
                 const hundreds = RandomUtils.intInRange(1, 10);
@@ -123,21 +124,24 @@ export class ArithmeticFactory implements IProblemFactory {
                 num2 = RandomUtils.intInRange(10, 100);
                 if (num2 > num1) num2 = Math.floor(num1 / 2);
                 break;
+            }
 
-            case ProblemTypes.MULTIPLICATION:
+            case ProblemTypes.MULTIPLICATION: {
                 operator = '*';
                 const multMax = config?.max || 10;
                 num1 = RandomUtils.intInRange(1, multMax + 1);
                 num2 = RandomUtils.intInRange(1, multMax + 1);
                 break;
+            }
 
-            case ProblemTypes.DIVISION:
+            case ProblemTypes.DIVISION: {
                 operator = '/';
                 const answerMax = config?.max || 10;
                 num2 = RandomUtils.intInRange(2, 11);
                 answer = RandomUtils.intInRange(1, answerMax + 1);
                 num1 = answer * num2;
                 break;
+            }
         }
 
         // Calculate answer if not pre-calculated (like inside division)

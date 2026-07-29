@@ -26,7 +26,7 @@ const BUBBLE_THEMES: Record<BubbleVariant, React.CSSProperties> = {
 const COMMON_STYLE: React.CSSProperties = {
     border: '2px solid rgba(255, 255, 255, 0.6)',
     boxShadow: '0 4px 15px rgba(0,0,0,0.15), inset 0 0 15px rgba(255,255,255,0.4)',
-    backdropFilter: 'blur(6px)',
+    background: 'rgba(255, 255, 255, 0.35)',
     borderRadius: '50%'
 };
 

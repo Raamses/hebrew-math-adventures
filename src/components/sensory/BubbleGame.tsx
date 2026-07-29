@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BubbleGameContainer } from '../games/BubbleGameContainer';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
 import type { GameConfig } from '../../engines/bubble/types';
@@ -53,13 +53,11 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [problem, profile]);
 
-    // 2. Define Behavior
-    const behaviorRef = useRef<MathBehaviorStrategy | null>(null);
-    if (!behaviorRef.current) {
-        behaviorRef.current = new MathBehaviorStrategy();
-    }
-    behaviorRef.current.setProblem(problem);
-    const behavior = behaviorRef.current;
+    // 2. Define Behavior — stable instance via useState, update problem in effect
+    const [behavior] = useState(() => new MathBehaviorStrategy());
+    useEffect(() => {
+        behavior.setProblem(problem);
+    }, [problem, behavior]);
 
     // Handlers
     const handlePause = () => setIsMenuOpen(true);
