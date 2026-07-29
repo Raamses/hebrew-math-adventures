@@ -51,6 +51,12 @@ export class GameDirector implements IGameDirector {
             if (tuned.density && typeof tuned.density === 'number') {
                 tuned.density = Math.max(0.1, tuned.density * 0.8);
             }
+
+            // Heuristic E: Reduce distractors in rescue mode
+            const dRatio = (tuned as any).distractorRatio;
+            if (dRatio && typeof dRatio === 'number') {
+                (tuned as any).distractorRatio = Math.max(1, Math.floor(dRatio * 0.7));
+            }
         }
 
         // 2. Challenge Mode (Heuristic: >5 consecutive correct on this specific skill)
@@ -64,6 +70,12 @@ export class GameDirector implements IGameDirector {
             if (typeof tuned.max === 'number') {
                 tuned.max = Math.floor(tuned.max * GameDirector.CHALLENGE_MULTIPLIER);
             }
+
+            // Heuristic: Add more distractors in challenge mode
+            const dRatio = (tuned as any).distractorRatio;
+            if (dRatio && typeof dRatio === 'number') {
+                (tuned as any).distractorRatio = dRatio + 1;
+            }
         }
 
         return tuned;
@@ -71,7 +83,7 @@ export class GameDirector implements IGameDirector {
 
     // Called *after* the user answers a question in App.tsx
     // Returns the UPDATED profile
-    recordResult(profile: UserCapabilityProfile, isCorrect: boolean): UserCapabilityProfile {
+    recordResult(profile: UserCapabilityProfile, isCorrect: boolean, onLevelUp?: (level: number) => void): UserCapabilityProfile {
         const newProfile = { ...profile }; // Shallow copy
         newProfile.skills = { ...profile.skills }; // Deep copy skills map so we don't mutate profile.skills
 
@@ -101,6 +113,18 @@ export class GameDirector implements IGameDirector {
         } else {
             skill.consecutiveCorrect = 0;
             skill.consecutiveWrong++;
+        }
+
+        // 3. Mastery-based level growth
+        const MASTERY_THRESHOLD = 10;
+        const MASTERY_ACCURACY = 0.8;
+        const masteredCount = Object.values(newProfile.skills)
+            .filter(s => s.attempts >= MASTERY_THRESHOLD && (s.correct / s.attempts) >= MASTERY_ACCURACY)
+            .length;
+        const newLevel = Math.min(10, 1 + Math.floor(masteredCount / 3));
+        if (newLevel > newProfile.estimatedLevel) {
+            newProfile.estimatedLevel = newLevel;
+            onLevelUp?.(newLevel);
         }
 
         return newProfile;

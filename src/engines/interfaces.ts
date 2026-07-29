@@ -38,5 +38,5 @@ export interface IGameDirector {
     // The "Brain" - decides which module/difficulty to serve next
     tuneConfig<T extends BaseGameConfig>(baseConfig: T, profile: UserCapabilityProfile): T;
     // Notifies director of result (so it can update heuristics)
-    recordResult(profile: UserCapabilityProfile, isCorrect: boolean): UserCapabilityProfile;
+    recordResult(profile: UserCapabilityProfile, isCorrect: boolean, onLevelUp?: (level: number) => void): UserCapabilityProfile;
 }

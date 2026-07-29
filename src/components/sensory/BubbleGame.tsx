@@ -6,6 +6,8 @@ import type { SensoryProblem } from '../../lib/gameLogic';
 import { useSound } from '../../hooks/useSound';
 import { GameMenuModal } from '../GameMenuModal';
 import { SettingsModal } from '../SettingsModal';
+import { Director } from '../../engines/GameDirector';
+import type { UserCapabilityProfile } from '../../types/progress';
 
 interface BubbleGameProps {
     problem: SensoryProblem;
@@ -13,16 +15,17 @@ interface BubbleGameProps {
     onExit: () => void;
     title?: string;
     instruction?: string;
+    profile?: UserCapabilityProfile;
 }
 
-export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onExit, title }) => {
+export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onExit, title, profile }) => {
     const { isMuted, toggleMute } = useSound();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [gameId, setGameId] = useState(0);
 
     // 1. Configure the Game Rule
-    const config: GameConfig = useMemo(() => ({
+    const baseConfig: GameConfig = {
         modeName: "Blast Off",
         spawnIntervalMs: 800, // Faster spawn (was 1500)
         maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 8 : typeof window !== 'undefined' && window.innerWidth < 600 ? 10 : 12,      // More bubbles (was 10)
@@ -40,7 +43,15 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
         levelMultiplier: 1.0,
         theme: 'space',
         vfxEnabled: true
-    }), [problem]);
+    };
+
+    const config = useMemo(() => {
+        if (profile) {
+            return Director.tuneConfig(baseConfig, profile);
+        }
+        return baseConfig;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [problem, profile]);
 
     // 2. Define Behavior
     const behaviorRef = useRef<MathBehaviorStrategy | null>(null);
