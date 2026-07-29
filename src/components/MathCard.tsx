@@ -65,6 +65,12 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
         onAnswer(isCorrect);
     };
 
+    const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSubmit(e);
+        }
+    };
+
     const handleCompare = useCallback((symbol: string) => {
         if (isProcessing) return;
         const isCorrect = symbol === problem.answer;
@@ -147,18 +153,21 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
                                     setAnswer={handleAnswerChange}
                                     isProcessing={isProcessing}
                                     wrongAttempts={wrongAttempts}
+                                    onKeyDown={handleInputKeyDown}
                                 />
                                 <SeriesView
                                     problem={problem}
                                     answer={answer}
                                     setAnswer={handleAnswerChange}
                                     isProcessing={isProcessing}
+                                    onKeyDown={handleInputKeyDown}
                                 />
                                 <WordProblemView
                                     problem={problem}
                                     answer={answer}
                                     setAnswer={handleAnswerChange}
                                     isProcessing={isProcessing}
+                                    onKeyDown={handleInputKeyDown}
                                 />
 
                                 <AnimatePresence>

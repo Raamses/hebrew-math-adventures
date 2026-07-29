@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { GameConfig, IGameBehavior } from '../../engines/bubble/types';
 import { useGameEngine } from '../../engines/bubble/useGameEngine';
 import { Bubble } from '../sensory/Bubble';
@@ -9,6 +9,9 @@ import { Zap } from 'lucide-react';
 import { SettingsMenu } from '../SettingsMenu';
 import { useSound } from '../../hooks/useSound';
 import { useAnalytics } from '../../hooks/useAnalytics';
+import { useProfile } from '../../context/ProfileContext';
+import { Director } from '../../engines/GameDirector';
+import { INITIAL_CAPABILITY_PROFILE } from '../../types/progress';
 
 interface BubbleGameContainerProps {
     config: GameConfig;
@@ -42,8 +45,18 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
     // Hook into Engine
     const { entities, gameState, handlePop: enginePop, handleOffScreen } = useGameEngine(config, behavior);
-    const { playSound } = useSound();
+    const { playSound, play } = useSound();
     const { logEvent } = useAnalytics();
+    const { profile, updateProfile } = useProfile();
+
+    const prevComboRef = useRef(gameState.combo);
+
+    useEffect(() => {
+        if (gameState.combo === 5 && prevComboRef.current !== 5) {
+            play('streak');
+        }
+        prevComboRef.current = gameState.combo;
+    }, [gameState.combo, play]);
 
     // Visual Effects State
     const [explosions, setExplosions] = React.useState<{ id: string; x: number; y: number }[]>([]);
@@ -59,6 +72,18 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 mode: 'sensory',
                 node_type: 'SENSORY'
             });
+
+            if (profile && updateProfile) {
+                const currentCapabilities = profile.capabilities || INITIAL_CAPABILITY_PROFILE;
+                const updatedCapabilities = Director.recordResult(
+                    currentCapabilities,
+                    isCorrect,
+                    () => {
+                        play('milestone');
+                    }
+                );
+                updateProfile(profile.id, { capabilities: updatedCapabilities });
+            }
         }
 
         // Add explosion at click coordinates
@@ -69,7 +94,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         } else if (isCorrect === false) { // distinct from undefined
             playSound('wrong');
         }
-    }, [enginePop, playSound, logEvent]);
+    }, [enginePop, playSound, play, logEvent, profile, updateProfile]);
 
     // Monitor Game Over / Victory
     useEffect(() => {

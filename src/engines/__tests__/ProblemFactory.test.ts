@@ -59,7 +59,7 @@ describe('ProblemFactory', () => {
             expect(problem.type).toBe('arithmetic');
             expect(problem.operator).toBe('/');
             expect(Number.isInteger(problem.answer)).toBe(true);
-            expect(problem.num1).toBe(problem.answer * problem.num2);
+            expect(problem.num1).toBe(Number(problem.answer) * Number(problem.num2));
             expect(problem.num2).toBeGreaterThanOrEqual(2);
         });
     });
@@ -128,9 +128,9 @@ describe('ProblemFactory', () => {
             expect(typeof problem.params.n2).toBe('number');
 
             if (problem.subType === 'addition') {
-                expect(problem.answer).toBe(problem.params.n1 + problem.params.n2);
+                expect(Number(problem.answer)).toBe(Number(problem.params.n1) + Number(problem.params.n2));
             } else {
-                expect(problem.answer).toBe(problem.params.n1 - problem.params.n2);
+                expect(Number(problem.answer)).toBe(Number(problem.params.n1) - Number(problem.params.n2));
             }
         });
     });

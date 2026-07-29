@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 // For a web app, AudioContext oscillators are great for "beeps" without assets.
 // Let's implement a simple synthesizer for now to avoid 404s on missing files!
 
-type SoundType = 'correct' | 'wrong' | 'levelUp' | 'click';
+type SoundType = 'correct' | 'wrong' | 'levelUp' | 'click' | 'streak' | 'frenzy' | 'milestone';
 
 
 let globalAudioContext: AudioContext | null = null;
@@ -106,10 +106,54 @@ export const useSound = () => {
                 };
                 osc.stop(now + 0.05);
                 break;
+
+            case 'streak':
+                // Short ascending arpeggio (3 quick notes: C5, E5, G5)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);       // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.onended = () => {
+                    osc.disconnect();
+                    gain.disconnect();
+                };
+                osc.stop(now + 0.3);
+                break;
+
+            case 'frenzy':
+                // Brief energetic buzz (sawtooth wave, 200Hz, 150ms duration, quick decay)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.onended = () => {
+                    osc.disconnect();
+                    gain.disconnect();
+                };
+                osc.stop(now + 0.15);
+                break;
+
+            case 'milestone':
+                // Quick chime (sine wave, C6, 200ms, with slight reverb via gain decay)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1046.5, now); // C6
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now);
+                osc.onended = () => {
+                    osc.disconnect();
+                    gain.disconnect();
+                };
+                osc.stop(now + 0.2);
+                break;
         }
     }, [isMuted]);
 
     const toggleMute = () => setIsMuted(prev => !prev);
 
-    return { playSound, isMuted, toggleMute };
+    return { playSound, play: playSound, isMuted, toggleMute };
 };

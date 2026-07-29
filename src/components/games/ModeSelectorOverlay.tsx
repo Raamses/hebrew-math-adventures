@@ -47,6 +47,13 @@ interface ModeSelectorOverlayProps {
 const ModeCard: React.FC<Omit<ModeCardProps, 'delay'>> = ({ mode, title, description, icon: Icon, color, onSelect, bestScore }) => {
     return (
         <motion.button
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelect(mode);
+                }
+            }}
             variants={itemVariants}
             onClick={() => onSelect(mode)}
             className="group relative w-full h-auto min-h-[16rem] sm:min-h-[16rem] bg-white/90 backdrop-blur-sm rounded-3xl p-6 
@@ -157,6 +164,11 @@ export const ModeSelectorOverlay: React.FC<ModeSelectorOverlayProps> = ({ onSele
                                 bestScore={bestScores?.['SURVIVAL']}
                             />
                         </div>
+
+                        {/* Keyboard Hint */}
+                        <motion.p variants={itemVariants} className="mt-8 text-white/80 font-medium text-sm md:text-base">
+                            💡 Tip: {t('practice.keyboardHint', 'Prefer typing? Try Practice Mode for keyboard-friendly play')}
+                        </motion.p>
                     </motion.div>
                 </div>
             </div>
