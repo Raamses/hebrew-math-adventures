@@ -124,7 +124,12 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
-        const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        let savedProfiles = null;
+        try {
+            savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        } catch (error) {
+            console.warn('Failed to access localStorage for profiles:', error);
+        }
         let profiles: UserProfile[] = [];
 
         if (savedProfiles) {
@@ -155,7 +160,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Persist profiles whenever they change
     useEffect(() => {
         if (allProfiles.length > 0) {
-            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            try {
+                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            } catch (error) {
+                console.error('Failed to save profiles to localStorage:', error);
+            }
         }
     }, [allProfiles]);
 
@@ -169,8 +178,25 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             throw new Error('Invalid profile name');
         }
 
+        // Fallback UUID v4 generator for non-secure contexts where crypto.randomUUID is not available
+        const generateId = () => {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+            // Polyfill using crypto.getRandomValues if available, else a fallback UUIDv4 approach
+            return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c =>
+                (
+                    Number(c) ^
+                    (typeof crypto !== 'undefined' && crypto.getRandomValues
+                        ? crypto.getRandomValues(new Uint8Array(1))[0]
+                        : Math.floor(Math.random() * 256)) &
+                    (15 >> (Number(c) / 4))
+                ).toString(16)
+            );
+        };
+
         const newProfile: UserProfile = {
-            id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `profile-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: generateId(),
             name: sanitizedName,
             age,
             avatarId,

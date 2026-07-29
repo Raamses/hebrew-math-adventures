@@ -10,3 +10,8 @@
 **Vulnerability:** Unbounded collections saved to LocalStorage, which has a tight quota (usually 5MB).
 **Learning:** Automatically saving arrays or collections directly to LocalStorage without enforcing constraints or hard limits can lead to quota exhaustion. Once LocalStorage is full, any subsequent writes fail, which often breaks other state logic or causes silent unhandled Promise rejections that degrade the UI.
 **Prevention:** Always enforce a hard limit on the number of items that can be created in a persisted collection (e.g., max 10 profiles). Wrap actions that modify these collections in `try...catch` blocks to gracefully handle limits and provide actionable error messages to the user.
+
+## 2025-02-14 - LocalStorage Access and Predictable IDs
+**Vulnerability:** Unhandled `localStorage` access leading to crashes and predictable profile IDs in non-secure contexts.
+**Learning:** Missing `try...catch` around `localStorage` operations can cause application crashes due to `SecurityError` (e.g., third-party cookies blocked) or `QuotaExceededError`. Additionally, using `Math.random()` for IDs is predictable and unsuitable when `crypto.randomUUID` is missing in non-HTTPS environments.
+**Prevention:** Wrap all `localStorage` interactions in `try...catch` blocks. Use a secure UUID v4 polyfill that falls back to `crypto.getRandomValues` before resorting to math-based randomness to maintain ID unpredictability as best as possible.

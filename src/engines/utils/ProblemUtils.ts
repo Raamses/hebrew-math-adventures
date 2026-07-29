@@ -41,11 +41,15 @@ export class RandomUtils {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
             return crypto.randomUUID();
         }
-        // Fallback for HTTP environments
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = (Math.random() * 16) | 0,
-                v = c == 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
+        // Fallback UUID v4 generator for non-secure contexts where crypto.randomUUID is not available
+        return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
+            (
+                Number(c) ^
+                ((typeof crypto !== 'undefined' && crypto.getRandomValues
+                    ? crypto.getRandomValues(new Uint8Array(1))[0]
+                    : Math.floor(Math.random() * 256)) &
+                    (15 >> (Number(c) / 4)))
+            ).toString(16)
+        );
     }
 }
