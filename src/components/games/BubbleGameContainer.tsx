@@ -143,6 +143,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         onOffScreen={handleOffScreen}
                         isPopped={e.isPopped}
                         variant={e.variant}
+                        speedMultiplier={e.speedMultiplier}
                     />
                 ))}
             </div>

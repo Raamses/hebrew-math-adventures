@@ -39,18 +39,19 @@ interface BubbleProps {
     delay: number;
     isPopped?: boolean;
     variant?: BubbleVariant;
+    speedMultiplier?: number;
 }
 
 // Memoized Bubble for stability and performance
-export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, onOffScreen, x, delay, isPopped, variant = 'medium' }) => {
+export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, onOffScreen, x, delay, isPopped, variant = 'medium', speedMultiplier = 1.0 }) => {
     const bubbleRef = useRef<HTMLButtonElement>(null);
 
     // Stable random duration based on variant
     const randomDuration = useMemo(() => {
-        const base = variant === 'small' ? 8 : variant === 'large' ? 16 : 12;
+        const base = (variant === 'small' ? 8 : variant === 'large' ? 16 : 12) / (speedMultiplier || 1);
         const range = variant === 'small' ? 6 : variant === 'large' ? 8 : 8;
         return base + Math.random() * range;
-    }, [variant]);
+    }, [variant, speedMultiplier]);
 
     // Off-Screen Detection
     // We keep the IntersectionObserver because Framer Motion's onViewportLeave is for *layout* elements, 

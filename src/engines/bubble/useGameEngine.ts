@@ -52,6 +52,10 @@ export const useGameEngine = (
             currentInterval = currentInterval * 0.5;
         }
 
+        const progressRatio = gameStateRef.current.targetsPopped / config.winCondition.value;
+        const speedMultiplier = Math.min(1.4, 1 + (progressRatio * 0.4));
+        currentInterval = currentInterval / speedMultiplier;
+
         if (time - lastSpawnTime.current <= currentInterval) return;
 
         if (activeCount >= config.maxOnScreen) return;
@@ -69,6 +73,7 @@ export const useGameEngine = (
             velocity: config.baseVelocity,
             isPopped: false,
             createdAt: Date.now(),
+            speedMultiplier,
             ...newBubbleProps
         } as BubbleEntity;
 

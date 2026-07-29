@@ -60,6 +60,7 @@ export interface BubbleEntity<T = any> {
     internalValue: T;
     /** Vertical velocity factor */
     velocity: number;
+    speedMultiplier?: number;
     /** Visual size variant */
     variant: 'small' | 'medium' | 'large';
     /** State flag for popped/destroyed bubbles */
