@@ -12,8 +12,6 @@ export class MathBehaviorStrategy implements IGameBehavior {
     private static readonly CONFIG = {
         CHANCE_LARGE: 0.8,
         CHANCE_MEDIUM: 0.5,
-        DISTRACTOR_RANGE: 10,
-        DISTRACTOR_OFFSET: 5,
     } as const;
 
     private static readonly FALLBACK_PROBLEM: ArithmeticProblem = {
@@ -83,12 +81,13 @@ export class MathBehaviorStrategy implements IGameBehavior {
     }
 
     private generateDistractor(): number {
+        const safeTarget = Math.max(1, this.targetValue);
+        const range = Math.max(10, Math.floor(safeTarget * 0.4));
+        const offset = Math.floor(range / 2);
         let value: number;
         do {
-            const range = MathBehaviorStrategy.CONFIG.DISTRACTOR_RANGE;
-            const offsetRef = MathBehaviorStrategy.CONFIG.DISTRACTOR_OFFSET;
-            const offset = Math.floor(Math.random() * range) - offsetRef;
-            value = this.targetValue + offset;
+            value = safeTarget + Math.floor(Math.random() * range) - offset;
+            value = Math.min(value, 999);
         } while (value === this.targetValue || value < 0);
         return value;
     }

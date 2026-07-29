@@ -6,9 +6,9 @@ import { motion } from 'framer-motion';
 type BubbleVariant = 'small' | 'medium' | 'large';
 
 const BUBBLE_SIZES: Record<BubbleVariant, { size: string; hitArea: string; fontSize: string }> = {
-    small: { size: '60px', hitArea: '90px', fontSize: 'text-2xl' },
-    medium: { size: '80px', hitArea: '120px', fontSize: 'text-4xl' },
-    large: { size: '110px', hitArea: '150px', fontSize: 'text-5xl' }
+    small: { size: 'clamp(45px, 12vw, 60px)', hitArea: 'clamp(70px, 18vw, 90px)', fontSize: 'text-xl sm:text-2xl' },
+    medium: { size: 'clamp(60px, 16vw, 80px)', hitArea: 'clamp(90px, 24vw, 120px)', fontSize: 'text-3xl sm:text-4xl' },
+    large: { size: 'clamp(80px, 22vw, 110px)', hitArea: 'clamp(110px, 30vw, 150px)', fontSize: 'text-4xl sm:text-5xl' }
 };
 
 const BUBBLE_THEMES: Record<BubbleVariant, React.CSSProperties> = {
