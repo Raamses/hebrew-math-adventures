@@ -2,7 +2,7 @@ import { useReducer, useState, useMemo, useCallback, useEffect, useRef } from 'r
 import { MathModule } from '../engines/MathModule';
 import { Director } from '../engines/GameDirector';
 import { useProfile } from '../context/ProfileContext';
-import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
+import { INITIAL_CAPABILITY_PROFILE, SKILL_KEY_MAP } from '../types/progress';
 import type { Problem } from '../lib/gameLogic';
 import type { BaseProblemConfig } from '../engines/ProblemFactory';
 
@@ -145,6 +145,12 @@ export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSe
             ...(profile.capabilities || INITIAL_CAPABILITY_PROFILE),
             streak: profile.streak
         };
+
+        // Set currentFocus dynamically based on problem type
+        if (problemConfig?.type) {
+            const skillKey = SKILL_KEY_MAP[problemConfig.type] || problemConfig.type;
+            userCapabilities.currentFocus = skillKey;
+        }
 
         // DIVERSITY LOGIC: Mix it up!
         // If no strict config, randomly pick interesting types available at this level

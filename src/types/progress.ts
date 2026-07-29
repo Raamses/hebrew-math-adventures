@@ -21,6 +21,23 @@ export interface UserCapabilityProfile {
     age?: number;
 }
 
+export const SKILL_KEY_MAP: Record<string, string> = {
+    'addition_simple': 'addition',
+    'addition_carry': 'addition_carry',
+    'addition_missing': 'addition_missing',
+    'sub_simple': 'subtraction',
+    'sub_borrow': 'subtraction_borrow',
+    'multiplication': 'multiplication',
+    'division': 'division',
+    'series_simple': 'series',
+    'series_geometric': 'series_geometric',
+    'comparison_simple': 'comparison',
+    'comparison_complex': 'comparison',
+    'word_simple': 'word_problems',
+    'word': 'word_problems',
+    'algebraic': 'algebraic',
+};
+
 export const INITIAL_CAPABILITY_PROFILE: UserCapabilityProfile = {
     skills: {},
     currentFocus: 'addition_sum_5',
