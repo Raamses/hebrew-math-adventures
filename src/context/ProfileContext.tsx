@@ -136,7 +136,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     mascotId: p.mascotId || (p as any).mascot || 'owl',
                     avatarId: p.avatarId || (p as any).avatar || '🦁',
                     settings: p.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false },
-                    capabilities: p.capabilities || { ...INITIAL_CAPABILITY_PROFILE },
+                    capabilities: p.capabilities || { ...INITIAL_CAPABILITY_PROFILE, age: p.age },
 
                     streak: p.streak || 0,
                     arcadeStats: p.arcadeStats || {}
@@ -184,7 +184,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 sfxVolume: 1,
                 isMuted: false
             },
-            capabilities: { ...INITIAL_CAPABILITY_PROFILE },
+            capabilities: { ...INITIAL_CAPABILITY_PROFILE, age },
             arcadeStats: {}
         };
 

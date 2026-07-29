@@ -8,7 +8,6 @@ import type { UserCapabilityProfile } from '../types/progress';
 // 3. else -> Stability Mode (Keep current Focus)
 
 export class GameDirector implements IGameDirector {
-    private static readonly RESCUE_THRESHOLD = 2;
     private static readonly CHALLENGE_THRESHOLD = 5;
     private static readonly STREAK_THRESHOLD = 5; // Global streak
 
@@ -26,7 +25,8 @@ export class GameDirector implements IGameDirector {
 
         // 1. Rescue Mode (Heuristic: >2 consecutive failures)
         // If the user is struggling, we simplify the problem temporarily.
-        if (profile.consecutiveFailures >= GameDirector.RESCUE_THRESHOLD) {
+        const rescueThreshold = profile.age && profile.age >= 8 ? 3 : 2;
+        if (profile.consecutiveFailures >= rescueThreshold) {
             tuned.isRescue = true;
             tuned.isChallenge = false;
 

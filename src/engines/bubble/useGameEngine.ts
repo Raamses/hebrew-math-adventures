@@ -63,12 +63,28 @@ export const useGameEngine = (
         // Create new bubble
         const newBubbleProps = behavior.generateNext(config);
 
-        // Use Math.random for UI transient entity generation as Web Crypto is undefined in HTTP
-        const randomFallback = Math.random();
+        // Collision avoidance: try up to 5 positions
+        const minDistanceVw = 25;
+        let spawnX = Math.random() * 90 + 5;
+        const effectiveMin = activeCount >= config.maxOnScreen - 1 ? minDistanceVw * 0.6 : minDistanceVw;
+        for (let attempt = 0; attempt < 5; attempt++) {
+            const candidate = Math.random() * 90 + 5;
+            const tooClose = entitiesRef.current.some(e =>
+                !e.isPopped && Math.abs(e.x - candidate) < effectiveMin
+            );
+            if (!tooClose) {
+                spawnX = candidate;
+                break;
+            }
+            if (attempt === 4) {
+                // All attempts failed — use last candidate, will likely be caught by maxOnScreen check next frame
+                spawnX = candidate;
+            }
+        }
 
         const newBubble: BubbleEntity = {
             id: `bubble-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            x: randomFallback * 90 + 5, // 5% to 95% width
+            x: spawnX, // 5% to 95% width
             y: 110, // Start below screen
             velocity: config.baseVelocity,
             isPopped: false,

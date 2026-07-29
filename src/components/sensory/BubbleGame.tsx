@@ -25,7 +25,7 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     const config: GameConfig = useMemo(() => ({
         modeName: "Blast Off",
         spawnIntervalMs: 800, // Faster spawn (was 1500)
-        maxOnScreen: 12,      // More bubbles (was 10)
+        maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 8 : typeof window !== 'undefined' && window.innerWidth < 600 ? 10 : 12,      // More bubbles (was 10)
         distractorRatio: 3, // ~40% Targets (was 4 aka 20%)
         baseVelocity: 0.5,
         winCondition: {

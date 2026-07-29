@@ -18,6 +18,7 @@ export interface UserCapabilityProfile {
     // Legacy mapping (optional, for UI display if needed)
     estimatedLevel: number;
     streak: number;
+    age?: number;
 }
 
 export const INITIAL_CAPABILITY_PROFILE: UserCapabilityProfile = {
