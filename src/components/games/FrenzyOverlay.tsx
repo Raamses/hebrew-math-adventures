@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useSound } from '../../hooks/useSound';
 
 interface FrenzyOverlayProps {
     isActive: boolean;
@@ -11,6 +12,13 @@ const PARTICLES = Array.from({ length: PARTICLE_COUNT }, (_, i) => i);
 
 export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive }) => {
     const { t } = useTranslation();
+    const { play } = useSound();
+
+    useEffect(() => {
+        if (isActive) {
+            play('frenzy');
+        }
+    }, [isActive, play]);
 
     return (
         <AnimatePresence>

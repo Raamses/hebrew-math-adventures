@@ -9,6 +9,7 @@ interface ArithmeticViewProps {
     setAnswer: (val: string) => void;
     isProcessing?: boolean;
     wrongAttempts: number;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const ArithmeticView = React.memo(function ArithmeticView({
@@ -17,6 +18,7 @@ export const ArithmeticView = React.memo(function ArithmeticView({
     setAnswer,
     isProcessing,
     wrongAttempts,
+    onKeyDown,
 }: ArithmeticViewProps) {
     if (problem.type !== "arithmetic") return null;
 
@@ -28,6 +30,7 @@ export const ArithmeticView = React.memo(function ArithmeticView({
                     onChange={setAnswer}
                     disabled={isProcessing}
                     autoFocus
+                    onKeyDown={onKeyDown}
                 />
             );
         }
@@ -102,6 +105,7 @@ export const ArithmeticView = React.memo(function ArithmeticView({
                     onChange={setAnswer}
                     disabled={isProcessing}
                     autoFocus
+                    onKeyDown={onKeyDown}
                 />
             ) : (
                 <span className="tracking-widest">{problem.num2}</span>
@@ -115,6 +119,7 @@ export const ArithmeticView = React.memo(function ArithmeticView({
                     onChange={setAnswer}
                     disabled={isProcessing}
                     autoFocus
+                    onKeyDown={onKeyDown}
                 />
             ) : (
                 <span className="tracking-widest">{problem.answer}</span>

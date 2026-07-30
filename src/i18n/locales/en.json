@@ -300,6 +300,7 @@
     "practice": {
         "chooseMode": "Choose Your Challenge",
         "chooseModeDesc": "Select how you want to play today",
+        "keyboardHint": "Prefer typing? Try Practice Mode for keyboard-friendly play",
         "noRecord": "No Record",
         "zen": {
             "title": "Zen Math",

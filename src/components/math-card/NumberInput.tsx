@@ -11,6 +11,7 @@ interface NumberInputProps {
     inputMode?: "numeric" | "text" | "tel" | "search" | "email" | "url" | "decimal" | "none";
     "aria-label"?: string;
     maxLength?: number;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
@@ -24,7 +25,8 @@ export const NumberInput = React.memo(function NumberInput({
     autoFocus = false,
     inputMode = "numeric",
     "aria-label": ariaLabel = "Enter number",
-    maxLength = 10
+    maxLength = 10,
+    onKeyDown
 }: NumberInputProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -50,6 +52,7 @@ export const NumberInput = React.memo(function NumberInput({
                 const val = e.target.value.replace(/[^0-9]/g, "");
                 onChange(val.slice(0, maxLength));
             }}
+            onKeyDown={onKeyDown}
             disabled={disabled}
             placeholder={placeholder}
             aria-label={ariaLabel}

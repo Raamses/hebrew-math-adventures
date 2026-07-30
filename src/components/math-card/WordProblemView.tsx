@@ -8,6 +8,7 @@ interface WordProblemViewProps {
     answer: string;
     setAnswer: (val: string) => void;
     isProcessing?: boolean;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const WordProblemView = React.memo(function WordProblemView({
@@ -15,6 +16,7 @@ export const WordProblemView = React.memo(function WordProblemView({
     answer,
     setAnswer,
     isProcessing,
+    onKeyDown,
 }: WordProblemViewProps) {
     const { t } = useTranslation();
 
@@ -32,6 +34,7 @@ export const WordProblemView = React.memo(function WordProblemView({
                     onChange={setAnswer}
                     disabled={isProcessing}
                     autoFocus
+                    onKeyDown={onKeyDown}
                 />
             </div>
         </div>

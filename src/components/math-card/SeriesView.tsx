@@ -8,6 +8,7 @@ interface SeriesViewProps {
     answer: string;
     setAnswer: (val: string) => void;
     isProcessing?: boolean;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const SeriesView = React.memo(function SeriesView({
@@ -15,6 +16,7 @@ export const SeriesView = React.memo(function SeriesView({
     answer,
     setAnswer,
     isProcessing,
+    onKeyDown,
 }: SeriesViewProps) {
     if (problem.type !== "series") return null;
 
@@ -35,6 +37,7 @@ export const SeriesView = React.memo(function SeriesView({
                                 onChange={setAnswer}
                                 disabled={isProcessing}
                                 autoFocus
+                                onKeyDown={onKeyDown}
                                 className="w-full h-full text-lg sm:text-4xl rounded-lg sm:rounded-2xl border-2 sm:border-4 focus:ring-2 sm:focus:ring-4 p-0 shadow-sm"
                             />
                         ) : (
