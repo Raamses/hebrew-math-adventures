@@ -1,0 +1,4 @@
+## 2024-03-24 - [Unhandled LocalStorage Exceptions]
+**Vulnerability:** Several `localStorage.setItem` and `localStorage.getItem` operations across contexts (`ThemeContext`, `ProfileContext`, `useSound`) were missing `try...catch` wrappers.
+**Learning:** Browsers can throw synchronous exceptions (e.g., `QuotaExceededError` or `SecurityError` when storage access is denied in incognito/iframe) on `localStorage` access. Unhandled exceptions during React render phases or initializers crash the app, leading to a client-side Denial of Service (DoS) for affected users.
+**Prevention:** Always wrap `localStorage` operations (`getItem`, `setItem`, `removeItem`) and associated `JSON.parse` logic in `try...catch` blocks to fail securely and gracefully degrade functionality rather than crashing the application.

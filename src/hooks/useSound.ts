@@ -30,7 +30,11 @@ export const useSound = () => {
     });
 
     useEffect(() => {
-        localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        try {
+            localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        } catch {
+            // Ignore quota exceeded or security errors
+        }
     }, [isMuted]);
 
     const playSound = useCallback((type: SoundType) => {
