@@ -41,6 +41,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     const statusRef = useRef<GameStatus>('idle');
     const wrongRef = useRef<number[]>([]);
     const movesRef = useRef(0);
+    const matchedCountRef = useRef(0);
     const elapsedTimeRef = useRef(0);
     const totalPairsRef = useRef(Math.floor(config.cardCount / 2));
 
@@ -50,6 +51,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     useEffect(() => { statusRef.current = status; }, [status]);
     useEffect(() => { wrongRef.current = wrongPair; }, [wrongPair]);
     useEffect(() => { movesRef.current = moves; }, [moves]);
+    useEffect(() => { matchedCountRef.current = matchedCount; }, [matchedCount]);
     useEffect(() => { elapsedTimeRef.current = elapsedTime; }, [elapsedTime]);
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -129,6 +131,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
         statusRef.current = 'playing';
         wrongRef.current = [];
         movesRef.current = 0;
+        matchedCountRef.current = 0;
         elapsedTimeRef.current = 0;
         if (flipBackTimer.current) {
             clearTimeout(flipBackTimer.current);
@@ -192,7 +195,8 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
                 flippedRef.current = [];
                 setFlippedIndices([]);
 
-                const newMatchedCount = matchedCount + 1;
+                const newMatchedCount = matchedCountRef.current + 1;
+                matchedCountRef.current = newMatchedCount;
                 if (newMatchedCount === totalPairsRef.current) {
                     statusRef.current = 'complete';
                     setStatus('complete');
@@ -218,7 +222,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
                 }, 1000);
             }
         }
-    }, [matchedCount, saveBestScore]);
+    }, [saveBestScore]);
 
     const stats: MemoryGameStats = {
         time: elapsedTime,
