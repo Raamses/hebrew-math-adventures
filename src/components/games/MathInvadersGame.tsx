@@ -236,7 +236,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
                             exit={{ scale: 1.5, opacity: 0 }}
                             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                         >
-                            <span>{eq.equation}</span>
+                            <span dir="ltr" style={{ direction: 'ltr', unicodeBidi: 'isolate' }}>{eq.equation}</span>
                             {eq.isBoss && eq.hp !== undefined && eq.maxHp !== undefined && (
                                 <div className="absolute -top-3 left-0 right-0 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                                     <div
@@ -268,7 +268,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
                                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                                 whileTap={{ scale: 0.85 }}
                             >
-                                {ans.value}
+                                <span dir="ltr" style={{ direction: 'ltr', unicodeBidi: 'isolate' }}>{ans.value}</span>
                             </motion.button>
                         )
                     ))}
