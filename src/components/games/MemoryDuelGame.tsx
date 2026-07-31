@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, RotateCcw, ArrowLeft, Check, Sparkles } from 'lucide-react';
@@ -27,6 +27,9 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
     const { t } = useTranslation();
     const cardCount = 12; // 6 pairs
 
+    // Memoize config so initGame callback stays stable (prevents infinite re-render)
+    const gameConfig = useMemo(() => ({ level, cardCount, problemTypes: [] }), [level, cardCount]);
+
     const { playSound } = useSound();
     const { profile: contextProfile, recordSession } = useProfile();
     const { playMelodyNote, playWrongMelody } = useMusicalSound(contextProfile?.settings?.soundGarden ?? false);
@@ -44,7 +47,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
         initGame,
         flipCard,
     } = useMemoryGame({
-        config: { level, cardCount, problemTypes: [] },
+        config: gameConfig,
         profile,
     });
 
@@ -79,15 +82,13 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
         initGame();
     }, [initGame]);
 
-    // Sound wrapper for card flip - detect match/mismatch
+    // Sound wrapper for card flip
     const prevMatchedRef = useRef(0);
     const handleFlipCard = useCallback((index: number) => {
         flipCard(index);
-        // Check if a match happened after this flip (matchedCount will increase)
         setTimeout(() => {
             const newMatched = matchedCount;
             if (newMatched > prevMatchedRef.current) {
-                // Match!
                 if (contextProfile?.settings?.soundGarden) {
                     playMelodyNote();
                 } else {
@@ -95,7 +96,6 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                 }
                 if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
             } else if (wrongPair.length > 0) {
-                // Mismatch
                 if (contextProfile?.settings?.soundGarden) {
                     playWrongMelody();
                 } else {
@@ -107,9 +107,17 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
         }, 50);
     }, [flipCard, matchedCount, wrongPair, contextProfile, playMelodyNote, playWrongMelody, playSound]);
 
-    // Determine grid layout — 3×4 on mobile portrait, 4×3 on landscape
-    // We use CSS grid with responsive cols
     const isComplete = status === 'complete';
+
+    // Click guard — no disabled prop, just check in the handler
+    const canClickCard = (index: number) => {
+        if (status !== 'playing') return false;
+        if (wrongPair.length > 0) return false;
+        const card = cards[index];
+        if (!card) return false;
+        if (card.isMatched || card.isFlipped) return false;
+        return true;
+    };
 
     return (
         <div dir="rtl" className="min-h-screen bg-gradient-to-b from-indigo-900 via-purple-900 to-indigo-800 flex flex-col items-center justify-start p-4 pt-8 select-none">
@@ -162,17 +170,25 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                     const isFlipped = card.isFlipped || card.isMatched;
                     const isMatched = card.isMatched;
                     const isWrong = wrongPair.includes(index);
+                    const clickable = canClickCard(index);
 
                     return (
-                        <motion.button
+                        <div
                             key={card.id}
-                            onClick={() => handleFlipCard(index)}
-                            disabled={isMatched || isFlipped || status !== 'playing'}
-                            className="relative w-full aspect-square [perspective:600px]"
-                            style={{ minHeight: '80px' }}
-                            whileTap={{ scale: isMatched || isFlipped ? 1 : 0.95 }}
+                            onClick={() => {
+                                if (clickable) {
+                                    handleFlipCard(index);
+                                }
+                            }}
+                            className={cn(
+                                "relative w-full aspect-square [perspective:600px] rounded-2xl",
+                                clickable ? "cursor-pointer" : "cursor-default"
+                            )}
+                            style={{ minHeight: '80px', touchAction: 'manipulation' }}
+                            role="button"
+                            tabIndex={clickable ? 0 : -1}
+                            aria-label={isFlipped ? card.displayValue : 'Hidden card'}
                         >
-                            {/* Card inner with 3D flip */}
                             <motion.div
                                 className="relative w-full h-full [transform-style:preserve-3d]"
                                 animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -183,7 +199,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                                     className={cn(
                                         "absolute inset-0 [backface-visibility:hidden] rounded-2xl flex items-center justify-center text-3xl sm:text-4xl shadow-lg",
                                         "bg-gradient-to-br from-violet-500 to-purple-600 border-2 border-violet-300/30",
-                                        "hover:border-violet-200/50 transition-colors",
+                                        clickable && "hover:border-violet-200/50",
                                     )}
                                 >
                                     <span className="opacity-80">{MASCOT_EMOJI}</span>
@@ -220,7 +236,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                                     </span>
                                 </div>
                             </motion.div>
-                        </motion.button>
+                        </div>
                     );
                 })}
             </div>

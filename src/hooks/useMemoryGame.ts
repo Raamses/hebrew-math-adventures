@@ -57,35 +57,37 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     const totalPairs = Math.floor(config.cardCount / 2);
 
     // Load best score from localStorage
-    const loadBestScore = useCallback((): MemoryBestScore => {
+    const [bestScore, setBestScore] = useState<MemoryBestScore>({ bestTime: null, bestMoves: null });
+    const loadBestScore = useCallback(() => {
         try {
             const raw = localStorage.getItem(BEST_SCORE_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
-                return {
+                setBestScore({
                     bestTime: parsed.bestTime ?? null,
                     bestMoves: parsed.bestMoves ?? null,
-                };
+                });
             }
         } catch {
             // ignore parse errors
         }
-        return { bestTime: null, bestMoves: null };
     }, []);
 
     // Save best score to localStorage
-    const saveBestScore = useCallback((time: number, moves: number) => {
+    const saveBestScore = useCallback((time: number, movesCount: number) => {
         try {
-            const current = loadBestScore();
+            const raw = localStorage.getItem(BEST_SCORE_KEY);
+            const current = raw ? JSON.parse(raw) : { bestTime: null, bestMoves: null };
             const newBest = {
                 bestTime: current.bestTime === null || time < current.bestTime ? time : current.bestTime,
-                bestMoves: current.bestMoves === null || moves < current.bestMoves ? moves : current.bestMoves,
+                bestMoves: current.bestMoves === null || movesCount < current.bestMoves ? movesCount : current.bestMoves,
             };
             localStorage.setItem(BEST_SCORE_KEY, JSON.stringify(newBest));
+            setBestScore(newBest);
         } catch {
             // ignore storage errors
         }
-    }, [loadBestScore]);
+    }, []);
 
     // Start the timer when game is playing
     useEffect(() => {
@@ -108,6 +110,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     useEffect(() => {
         return () => {
             if (flipBackTimer.current) clearTimeout(flipBackTimer.current);
+            if (timerRef.current) clearInterval(timerRef.current);
         };
     }, []);
 
@@ -121,11 +124,18 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
         setElapsedTime(0);
         setWrongPair([]);
         setStatus('playing');
+        cardsRef.current = newCards;
+        flippedRef.current = [];
+        statusRef.current = 'playing';
+        wrongRef.current = [];
+        movesRef.current = 0;
+        elapsedTimeRef.current = 0;
         if (flipBackTimer.current) {
             clearTimeout(flipBackTimer.current);
             flipBackTimer.current = null;
         }
-    }, [factory, config, profile]);
+        loadBestScore();
+    }, [factory, config, profile, loadBestScore]);
 
     // Flip a card at the given index — uses refs to avoid stale closures
     const flipCard = useCallback((index: number) => {
@@ -148,11 +158,14 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
         if (currentWrong.length > 0) return;
 
         // Flip the card
-        setCards(prev => prev.map((card, i) =>
+        const newCards = currentCards.map((card, i) =>
             i === index ? { ...card, isFlipped: true } : card
-        ));
+        );
+        cardsRef.current = newCards;
+        setCards(newCards);
 
         const newFlipped = [...currentFlipped, index];
+        flippedRef.current = newFlipped;
         setFlippedIndices(newFlipped);
 
         // When two cards are flipped, check for a match
@@ -162,41 +175,50 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
             const card2 = currentCards[idx2];
 
             // Increment moves
-            setMoves(prev => prev + 1);
+            const newMoves = movesRef.current + 1;
+            movesRef.current = newMoves;
+            setMoves(newMoves);
 
             // Check if they're a matching pair (same pairId)
             if (card1.pairId === card2.pairId) {
                 // Match! Mark both as matched
-                setCards(prev => prev.map((card, i) =>
+                const matchedCards = newCards.map((card, i) =>
                     i === idx1 || i === idx2
                         ? { ...card, isMatched: true }
                         : card
-                ));
+                );
+                cardsRef.current = matchedCards;
+                setCards(matchedCards);
+                flippedRef.current = [];
                 setFlippedIndices([]);
 
-                setMatchedCount(prev => {
-                    const newCount = prev + 1;
-                    if (newCount === totalPairsRef.current) {
-                        setStatus('complete');
-                        saveBestScore(elapsedTimeRef.current, movesRef.current + 1);
-                    }
-                    return newCount;
-                });
+                const newMatchedCount = matchedCount + 1;
+                if (newMatchedCount === totalPairsRef.current) {
+                    statusRef.current = 'complete';
+                    setStatus('complete');
+                    saveBestScore(elapsedTimeRef.current, newMoves);
+                }
+                setMatchedCount(newMatchedCount);
             } else {
                 // No match — flip back after 1s
+                wrongRef.current = [idx1, idx2];
                 setWrongPair([idx1, idx2]);
                 flipBackTimer.current = setTimeout(() => {
-                    setCards(prev => prev.map((card, i) =>
+                    const flippedBack = cardsRef.current.map((card, i) =>
                         i === idx1 || i === idx2
                             ? { ...card, isFlipped: false }
                             : card
-                    ));
+                    );
+                    cardsRef.current = flippedBack;
+                    setCards(flippedBack);
+                    flippedRef.current = [];
                     setFlippedIndices([]);
+                    wrongRef.current = [];
                     setWrongPair([]);
                 }, 1000);
             }
         }
-    }, [saveBestScore]);
+    }, [matchedCount, saveBestScore]);
 
     const stats: MemoryGameStats = {
         time: elapsedTime,
@@ -216,7 +238,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
         wrongPair,
         totalPairs,
         stats,
-        bestScore: loadBestScore(),
+        bestScore,
         initGame,
         flipCard,
     };
