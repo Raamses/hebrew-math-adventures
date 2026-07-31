@@ -1,318 +1,600 @@
 {
-    "app": {
-        "title": "Math Adventures",
-        "streak": "Streak",
-        "streakTooltip": "Day Streak",
-        "worldMap": "World Map",
-        "greeting": "Hi {{name}}! Ready to play?",
-        "journey": "My Journey",
-        "arcade": "Arcade Games",
-        "switchLanguage": "Switch Language",
-        "common": {
-            "close": "Close"
-        }
-    },
-    "menu": {
-        "settings": "Settings",
-        "mute": "Mute Sounds",
-        "unmute": "Unmute Sounds",
-        "paused": "Paused",
-        "pause": "Pause Game",
-        "gameMenu": "Game Menu",
-        "resume": "Resume Playing",
-        "restart": "Restart Level",
-        "exitToMap": "Exit to Map",
-        "logout": "Log Out"
-    },
-    "mascot": {
-        "title": "Choose Your Companion",
-        "welcome": "Hi, I'm {{name}}!",
-        "select": "Pick Me!",
-        "names": {
-            "owl": "Owl",
-            "bear": "Bear",
-            "ant": "Ant",
-            "lion": "Lion"
-        }
-    },
-    "zones": {
-        "sensory": {
-            "name": "Bubble Beach",
-            "desc": "Pop the bubbles!"
-        },
-        "addition": {
-            "name": "Addition Island",
-            "desc": "Learn to add numbers!"
-        },
-        "subtraction": {
-            "name": "Subtraction Forest",
-            "desc": "Beware of the minus!"
-        },
-        "multiplication": {
-            "name": "Multiplication Mountain",
-            "desc": "Climb to the summit!"
-        },
-        "fallback": "Adventure Zone",
-        "level": "Level",
-        "stages": "Stages"
-    },
-    "parent": {
-        "title": "Parent Dashboard",
-        "exit": "Exit",
-        "manageProfiles": "Manage Profiles",
-        "table": {
-            "name": "Name",
-            "age": "Age",
-            "level": "Level",
-            "xp": "XP",
-            "totalScore": "Total Score",
-            "actions": "Actions",
-            "noProfiles": "No profiles registered"
-        },
-        "delete": {
-            "confirm": "Are you sure you want to delete {{name}}'s profile? This action cannot be undone.",
-            "tooltip": "Delete Profile"
-        },
-        "danger": {
-            "title": "Danger Zone",
-            "warning": "These actions cannot be undone.",
-            "reset": "Reset All Data",
-            "resetConfirm": "This will delete ALL app data. Continue?"
-        },
-        "gateTitle": "Parent Gate",
-        "gateDesc": "Solve to continue:",
-        "enter": "Enter",
-        "edit": {
-            "title": "Edit Profile",
-            "save": "Save Changes",
-            "tooltip": "Edit",
-            "errorName": "Name is required",
-            "errorNameInvalid": "Name can only contain letters, numbers and spaces",
-            "errorAge": "Age must be between 4 and 12",
-            "errorLevel": "Level must be between 1 and 10",
-            "errorXP": "XP cannot be negative"
-        }
-    },
-    "feedback": {
-        "phrases": [
-            "Awesome!",
-            "Genius!",
-            "Amazing!",
-            "Well done!",
-            "Beautiful!",
-            "Very smart!",
-            "Excellent!",
-            "Great!",
-            "Wow!",
-            "You're a star!",
-            "Correct answer!",
-            "Keep it up!",
-            "Proud of you!",
-            "Number Champ!",
-            "Way to go!",
-            "Just magic!",
-            "Good job!",
-            "Dizzying success!",
-            "Unbeatable!",
-            "Math King/Queen!"
-        ],
-        "correct": "Correct!",
-        "defaultError": "Try again",
-        "gentle": [
-            "Let's try again",
-            "Almost...",
-            "Don't worry, try again",
-            "One more try"
-        ]
-    },
-    "onboarding": {
-        "title": "Welcome!",
-        "selectAvatar": "Choose a Character:",
-        "selectMascot": "Choose a Companion:",
-        "nameLabel": "What is your name?",
-        "namePlaceholder": "Your name...",
-        "ageLabel": "How old are you?",
-        "ageNote": "(We'll adjust the level to your age)",
-        "start": "Let's Start!",
-        "whoIsPlaying": "Who is playing?",
-        "parentsAccess": "Parents",
-        "newPlayer": "New Player",
-        "back": "Back",
-        "errorNameInvalid": "Name can only contain letters, numbers and spaces"
-    },
-    "summary": {
-        "title": "Finished!",
-        "subtitle": "Great effort!",
-        "points": "Points",
-        "accuracy": "Accuracy",
-        "totalScore": "Total Score",
-        "result": "You answered <c>{{correct}}</c> out of <t>{{total}}</t> questions correctly",
-        "playAgain": "Play Again",
-        "exit": "Exit",
-        "practiceComplete": "Practice Complete!",
-        "levelProgress": "Progress to Level {{level}}"
-    },
-    "settings": {
-        "tabs": {
-            "mascot": "Mascot",
-            "theme": "Theme"
-        },
-        "themes": "Themes",
-        "mascot": "My Friend",
-        "mascotPrompt": "Choose your companion:",
-        "mascotNote": "Your friend will join you and cheer you on!",
-        "close": "Close",
-        "unlockLevel": "🔒 Unlocks at level {{level}}"
-    },
-    "game": {
-        "progress": "Progress",
-        "questionCount": "Question {{current}} of {{total}}",
-        "howMuch": "How much is...?",
-        "completePattern": "Complete the pattern:",
-        "compareNumbers": "Which is bigger?",
-        "compareSymbol": "Select {{symbol}}",
-        "readCarefully": "Read carefully:",
-        "check": "Check",
-        "howTo": "Show Hint",
-        "hintClose": "Got it!",
-        "hintHeader": "Let me help!",
-        "hintCalcTogether": "Let's calculate together!",
-        "hints": {
-            "letsSee": "Let's see how it works!",
-            "blueDots": " Blue Dots",
-            "greenDots": " Green Dots",
-            "circles": " Circles",
-            "totalPoints": " Total Points!",
-            "weHave": "We have ",
-            "groups": "{{count}} groups of {{items}} make {{total}}!",
-            "sharing": "{{total}} apples shared by {{baskets}} baskets is {{perBasket}}!",
-            "weHad": "We had ",
-            "weRemoved": "We removed ",
-            "weHaveLeft": "We have {{count}} circles left!",
-            "stepByStepAdd": "Step by Step - Vertical Addition",
-            "stepByStepSub": "Step by Step - Subtraction with Borrowing",
-            "step1": "Step 1: Start",
-            "step1Add": "Let's add digit by digit",
-            "step1Sub": "Let's subtract digit by digit",
-            "step2Add": "Step 2: Adding",
-            "step2Sub": "Step 2: The Problem",
-            "step2AddDesc": "Add units, then tens...",
-            "step2AddNote": "If result > 9, carry over!",
-            "step2SubDesc": "Top digit is smaller than bottom",
-            "step2SubNote": "Need to \"borrow\" from neighbor!",
-            "step3Add": "Step 3: Finish",
-            "step3Sub": "Step 3: Borrowing",
-            "step3AddDesc": "Continue adding until done",
-            "step3SubDesc": "\"Borrow\" 10 from the neighbor",
-            "step3SubNote": "Now we can subtract!",
-            "subtractionExplainer": "We had {{total}}, we took away {{removed}}, so we have {{left}} left!",
-            "additionExplainer": "We have {{op1}}, we add {{op2}}, together they make {{answer}}!",
-            "borrow10": "Borrow 10 from neighbor!",
-            "carry1": "Carry the 1!",
-            "result": "Result!"
-        },
-        "placeValues": {
-            "ones": "Ones",
-            "tens": "Tens",
-            "hundreds": "Hundreds"
-        },
-        "frenzy": "FRENZY!"
-    },
-    "wordProblems": {
-        "apples_add": "Dan has {{n1}} apples. He gets {{n2}} more. How many apples does Dan have now?",
-        "candies_sub": "Sarah has {{n1}} candies. She eats {{n2}}. How many candies are left?"
-    },
-    "lessons": {
-        "multiplication": {
-            "title": "Intro to Multiplication",
-            "intro": "Hi! Welcome to Multiplication Mountain! Let's learn a magic trick called 'Multiplication'.",
-            "setup": "First, look at these 3 baskets. They are empty.",
-            "action": "Can you put 2 apples in EACH basket?",
-            "conclusion": "Awesome! You have 3 baskets with 2 apples each. That's 3 times 2... which equals 6!"
-        },
-        "controls": {
-            "next": "Continue",
-            "start": "Let's Start!",
-            "finish": "Finish"
-        }
-    },
-    "saga": {
-        "unit_1_title": "Beginner Beach",
-        "unit_2_title": "Forest of Numbers",
-        "unit_3_title": "Multiplication Mountain",
-        "unit_4_title": "Division Desert",
-        "unit_5_title": "Space Station",
-        "n1_1_title": "Bubbles",
-        "n1_2_title": "Counting 1-5",
-        "n1_3_title": "Simple Addition",
-        "n1_4_title": "Beach Boss",
-        "n1_5_title": "Big & Small",
-        "n1_6_title": "Sum to 10",
-        "n1_7_title": "Missing Link",
-        "n1_8_title": "Pop the 9s",
-        "n1_9_title": "Beach Master",
-        "n1_10_title": "Boss: Octopus",
-        "n2_1_title": "Pop the 12s",
-        "n2_2_title": "Teen Numbers",
-        "n2_3_title": "Addition 20",
-        "n2_4_title": "Take Away",
-        "n2_5_title": "Story Time",
-        "n2_6_title": "Missing Number",
-        "n2_7_title": "Comparison",
-        "n2_8_title": "Sub Master",
-        "n2_9_title": "Forest Challenge",
-        "n2_10_title": "Boss: Bear",
-        "n3_1_title": "Groups of 2",
-        "n3_2_title": "Double Trouble",
-        "n3_3_title": "Times Two",
-        "n3_4_title": "Skip Counting",
-        "n3_5_title": "Times Five",
-        "n3_6_title": "Big Addition",
-        "n3_7_title": "Pop the 50s",
-        "n3_8_title": "Times Ten",
-        "n3_9_title": "Climb Higher",
-        "n3_10_title": "Boss: Eagle",
-        "n4_1_title": "Sharing is Caring",
-        "n4_2_title": "Divide by 2",
-        "n4_3_title": "Subtraction 20",
-        "n4_4_title": "Missing Part",
-        "n4_5_title": "Divide by 5",
-        "n4_6_title": "Logic Pattern",
-        "n4_7_title": "Word Problems",
-        "n4_8_title": "Sub Master",
-        "n4_9_title": "Oasis Challenge",
-        "n4_10_title": "Boss: Scorpion",
-        "n5_1_title": "Blast Off",
-        "n5_2_title": "Zero Gravity",
-        "n5_3_title": "Binary Star",
-        "n5_4_title": "Velocity",
-        "n5_5_title": "Black Hole",
-        "n5_6_title": "Galaxy Brain",
-        "n5_7_title": "Nebula",
-        "n5_8_title": "Supernova",
-        "n5_9_title": "The Void",
-        "n5_10_title": "Boss: Alien King",
-        "pop_instruction": "Pop all the bubbles with the number {{number}}!",
-        "locked": "Locked",
-        "play": "Play",
-        "back": "Back"
-    },
-    "practice": {
-        "chooseMode": "Choose Your Challenge",
-        "chooseModeDesc": "Select how you want to play today",
-        "keyboardHint": "Prefer typing? Try Practice Mode for keyboard-friendly play",
-        "noRecord": "No Record",
-        "zen": {
-            "title": "Zen Math",
-            "desc": "Take your time. No timers, just learning."
-        },
-        "time": {
-            "title": "Time Attack",
-            "desc": "Race the clock! +2s for correct answers."
-        },
-        "survival": {
-            "title": "Survival",
-            "desc": "3 Lives. Don't make a mistake!"
-        }
+  "app": {
+    "title": "Math Adventures",
+    "streak": "Streak",
+    "streakTooltip": "Day Streak",
+    "worldMap": "World Map",
+    "greeting": "Hi {{name}}! Ready to play?",
+    "journey": "My Journey",
+    "arcade": "Arcade Games",
+    "switchLanguage": "Switch Language",
+    "common": {
+      "close": "Close"
     }
+  },
+  "menu": {
+    "settings": "Settings",
+    "mute": "Mute Sounds",
+    "unmute": "Unmute Sounds",
+    "paused": "Paused",
+    "pause": "Pause Game",
+    "gameMenu": "Game Menu",
+    "resume": "Resume Playing",
+    "restart": "Restart Level",
+    "exitToMap": "Exit to Map",
+    "logout": "Log Out"
+  },
+  "mascot": {
+    "title": "Choose Your Companion",
+    "welcome": "Hi, I'm {{name}}!",
+    "select": "Pick Me!",
+    "names": {
+      "owl": "Owl",
+      "bear": "Bear",
+      "ant": "Ant",
+      "lion": "Lion"
+    },
+    "greeting": {
+      "owl": {
+        "morning": {
+          "welcome": "Good morning! I'm your wise owl. Ready to begin?",
+          "welcome2": "Hi! Sleep well? Let's learn some math!",
+          "welcome3": "Good morning! I'm here to help you succeed!",
+          "streak1": "Great job on your streak! Let's keep training",
+          "streak2": "You're back! Let's keep the streak going",
+          "streak2b": "Training every day? You're a hero! Let's start",
+          "streak3": "Wow, so many days in a row! You're a star!",
+          "streak3b": "Amazing streak! Let's break the record today",
+          "streak7": "A whole week streak! You're the math champion!",
+          "streak7b": "Seven days! I'm so proud of you!"
+        },
+        "afternoon": {
+          "welcome": "Good afternoon! Ready to practice some math?",
+          "streak1": "Back this afternoon? So dedicated! Let's train",
+          "streak3": "Incredible streak! Let's keep succeeding",
+          "streak7": "A week streak! You're simply legendary!"
+        },
+        "evening": {
+          "welcome": "Good evening! Shall we practice before bed?",
+          "streak1": "Good evening! Let's keep the streak alive",
+          "streak3": "Practicing in the evening too? What a star!",
+          "streak7": "A whole week! You're simply amazing!"
+        }
+      },
+      "bear": {
+        "morning": {
+          "welcome": "Good morning! I'm your buddy Bear. Let's play!",
+          "welcome2": "Hi friend! Sleep well? Let's learn together!",
+          "welcome3": "Good morning! I'm here for you!",
+          "streak1": "What a nice streak! Let's keep playing",
+          "streak2": "You're back! I'm so happy to see you",
+          "streak2b": "Training every day! You're strong as a bear!",
+          "streak3": "Wow, so many days! You're a hero!",
+          "streak3b": "Amazing streak! Let's keep training",
+          "streak7": "A whole week! You're a champion like a bear!",
+          "streak7b": "Seven days! I'm so proud of you, friend!"
+        },
+        "afternoon": {
+          "welcome": "Good afternoon friend! Let's practice together",
+          "streak1": "Back this afternoon! So dedicated",
+          "streak3": "Nice streak! Let's keep going together",
+          "streak7": "A week streak! You're a real bear!"
+        },
+        "evening": {
+          "welcome": "Good evening! Let's practice a bit before sleep",
+          "streak1": "Practicing in the evening too? Such a dedicated friend",
+          "streak3": "A streak in the evening? You're simply a star!",
+          "streak7": "A whole week! You're brave as a bear!"
+        }
+      },
+      "ant": {
+        "morning": {
+          "welcome": "Good morning! I'm a tiny ant but strong! Let's start!",
+          "welcome2": "Hi! Every big journey starts with a small step!",
+          "welcome3": "Good morning! Let's gather knowledge like ants!",
+          "streak1": "Another day, another success! Let's continue",
+          "streak2": "Coming back every day! You're hardworking like me",
+          "streak2b": "Nice streak! The ants are proud of you",
+          "streak3": "Well done! Hard work pays off!",
+          "streak3b": "Amazing streak! You're strong as an ant!",
+          "streak7": "A whole week! You work like a true ant!",
+          "streak7b": "Seven days! You're a model of persistence!"
+        },
+        "afternoon": {
+          "welcome": "Good afternoon! Let's keep gathering knowledge!",
+          "streak1": "Back this afternoon! So hardworking",
+          "streak3": "Great streak! Hard work pays off",
+          "streak7": "A whole week! You're the ant hero!"
+        },
+        "evening": {
+          "welcome": "Good evening! Let's gather knowledge even at night",
+          "streak1": "Good evening! Let's keep the streak going",
+          "streak3": "Practicing in the evening too? What diligence!",
+          "streak7": "A whole week! You're the king of ants!"
+        }
+      },
+      "lion": {
+        "morning": {
+          "welcome": "Roar! Good morning! I'm the lion king, together we'll conquer math!",
+          "welcome2": "Hi hero! Let's roar together at correct answers!",
+          "welcome3": "Good morning! A brave lion like you always wins!",
+          "streak1": "A royal streak! Let's keep conquering",
+          "streak2": "Back again hero! I'm proud of you",
+          "streak2b": "Training every day! You're a true lion!",
+          "streak3": "Mighty streak! You're the king of math!",
+          "streak3b": "Wow! Well done on your dedication!",
+          "streak7": "A whole week! You're a lion, your majesty!",
+          "streak7b": "Seven days! You're roaring with success!"
+        },
+        "afternoon": {
+          "welcome": "Good afternoon hero! Let's conquer math",
+          "streak1": "Back this afternoon! What a dedicated lion",
+          "streak3": "Royal streak! Let's keep roaring",
+          "streak7": "A week streak! You're a true king!"
+        },
+        "evening": {
+          "welcome": "Good evening hero! Let's conquer the night",
+          "streak1": "Good evening! A brave lion never gives up",
+          "streak3": "Conquering in the evening too? You're a true king!",
+          "streak7": "A whole week! You're roaring with success!"
+        }
+      }
+    }
+  },
+  "zones": {
+    "sensory": {
+      "name": "Bubble Beach",
+      "desc": "Pop the bubbles!"
+    },
+    "addition": {
+      "name": "Addition Island",
+      "desc": "Learn to add numbers!"
+    },
+    "subtraction": {
+      "name": "Subtraction Forest",
+      "desc": "Beware of the minus!"
+    },
+    "multiplication": {
+      "name": "Multiplication Mountain",
+      "desc": "Climb to the summit!"
+    },
+    "fallback": "Adventure Zone",
+    "level": "Level",
+    "stages": "Stages"
+  },
+  "parent": {
+    "title": "Parent Dashboard",
+    "exit": "Exit",
+    "manageProfiles": "Manage Profiles",
+    "table": {
+      "name": "Name",
+      "age": "Age",
+      "level": "Level",
+      "xp": "XP",
+      "totalScore": "Total Score",
+      "actions": "Actions",
+      "noProfiles": "No profiles registered"
+    },
+    "delete": {
+      "confirm": "Are you sure you want to delete {{name}}'s profile? This action cannot be undone.",
+      "tooltip": "Delete Profile"
+    },
+    "danger": {
+      "title": "Danger Zone",
+      "warning": "These actions cannot be undone.",
+      "reset": "Reset All Data",
+      "resetConfirm": "This will delete ALL app data. Continue?"
+    },
+    "gateTitle": "Parent Gate",
+    "gateDesc": "Solve to continue:",
+    "enter": "Enter",
+    "edit": {
+      "title": "Edit Profile",
+      "save": "Save Changes",
+      "tooltip": "Edit",
+      "errorName": "Name is required",
+      "errorNameInvalid": "Name can only contain letters, numbers and spaces",
+      "errorAge": "Age must be between 4 and 12",
+      "errorLevel": "Level must be between 1 and 10",
+      "errorXP": "XP cannot be negative"
+    }
+  },
+  "analytics": {
+    "selectProfile": "Select Profile",
+    "progress": "Progress",
+    "skillAnalysis": "Skill Analysis",
+    "weekly": "Weekly Activity",
+    "streak": "Practice Streak",
+    "stars": "Stars",
+    "badges": "Badges",
+    "coins": "Coins",
+    "timePlayed": "Time Played",
+    "minutes": "min",
+    "overallAccuracy": "Overall Accuracy",
+    "answers": "answers",
+    "skillBreakdown": "Skill Breakdown",
+    "strongest": "Strongest Skill",
+    "weakest": "Needs Practice",
+    "practiceThis": "Practice!",
+    "noData": "No data yet — play to see analytics!",
+    "avgSpeed": "Avg Response",
+    "accuracy": "Accuracy"
+  },
+  "skills": {
+    "addition": "Addition",
+    "subtraction": "Subtraction",
+    "multiplication": "Multiplication",
+    "division": "Division",
+    "series": "Series",
+    "comparison": "Comparison",
+    "word_problems": "Word Problems",
+    "algebraic": "Algebra"
+  },
+  "feedback": {
+    "phrases": [
+      "Awesome!",
+      "Genius!",
+      "Amazing!",
+      "Well done!",
+      "Beautiful!",
+      "Very smart!",
+      "Excellent!",
+      "Great!",
+      "Wow!",
+      "You're a star!",
+      "Correct answer!",
+      "Keep it up!",
+      "Proud of you!",
+      "Number Champ!",
+      "Way to go!",
+      "Just magic!",
+      "Good job!",
+      "Dizzying success!",
+      "Unbeatable!",
+      "Math King/Queen!"
+    ],
+    "correct": "Correct!",
+    "defaultError": "Try again",
+    "gentle": [
+      "Let's try again",
+      "Almost...",
+      "Don't worry, try again",
+      "One more try"
+    ]
+  },
+  "onboarding": {
+    "title": "Welcome!",
+    "selectAvatar": "Choose a Character:",
+    "selectMascot": "Choose a Companion:",
+    "nameLabel": "What is your name?",
+    "namePlaceholder": "Your name...",
+    "ageLabel": "How old are you?",
+    "ageNote": "(We'll adjust the level to your age)",
+    "start": "Let's Start!",
+    "whoIsPlaying": "Who is playing?",
+    "parentsAccess": "Parents",
+    "newPlayer": "New Player",
+    "back": "Back",
+    "errorNameInvalid": "Name can only contain letters, numbers and spaces"
+  },
+  "summary": {
+    "title": "Finished!",
+    "subtitle": "Great effort!",
+    "points": "Points",
+    "accuracy": "Accuracy",
+    "totalScore": "Total Score",
+    "result": "You answered <c>{{correct}}</c> out of <t>{{total}}</t> questions correctly",
+    "playAgain": "Play Again",
+    "exit": "Exit",
+    "practiceComplete": "Practice Complete!",
+    "levelProgress": "Progress to Level {{level}}"
+  },
+  "settings": {
+    "tabs": {
+      "mascot": "Mascot",
+      "theme": "Theme"
+    },
+    "themes": "Themes",
+    "mascot": "My Friend",
+    "mascotPrompt": "Choose your companion:",
+    "mascotNote": "Your friend will join you and cheer you on!",
+    "close": "Close",
+    "unlockLevel": "🔒 Unlocks at level {{level}}",
+    "audio": "Audio Settings",
+    "soundGarden": "Sound Garden",
+    "soundGardenDesc": "Musical notes instead of beeps",
+    "musicVolume": "Music Volume",
+    "sfxVolume": "SFX Volume",
+    "mute": "Mute All Sounds"
+  },
+  "game": {
+    "progress": "Progress",
+    "questionCount": "Question {{current}} of {{total}}",
+    "howMuch": "How much is...?",
+    "completePattern": "Complete the pattern:",
+    "compareNumbers": "Which is bigger?",
+    "compareSymbol": "Select {{symbol}}",
+    "readCarefully": "Read carefully:",
+    "check": "Check",
+    "howTo": "Show Hint",
+    "hintClose": "Got it!",
+    "hintHeader": "Let me help!",
+    "hintCalcTogether": "Let's calculate together!",
+    "hints": {
+      "letsSee": "Let's see how it works!",
+      "blueDots": " Blue Dots",
+      "greenDots": " Green Dots",
+      "circles": " Circles",
+      "totalPoints": " Total Points!",
+      "weHave": "We have ",
+      "groups": "{{count}} groups of {{items}} make {{total}}!",
+      "sharing": "{{total}} apples shared by {{baskets}} baskets is {{perBasket}}!",
+      "weHad": "We had ",
+      "weRemoved": "We removed ",
+      "weHaveLeft": "We have {{count}} circles left!",
+      "stepByStepAdd": "Step by Step - Vertical Addition",
+      "stepByStepSub": "Step by Step - Subtraction with Borrowing",
+      "step1": "Step 1: Start",
+      "step1Add": "Let's add digit by digit",
+      "step1Sub": "Let's subtract digit by digit",
+      "step2Add": "Step 2: Adding",
+      "step2Sub": "Step 2: The Problem",
+      "step2AddDesc": "Add units, then tens...",
+      "step2AddNote": "If result > 9, carry over!",
+      "step2SubDesc": "Top digit is smaller than bottom",
+      "step2SubNote": "Need to \"borrow\" from neighbor!",
+      "step3Add": "Step 3: Finish",
+      "step3Sub": "Step 3: Borrowing",
+      "step3AddDesc": "Continue adding until done",
+      "step3SubDesc": "\"Borrow\" 10 from the neighbor",
+      "step3SubNote": "Now we can subtract!",
+      "subtractionExplainer": "We had {{total}}, we took away {{removed}}, so we have {{left}} left!",
+      "additionExplainer": "We have {{op1}}, we add {{op2}}, together they make {{answer}}!",
+      "borrow10": "Borrow 10 from neighbor!",
+      "carry1": "Carry the 1!",
+      "result": "Result!"
+    },
+    "placeValues": {
+      "ones": "Ones",
+      "tens": "Tens",
+      "hundreds": "Hundreds"
+    },
+    "frenzy": "FRENZY!"
+  },
+  "wordProblems": {
+    "apples_add": "Dan has {{n1}} apples. He gets {{n2}} more. How many apples does Dan have now?",
+    "candies_sub": "Sarah has {{n1}} candies. She eats {{n2}}. How many candies are left?",
+    "shopping_add": "Mom bought {{n1}} apples and {{n2}} bananas. How many fruits did she buy in total?",
+    "shopping_change": "You paid {{n1}} dollars at the store. The item cost {{n2}} dollars. How much change will you get?",
+    "shopping_compare": "At one store the price is {{n1}} dollars. At another store the price is {{n2}} dollars. How much more does the expensive one cost?",
+    "shopping_bulk": "You buy {{n1}} packs of pencils. Each pack has {{n2}} pencils. How many pencils do you have in total?",
+    "shopping_total": "You bought vegetables for {{n1}} dollars and fruits for {{n2}} dollars. How much did you pay in total?",
+    "sharing_cookies": "There are {{n1}} cookies and {{n2}} children. How many cookies will each child get?",
+    "sharing_pizza": "There are {{n1}} pizza slices and {{n2}} friends. How many slices will each friend get?",
+    "sharing_toys": "There are {{n1}} toys and {{n2}} children. How many toys will each child get?",
+    "sharing_candy": "The teacher has {{n1}} candies to share among {{n2}} students. How many candies will each student get?",
+    "measure_height": "Your plant grew {{n1}} cm last month and {{n2}} cm this month. How many cm did it grow in total?",
+    "measure_length": "You had a string {{n1}} cm long. You cut off {{n2}} cm. How many cm are left?",
+    "measure_weight": "One box weighs {{n1}} grams and another weighs {{n2}} grams. How many grams do they weigh together?",
+    "time_school": "You arrived at school at {{n1}} o'clock. You stayed for {{n2}} hours. What time did you leave?",
+    "time_travel": "You rode the bus for {{n1}} minutes and walked for {{n2}} minutes. How many minutes did the trip take?",
+    "time_elapsed": "You started homework at {{n1}} o'clock and finished at {{n2}} o'clock. How many hours did it take?",
+    "multistep_lost_found": "You had {{n1}} pages in your notebook. You lost {{n2}} pages. How many pages are left?",
+    "multistep_bought_sold": "You bought a game for {{n1}} dollars and sold it for {{n2}} dollars. How much profit or loss did you make?",
+    "multistep_earned_spent": "You earned {{n1}} dollars from allowance and {{n2}} dollars from gifts. How much money do you have in total?",
+    "sports_goals": "One team scored {{n1}} goals and the other scored {{n2}} goals. How many goals were scored in total?",
+    "sports_rounds": "Each round has {{n1}} games. There are {{n2}} rounds. How many games are there in total?"
+  },
+  "lessons": {
+    "multiplication": {
+      "title": "Intro to Multiplication",
+      "intro": "Hi! Welcome to Multiplication Mountain! Let's learn a magic trick called 'Multiplication'.",
+      "setup": "First, look at these 3 baskets. They are empty.",
+      "action": "Can you put 2 apples in EACH basket?",
+      "conclusion": "Awesome! You have 3 baskets with 2 apples each. That's 3 times 2... which equals 6!"
+    },
+    "controls": {
+      "next": "Continue",
+      "start": "Let's Start!",
+      "finish": "Finish"
+    }
+  },
+  "cinematic": {
+    "unitComplete": "Unit Complete!",
+    "nextUnit": "Next:",
+    "skip": "Skip"
+  },
+  "saga": {
+    "unit_1_title": "Beginner Beach",
+    "unit_2_title": "Forest of Numbers",
+    "unit_3_title": "Multiplication Mountain",
+    "unit_4_title": "Division Desert",
+    "unit_5_title": "Space Station",
+    "n1_1_title": "Bubbles",
+    "n1_2_title": "Counting 1-5",
+    "n1_3_title": "Simple Addition",
+    "n1_4_title": "Beach Boss",
+    "n1_5_title": "Big & Small",
+    "n1_6_title": "Sum to 10",
+    "n1_7_title": "Missing Link",
+    "n1_8_title": "Pop the 9s",
+    "n1_9_title": "Beach Master",
+    "n1_10_title": "Boss: Octopus",
+    "n2_1_title": "Pop the 12s",
+    "n2_2_title": "Teen Numbers",
+    "n2_3_title": "Addition 20",
+    "n2_4_title": "Take Away",
+    "n2_5_title": "Story Time",
+    "n2_6_title": "Missing Number",
+    "n2_7_title": "Comparison",
+    "n2_8_title": "Sub Master",
+    "n2_9_title": "Forest Challenge",
+    "n2_10_title": "Boss: Bear",
+    "n3_1_title": "Groups of 2",
+    "n3_2_title": "Double Trouble",
+    "n3_3_title": "Times Two",
+    "n3_4_title": "Skip Counting",
+    "n3_5_title": "Times Five",
+    "n3_6_title": "Big Addition",
+    "n3_7_title": "Pop the 50s",
+    "n3_8_title": "Times Ten",
+    "n3_9_title": "Climb Higher",
+    "n3_10_title": "Boss: Eagle",
+    "n4_1_title": "Sharing is Caring",
+    "n4_2_title": "Divide by 2",
+    "n4_3_title": "Subtraction 20",
+    "n4_4_title": "Missing Part",
+    "n4_5_title": "Divide by 5",
+    "n4_6_title": "Logic Pattern",
+    "n4_7_title": "Word Problems",
+    "n4_8_title": "Sub Master",
+    "n4_9_title": "Oasis Challenge",
+    "n4_10_title": "Boss: Scorpion",
+    "n5_1_title": "Blast Off",
+    "n5_2_title": "Zero Gravity",
+    "n5_3_title": "Binary Star",
+    "n5_4_title": "Velocity",
+    "n5_5_title": "Black Hole",
+    "n5_6_title": "Galaxy Brain",
+    "n5_7_title": "Nebula",
+    "n5_8_title": "Supernova",
+    "n5_9_title": "The Void",
+    "n5_10_title": "Boss: Alien King",
+    "pop_instruction": "Pop all the bubbles with the number {{number}}!",
+    "locked": "Locked",
+    "play": "Play",
+    "back": "Back"
+  },
+  "practice": {
+    "chooseMode": "Choose Your Challenge",
+    "chooseModeDesc": "Select how you want to play today",
+    "keyboardHint": "Prefer typing? Try Practice Mode for keyboard-friendly play",
+    "noRecord": "No Record",
+    "zen": {
+      "title": "Zen Math",
+      "desc": "Take your time. No timers, just learning."
+    },
+    "time": {
+      "title": "Time Attack",
+      "desc": "Race the clock! +2s for correct answers."
+    },
+    "survival": {
+      "title": "Survival",
+      "desc": "3 Lives. Don't make a mistake!"
+    }
+  },
+  "memory": {
+    "title": "Memory Duel",
+    "selectMode": "Match equations with their answers!",
+    "moves": "Moves",
+    "matches": "All pairs matched!",
+    "time": "Time",
+    "complete": "You did it!",
+    "playAgain": "Play Again",
+    "best": "Best"
+  },
+  "daily": {
+    "title": "Daily Challenge",
+    "description": "Play today's challenge and earn coins!",
+    "start": "Start Challenge!",
+    "completed": "Completed! Come back tomorrow",
+    "streak": "Streak",
+    "comeBack": "Come back tomorrow for a new challenge!",
+    "target": "correct answers",
+    "coins": "coins"
+  },
+  "badges": {
+    "unlocked": "New Badge Unlocked!",
+    "awesome": "Awesome!",
+    "collection": "Badge Collection",
+    "collectionDesc": "Unlocked {{count}} of {{total}} badges",
+    "locked": "Locked",
+    "first_steps": {
+      "name": "First Steps",
+      "desc": "10 correct answers total"
+    },
+    "sharp_shooter": {
+      "name": "Sharp Shooter",
+      "desc": "50 correct answers total"
+    },
+    "century": {
+      "name": "Century",
+      "desc": "100 correct answers total"
+    },
+    "on_fire": {
+      "name": "On Fire",
+      "desc": "10x combo streak"
+    },
+    "lightning": {
+      "name": "Lightning",
+      "desc": "Answer in under 2 seconds"
+    },
+    "boss_slayer": {
+      "name": "Boss Slayer",
+      "desc": "Defeat 3 bosses"
+    },
+    "perfectionist": {
+      "name": "Perfectionist",
+      "desc": "3 perfect sessions with 0 mistakes"
+    },
+    "dedicated": {
+      "name": "Dedicated",
+      "desc": "Play 3 days in a row"
+    },
+    "weekly_warrior": {
+      "name": "Weekly Warrior",
+      "desc": "Play 7 days total"
+    },
+    "bubble_master": {
+      "name": "Bubble Master",
+      "desc": "Pop 500 bubbles total"
+    },
+    "streak_star": {
+      "name": "Streak Star",
+      "desc": "7-day daily streak"
+    },
+    "superstar": {
+      "name": "Superstar",
+      "desc": "500 correct answers total"
+    }
+  },
+  "shop": {
+    "title": "Treasure Shop",
+    "coins": "Coins",
+    "buy": "Buy",
+    "equip": "Equip",
+    "equipped": "Equipped",
+    "owned": "Owned",
+    "notEnough": "Not enough coins",
+    "categoryMascot": "Mascots",
+    "categorySkin": "Bubble Skins",
+    "categoryEffect": "Particle Effects",
+    "mascot_fox": "Fox",
+    "mascot_penguin": "Penguin",
+    "mascot_unicorn": "Unicorn",
+    "mascot_dragon": "Dragon",
+    "skin_star": "Star",
+    "skin_apple": "Apple",
+    "skin_rainbow": "Rainbow",
+    "skin_crystal": "Crystal",
+    "fx_confetti": "Confetti",
+    "fx_fireworks": "Fireworks",
+    "fx_sparkle": "Sparkle"
+  },
+  "invaders": {
+    "title": "Math Invaders",
+    "selectMode": "Defend your ship from math aliens!",
+    "start": "Start",
+    "score": "Score",
+    "lives": "Lives",
+    "combo": "Combo",
+    "level": "Level",
+    "gameOver": "Nice try!",
+    "gameOverDesc": "The invaders got past your defenses.",
+    "victory": "You did it!",
+    "victoryDesc": "You defended your ship!",
+    "playAgain": "Play Again",
+    "bossWave": "BOSS WAVE!",
+    "frenzy": "FRENZY!"
+  }
 }

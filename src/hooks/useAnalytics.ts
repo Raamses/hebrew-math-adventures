@@ -54,7 +54,7 @@ export interface AnalyticsParams {
     is_correct?: boolean;
     response_time_ms?: number;
     attempt_count?: number;
-    mode?: 'practice' | 'sensory' | 'lesson' | 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL';
+    mode?: 'practice' | 'sensory' | 'lesson' | 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL' | 'MEMORY' | 'INVADERS';
 
     [key: string]: string | number | boolean | undefined;
 }

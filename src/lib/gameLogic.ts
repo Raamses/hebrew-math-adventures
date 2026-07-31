@@ -35,7 +35,7 @@ export interface WordProblem extends BaseProblem {
     type: 'word';
     questionKey: string; // Translation key
     params: Record<string, string | number>;
-    subType?: 'addition' | 'subtraction';
+    subType?: 'addition' | 'subtraction' | 'multiplication' | 'division';
 }
 
 export interface SensoryProblem extends BaseProblem {

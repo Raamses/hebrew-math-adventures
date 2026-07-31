@@ -8,6 +8,11 @@ export class MathBehaviorStrategy implements IGameBehavior {
     private targetValue: number = 0;
     private readonly mathModule: MathModule;
 
+    // Anti-repeat: track recent problem signatures to avoid duplicates
+    private recentSignatures: string[] = [];
+    private static readonly MAX_RECENT_SIGNATURES = 10;
+    private static readonly MAX_REGEN_ATTEMPTS = 5;
+
     // Config Constants
     private static readonly CONFIG = {
         CHANCE_LARGE: 0.8,
@@ -24,31 +29,65 @@ export class MathBehaviorStrategy implements IGameBehavior {
         answer: 2
     };
 
-    private level: number = 1;
-
     constructor() {
         this.mathModule = new MathModule();
     }
 
     initializeLevel(level: number, config: GameConfig): void {
-        this.level = level;
-
         // If problem was already set (e.g. by setProblem), don't regenerate
         if (this.currentProblem) return;
 
+        this.generateAndSetProblem(level, config);
+    }
+
+    regenerateProblem(level: number, config: GameConfig): void {
+        // Force regeneration regardless of currentProblem state
+        this.generateAndSetProblem(level, config);
+    }
+
+    private generateAndSetProblem(level: number, _config: GameConfig): void {
         // Fallback profile if none provided
-        const profile = { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: this.level };
+        const profile = { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: level };
 
-        const problem = this.mathModule.generateProblem(profile, {
-            difficulty: this.level,
-            type: config.isMathSensory ? 'addition_simple' : undefined
-        });
+        let problem: Problem;
+        let attempts = 0;
+        let signature = '';
 
-        // Ensure we only accept arithmetic problems for this strategy
+        // Try up to MAX_REGEN_ATTEMPTS to get a non-repeating problem
+        do {
+            problem = this.mathModule.generateProblem(profile, {
+                difficulty: level,
+                excludeSignatures: this.recentSignatures,
+            });
+            signature = this.problemSignature(problem);
+            attempts++;
+        } while (this.recentSignatures.includes(signature) && attempts < MathBehaviorStrategy.MAX_REGEN_ATTEMPTS);
+
+        // Ensure we only accept arithmetic/sensory problems for this strategy
         if (this.isSupportedProblem(problem)) {
             this.setProblem(problem);
         } else {
             this.setProblem(MathBehaviorStrategy.FALLBACK_PROBLEM);
+        }
+
+        // Track signature for anti-repeat
+        this.pushSignature(signature);
+    }
+
+    private problemSignature(p: Problem): string {
+        if (p.type === 'arithmetic') {
+            return `${p.type}:${p.num1}:${p.operator}:${p.num2}:${p.answer}`;
+        }
+        if (p.type === 'sensory') {
+            return `${p.type}:${p.target}`;
+        }
+        return `${p.type}:${p.id}`;
+    }
+
+    private pushSignature(sig: string): void {
+        this.recentSignatures.push(sig);
+        if (this.recentSignatures.length > MathBehaviorStrategy.MAX_RECENT_SIGNATURES) {
+            this.recentSignatures.shift();
         }
     }
 

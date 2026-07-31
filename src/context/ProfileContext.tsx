@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { type UserProfile } from '../types/user';
+import type { SessionRecord } from '../types/analytics';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { isValidProfileName } from '../lib/validation';
@@ -16,6 +17,13 @@ interface ProfileContextType {
     updateMascot: (mascotId: 'owl' | 'bear' | 'ant' | 'lion') => void;
     updateProfile: (id: string, updates: Partial<UserProfile>) => void;
     updateArcadeBestScore: (mode: string, score: number) => void;
+    addCoins: (amount: number) => void;
+    spendCoins: (amount: number) => boolean;
+    unlockBadge: (badgeId: string) => void;
+    buyItem: (itemId: string, price: number) => boolean;
+    equipItem: (category: string, itemId: string) => void;
+    toggleSoundGarden: () => void;
+    recordSession: (record: SessionRecord) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -81,7 +89,12 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
             typeof s.sfxVolume === 'number' &&
             typeof s.isMuted === 'boolean'
         ) {
-            sanitized.settings = { musicVolume: s.musicVolume, sfxVolume: s.sfxVolume, isMuted: s.isMuted };
+            sanitized.settings = {
+                musicVolume: s.musicVolume,
+                sfxVolume: s.sfxVolume,
+                isMuted: s.isMuted,
+                soundGarden: typeof s.soundGarden === 'boolean' ? s.soundGarden : false,
+            };
         } else {
             console.warn('Attempted to update profile with invalid settings, skipping update');
         }
@@ -119,6 +132,14 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
         }
     }
 
+    if (updates.sessionHistory !== undefined) {
+        if (Array.isArray(updates.sessionHistory)) {
+            sanitized.sessionHistory = updates.sessionHistory;
+        } else {
+            console.warn('Attempted to update profile with invalid sessionHistory, skipping update');
+        }
+    }
+
     return sanitized;
 };
 
@@ -135,11 +156,17 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     ...p,
                     mascotId: p.mascotId || (p as any).mascot || 'owl',
                     avatarId: p.avatarId || (p as any).avatar || '🦁',
-                    settings: p.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false },
+                    settings: p.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false, soundGarden: false },
                     capabilities: p.capabilities || { ...INITIAL_CAPABILITY_PROFILE, age: p.age },
-
                     streak: p.streak || 0,
-                    arcadeStats: p.arcadeStats || {}
+                    arcadeStats: p.arcadeStats || {},
+                    coins: p.coins ?? 0,
+                    unlockedBadges: p.unlockedBadges || [],
+                    ownedItems: p.ownedItems || [],
+                    equippedItems: p.equippedItems || {},
+                    dailyStamps: p.dailyStamps || [],
+                    lastDailyDate: p.lastDailyDate ?? null,
+                    sessionHistory: p.sessionHistory || [],
                 }));
             } catch (error) {
                 console.error('Failed to parse profiles from local storage:', error);
@@ -182,7 +209,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             settings: {
                 musicVolume: 1,
                 sfxVolume: 1,
-                isMuted: false
+                isMuted: false,
+                soundGarden: false
             },
             capabilities: { ...INITIAL_CAPABILITY_PROFILE, age },
             arcadeStats: {}
@@ -292,6 +320,71 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [profile, updateProfile]);
 
+    const addCoins = useCallback((amount: number) => {
+        if (!profile || amount <= 0) return;
+        updateProfile(profile.id, { coins: (profile.coins || 0) + amount });
+    }, [profile, updateProfile]);
+
+    const spendCoins = useCallback((amount: number): boolean => {
+        if (!profile) return false;
+        const current = profile.coins || 0;
+        if (current < amount) return false;
+        updateProfile(profile.id, { coins: current - amount });
+        return true;
+    }, [profile, updateProfile]);
+
+    const unlockBadge = useCallback((badgeId: string) => {
+        if (!profile) return;
+        const existing = profile.unlockedBadges || [];
+        if (existing.includes(badgeId)) return;
+        updateProfile(profile.id, {
+            unlockedBadges: [...existing, badgeId],
+        });
+    }, [profile, updateProfile]);
+
+    const buyItem = useCallback((itemId: string, price: number): boolean => {
+        if (!profile) return false;
+        const currentCoins = profile.coins || 0;
+        if (currentCoins < price) return false;
+        const owned = profile.ownedItems || [];
+        if (owned.includes(itemId)) return false;
+        updateProfile(profile.id, {
+            coins: currentCoins - price,
+            ownedItems: [...owned, itemId],
+        });
+        return true;
+    }, [profile, updateProfile]);
+
+    const equipItem = useCallback((category: string, itemId: string) => {
+        if (!profile) return;
+        const equipped = profile.equippedItems || {};
+        updateProfile(profile.id, {
+            equippedItems: { ...equipped, [category]: itemId },
+        });
+    }, [profile, updateProfile]);
+
+    const toggleSoundGarden = useCallback(() => {
+        if (!profile) return;
+        const currentSettings = profile.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false, soundGarden: false };
+        updateProfile(profile.id, {
+            settings: {
+                ...currentSettings,
+                soundGarden: !currentSettings.soundGarden,
+            },
+        });
+    }, [profile, updateProfile]);
+
+    const recordSession = useCallback((record: SessionRecord) => {
+        if (!profile) return;
+        const history = profile.sessionHistory || [];
+        const newHistory = [...history, record];
+        // Cap at 100 entries (FIFO)
+        if (newHistory.length > 100) {
+            newHistory.splice(0, newHistory.length - 100);
+        }
+        updateProfile(profile.id, { sessionHistory: newHistory });
+    }, [profile, updateProfile]);
+
     const value = useMemo(() => ({
         profile,
         allProfiles,
@@ -303,8 +396,15 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         incrementStreak,
         updateMascot,
         updateProfile,
-        updateArcadeBestScore
-    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore]);
+        updateArcadeBestScore,
+        addCoins,
+        spendCoins,
+        unlockBadge,
+        buyItem,
+        equipItem,
+        toggleSoundGarden,
+        recordSession
+    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore, addCoins, spendCoins, unlockBadge, buyItem, equipItem, toggleSoundGarden, recordSession]);
 
     return (
         <ProfileContext.Provider value={value}>

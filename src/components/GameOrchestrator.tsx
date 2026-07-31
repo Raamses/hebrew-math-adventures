@@ -9,22 +9,36 @@ import { useProgress } from '../context/ProgressContext';
 import type { LearningNode } from '../types/learningPath';
 import { MathModule } from '../engines/MathModule';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
+import { useProfile } from '../context/ProfileContext';
+import { MemoryDuelGame } from './games/MemoryDuelGame';
+import { MathInvadersGame } from './games/MathInvadersGame';
 
 interface GameOrchestratorProps {
     targetLevel: number;
     onExit: () => void;
     node?: LearningNode | null;
+    arcadeMode?: string;
 }
 
-type GameMode = 'LESSON' | 'PRACTICE' | 'SENSORY';
+type GameMode = 'LESSON' | 'PRACTICE' | 'SENSORY' | 'MEMORY' | 'INVADERS';
 
 import { useTranslation } from 'react-i18next';
 
 import { useAnalytics } from '../hooks/useAnalytics';
 
-export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node }) => {
+export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node, arcadeMode: _arcadeMode }) => {
     const { t } = useTranslation();
     const { logEvent } = useAnalytics();
+    const { profile } = useProfile();
+
+    // Compute stars based on session accuracy
+    const computeStars = (correct: number, attempts: number): number => {
+        if (attempts === 0) return 1;
+        const mistakes = attempts - correct;
+        if (mistakes <= 1) return 3;
+        if (mistakes <= 3) return 2;
+        return 1;
+    };
 
     // ... (existing state) ...
     const [internalMode, setInternalMode] = useState<GameMode | null>(null);
@@ -54,7 +68,7 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
     const handleLessonComplete = () => {
         setIsLessonOpen(false);
         if (node) {
-            completeNode(node.id, 3);
+            completeNode(node.id, 3); // Lessons always give 3 stars on completion
             onExit();
         } else {
             setInternalMode('PRACTICE'); // Legacy fallback
@@ -76,9 +90,11 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
 
             // Mock profile for generation (or use real one from context if available, but orchestrator uses hooks differently)
             // We can just use the targetLevel passed in props
-            const dummyProfile = { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: targetLevel };
+            // Use real profile capabilities if available, fall back to initial
+            const realCapabilities = profile?.capabilities || INITIAL_CAPABILITY_PROFILE;
+            const adaptedProfile = { ...realCapabilities, estimatedLevel: targetLevel };
 
-            const mathProblem = mathModule.generateProblem(dummyProfile, {
+            const mathProblem = mathModule.generateProblem(adaptedProfile, {
                 difficulty: targetLevel,
                 type: 'addition_simple', // Force simple addition for Blast Off initially
                 ...config // Allow node config to override (e.g. max: 20)
@@ -107,16 +123,16 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
                 problem={problem}
                 title={node ? t(`saga.${node.id}_title`) : undefined}
                 instruction={equation || (node ? t('saga.pop_instruction', { number: config.target || 5 }) : undefined)}
-                onComplete={(success) => {
-                    console.log('Bubble Game Complete:', success);
+                onComplete={(success, correct, attempts) => {
                     if (node) {
                         if (success) {
-                            completeNode(node.id, 3);
+                            const stars = computeStars(correct || 1, attempts || 1);
+                            completeNode(node.id, stars);
                         }
                         logEvent('node_complete', {
                             node_id: node.id,
                             success,
-                            stars_earned: success ? 3 : 0,
+                            stars_earned: success ? computeStars(correct || 1, attempts || 1) : 0,
                             node_type: 'SENSORY'
                         });
                     }
@@ -138,20 +154,76 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         );
     }
 
+    if (effectiveMode === 'MEMORY') {
+        return (
+            <MemoryDuelGame
+                level={targetLevel}
+                onExit={onExit}
+                onComplete={(stats) => {
+                    console.log('Memory Duel Complete:', stats);
+                    if (node) {
+                        // Star rating: 3 stars if moves ≤ 8, 2 stars if ≤ 12, 1 star otherwise
+                        const stars = stats.moves <= 8 ? 3 : stats.moves <= 12 ? 2 : 1;
+                        completeNode(node.id, stars);
+                        logEvent('node_complete', {
+                            node_id: node.id,
+                            success: true,
+                            stars_earned: stars,
+                            node_type: 'MEMORY',
+                            time: stats.time,
+                            moves: stats.moves,
+                        });
+                    }
+                }}
+            />
+        );
+    }
+
+    if (effectiveMode === 'INVADERS') {
+        return (
+            <MathInvadersGame
+                level={targetLevel}
+                onExit={onExit}
+                onComplete={(stats) => {
+                    if (node) {
+                        // Star rating: 3 stars if lives >= 2, 2 stars if lives = 1, 1 star if lives = 0 but won
+                        const stars = stats.victory
+                            ? (stats.lives >= 2 ? 3 : stats.lives === 1 ? 2 : 1)
+                            : 0;
+                        if (stats.victory) {
+                            completeNode(node.id, stars);
+                        }
+                        logEvent('node_complete', {
+                            node_id: node.id,
+                            success: stats.victory,
+                            stars_earned: stars,
+                            node_type: 'INVADERS',
+                            score: stats.score,
+                            lives: stats.lives,
+                        });
+                    }
+                }}
+            />
+        );
+    }
+
     return (
         <PracticeMode
             targetLevel={targetLevel}
             onExit={onExit}
             problemConfig={node?.config}
-            onComplete={(success) => {
+            onMemoryMode={() => setInternalMode('MEMORY')}
+            onInvadersMode={() => setInternalMode('INVADERS')}
+            onComplete={(success, correct, attempts) => {
                 if (node) {
                     if (success) {
-                        completeNode(node.id, 3);
+                        const stars = computeStars(correct || 1, attempts || 1);
+                        completeNode(node.id, stars);
                     }
                     logEvent('node_complete', {
                         node_id: node.id,
                         success,
-                        stars_earned: success ? 3 : 0,
+                        stars_earned: success ? computeStars(correct || 1, attempts || 1) : 0,
                         node_type: 'PRACTICE'
                     });
                 }

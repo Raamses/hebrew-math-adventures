@@ -7,6 +7,7 @@ import type { Problem } from '../lib/gameLogic';
 describe('ArithmeticView', () => {
     const mockProblem: Problem = {
         type: 'arithmetic',
+        id: 'test-1',
         num1: 12,
         operator: '+',
         num2: 4,

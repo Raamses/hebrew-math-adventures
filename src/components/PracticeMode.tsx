@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProfile } from '../context/ProfileContext';
 import { useSound } from '../hooks/useSound';
+import { useMusicalSound } from '../hooks/useMusicalSound';
 import { usePracticeSession } from '../hooks/usePracticeSession';
 import { useAnswerFlow } from '../hooks/useAnswerFlow';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -30,17 +31,22 @@ interface PracticeModeProps {
     targetLevel: number;
     onExit: () => void;
     problemConfig?: BaseProblemConfig;
-    onComplete?: (success: boolean) => void;
+    onComplete?: (success: boolean, correct: number, attempts: number) => void;
+    onMemoryMode?: () => void;
+    onInvadersMode?: () => void;
 }
 
-export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete }) => {
+export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete, onMemoryMode, onInvadersMode }) => {
     const { t, i18n } = useTranslation();
-    const { profile, incrementStreak, resetStreak, updateArcadeBestScore } = useProfile();
+    const { profile, incrementStreak, resetStreak, updateArcadeBestScore, recordSession } = useProfile();
     const { playSound } = useSound();
+    const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
     const { logEvent } = useAnalytics();
 
     // Track start time for current problem
     const problemStartTime = useRef(Date.now());
+    // Track start time for entire session (for analytics)
+    const sessionStartTime = useRef(Date.now());
 
     // Reset timer when problem changes
     useEffect(() => {
@@ -97,8 +103,17 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             // Arcade modes continue until Game Over
             if (currentSession.mode === 'STANDARD' && currentSession.count >= SESSION_LENGTH) {
                 playSound('levelUp');
+                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                recordSession({
+                    date: new Date().toISOString().slice(0, 10),
+                    durationSec: Math.round((Date.now() - sessionStartTime.current) / 1000),
+                    correct: currentSession.correct,
+                    attempts: currentSession.attempts,
+                    skillFocus: problemConfig?.type || 'mixed',
+                    gameMode: 'practice',
+                });
                 setShowSummary(true);
-                if (onComplete) onComplete(true);
+                if (onComplete) onComplete(true, currentSession.correct, currentSession.attempts);
             } else {
                 initSession(currentSession.mode); // Generate next
             }
@@ -130,8 +145,17 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             }
 
             playSound('levelUp'); // Or 'gameOver' sound if we had one
+            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            recordSession({
+                date: new Date().toISOString().slice(0, 10),
+                durationSec: Math.round((Date.now() - sessionStartTime.current) / 1000),
+                correct: session.correct,
+                attempts: session.attempts,
+                skillFocus: problemConfig?.type || 'mixed',
+                gameMode: 'practice',
+            });
             setShowSummary(true);
-            if (onComplete) onComplete(false); // Game Over isn't necessarily a "Win"
+            if (onComplete) onComplete(false, session.correct, session.attempts); // Game Over isn't necessarily a "Win"
         }
     }, [session, showSummary, onComplete, playSound, isProcessing, updateArcadeBestScore]);
 
@@ -150,8 +174,19 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     }, [targetLevel, profile, problem, t, initSession, problemConfig]);
 
     const handleModeSelect = (mode: GameMode) => {
+        if (mode === 'MEMORY' && onMemoryMode) {
+            setIsModeSelectorOpen(false);
+            onMemoryMode();
+            return;
+        }
+        if (mode === 'INVADERS' && onInvadersMode) {
+            setIsModeSelectorOpen(false);
+            onInvadersMode();
+            return;
+        }
         setIsModeSelectorOpen(false);
         hasInitializedRef.current = true;
+        sessionStartTime.current = Date.now();
         initSession(mode);
     };
 
@@ -172,7 +207,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         submitResult(isCorrect); // Update session state
 
         if (isCorrect) {
-            playSound('correct');
+            if (profile?.settings?.soundGarden) {
+                playMelodyNote();
+            } else {
+                playSound('correct');
+            }
+            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
             // Toast mainly for Standard/Zen. Arcade has the HUD.
             if (session.mode === 'STANDARD') {
                 setScoreToast({ message: t('feedback.correct') });
@@ -191,7 +231,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             if (incrementStreak) incrementStreak();
         } else {
-            playSound('wrong');
+            if (profile?.settings?.soundGarden) {
+                playWrongMelody();
+            } else {
+                playSound('wrong');
+            }
+            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
             const evalResult = evaluateAnswer(problem, 'WRONG');
             setFeedback(t(evalResult.message || 'feedback.defaultError'));
 
@@ -208,6 +253,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
     const handleRestart = () => {
         setIsMenuOpen(false);
+        sessionStartTime.current = Date.now();
         // If it was Free Play, show selector again. If Saga, just restart Standard.
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
@@ -218,6 +264,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
     const handlePlayAgain = () => {
         setShowSummary(false);
+        sessionStartTime.current = Date.now();
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
         } else {

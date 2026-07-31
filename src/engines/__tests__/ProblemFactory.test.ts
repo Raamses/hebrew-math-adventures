@@ -127,10 +127,21 @@ describe('ProblemFactory', () => {
             expect(typeof problem.params.n1).toBe('number');
             expect(typeof problem.params.n2).toBe('number');
 
+            const n1 = Number(problem.params.n1);
+            const n2 = Number(problem.params.n2);
+            const ans = Number(problem.answer);
+            // The expanded word problem templates support +, -, *, /
             if (problem.subType === 'addition') {
-                expect(Number(problem.answer)).toBe(Number(problem.params.n1) + Number(problem.params.n2));
+                expect(ans).toBe(n1 + n2);
+            } else if (problem.subType === 'subtraction') {
+                expect(ans).toBe(n1 - n2);
+            } else if (problem.subType === 'multiplication') {
+                expect(ans).toBe(n1 * n2);
+            } else if (problem.subType === 'division') {
+                expect(ans).toBe(n1 / n2);
             } else {
-                expect(Number(problem.answer)).toBe(Number(problem.params.n1) - Number(problem.params.n2));
+                // Fallback: answer should be a finite number
+                expect(Number.isFinite(ans)).toBe(true);
             }
         });
     });

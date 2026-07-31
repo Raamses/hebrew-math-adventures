@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BubbleGameContainer } from '../games/BubbleGameContainer';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
-import type { GameConfig } from '../../engines/bubble/types';
+import type { GameConfig, ArcadeMode } from '../../engines/bubble/types';
 import type { SensoryProblem } from '../../lib/gameLogic';
+import { getArcadeModeConfig } from '../../lib/arcadeModes';
 import { useSound } from '../../hooks/useSound';
 import { GameMenuModal } from '../GameMenuModal';
 import { SettingsModal } from '../SettingsModal';
@@ -11,14 +12,15 @@ import type { UserCapabilityProfile } from '../../types/progress';
 
 interface BubbleGameProps {
     problem: SensoryProblem;
-    onComplete: (success: boolean) => void;
+    onComplete: (success: boolean, correct: number, attempts: number) => void;
     onExit: () => void;
     title?: string;
     instruction?: string;
     profile?: UserCapabilityProfile;
+    arcadeMode?: ArcadeMode;
 }
 
-export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onExit, title, profile }) => {
+export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onExit, title, profile, arcadeMode }) => {
     const { isMuted, toggleMute } = useSound();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -26,7 +28,7 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
 
     // 1. Configure the Game Rule
     const baseConfig: GameConfig = {
-        modeName: "Blast Off",
+        modeName: arcadeMode ? `${arcadeMode.charAt(0).toUpperCase() + arcadeMode.slice(1)} Mode` : "Blast Off",
         spawnIntervalMs: 800, // Faster spawn (was 1500)
         maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 8 : typeof window !== 'undefined' && window.innerWidth < 600 ? 10 : 12,      // More bubbles (was 10)
         distractorRatio: 3, // ~40% Targets (was 4 aka 20%)
@@ -45,13 +47,19 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
         vfxEnabled: true
     };
 
+    // Apply arcade mode overrides if specified
     const config = useMemo(() => {
-        if (profile) {
-            return Director.tuneConfig(baseConfig, profile);
+        let cfg = baseConfig;
+        if (arcadeMode) {
+            const modeOverrides = getArcadeModeConfig(arcadeMode);
+            cfg = { ...cfg, ...modeOverrides };
         }
-        return baseConfig;
+        if (profile) {
+            return Director.tuneConfig(cfg, profile);
+        }
+        return cfg;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [problem, profile]);
+    }, [problem, profile, arcadeMode]);
 
     // 2. Define Behavior — stable instance via useState, update problem in effect
     const [behavior] = useState(() => new MathBehaviorStrategy());

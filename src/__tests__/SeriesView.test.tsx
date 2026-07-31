@@ -8,6 +8,8 @@ describe('SeriesView', () => {
     it("renders sequence with null slot as '?'", () => {
         const problem: Problem = {
             type: 'series',
+            id: 'test-1',
+            rule: 'arithmetic',
             sequence: [2, null, 6, 8],
             missingIndex: 0, // slot 0 is input, slot 1 is null and not missing
             answer: 0
@@ -28,6 +30,8 @@ describe('SeriesView', () => {
     it('renders numbers correctly for non-missing slots', () => {
         const problem: Problem = {
             type: 'series',
+            id: 'test-2',
+            rule: 'arithmetic',
             sequence: [10, 20, 30, null],
             missingIndex: 3,
             answer: 40
@@ -51,6 +55,8 @@ describe('SeriesView', () => {
         const setAnswerMock = vi.fn();
         const problem: Problem = {
             type: 'series',
+            id: 'test-3',
+            rule: 'arithmetic',
             sequence: [5, 10, null, 20],
             missingIndex: 2,
             answer: 15

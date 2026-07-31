@@ -12,7 +12,7 @@ interface UseAnswerFlowProps {
 export const useAnswerFlow = ({
     onCorrectComplete,
     onWrongComplete,
-    correctDelay = 2000,
+    correctDelay = 1000,
     wrongDelay = 500,
 }: UseAnswerFlowProps = {}) => {
     const [status, setStatus] = useState<AnswerStatus>('idle');

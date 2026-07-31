@@ -40,8 +40,19 @@ export const SKILL_KEY_MAP: Record<string, string> = {
 
 export const INITIAL_CAPABILITY_PROFILE: UserCapabilityProfile = {
     skills: {},
-    currentFocus: 'addition_sum_5',
+    currentFocus: 'addition',
     consecutiveFailures: 0,
     estimatedLevel: 1,
     streak: 0
 };
+
+// --- Memory Duel Best Score Tracking ---
+export interface MemoryBestScore {
+    bestTime: number | null;
+    bestMoves: number | null;
+}
+
+export const MEMORY_BEST_SCORE_KEY = 'hebrew-math-memory-best';
+
+// --- Math Invaders Best Score Tracking ---
+export const INVADERS_BEST_SCORE_KEY = 'hebrew-math-invaders-best';

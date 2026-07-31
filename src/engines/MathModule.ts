@@ -28,7 +28,44 @@ export class MathModule implements IGameModule {
 
         // 4. Select Factory & Generate
         const factory = this.getFactoryForType(finalType);
-        return factory.generate(level, finalType, effectiveConfig);
+
+        // 5. Anti-repeat: regenerate if signature matches excludeSignatures
+        const excludeSignatures: string[] = params?.excludeSignatures || [];
+        let problem: Problem;
+        let attempts = 0;
+        const maxAttempts = 5;
+
+        do {
+            problem = factory.generate(level, finalType, effectiveConfig);
+            attempts++;
+        } while (excludeSignatures.length > 0 && attempts < maxAttempts && this.signatureMatches(problem, excludeSignatures));
+
+        return problem;
+    }
+
+    private signatureMatches(problem: Problem, signatures: string[]): boolean {
+        const sig = this.problemSignature(problem);
+        return signatures.includes(sig);
+    }
+
+    private problemSignature(p: Problem): string {
+        if (p.type === 'arithmetic') {
+            return `${p.type}:${p.num1}:${p.operator}:${p.num2}:${p.answer}`;
+        }
+        if (p.type === 'compare') {
+            return `${p.type}:${p.num1}:${p.num2}`;
+        }
+        if (p.type === 'series') {
+            return `${p.type}:${p.sequence.join(',')}:${p.answer}`;
+        }
+        if (p.type === 'word') {
+            return `${p.type}:${p.questionKey}:${p.params?.n1}:${p.params?.n2}:${p.answer}`;
+        }
+        if (p.type === 'sensory') {
+            return `${p.type}:${p.target}`;
+        }
+        // Fallback for any future problem types
+        return `${(p as Problem).type}:${(p as Problem).id}`;
     }
 
     private getFactoryForType(type: string): IProblemFactory {

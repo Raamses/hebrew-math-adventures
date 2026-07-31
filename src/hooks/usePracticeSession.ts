@@ -6,7 +6,7 @@ import { INITIAL_CAPABILITY_PROFILE, SKILL_KEY_MAP } from '../types/progress';
 import type { Problem } from '../lib/gameLogic';
 import type { BaseProblemConfig } from '../engines/ProblemFactory';
 
-export type GameMode = 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL';
+export type GameMode = 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL' | 'MEMORY' | 'INVADERS';
 
 interface SessionState {
     count: number;
