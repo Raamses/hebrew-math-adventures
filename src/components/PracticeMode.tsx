@@ -102,10 +102,14 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     // IMPORTANT: Zen levels are only 10 questions, but daily target can be up to 19.
     const effectiveDailyMode = dailyChallengeMode || todayChallenge.mode;
     const effectiveDailyTarget = dailyChallengeTarget || todayChallenge.target;
-    const sessionCorrectAddedRef = useRef(false);
+    // Track how many correct answers from this session have already been added to the daily total.
+    // This lets us check after EVERY correct answer while only accumulating the delta.
+    const sessionAddedCorrectRef = useRef(0);
     const checkDailyChallenge = (sessionCorrect: number) => {
         if (dailyChallengeClaimedRef.current) return;
-        if (sessionCorrectAddedRef.current) return; // already added this session
+        // Only accumulate the new correct answers since last check
+        const newCorrect = sessionCorrect - sessionAddedCorrectRef.current;
+        if (newCorrect <= 0) return;
         // Check if current session mode matches today's challenge mode
         const currentSession = sessionRef.current;
         const sessionMode = currentSession.mode.toLowerCase();
@@ -116,16 +120,18 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             (sessionMode === 'standard' && (challengeMode === 'zen' || challengeMode === 'classic')) ||
             (sessionMode === 'time_attack' && challengeMode === 'blitz');
         if (!modeMatches) return;
-        // Accumulate this session's correct answers into the daily total
-        addDailyChallengeCorrect(sessionCorrect);
-        sessionCorrectAddedRef.current = true;
-        // Check if accumulated total meets the target
-        const accumulated = dailyChallengeCorrectRef.current + sessionCorrect;
+        // Accumulate only the delta into the daily total
+        addDailyChallengeCorrect(newCorrect);
+        sessionAddedCorrectRef.current = sessionCorrect;
+        // Check if accumulated total meets the target.
+        // NOTE: addDailyChallengeCorrect updates React state, but the ref updates via useEffect (async).
+        // So compute the expected accumulated value manually from the current ref + delta.
+        const accumulated = dailyChallengeCorrectRef.current + newCorrect;
         if (accumulated < effectiveDailyTarget) return;
         const result = completeDailyChallenge();
         if (result) {
             dailyChallengeClaimedRef.current = true;
-            console.log(`Daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
+            console.log(`[DC DEBUG] Daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
         }
     };
 
@@ -145,6 +151,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             // Check completion for Standard Mode (Fixed Length)
             // Arcade modes continue until Game Over
+            console.log('[DC DEBUG] onCorrectComplete', { mode: currentSession.mode, count: currentSession.count, correct: currentSession.correct, SESSION_LENGTH });
             if (currentSession.mode === 'STANDARD' && currentSession.count >= SESSION_LENGTH) {
                 playSound('levelUp');
                 if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
@@ -161,6 +168,10 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 setShowSummary(true);
                 if (onComplete) onComplete(true, currentSession.correct, currentSession.attempts);
             } else {
+                // Check daily challenge after EVERY correct answer (not just session end)
+                // This is essential for Zen mode where sessions are only 10 questions
+                // but the daily target can be up to 19 — progress accumulates across sessions
+                checkDailyChallenge(currentSession.correct);
                 nextProblem(); // Generate next problem WITHOUT resetting state
             }
         },
@@ -235,7 +246,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         setIsModeSelectorOpen(false);
         hasInitializedRef.current = true;
         sessionStartTime.current = Date.now();
-        sessionCorrectAddedRef.current = false; // reset for new session
+        sessionAddedCorrectRef.current = 0; // reset for new session
         initSession(mode);
     };
 
@@ -303,7 +314,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     const handleRestart = () => {
         setIsMenuOpen(false);
         sessionStartTime.current = Date.now();
-        sessionCorrectAddedRef.current = false; // reset daily challenge tracking for new session
+        sessionAddedCorrectRef.current = 0; // reset daily challenge tracking for new session
         // If it was Free Play, show selector again. If Saga, just restart Standard.
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
@@ -315,7 +326,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     const handlePlayAgain = () => {
         setShowSummary(false);
         sessionStartTime.current = Date.now();
-        sessionCorrectAddedRef.current = false; // reset daily challenge tracking for new session
+        sessionAddedCorrectRef.current = 0; // reset daily challenge tracking for new session
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
         } else {

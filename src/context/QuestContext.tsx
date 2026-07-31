@@ -124,11 +124,26 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return dailyProgress.dailyStamps.filter((d) => d >= sevenDaysAgo).length;
   }, [dailyProgress.dailyStamps]);
 
+  // Ref to track accumulated correct answers WITHOUT relying on React state (avoids stale closures)
+  const dailyCorrectRef = React.useRef(0);
+  const dailyDateRef = React.useRef('');
+
+  // Sync ref from loaded state when dailyProgress changes
+  useEffect(() => {
+    dailyCorrectRef.current = dailyProgress.dailyChallengeCorrect;
+    dailyDateRef.current = dailyProgress.dailyChallengeDate;
+  }, [dailyProgress]);
+
   // Accumulate correct answers for today's challenge (persists across sessions)
+  // Uses ref to avoid stale closure — multiple calls within the same render cycle will accumulate correctly
   const addDailyChallengeCorrect = useCallback((count: number) => {
     if (!profile) return;
     if (dailyProgress.dailyStamps.includes(todayStr)) return; // already completed
-    const newCorrect = (dailyProgress.dailyChallengeDate === todayStr ? dailyProgress.dailyChallengeCorrect : 0) + count;
+    // Use ref for the current accumulated value to avoid stale closure
+    const currentCorrect = dailyDateRef.current === todayStr ? dailyCorrectRef.current : 0;
+    const newCorrect = currentCorrect + count;
+    dailyCorrectRef.current = newCorrect;
+    dailyDateRef.current = todayStr;
     const newProgress: DailyProgress = {
       ...dailyProgress,
       dailyChallengeCorrect: newCorrect,

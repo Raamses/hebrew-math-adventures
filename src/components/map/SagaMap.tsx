@@ -130,7 +130,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
             </header>
 
             {/* Quest Panel banner */}
-            <QuestPanel onStartChallenge={() => onArcadeMode(todayChallenge.mode as ArcadeMode, todayChallenge.problemType, todayChallenge.target)} />
+            <QuestPanel onStartChallenge={() => onArcadeMode(todayChallenge.mode as ArcadeMode, todayChallenge.mode, todayChallenge.target)} />
 
             {/* Arcade Mode Selector Modal */}
             <AnimatePresence>
