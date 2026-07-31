@@ -140,6 +140,54 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
         }
     }
 
+    if (updates.coins !== undefined) {
+        if (typeof updates.coins === 'number' && Number.isFinite(updates.coins) && updates.coins >= 0) {
+            sanitized.coins = updates.coins;
+        } else {
+            console.warn('Attempted to update profile with invalid coins, skipping update');
+        }
+    }
+
+    if (updates.unlockedBadges !== undefined) {
+        if (Array.isArray(updates.unlockedBadges) && updates.unlockedBadges.every(v => typeof v === 'string')) {
+            sanitized.unlockedBadges = updates.unlockedBadges;
+        } else {
+            console.warn('Attempted to update profile with invalid unlockedBadges, skipping update');
+        }
+    }
+
+    if (updates.ownedItems !== undefined) {
+        if (Array.isArray(updates.ownedItems) && updates.ownedItems.every(v => typeof v === 'string')) {
+            sanitized.ownedItems = updates.ownedItems;
+        } else {
+            console.warn('Attempted to update profile with invalid ownedItems, skipping update');
+        }
+    }
+
+    if (updates.equippedItems !== undefined) {
+        if (isPlainObject(updates.equippedItems)) {
+            sanitized.equippedItems = updates.equippedItems;
+        } else {
+            console.warn('Attempted to update profile with invalid equippedItems, skipping update');
+        }
+    }
+
+    if (updates.dailyStamps !== undefined) {
+        if (Array.isArray(updates.dailyStamps) && updates.dailyStamps.every(v => typeof v === 'string')) {
+            sanitized.dailyStamps = updates.dailyStamps;
+        } else {
+            console.warn('Attempted to update profile with invalid dailyStamps, skipping update');
+        }
+    }
+
+    if (updates.lastDailyDate !== undefined) {
+        if (updates.lastDailyDate === null || typeof updates.lastDailyDate === 'string') {
+            sanitized.lastDailyDate = updates.lastDailyDate;
+        } else {
+            console.warn('Attempted to update profile with invalid lastDailyDate, skipping update');
+        }
+    }
+
     return sanitized;
 };
 

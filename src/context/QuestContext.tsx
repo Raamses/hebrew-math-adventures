@@ -83,7 +83,7 @@ function computeStreak(stamps: string[]): number {
 }
 
 export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, unlockBadge } = useProfile();
   const todayChallenge = getDailyChallenge();
   const todayStr = todayChallenge.date;
 
@@ -181,8 +181,16 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       lastDailyDate: todayStr,
     });
 
+    // Unlock streak-based badges
+    if (newStreak >= 3) {
+      unlockBadge('dedicated');
+    }
+    if (newStreak >= 7) {
+      unlockBadge('streak_star');
+    }
+
     return { reward: baseReward, bonus, total, newStreak };
-  }, [profile, dailyProgress, todayChallenge, todayStr, updateProfile]);
+  }, [profile, dailyProgress, todayChallenge, todayStr, updateProfile, unlockBadge]);
 
   const value: QuestContextType = {
     todayChallenge,
