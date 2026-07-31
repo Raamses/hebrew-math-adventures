@@ -173,11 +173,12 @@ export const useGameEngine = (
             const powerUpType = POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)];
 
             // Collision avoidance (same as normal bubbles)
-            let spawnX = Math.random() * 90 + 5;
-            const minDistanceVw = 25;
+            // Safe range: 8-92vw to keep bubbles fully visible
+            let spawnX = Math.random() * 84 + 8;
+            const minDistanceVw = 22;
             const effectiveMin = activeCount >= currentConfig.maxOnScreen - 1 ? minDistanceVw * 0.6 : minDistanceVw;
             for (let attempt = 0; attempt < 5; attempt++) {
-                const candidate = Math.random() * 90 + 5;
+                const candidate = Math.random() * 84 + 8;
                 const tooClose = entitiesRef.current.some(e =>
                     !e.isPopped && Math.abs(e.x - candidate) < effectiveMin
                 );
@@ -226,11 +227,12 @@ export const useGameEngine = (
         // We'll handle this by checking after generation.
 
         // Collision avoidance: try up to 5 positions
-        const minDistanceVw = 25;
-        let spawnX = Math.random() * 90 + 5;
+        // Safe range: 8-92vw to keep bubbles fully visible
+        const minDistanceVw = 22;
+        let spawnX = Math.random() * 84 + 8;
         const effectiveMin = activeCount >= currentConfig.maxOnScreen - 1 ? minDistanceVw * 0.6 : minDistanceVw;
         for (let attempt = 0; attempt < 5; attempt++) {
-            const candidate = Math.random() * 90 + 5;
+            const candidate = Math.random() * 84 + 8;
             const tooClose = entitiesRef.current.some(e =>
                 !e.isPopped && Math.abs(e.x - candidate) < effectiveMin
             );

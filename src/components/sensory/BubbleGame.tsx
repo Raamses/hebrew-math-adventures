@@ -29,9 +29,9 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     // 1. Configure the Game Rule
     const baseConfig: GameConfig = {
         modeName: arcadeMode ? `${arcadeMode.charAt(0).toUpperCase() + arcadeMode.slice(1)} Mode` : "Blast Off",
-        spawnIntervalMs: 800, // Faster spawn (was 1500)
-        maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 8 : typeof window !== 'undefined' && window.innerWidth < 600 ? 10 : 12,      // More bubbles (was 10)
-        distractorRatio: 3, // ~40% Targets (was 4 aka 20%)
+        spawnIntervalMs: 1200, // Balanced spawn rate
+        maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 5 : typeof window !== 'undefined' && window.innerWidth < 600 ? 6 : 8,
+        distractorRatio: 2, // ~33% Targets
         baseVelocity: 0.5,
         winCondition: {
             type: 'target_count',

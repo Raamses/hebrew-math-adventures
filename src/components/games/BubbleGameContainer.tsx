@@ -426,66 +426,69 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 </div>
             )}
 
-            {/* Header Area */}
-            <div className="w-full max-w-md flex flex-col items-center gap-2 z-20 p-4 pb-0">
-                <div className="w-full flex items-center justify-between relative h-12">
-                    {/* Stats: Combo + Session Level */}
-                    <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-blue-100 z-10">
-                        <Zap size={16} className="text-orange-500 fill-orange-500" />
-                        <span className="font-bold text-slate-700 text-sm">{gameState.combo}</span>
-                    </div>
-                    <div className="flex items-center gap-1 bg-purple-100/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-purple-200 z-10">
-                        <Star size={14} className="text-purple-500 fill-purple-500" />
-                        <span className="font-bold text-purple-700 text-sm">Lv {sessionLevel}</span>
-                    </div>
-
-                    <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
-                        <h1 className={`text-2xl font-bold ${theme.accent} whitespace-nowrap drop-shadow-sm`}>
-                            {title || 'Blast Off'}
-                        </h1>
-                        {instruction && (
-                            <div className="bg-white/80 backdrop-blur-md px-6 py-2 rounded-2xl shadow-sm border border-blue-100 mt-1">
-                                <span className={`text-xl sm:text-2xl font-bold ${theme.accent} tracking-wider font-mono`}>
-                                    {instruction}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-2 z-20">
-                        {/* Blitz mode: show timer */}
+            {/* Header Area — Clean 3-row layout */}
+            <div className="w-full max-w-md flex flex-col items-center gap-1.5 z-20 px-3 pt-3 pb-1">
+                {/* Row 1: Stats badges (left) + Settings (right) */}
+                <div className="w-full flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                        {/* Combo badge */}
+                        <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-blue-100">
+                            <Zap size={14} className="text-orange-500 fill-orange-500" />
+                            <span className="font-bold text-slate-700 text-xs">{gameState.combo}</span>
+                        </div>
+                        {/* Level badge */}
+                        <div className="flex items-center gap-0.5 bg-purple-100/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-purple-200">
+                            <Star size={12} className="text-purple-500 fill-purple-500" />
+                            <span className="font-bold text-purple-700 text-xs">Lv {sessionLevel}</span>
+                        </div>
+                        {/* Blitz timer */}
                         {isTimeLimit && (
-                            <div className={`flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border ${
+                            <div className={`flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border ${
                                 (gameState.timeLeft ?? 0) < 10 ? 'border-red-300 animate-pulse' : 'border-blue-100'
                             }`}>
-                                <Clock size={16} className={(gameState.timeLeft ?? 0) < 10 ? 'text-red-500 fill-red-500' : 'text-blue-500'} />
-                                <span className={`font-bold text-sm ${(gameState.timeLeft ?? 0) < 10 ? 'text-red-500' : 'text-slate-700'}`}>
+                                <Clock size={14} className={(gameState.timeLeft ?? 0) < 10 ? 'text-red-500 fill-red-500' : 'text-blue-500'} />
+                                <span className={`font-bold text-xs ${(gameState.timeLeft ?? 0) < 10 ? 'text-red-500' : 'text-slate-700'}`}>
                                     {gameState.timeLeft ?? 0}s
                                 </span>
                             </div>
                         )}
-                        {/* Classic/Survival: show strikes as hearts */}
+                        {/* Survival hearts */}
                         {hasStrikes && (
-                            <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-blue-100 z-10">
+                            <div className="flex items-center gap-0.5 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-blue-100">
                                 {Array.from({ length: maxStrikes }).map((_, i) => (
                                     <Heart
                                         key={i}
-                                        size={14}
+                                        size={12}
                                         className={i < (maxStrikes - gameState.strikes) ? 'fill-rose-500 text-rose-500' : 'fill-slate-200 text-slate-200'}
                                     />
                                 ))}
                             </div>
                         )}
-                        <SettingsMenu
-                            isMuted={isMuted}
-                            onToggleMute={onToggleMute}
-                            onOpenSettings={onOpenSettings}
-                            onPause={onPause}
-                        />
                     </div>
+                    {/* Settings */}
+                    <SettingsMenu
+                        isMuted={isMuted}
+                        onToggleMute={onToggleMute}
+                        onOpenSettings={onOpenSettings}
+                        onPause={onPause}
+                    />
                 </div>
 
-                {/* Progress Bar — only for target_count mode */}
+                {/* Row 2: Title + Instruction (centered, own row) */}
+                <div className="flex flex-col items-center gap-0.5 w-full">
+                    <h1 className={`text-lg font-bold ${theme.accent} whitespace-nowrap drop-shadow-sm leading-tight`}>
+                        {title || 'Blast Off'}
+                    </h1>
+                    {instruction && (
+                        <div className="bg-white/85 backdrop-blur-md px-4 py-1 rounded-xl shadow-sm border border-blue-100">
+                            <span className={`text-lg font-bold ${theme.accent} tracking-wide font-mono leading-tight`}>
+                                {instruction}
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Row 3: Progress bar (target_count mode) */}
                 {config.winCondition.type === 'target_count' && (
                     <SessionProgressBar
                         current={gameState.targetsPopped}
@@ -493,20 +496,20 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     />
                 )}
 
-                {/* Blitz mode: score display */}
+                {/* Blitz score strip */}
                 {isTimeLimit && (
-                    <div className="w-full max-w-md mb-6 px-4">
-                        <div className="flex justify-between text-sm font-bold text-slate-500 mb-1">
+                    <div className="w-full px-2">
+                        <div className="flex justify-between text-xs font-bold text-slate-500">
                             <span>Score: {gameState.score.toLocaleString()}</span>
                             <span>Targets: {gameState.targetsPopped}</span>
                         </div>
                     </div>
                 )}
 
-                {/* Zen/Endless mode: relaxed score display */}
+                {/* Zen/Endless score strip */}
                 {isEndless && (
-                    <div className="w-full max-w-md mb-2 px-4">
-                        <div className="flex justify-between text-sm font-bold text-slate-400">
+                    <div className="w-full px-2">
+                        <div className="flex justify-between text-xs font-bold text-slate-400">
                             <span>🎯 Popped: {gameState.targetsPopped}</span>
                             <span>⭐ Score: {gameState.score.toLocaleString()}</span>
                         </div>
@@ -515,7 +518,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             </div>
 
             {/* Game Area & Entities */}
-            <div className="flex-grow w-full relative z-0 mt-4 overflow-hidden"
+            <div className="flex-grow w-full relative z-0 mt-2 overflow-hidden"
                 style={{ perspective: '1000px' }}>
                 {entities.map(e => (
                     <Bubble
