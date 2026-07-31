@@ -10,7 +10,7 @@ interface QuestPanelProps {
 
 export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
   const { t } = useTranslation();
-  const { todayChallenge, hasCompletedToday, dailyStreak, stampAlbumProgress } = useQuest();
+  const { todayChallenge, hasCompletedToday, dailyStreak, stampAlbumProgress, dailyChallengeCorrect } = useQuest();
 
   const modeInfo = ARCADE_MODE_LABELS[todayChallenge.mode];
 
@@ -56,7 +56,23 @@ export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
         <span className="bg-yellow-400/30 px-2 py-1 rounded-full">
           🪙 {todayChallenge.reward} {t('daily.coins')}
         </span>
-      </div>
+:</div>
+
+      {/* Progress toward today's target (shows accumulated progress across sessions) */}
+      {!hasCompletedToday && dailyChallengeCorrect > 0 && (
+        <div className="mb-3">
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-white/80">Progress</span>
+            <span className="text-white font-bold">{dailyChallengeCorrect}/{todayChallenge.target}</span>
+          </div>
+          <div className="w-full bg-white/20 rounded-full h-2">
+            <div
+              className="bg-yellow-400 h-2 rounded-full transition-all"
+              style={{ width: `${Math.min(100, (dailyChallengeCorrect / todayChallenge.target) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Stamp album progress */}
       <div className="flex items-center justify-between gap-1 mb-3">

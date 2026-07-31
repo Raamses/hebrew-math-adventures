@@ -5,6 +5,8 @@ import { useProfile } from './ProfileContext';
 interface DailyProgress {
   dailyStamps: string[]; // dates completed (YYYY-MM-DD)
   totalCoinsEarned: number;
+  dailyChallengeCorrect: number; // accumulated correct answers for today's challenge
+  dailyChallengeDate: string; // date of current challenge progress (resets daily)
 }
 
 interface QuestContextType {
@@ -12,6 +14,8 @@ interface QuestContextType {
   hasCompletedToday: boolean;
   dailyStreak: number;
   dailyProgress: DailyProgress;
+  dailyChallengeCorrect: number; // accumulated correct answers today
+  addDailyChallengeCorrect: (count: number) => void; // add correct answers
   completeDailyChallenge: () => { reward: number; bonus: number; total: number; newStreak: number } | null;
   stampAlbumProgress: number; // 0-7 for current week
 }
@@ -23,18 +27,20 @@ const QuestContext = createContext<QuestContextType | undefined>(undefined);
 function loadProgress(profileId: string): DailyProgress {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { dailyStamps: [], totalCoinsEarned: 0 };
+    if (!raw) return { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' };
     const all = JSON.parse(raw);
     const entry = all[profileId];
     if (!entry || !Array.isArray(entry.dailyStamps)) {
-      return { dailyStamps: [], totalCoinsEarned: 0 };
+      return { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' };
     }
     return {
       dailyStamps: entry.dailyStamps,
       totalCoinsEarned: entry.totalCoinsEarned || 0,
+      dailyChallengeCorrect: entry.dailyChallengeCorrect || 0,
+      dailyChallengeDate: entry.dailyChallengeDate || '',
     };
   } catch {
-    return { dailyStamps: [], totalCoinsEarned: 0 };
+    return { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' };
   }
 }
 
@@ -82,16 +88,30 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const todayStr = todayChallenge.date;
 
   const [dailyProgress, setDailyProgress] = useState<DailyProgress>(() => {
-    if (!profile) return { dailyStamps: [], totalCoinsEarned: 0 };
-    return loadProgress(profile.id);
+    if (!profile) return { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' };
+    const loaded = loadProgress(profile.id);
+    // Reset daily challenge progress if it's from a different day
+    if (loaded.dailyChallengeDate !== todayStr) {
+      loaded.dailyChallengeCorrect = 0;
+      loaded.dailyChallengeDate = todayStr;
+      saveProgress(profile.id, loaded);
+    }
+    return loaded;
   });
 
   // Reload when profile changes
   useEffect(() => {
     if (profile) {
-      setDailyProgress(loadProgress(profile.id));
+      const loaded = loadProgress(profile.id);
+      // Reset daily challenge progress if it's from a different day
+      if (loaded.dailyChallengeDate !== todayStr) {
+        loaded.dailyChallengeCorrect = 0;
+        loaded.dailyChallengeDate = todayStr;
+        saveProgress(profile.id, loaded);
+      }
+      setDailyProgress(loaded);
     } else {
-      setDailyProgress({ dailyStamps: [], totalCoinsEarned: 0 });
+      setDailyProgress({ dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' });
     }
   }, [profile?.id]);
 
@@ -103,6 +123,20 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const sevenDaysAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
     return dailyProgress.dailyStamps.filter((d) => d >= sevenDaysAgo).length;
   }, [dailyProgress.dailyStamps]);
+
+  // Accumulate correct answers for today's challenge (persists across sessions)
+  const addDailyChallengeCorrect = useCallback((count: number) => {
+    if (!profile) return;
+    if (dailyProgress.dailyStamps.includes(todayStr)) return; // already completed
+    const newCorrect = (dailyProgress.dailyChallengeDate === todayStr ? dailyProgress.dailyChallengeCorrect : 0) + count;
+    const newProgress: DailyProgress = {
+      ...dailyProgress,
+      dailyChallengeCorrect: newCorrect,
+      dailyChallengeDate: todayStr,
+    };
+    setDailyProgress(newProgress);
+    saveProgress(profile.id, newProgress);
+  }, [profile, dailyProgress, todayStr]);
 
   const completeDailyChallenge = useCallback(() => {
     if (!profile) return null;
@@ -118,6 +152,8 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const newProgress: DailyProgress = {
       dailyStamps: newStamps,
       totalCoinsEarned: dailyProgress.totalCoinsEarned + total,
+      dailyChallengeCorrect: dailyProgress.dailyChallengeCorrect,
+      dailyChallengeDate: todayStr,
     };
 
     setDailyProgress(newProgress);
@@ -138,6 +174,8 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     hasCompletedToday,
     dailyStreak,
     dailyProgress,
+    dailyChallengeCorrect: dailyProgress.dailyChallengeDate === todayStr ? dailyProgress.dailyChallengeCorrect : 0,
+    addDailyChallengeCorrect,
     completeDailyChallenge,
     stampAlbumProgress: Math.min(stampAlbumProgress, 7),
   };
