@@ -183,6 +183,12 @@ export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSe
         if (next) setProblem(next);
     }, [generateNext, session.mode]);
 
+    // Generate next problem WITHOUT resetting session state
+    const nextProblem = useCallback(() => {
+        const next = generateNext();
+        if (next) setProblem(next);
+    }, [generateNext]);
+
     const submitResult = useCallback((isCorrect: boolean) => {
         dispatch({ type: 'ANSWER', isCorrect });
 
@@ -202,6 +208,7 @@ export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSe
         problem,
         setProblem,
         generateNext,
+        nextProblem,
         restartSession,
         submitResult,
         evaluateAnswer,

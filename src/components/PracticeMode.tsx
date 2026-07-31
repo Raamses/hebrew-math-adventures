@@ -58,6 +58,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         session,
         problem,
         initSession,
+        nextProblem,
         restartSession,
         submitResult,
         evaluateAnswer
@@ -115,7 +116,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 setShowSummary(true);
                 if (onComplete) onComplete(true, currentSession.correct, currentSession.attempts);
             } else {
-                initSession(currentSession.mode); // Generate next
+                nextProblem(); // Generate next problem WITHOUT resetting state
             }
         },
         onWrongComplete: () => {
