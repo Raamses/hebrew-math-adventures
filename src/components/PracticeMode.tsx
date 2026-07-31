@@ -92,6 +92,32 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     // Summary State
     const [showSummary, setShowSummary] = useState(false);
 
+    // Daily challenge: check completion after every correct answer.
+    // Works for endless modes (Zen) that never trigger session end.
+    // Also auto-detects today's challenge mode if user launched from Arcade button
+    // instead of "Start Challenge!"
+    const effectiveDailyMode = dailyChallengeMode || todayChallenge.mode;
+    const effectiveDailyTarget = dailyChallengeTarget || todayChallenge.target;
+    const checkDailyChallenge = (correctCount: number) => {
+        if (dailyChallengeClaimedRef.current) return;
+        if (correctCount < effectiveDailyTarget) return;
+        // Check if current session mode matches today's challenge mode
+        const currentSession = sessionRef.current;
+        const sessionMode = currentSession.mode.toLowerCase();
+        const challengeMode = effectiveDailyMode.toLowerCase();
+        // TIME_ATTACK maps to 'blitz', SURVIVAL maps to 'survival', STANDARD maps to 'zen'/'classic'
+        const modeMatches =
+            sessionMode === challengeMode ||
+            (sessionMode === 'STANDARD'.toLowerCase() && (challengeMode === 'zen' || challengeMode === 'classic')) ||
+            (sessionMode === 'TIME_ATTACK'.toLowerCase() && challengeMode === 'blitz');
+        if (!modeMatches) return;
+        const result = completeDailyChallenge();
+        if (result) {
+            dailyChallengeClaimedRef.current = true;
+            console.log(`Daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
+        }
+    };
+
     // Answer Flow Hook (Timing & Transitions)
     const { isProcessing, submitAnswer } = useAnswerFlow({
         correctDelay: 2000,
@@ -120,16 +146,13 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                     gameMode: 'practice',
                 });
                 // Check daily challenge completion
-                if (!dailyChallengeClaimedRef.current && dailyChallengeMode && currentSession.correct >= (dailyChallengeTarget || todayChallenge.target)) {
-                    const result = completeDailyChallenge();
-                    if (result) {
-                        dailyChallengeClaimedRef.current = true;
-                        console.log(`Daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
-                    }
-                }
+                checkDailyChallenge(currentSession.correct);
                 setShowSummary(true);
                 if (onComplete) onComplete(true, currentSession.correct, currentSession.attempts);
             } else {
+                // For arcade modes (Zen, Time Attack, Survival): check daily challenge after every correct answer
+                // Zen mode is endless, so we must check here — not at session end
+                checkDailyChallenge(currentSession.correct);
                 nextProblem(); // Generate next problem WITHOUT resetting state
             }
         },
@@ -170,13 +193,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 gameMode: 'practice',
             });
             // Check daily challenge completion on Game Over
-            if (!dailyChallengeClaimedRef.current && dailyChallengeMode && session.correct >= (dailyChallengeTarget || todayChallenge.target)) {
-                const result = completeDailyChallenge();
-                if (result) {
-                    dailyChallengeClaimedRef.current = true;
-                    console.log(`Daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
-                }
-            }
+            checkDailyChallenge(session.correct);
             setShowSummary(true);
             if (onComplete) onComplete(false, session.correct, session.attempts); // Game Over isn't necessarily a "Win"
         }
