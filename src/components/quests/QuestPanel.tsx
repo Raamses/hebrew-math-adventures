@@ -16,7 +16,7 @@ export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
 
   return (
     <motion.div
-      className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl p-4 mx-4 my-3 shadow-lg"
+      className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl p-3 mx-2 my-3 shadow-lg"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -41,7 +41,7 @@ export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
       </p>
 
       {/* Challenge details */}
-      <div className="flex flex-wrap gap-2 mb-3 text-xs">
+      <div className="flex flex-nowrap gap-1.5 mb-3 text-xs overflow-x-auto">
         <span className="bg-white/20 px-2 py-1 rounded-full">
           {modeInfo.name}
         </span>
@@ -59,22 +59,24 @@ export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
       </div>
 
       {/* Stamp album progress */}
-      <div className="flex items-center gap-1 mb-3">
-        {Array.from({ length: 7 }).map((_, i) => (
-          <motion.div
-            key={i}
-            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${
-              i < stampAlbumProgress
-                ? 'bg-yellow-400 text-slate-800'
-                : 'bg-white/20 text-white/50'
-            }`}
-            animate={i < stampAlbumProgress ? { scale: [1, 1.2, 1] } : {}}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
-          >
-            {i < stampAlbumProgress ? '✓' : ''}
-          </motion.div>
-        ))}
-        <span className="text-xs ml-2 text-white/80">
+      <div className="flex items-center justify-between gap-1 mb-3">
+        <div className="flex items-center gap-1">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <motion.div
+              key={i}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                i < stampAlbumProgress
+                  ? 'bg-yellow-400 text-slate-800'
+                  : 'bg-white/20 text-white/50'
+              }`}
+              animate={i < stampAlbumProgress ? { scale: [1, 1.2, 1] } : {}}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+            >
+              {i < stampAlbumProgress ? '✓' : ''}
+            </motion.div>
+          ))}
+        </div>
+        <span className="text-xs text-white/80">
           {stampAlbumProgress}/7
         </span>
       </div>

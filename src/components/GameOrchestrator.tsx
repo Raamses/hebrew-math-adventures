@@ -18,6 +18,8 @@ interface GameOrchestratorProps {
     onExit: () => void;
     node?: LearningNode | null;
     arcadeMode?: string;
+    dailyChallengeMode?: string;
+    dailyChallengeTarget?: number;
 }
 
 type GameMode = 'LESSON' | 'PRACTICE' | 'SENSORY' | 'MEMORY' | 'INVADERS';
@@ -26,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAnalytics } from '../hooks/useAnalytics';
 
-export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node, arcadeMode: _arcadeMode }) => {
+export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node, arcadeMode: _arcadeMode, dailyChallengeMode, dailyChallengeTarget }) => {
     const { t } = useTranslation();
     const { logEvent } = useAnalytics();
     const { profile } = useProfile();
@@ -212,6 +214,8 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
             targetLevel={targetLevel}
             onExit={onExit}
             problemConfig={node?.config}
+            dailyChallengeMode={dailyChallengeMode}
+            dailyChallengeTarget={dailyChallengeTarget}
             onMemoryMode={() => setInternalMode('MEMORY')}
             onInvadersMode={() => setInternalMode('INVADERS')}
             onComplete={(success, correct, attempts) => {

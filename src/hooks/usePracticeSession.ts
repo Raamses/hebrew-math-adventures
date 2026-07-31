@@ -120,6 +120,9 @@ export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSe
     // Module Instance - Stable across renders
     const mathModule = useMemo(() => new MathModule(), []);
 
+    // Track recent problem signatures to prevent duplicates
+    const recentSignaturesRef = useRef<string[]>([]);
+
     // Timer Ref for Time Attack
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -164,10 +167,30 @@ export const usePracticeSession = ({ targetLevel, problemConfig }: UsePracticeSe
             // else default arithmetic logic in MathModule handles it
         }
 
-        return mathModule.generateProblem(userCapabilities, {
+        const problem = mathModule.generateProblem(userCapabilities, {
             difficulty: targetLevel,
             ...diversityParams
         });
+
+        // Dedup: if this problem matches the last one, try once more
+        if (problem) {
+            const sig = `${problem.type}:${'num1' in problem ? problem.num1 : ''}:${'num2' in problem ? problem.num2 : ''}:${'operator' in problem ? problem.operator : ''}`;
+            const lastSig = recentSignaturesRef.current[recentSignaturesRef.current.length - 1];
+            if (lastSig && sig === lastSig) {
+                const retry = mathModule.generateProblem(userCapabilities, {
+                    difficulty: targetLevel,
+                    ...diversityParams
+                });
+                if (retry) {
+                    const retrySig = `${retry.type}:${'num1' in retry ? retry.num1 : ''}:${'num2' in retry ? retry.num2 : ''}:${'operator' in retry ? retry.operator : ''}`;
+                    recentSignaturesRef.current = [...recentSignaturesRef.current.slice(-4), retrySig];
+                    return retry;
+                }
+            }
+            recentSignaturesRef.current = [...recentSignaturesRef.current.slice(-4), sig];
+        }
+
+        return problem;
     }, [profile, targetLevel, problemConfig, mathModule]);
 
     const initSession = useCallback((mode: GameMode = 'STANDARD') => {

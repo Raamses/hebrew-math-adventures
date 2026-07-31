@@ -148,6 +148,20 @@ export class ArithmeticFactory implements IProblemFactory {
                 num1 = answer * num2;
                 break;
             }
+
+            default:
+                // Fallback: generate valid addition instead of degenerate 0+0
+                operator = '+';
+                subType = 'simple';
+                num1 = RandomUtils.intInRange(1, 10);
+                num2 = RandomUtils.intInRange(1, 10);
+                break;
+        }
+
+        // Validate: never produce 0+0
+        if (num1 === 0 && num2 === 0 && operator === '+') {
+            num1 = RandomUtils.intInRange(1, 5);
+            num2 = RandomUtils.intInRange(1, 5);
         }
 
         // Calculate answer if not pre-calculated (like inside division)
@@ -176,8 +190,14 @@ export class ArithmeticFactory implements IProblemFactory {
 export class AlgebraicFactory implements IProblemFactory {
     generate(level: number, type: string, config?: ArithmeticConfig): ArithmeticProblem {
         const baseFactory = new ArithmeticFactory();
-        // Remove '_missing' suffix if present to map back to base types
-        const baseType = type.replace(ProblemTypes.ALGEBRAIC_MISSING, '');
+        // Map '_missing' suffix back to valid base types
+        let baseType = type;
+        if (type.endsWith('_missing')) {
+            const base = type.replace('_missing', '');
+            baseType = base === 'addition' ? 'addition_simple'
+                : base === 'sub' ? 'sub_simple'
+                : base;
+        }
         const problem = baseFactory.generate(level, baseType, config);
 
         problem.missing = RandomUtils.chance(0.5) ? 'num1' : 'num2';

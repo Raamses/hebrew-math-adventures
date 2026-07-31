@@ -6,6 +6,7 @@ import { useMusicalSound } from '../hooks/useMusicalSound';
 import { usePracticeSession } from '../hooks/usePracticeSession';
 import { useAnswerFlow } from '../hooks/useAnswerFlow';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useQuest } from '../context/QuestContext';
 import { formatProblemEquation } from '../lib/gameLogic';
 
 // Sub-components
@@ -34,14 +35,19 @@ interface PracticeModeProps {
     onComplete?: (success: boolean, correct: number, attempts: number) => void;
     onMemoryMode?: () => void;
     onInvadersMode?: () => void;
+    dailyChallengeMode?: string;
+    dailyChallengeTarget?: number;
 }
 
-export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete, onMemoryMode, onInvadersMode }) => {
+export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete, onMemoryMode, onInvadersMode, dailyChallengeMode, dailyChallengeTarget }) => {
     const { t, i18n } = useTranslation();
     const { profile, incrementStreak, resetStreak, updateArcadeBestScore, recordSession } = useProfile();
     const { playSound } = useSound();
     const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
     const { logEvent } = useAnalytics();
+    const { completeDailyChallenge, todayChallenge } = useQuest();
+    // Track daily challenge completion to avoid double-calling
+    const dailyChallengeClaimedRef = useRef(false);
 
     // Track start time for current problem
     const problemStartTime = useRef(Date.now());
@@ -113,6 +119,14 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                     skillFocus: problemConfig?.type || 'mixed',
                     gameMode: 'practice',
                 });
+                // Check daily challenge completion
+                if (!dailyChallengeClaimedRef.current && dailyChallengeMode && currentSession.correct >= (dailyChallengeTarget || todayChallenge.target)) {
+                    const result = completeDailyChallenge();
+                    if (result) {
+                        dailyChallengeClaimedRef.current = true;
+                        console.log(`Daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
+                    }
+                }
                 setShowSummary(true);
                 if (onComplete) onComplete(true, currentSession.correct, currentSession.attempts);
             } else {
@@ -155,6 +169,14 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 skillFocus: problemConfig?.type || 'mixed',
                 gameMode: 'practice',
             });
+            // Check daily challenge completion on Game Over
+            if (!dailyChallengeClaimedRef.current && dailyChallengeMode && session.correct >= (dailyChallengeTarget || todayChallenge.target)) {
+                const result = completeDailyChallenge();
+                if (result) {
+                    dailyChallengeClaimedRef.current = true;
+                    console.log(`Daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
+                }
+            }
             setShowSummary(true);
             if (onComplete) onComplete(false, session.correct, session.attempts); // Game Over isn't necessarily a "Win"
         }

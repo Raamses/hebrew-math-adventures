@@ -12,11 +12,12 @@ import { BadgeCollection } from '../badges/BadgeCollection';
 import { TreasureShop } from '../shop/TreasureShop';
 import { useProfile } from '../../context/ProfileContext';
 import { useAnalytics } from '../../hooks/useAnalytics';
+import { useQuest } from '../../context/QuestContext';
 
 interface SagaMapProps {
     onNodeSelect: (node: LearningNode) => void;
     onLogout: () => void;
-    onArcadeMode: (mode?: ArcadeMode) => void;
+    onArcadeMode: (mode?: ArcadeMode, dailyMode?: string, dailyTarget?: number) => void;
 }
 
 const containerVariants: Variants = {
@@ -48,6 +49,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
     const { t, i18n } = useTranslation();
     const { logEvent } = useAnalytics();
     const { profile } = useProfile();
+    const { todayChallenge } = useQuest();
     const [showModeSelector, setShowModeSelector] = useState(false);
     const [showBadges, setShowBadges] = useState(false);
     const [showShop, setShowShop] = useState(false);
@@ -64,27 +66,26 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
     };
 
     return (
-        <div className="w-full min-h-screen bg-slate-100 pb-20 overflow-y-auto" dir={isRtl ? 'rtl' : 'ltr'}>
-            <header className="sticky top-0 bg-white/90 backdrop-blur z-50 shadow-sm border-b border-slate-200 px-4 py-4 flex items-center justify-between">
+        <div className="w-full min-h-screen bg-slate-100 pb-[calc(5rem+env(safe-area-inset-bottom))] overflow-y-auto" dir={isRtl ? 'rtl' : 'ltr'}>
+            <header className="sticky top-0 bg-white/90 backdrop-blur z-50 shadow-sm border-b border-slate-200 px-2 py-3 flex items-center justify-between">
                 <button
                     onClick={toggleLanguage}
-                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors flex gap-2 items-center"
-                    title={t('app.switchLanguage')}
+                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+                    title={i18n.language.toUpperCase()}
                     aria-label={t('app.switchLanguage')}
                 >
                     <Globe size={20} aria-hidden="true" />
-                    <span className="text-sm font-bold">{i18n.language.toUpperCase()}</span>
                 </button>
 
-                <h1 className="text-2xl font-bold text-slate-700">
+                <h1 className="text-lg md:text-2xl font-bold text-slate-700">
                     {t('app.journey')}
                 </h1>
 
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-1 items-center">
                     {/* Coin balance */}
-                    <div className="flex items-center gap-1 bg-yellow-100 px-2 py-1 rounded-full">
-                        <span className="text-sm">🪙</span>
-                        <span className="text-sm font-bold text-yellow-700">{profile?.coins || 0}</span>
+                    <div className="flex items-center gap-1 bg-yellow-100 px-1.5 py-0.5 rounded-full">
+                        <span className="text-xs">🪙</span>
+                        <span className="text-xs font-bold text-yellow-700">{profile?.coins || 0}</span>
                     </div>
 
                     {/* Badge collection button */}
@@ -110,10 +111,11 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                     {/* Arcade button */}
                     <button
                         onClick={() => setShowModeSelector(true)}
-                        className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-bold shadow-sm transition-colors flex items-center gap-1"
+                        className="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-sm transition-colors"
+                        title={t('app.arcade')}
+                        aria-label={t('app.arcade')}
                     >
-                        <Globe size={16} />
-                        <span>{t('app.arcade')}</span>
+                        <Globe size={18} aria-hidden="true" />
                     </button>
 
                     <button
@@ -128,7 +130,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
             </header>
 
             {/* Quest Panel banner */}
-            <QuestPanel onStartChallenge={() => onArcadeMode()} />
+            <QuestPanel onStartChallenge={() => onArcadeMode(todayChallenge.mode as ArcadeMode, todayChallenge.problemType, todayChallenge.target)} />
 
             {/* Arcade Mode Selector Modal */}
             <AnimatePresence>

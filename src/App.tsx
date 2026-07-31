@@ -29,6 +29,8 @@ const AppContent = () => {
   const [showParentGate, setShowParentGate] = useState(false);
   const [selectedNode, setSelectedNode] = useState<LearningNode | null>(null);
   const [arcadeMode, setArcadeMode] = useState<ArcadeMode | undefined>(undefined);
+  const [dailyChallengeMode, setDailyChallengeMode] = useState<string | undefined>(undefined);
+  const [dailyChallengeTarget, setDailyChallengeTarget] = useState<number | undefined>(undefined);
   const [showGreeting, setShowGreeting] = useState(false);
 
   console.log('App Render:', { view, profileId: profile?.id, selectedNode });
@@ -51,10 +53,12 @@ const AppContent = () => {
     setView('game');
   };
 
-  const handleArcadeMode = (mode?: ArcadeMode) => {
+  const handleArcadeMode = (mode?: ArcadeMode, dailyMode?: string, dailyTarget?: number) => {
     if (!profile) return;
     setSelectedNode(null); // Explicitly null for Free Play
     setArcadeMode(mode);
+    setDailyChallengeMode(dailyMode);
+    setDailyChallengeTarget(dailyTarget);
     setView('game');
   };
 
@@ -62,6 +66,8 @@ const AppContent = () => {
     setView('map');
     setSelectedNode(null);
     setArcadeMode(undefined);
+    setDailyChallengeMode(undefined);
+    setDailyChallengeTarget(undefined);
   };
 
   const handleLogout = () => {
@@ -126,6 +132,8 @@ const AppContent = () => {
         targetLevel={effectiveLevel}
         node={selectedNode}
         arcadeMode={arcadeMode}
+        dailyChallengeMode={dailyChallengeMode}
+        dailyChallengeTarget={dailyChallengeTarget}
       />
     );
   }
