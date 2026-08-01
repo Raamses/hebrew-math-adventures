@@ -23,10 +23,10 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
     if (!profile) return null;
 
     return (
-        <div className="w-full max-w-md flex items-center justify-between relative h-12 z-10 mb-2">
-            {/* Streak + Level Badge */}
+        <div className="w-full max-w-md flex items-center justify-between gap-2 h-12 z-10 mb-2">
+            {/* Streak + Level Badge (left, fixed width) */}
             <div
-                className="flex items-center gap-2 bg-white/90 backdrop-blur-sm pl-3 pr-2 py-1.5 rounded-full shadow-sm border border-orange-100 z-10 cursor-help transition-transform hover:scale-105"
+                className="flex-shrink-0 flex items-center gap-2 bg-white/90 backdrop-blur-sm pl-3 pr-2 py-1.5 rounded-full shadow-sm border border-orange-100 cursor-help transition-transform hover:scale-105"
                 title={t('app.streakTooltip')}
             >
                 <div className="flex items-center gap-1.5">
@@ -38,13 +38,13 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
                 <span className="text-xs font-bold text-slate-400">Lv {targetLevel}</span>
             </div>
 
-            {/* Title */}
-            <h1 className="text-xl font-bold text-primary absolute left-1/2 -translate-x-1/2 whitespace-nowrap drop-shadow-sm">
+            {/* Title (center, flex-1, truncates gracefully on narrow screens) */}
+            <h1 className="flex-1 text-center text-sm font-bold text-primary truncate drop-shadow-sm sm:text-lg">
                 {t('app.title')}
             </h1>
 
-            {/* Settings */}
-            <div className="z-20">
+            {/* Settings (right, fixed width) */}
+            <div className="flex-shrink-0">
                 <SettingsMenu
                     onPause={onPause}
                     onToggleMute={toggleMute}
