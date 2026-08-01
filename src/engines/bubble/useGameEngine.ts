@@ -630,6 +630,19 @@ export const useGameEngine = (
         });
     }, []);
 
+    // --- Boss Target Update ---
+    const updateBossTarget = useCallback((newValue: number): void => {
+        setEntities(prev => {
+            const next = [...prev];
+            const bossIdx = next.findIndex(e => e.isBoss && !e.isPopped);
+            if (bossIdx !== -1) {
+                next[bossIdx] = { ...next[bossIdx], internalValue: newValue, content: newValue };
+                entitiesRef.current = next;
+            }
+            return next;
+        });
+    }, []);
+
     return {
         gameState,
         entities,
@@ -640,5 +653,6 @@ export const useGameEngine = (
         spawnBoss,
         bossOnScreen,
         sessionLevelRefForBoss,
+        updateBossTarget,
     };
 };

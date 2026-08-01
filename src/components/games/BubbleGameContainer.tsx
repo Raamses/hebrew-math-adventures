@@ -24,8 +24,11 @@ import { useSound } from '../../hooks/useSound';
 import { useMusicalSound } from '../../hooks/useMusicalSound';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { useProfile } from '../../context/ProfileContext';
+import { useQuest } from '../../context/QuestContext';
 import { Director } from '../../engines/GameDirector';
 import { INITIAL_CAPABILITY_PROFILE } from '../../types/progress';
+import { generateBossGate } from '../../lib/bossGate';
+import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
 
 // --- Power-Up Toast Labels ---
 const POWER_UP_LABELS: Record<PowerUpType, string> = {
@@ -96,10 +99,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     }, [behavior, config]);
 
     // Hook into Engine
-    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen: _bossOnScreen, sessionLevelRefForBoss } = useGameEngine(config, behavior);
+    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget } = useGameEngine(config, behavior);
     const { playSound, play } = useSound();
     const { logEvent } = useAnalytics();
     const { profile, updateProfile, recordSession } = useProfile();
+    const { recordQuestEvent } = useQuest();
     const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
 
     // --- Boss Bubble State ---
@@ -119,13 +123,20 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             bossSpawnedForLevelRef.current.add(sessionLevel);
             // Small delay so level-up animation finishes first
             setTimeout(() => {
+                // Generate boss gate if behavior supports it
+                if (behavior instanceof MathBehaviorStrategy) {
+                    const mathBehavior = behavior as MathBehaviorStrategy;
+                    const capabilities = profile?.capabilities ?? INITIAL_CAPABILITY_PROFILE;
+                    const gate = generateBossGate(sessionLevel, mathBehavior.getMathModule(), capabilities);
+                    mathBehavior.prepareBossGate(gate);
+                }
                 spawnBoss(sessionLevel);
                 setShowBossBanner(true);
                 play('frenzy'); // Use an exciting sound
                 setTimeout(() => setShowBossBanner(false), 3000);
             }, 500);
         }
-    }, [sessionLevel, spawnBoss, play]);
+    }, [sessionLevel, spawnBoss, play, behavior, profile]);
 
     const prevComboRef = useRef(gameState.combo);
     const prevPowerUpStateRef = useRef(gameState.powerUpState);
@@ -268,12 +279,26 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 setTimeout(() => setShowLevelUp(false), 2000);
                 behavior.regenerateProblem(newLevel, config);
                 logEvent('boss_defeated', { level: bossResult.level, bonus: bossResult.bonusPoints, newLevel });
+                recordQuestEvent('boss_defeated', 1);
             }
             // Clear celebration after delay
             setTimeout(() => setBossDefeatedCelebration(false), 2500);
             // Add explosion
             setExplosions(prev => [...prev, { id: `${id}-exp`, x, y }]);
             return;
+        }
+
+        // --- Boss Gate Advancement (non-defeating boss hit) ---
+        if (isCorrect === true && entity?.isBoss && behavior instanceof MathBehaviorStrategy) {
+            const mathBehavior = behavior as MathBehaviorStrategy;
+            if (mathBehavior.isBossGateActive()) {
+                const hasMore = mathBehavior.advanceBossGateProblem();
+                if (hasMore) {
+                    // Update boss target to the new gate problem's answer
+                    const newTarget = (mathBehavior as any).targetValue as number;
+                    updateBossTarget(newTarget);
+                }
+            }
         }
 
         // --- Power-Up Bubble Handling ---
@@ -347,7 +372,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             }
             if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
         }
-    }, [enginePop, playSound, play, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, playMelodyNote, playWrongMelody, recordQuestEvent, gameState.combo]);
+    }, [enginePop, playSound, play, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, playMelodyNote, playWrongMelody, recordQuestEvent, gameState.combo, updateBossTarget, behavior]);
 
     // Monitor Game Over / Victory
     useEffect(() => {
@@ -402,6 +427,17 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     <div className="text-center text-lg font-bold text-purple-700 mt-2 animate-bounce">
                         Pop the correct answer 3 times!
                     </div>
+                </div>
+            )}
+
+            {/* Boss Gate Banner — shows gate type and progress while boss is active */}
+            {bossOnScreen && behavior instanceof MathBehaviorStrategy && (behavior as MathBehaviorStrategy).isBossGateActive() && (
+                <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold">
+                    <span>{(behavior as MathBehaviorStrategy).getBossGateIcon()}</span>
+                    <span>{(behavior as MathBehaviorStrategy).getBossGateLabel()}</span>
+                    <span className="opacity-75">
+                        Problem {(behavior as MathBehaviorStrategy).getBossGateIndex() + 1}/{(behavior as MathBehaviorStrategy).getBossGateProblemCount()}
+                    </span>
                 </div>
             )}
 

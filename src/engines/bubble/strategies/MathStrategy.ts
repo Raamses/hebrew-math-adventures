@@ -2,6 +2,18 @@ import type { IGameBehavior, GameConfig, BubbleEntity } from '../types';
 import { MathModule } from '../../MathModule';
 import { INITIAL_CAPABILITY_PROFILE } from '../../../types/progress';
 import type { ArithmeticProblem, Problem, SensoryProblem } from '../../../lib/gameLogic';
+import type { BossGate } from '../../../lib/bossGate';
+
+// Helper: compute the result of an arithmetic operation
+function computeResult(num1: number, num2: number, operator: string): number {
+    switch (operator) {
+        case '+': return num1 + num2;
+        case '-': return num1 - num2;
+        case '*': return num1 * num2;
+        case '/': return num2 !== 0 ? num1 / num2 : 0;
+        default: return 0;
+    }
+}
 
 export class MathBehaviorStrategy implements IGameBehavior {
     private currentProblem: ArithmeticProblem | SensoryProblem | null = null;
@@ -12,6 +24,10 @@ export class MathBehaviorStrategy implements IGameBehavior {
     private recentSignatures: string[] = [];
     private static readonly MAX_RECENT_SIGNATURES = 18;
     private static readonly MAX_REGEN_ATTEMPTS = 8;
+
+    // Boss Gate state
+    private bossGate: BossGate | null = null;
+    private bossGateIndex = 0;
 
     // Config Constants
     private static readonly CONFIG = {
@@ -196,6 +212,55 @@ export class MathBehaviorStrategy implements IGameBehavior {
         return entity.internalValue === this.targetValue;
     }
 
+    // --- Boss Gate Methods ---
+
+    prepareBossGate(gate: BossGate): void {
+        this.bossGate = gate;
+        this.bossGateIndex = 0;
+        if (gate.problems.length > 0) {
+            this.setProblem(gate.problems[0]);
+        }
+    }
+
+    advanceBossGateProblem(): boolean {
+        if (!this.bossGate) return false;
+
+        this.bossGateIndex++;
+        if (this.bossGateIndex < this.bossGate.problems.length) {
+            this.setProblem(this.bossGate.problems[this.bossGateIndex]);
+            return true; // more problems remain
+        }
+
+        // Gate complete — clear it
+        this.bossGate = null;
+        this.bossGateIndex = 0;
+        return false;
+    }
+
+    isBossGateActive(): boolean {
+        return this.bossGate !== null;
+    }
+
+    getBossGateIcon(): string {
+        return this.bossGate?.icon ?? '🛡️';
+    }
+
+    getBossGateLabel(): string {
+        return this.bossGate?.label ?? '';
+    }
+
+    getBossGateIndex(): number {
+        return this.bossGateIndex;
+    }
+
+    getBossGateProblemCount(): number {
+        return this.bossGate?.problems.length ?? 0;
+    }
+
+    getMathModule(): MathModule {
+        return this.mathModule;
+    }
+
     getInstruction(): string {
         if (!this.currentProblem) return "Pop bubbles!";
 
@@ -206,6 +271,20 @@ export class MathBehaviorStrategy implements IGameBehavior {
         }
 
         // Arithmetic
-        return `${p.num1} ${p.operator} ${p.num2} = ?`;
+        const ap = p as ArithmeticProblem;
+
+        // Handle missing operand rendering for boss gates
+        if (ap.missing === 'num1') {
+            // num1 is the answer (unknown to player), show: ? OP num2 = result
+            const result = computeResult(ap.num1, ap.num2, ap.operator);
+            return `? ${ap.operator} ${ap.num2} = ${result}`;
+        }
+        if (ap.missing === 'num2') {
+            // num2 is the answer (unknown to player), show: num1 OP ? = result
+            const result = computeResult(ap.num1, ap.num2, ap.operator);
+            return `${ap.num1} ${ap.operator} ? = ${result}`;
+        }
+
+        return `${ap.num1} ${ap.operator} ${ap.num2} = ?`;
     }
 }
