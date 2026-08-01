@@ -14,7 +14,7 @@ export const SessionProgressBar = React.memo(function SessionProgressBar({ curre
     const progress = Math.min(current / total, 1) * 100;
 
     return (
-        <div className="w-full max-w-md mb-6 px-4">
+        <div className="w-full max-w-md mb-3">
             <div className="flex justify-between text-sm font-bold text-slate-500 mb-1">
                 <span>{t('game.questionCount', { current: Math.min(current + 1, total), total })}</span>
                 <span>{t('game.progress')}</span>

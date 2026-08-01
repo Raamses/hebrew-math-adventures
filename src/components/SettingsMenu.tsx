@@ -47,7 +47,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
     };
 
     return (
-        <div className="relative z-50" ref={menuRef}>
+        <div className="relative" ref={menuRef}>
             <button
                 onClick={toggleMenu}
                 aria-label={t('menu.settings')}
@@ -56,7 +56,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                 className={`p-2 rounded-full shadow-md transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none ${isOpen ? 'bg-primary text-white' : 'bg-white text-slate-600 hover:text-primary'
                     }`}
             >
-                <Settings size={28} />
+                <Settings size={24} />
             </button>
 
             <AnimatePresence>

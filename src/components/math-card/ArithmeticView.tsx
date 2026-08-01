@@ -92,7 +92,7 @@ export const ArithmeticView = React.memo(function ArithmeticView({
 
     return (
         <div
-            className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-3xl sm:text-5xl font-bold text-slate-800 mb-6"
+            className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-2xl sm:text-5xl font-bold text-slate-800 mb-4 sm:mb-6"
             dir="ltr"
             style={{ direction: "ltr" }}
         >

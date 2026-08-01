@@ -107,7 +107,7 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
                 onAnimationComplete={() => setIsShaking(false)}
                 layout
                 className={cn(
-                    "w-full max-w-md bg-white rounded-3xl shadow-xl p-6 relative overflow-hidden transition-all duration-500",
+                    "w-full max-w-md bg-white rounded-3xl shadow-xl p-4 sm:p-6 relative overflow-hidden transition-all duration-500",
                     problem.metadata?.isChallenge && "ring-4 ring-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.5)] scale-[1.02]"
                 )}
             >
@@ -187,14 +187,14 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
                                     type="submit"
                                     disabled={isProcessing}
                                     className={cn(
-                                        "w-full py-4 bg-primary hover:bg-orange-600 text-white text-2xl font-bold rounded-2xl",
+                                        "w-full py-3 sm:py-4 bg-primary hover:bg-orange-600 text-white text-xl sm:text-2xl font-bold rounded-2xl",
                                         "shadow-lg shadow-orange-500/30 transition-colors flex items-center justify-center gap-2",
                                         isProcessing && "opacity-50 cursor-not-allowed"
                                     )}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                 >
-                                    <Check size={32} />
+                                    <Check size={28} />
                                     <span>{t('game.check')}</span>
                                 </motion.button>
                             </form>

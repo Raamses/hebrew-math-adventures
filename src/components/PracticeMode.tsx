@@ -364,8 +364,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                         onComplete={() => setScoreToast(null)}
                     />
 
-                    {/* Header with Settings - z-40 to stay above FrenzyOverlay (z-30) and MathCard (z-10) */}
-                    <div className="w-full max-w-md z-40 relative mb-2">
+                    {/* Header — z-50 so settings dropdown paints above MathCard */}
+                    <div className="w-full max-w-md z-50 relative mb-3">
                         <PracticeHeader
                             targetLevel={targetLevel}
                             onPause={() => setIsMenuOpen(true)}
@@ -386,7 +386,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                         />
                     )}
 
-                    <div className="w-full max-w-md z-40 relative mt-4">
+                    <div className="w-full max-w-md z-30 relative">
                         <MathCard
                             problem={problem}
                             onAnswer={handleAnswer}

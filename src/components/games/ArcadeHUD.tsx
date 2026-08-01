@@ -30,7 +30,7 @@ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLe
     if (mode === 'STANDARD') return null;
 
     return (
-        <div className="w-full max-w-2xl mx-auto mb-6 px-4">
+        <div className="w-full max-w-md mx-auto mb-3 px-4">
             <div className="bg-white/95 backdrop-blur shadow-lg rounded-2xl p-4 flex items-center justify-between border border-slate-100">
 
                 {/* Left: Mode Specific Stat (Time or Lives) */}

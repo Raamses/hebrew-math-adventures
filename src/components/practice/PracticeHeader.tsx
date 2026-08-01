@@ -12,7 +12,7 @@ interface PracticeHeaderProps {
 }
 
 export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
-    targetLevel,
+    targetLevel: _targetLevel,
     onPause,
     onOpenSettings
 }) => {
@@ -24,22 +24,17 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
 
     return (
         <div className="w-full max-w-md flex items-center justify-between gap-2 h-12 z-10 mb-2">
-            {/* Streak + Level Badge (left, fixed width) */}
+            {/* Streak Badge (left) — just ⚡ + number, no level */}
             <div
-                className="flex-shrink-0 flex items-center gap-2 bg-white/90 backdrop-blur-sm pl-3 pr-2 py-1.5 rounded-full shadow-sm border border-orange-100 cursor-help transition-transform hover:scale-105"
+                className="flex-shrink-0 flex items-center gap-1.5 bg-orange-50/80 backdrop-blur-sm pl-2.5 pr-2.5 py-1.5 rounded-full shadow-sm border border-orange-100/50 cursor-help transition-transform hover:scale-105"
                 title={t('app.streakTooltip')}
             >
-                <div className="flex items-center gap-1.5">
-                    <Zap size={16} className="text-orange-500 fill-orange-500" />
-                    <span className="font-bold text-slate-700 text-sm">{profile.streak || 0}</span>
-                </div>
-                {/* Subtle level divider + level pill */}
-                <div className="w-px h-4 bg-slate-200" />
-                <span className="text-xs font-bold text-slate-400">Lv {targetLevel}</span>
+                <Zap size={16} className="text-orange-500 fill-orange-500" />
+                <span className="font-bold text-slate-700 text-sm">{profile.streak || 0}</span>
             </div>
 
-            {/* Title (center, flex-1, truncates gracefully on narrow screens) */}
-            <h1 className="flex-1 text-center text-sm font-bold text-primary truncate drop-shadow-sm sm:text-lg">
+            {/* Title — hidden on mobile, shown on tablet+ */}
+            <h1 className="hidden sm:block flex-1 text-center text-lg font-bold text-primary truncate drop-shadow-sm">
                 {t('app.title')}
             </h1>
 
