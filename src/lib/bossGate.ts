@@ -73,6 +73,10 @@ export function generateBossGate(
       };
 
       // Recalculate so the answer is the missing operand
+      // Guard against division by zero
+      const safeNum1 = modified.num1 || 1;
+      const safeNum2 = modified.num2 || 1;
+
       if (modified.missing === 'num1') {
         // We need: num1 OP num2 = result → solve for num1
         switch (modified.operator) {
@@ -83,7 +87,7 @@ export function generateBossGate(
             modified.num1 = modified.answer + modified.num2;
             break;
           case '*':
-            modified.num1 = Math.floor(modified.answer / modified.num2);
+            modified.num1 = Math.floor(modified.answer / safeNum2);
             break;
           case '/':
             modified.num1 = modified.answer * modified.num2;
@@ -95,13 +99,14 @@ export function generateBossGate(
             modified.num2 = modified.answer - modified.num1;
             break;
           case '-':
-            modified.num2 = modified.num1 - modified.answer;
+            // Ensure non-negative for kids' game
+            modified.num2 = Math.max(0, modified.num1 - modified.answer);
             break;
           case '*':
-            modified.num2 = Math.floor(modified.answer / modified.num1);
+            modified.num2 = Math.floor(modified.answer / safeNum1);
             break;
           case '/':
-            modified.num2 = modified.num1 / modified.answer;
+            modified.num2 = Math.max(1, Math.floor(modified.num1 / Math.max(1, modified.answer)));
             break;
         }
       }

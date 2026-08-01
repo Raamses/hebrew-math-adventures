@@ -101,7 +101,15 @@ export class MathModule implements IGameModule {
         5: ['division', 'sub_zero']
     };
 
-    private pickProblemType(level: number): string {
+    // Types that MathBehaviorStrategy (bubble game) can actually render.
+    // Excludes comparison/series/word — those need different UI.
+    private static readonly BUBBLE_SUPPORTED_TYPES: ReadonlySet<string> = new Set([
+        'addition_simple', 'addition_carry',
+        'sub_simple', 'sub_borrow', 'sub_zero',
+        'multiplication', 'division',
+    ]);
+
+    private pickProblemType(level: number, supportedTypes?: ReadonlySet<string>): string {
         // Start with base types available at Level 0/1
         const availableTypes: string[] = ['addition_simple'];
 
@@ -113,7 +121,12 @@ export class MathModule implements IGameModule {
             }
         }
 
-        // Randomly select one
-        return availableTypes[Math.floor(Math.random() * availableTypes.length)];
+        // Filter to supported types if a whitelist is provided (e.g. bubble game)
+        const filtered = supportedTypes
+            ? availableTypes.filter(t => supportedTypes.has(t))
+            : availableTypes;
+
+        const pool = filtered.length > 0 ? filtered : availableTypes;
+        return pool[Math.floor(Math.random() * pool.length)];
     }
 }

@@ -39,7 +39,7 @@ export function getArcadeModeConfig(mode: ArcadeMode): Partial<GameConfig> {
         default:
             // Current behavior — 10 targets to win, 3 strikes to fail
             return {
-                winCondition: { type: 'target_count', value: 10 },
+                winCondition: { type: 'target_count', value: 20 },
                 failCondition: { type: 'strikes', value: 3 },
                 spawnIntervalMs: 800,
                 levelMultiplier: 1.0,

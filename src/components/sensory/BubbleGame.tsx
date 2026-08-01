@@ -63,8 +63,12 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
 
     // 2. Define Behavior — stable instance via useState, update problem in effect
     const [behavior] = useState(() => new MathBehaviorStrategy());
+    // Only set the problem directly for Saga/learning-path nodes (type==='sensory').
+    // For arcade mode, let the strategy own problem generation via initializeLevel/regenerateProblem.
     useEffect(() => {
-        behavior.setProblem(problem);
+        if (problem.type === 'sensory') {
+            behavior.setProblem(problem);
+        }
     }, [problem, behavior]);
 
     // Handlers

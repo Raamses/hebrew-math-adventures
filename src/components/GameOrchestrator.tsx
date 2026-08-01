@@ -12,6 +12,7 @@ import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useProfile } from '../context/ProfileContext';
 import { MemoryDuelGame } from './games/MemoryDuelGame';
 import { MathInvadersGame } from './games/MathInvadersGame';
+import type { ArcadeMode } from '../engines/bubble/types';
 
 interface GameOrchestratorProps {
     targetLevel: number;
@@ -28,7 +29,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAnalytics } from '../hooks/useAnalytics';
 
-export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node, arcadeMode: _arcadeMode, dailyChallengeMode, dailyChallengeTarget }) => {
+export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node, arcadeMode, dailyChallengeMode, dailyChallengeTarget }) => {
     const { t } = useTranslation();
     const { logEvent } = useAnalytics();
     const { profile } = useProfile();
@@ -42,11 +43,11 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         return 1;
     };
 
-    // ... (existing state) ...
     const [internalMode, setInternalMode] = useState<GameMode | null>(null);
 
     // Determine effective mode
-    const effectiveMode: GameMode = internalMode || (node?.type === 'SENSORY' ? 'SENSORY' : 'PRACTICE');
+    // arcadeMode: 'zen' | 'classic' | 'blitz' | 'survival' → route to SENSORY (bubble game)
+    const effectiveMode: GameMode = internalMode || (arcadeMode ? 'SENSORY' : node?.type === 'SENSORY' ? 'SENSORY' : 'PRACTICE');
 
     const [isLessonOpen, setIsLessonOpen] = useState(false);
     const { completeNode } = useProgress();
@@ -70,61 +71,68 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
     const handleLessonComplete = () => {
         setIsLessonOpen(false);
         if (node) {
-            completeNode(node.id, 3); // Lessons always give 3 stars on completion
+            completeNode(node.id, 3);
             onExit();
         } else {
-            setInternalMode('PRACTICE'); // Legacy fallback
+            setInternalMode('PRACTICE');
         }
     };
 
     if (effectiveMode === 'SENSORY') {
         const config = node?.config || {};
         let problem: SensoryProblem;
-
         let equation: string | undefined;
 
-        // Math Bubble Blast Logic
-        if (config.isMathSensory) {
+        if (arcadeMode && !node) {
+            // Arcade mode (no node) — generate a math problem for the bubble game
             const mathModule = new MathModule();
-            // Use node config ID to determine difficulty/type or fall back to generic arithmetic
-            // Currently using 'arithmetic' to ensure 2+2 style
-            // Note: LESSON currently falls back to Practice until we implement dynamic Lesson content loading
-
-            // Mock profile for generation (or use real one from context if available, but orchestrator uses hooks differently)
-            // We can just use the targetLevel passed in props
-            // Use real profile capabilities if available, fall back to initial
             const realCapabilities = profile?.capabilities || INITIAL_CAPABILITY_PROFILE;
-            const adaptedProfile = { ...realCapabilities, estimatedLevel: targetLevel };
-
+            const adaptedProfile = { ...realCapabilities, estimatedLevel: Math.min(targetLevel || 1, 10) };
             const mathProblem = mathModule.generateProblem(adaptedProfile, {
-                difficulty: targetLevel,
-                type: 'addition_simple', // Force simple addition for Blast Off initially
-                ...config // Allow node config to override (e.g. max: 20)
+                difficulty: Math.min(targetLevel || 1, 10),
             });
-
-            // Format equation string
-            // Handle "missing answer" vs "missing operand"
             if (mathProblem.type === 'arithmetic') {
                 const ap = mathProblem as ArithmeticProblem;
                 equation = `${ap.num1} ${ap.operator} ${ap.num2} = ?`;
                 if (ap.missing === 'num1') equation = `? ${ap.operator} ${ap.num2} = ${ap.answer}`;
                 if (ap.missing === 'num2') equation = `${ap.num1} ${ap.operator} ? = ${ap.answer}`;
             } else {
-                equation = `${mathProblem.answer}`; // Fallback
+                equation = `${mathProblem.answer}`;
             }
-
-            // Use the Adapter
             problem = SensoryFactory.generateFromProblem(mathProblem);
-
+        } else if (config.isMathSensory) {
+            // Math Bubble Blast Logic (from saga node)
+            const mathModule = new MathModule();
+            const realCapabilities = profile?.capabilities || INITIAL_CAPABILITY_PROFILE;
+            const adaptedProfile = { ...realCapabilities, estimatedLevel: targetLevel };
+            const mathProblem = mathModule.generateProblem(adaptedProfile, {
+                difficulty: targetLevel,
+                ...config
+            });
+            if (mathProblem.type === 'arithmetic') {
+                const ap = mathProblem as ArithmeticProblem;
+                equation = `${ap.num1} ${ap.operator} ${ap.num2} = ?`;
+                if (ap.missing === 'num1') equation = `? ${ap.operator} ${ap.num2} = ${ap.answer}`;
+                if (ap.missing === 'num2') equation = `${ap.num1} ${ap.operator} ? = ${ap.answer}`;
+            } else {
+                equation = `${mathProblem.answer}`;
+            }
+            problem = SensoryFactory.generateFromProblem(mathProblem);
         } else {
             problem = SensoryFactory.generate(node?.id || 'sensory-demo', config);
         }
 
+        const arcadeTitle = arcadeMode
+            ? `${arcadeMode.charAt(0).toUpperCase() + arcadeMode.slice(1)} Mode`
+            : undefined;
+
         return (
             <BubbleGame
                 problem={problem}
-                title={node ? t(`saga.${node.id}_title`) : undefined}
+                title={node ? t(`saga.${node.id}_title`) : arcadeTitle}
                 instruction={equation || (node ? t('saga.pop_instruction', { number: config.target || 5 }) : undefined)}
+                arcadeMode={arcadeMode as ArcadeMode | undefined}
+                profile={profile?.capabilities || undefined}
                 onComplete={(success, correct, attempts) => {
                     if (node) {
                         if (success) {
@@ -150,7 +158,7 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
             <LessonModal
                 isOpen={isLessonOpen}
                 lesson={MultiplicationLesson}
-                onClose={onExit} // If they close the lesson, they exit to map
+                onClose={onExit}
                 onComplete={handleLessonComplete}
             />
         );
@@ -164,7 +172,6 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
                 onComplete={(stats) => {
                     console.log('Memory Duel Complete:', stats);
                     if (node) {
-                        // Star rating: 3 stars if moves ≤ 8, 2 stars if ≤ 12, 1 star otherwise
                         const stars = stats.moves <= 8 ? 3 : stats.moves <= 12 ? 2 : 1;
                         completeNode(node.id, stars);
                         logEvent('node_complete', {
@@ -188,7 +195,6 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
                 onExit={onExit}
                 onComplete={(stats) => {
                     if (node) {
-                        // Star rating: 3 stars if lives >= 2, 2 stars if lives = 1, 1 star if lives = 0 but won
                         const stars = stats.victory
                             ? (stats.lives >= 2 ? 3 : stats.lives === 1 ? 2 : 1)
                             : 0;

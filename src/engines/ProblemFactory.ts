@@ -98,11 +98,11 @@ export class ArithmeticFactory implements IProblemFactory {
                 if (level <= 3) {
                     const max = maxLimit || 10;
                     num1 = RandomUtils.intInRange(2, max);
-                    num2 = RandomUtils.intInRange(1, num1);
+                    num2 = RandomUtils.intInRange(1, num1 - 1);
                 } else {
                     const max = maxLimit || 100;
                     num1 = RandomUtils.intInRange(10, max);
-                    num2 = RandomUtils.intInRange(1, num1); // Ensure answer >= 1 (no zero-answer)
+                    num2 = RandomUtils.intInRange(1, num1 - 1); // Ensure answer >= 1 (no zero-answer)
                 }
                 break;
 
@@ -125,26 +125,26 @@ export class ArithmeticFactory implements IProblemFactory {
                 operator = '-';
                 subType = 'zero';
                 const hundreds = RandomUtils.intInRange(1, 10);
-                const ones = RandomUtils.intInRange(0, 10);
+                const ones = RandomUtils.intInRange(0, 9);
                 num1 = hundreds * 100 + ones; // e.g. 503
-                num2 = RandomUtils.intInRange(10, 100);
-                if (num2 > num1) num2 = Math.floor(num1 / 2);
+                num2 = RandomUtils.intInRange(10, Math.max(11, Math.floor(num1 / 2)));
+                if (num2 >= num1) num2 = Math.max(1, Math.floor(num1 / 2));
                 break;
             }
 
             case ProblemTypes.MULTIPLICATION: {
                 operator = '*';
                 const multMax = config?.max || 10;
-                num1 = RandomUtils.intInRange(1, multMax + 1);
-                num2 = RandomUtils.intInRange(1, multMax + 1);
+                num1 = RandomUtils.intInRange(1, Math.max(2, multMax));
+                num2 = RandomUtils.intInRange(1, Math.max(2, multMax));
                 break;
             }
 
             case ProblemTypes.DIVISION: {
                 operator = '/';
                 const answerMax = config?.max || 10;
-                num2 = RandomUtils.intInRange(2, 11);
-                answer = RandomUtils.intInRange(1, answerMax + 1);
+                num2 = RandomUtils.intInRange(2, 11); // divisor >= 2 (no div by 0/1)
+                answer = RandomUtils.intInRange(1, Math.max(2, answerMax));
                 num1 = answer * num2;
                 break;
             }
@@ -158,11 +158,11 @@ export class ArithmeticFactory implements IProblemFactory {
                 break;
         }
 
-        // Validate: never produce 0+0
-        if (num1 === 0 && num2 === 0 && operator === '+') {
-            num1 = RandomUtils.intInRange(1, 5);
-            num2 = RandomUtils.intInRange(1, 5);
-        }
+        // Validate: never produce operands of 0
+        if (num1 <= 0) num1 = RandomUtils.intInRange(1, 5);
+        if (num2 <= 0 && operator !== '-') num2 = RandomUtils.intInRange(1, 5);
+        // For subtraction, ensure answer >= 1 (no zero answers)
+        if (operator === '-' && num1 === num2) num2 = Math.max(1, num1 - 1);
 
         // Calculate answer if not pre-calculated (like inside division)
         if (operator === '+') answer = num1 + num2;

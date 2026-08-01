@@ -166,20 +166,22 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Uses ref to avoid stale closure — multiple calls within the same render cycle will accumulate correctly
   const addDailyChallengeCorrect = useCallback((count: number) => {
     if (!profile) return;
-    if (dailyProgress.dailyStamps.includes(todayStr)) return; // already completed
-    // Use ref for the current accumulated value to avoid stale closure
-    const currentCorrect = dailyDateRef.current === todayStr ? dailyCorrectRef.current : 0;
-    const newCorrect = currentCorrect + count;
-    dailyCorrectRef.current = newCorrect;
-    dailyDateRef.current = todayStr;
-    const newProgress: DailyProgress = {
-      ...dailyProgress,
-      dailyChallengeCorrect: newCorrect,
-      dailyChallengeDate: todayStr,
-    };
-    setDailyProgress(newProgress);
-    saveProgress(profile.id, newProgress);
-  }, [profile, dailyProgress, todayStr]);
+    // Use functional update to avoid stale closure on dailyProgress
+    setDailyProgress(prev => {
+      if (prev.dailyStamps.includes(todayStr)) return prev; // already completed
+      const currentCorrect = dailyDateRef.current === todayStr ? dailyCorrectRef.current : 0;
+      const newCorrect = currentCorrect + count;
+      dailyCorrectRef.current = newCorrect;
+      dailyDateRef.current = todayStr;
+      const newProgress: DailyProgress = {
+        ...prev,
+        dailyChallengeCorrect: newCorrect,
+        dailyChallengeDate: todayStr,
+      };
+      saveProgress(profile.id, newProgress);
+      return newProgress;
+    });
+  }, [profile, todayStr]);
 
   const completeDailyChallenge = useCallback(() => {
     if (!profile) return null;
