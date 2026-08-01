@@ -57,6 +57,14 @@ export class GameDirector implements IGameDirector {
             if (dRatio && typeof dRatio === 'number') {
                 (tuned as any).distractorRatio = Math.max(1, Math.floor(dRatio * 0.7));
             }
+
+            // Heuristic F: Slow down spawns and bubbles in rescue mode
+            if (typeof (tuned as any).spawnIntervalMs === 'number') {
+                (tuned as any).spawnIntervalMs = Math.round((tuned as any).spawnIntervalMs * 1.3);
+            }
+            if (typeof (tuned as any).baseVelocity === 'number') {
+                (tuned as any).baseVelocity = (tuned as any).baseVelocity * 0.7;
+            }
         }
 
         // 2. Challenge Mode (Heuristic: >5 consecutive correct on this specific skill)
@@ -75,6 +83,14 @@ export class GameDirector implements IGameDirector {
             const dRatio = (tuned as any).distractorRatio;
             if (dRatio && typeof dRatio === 'number') {
                 (tuned as any).distractorRatio = dRatio + 1;
+            }
+
+            // Heuristic F: Speed up spawns and bubbles in challenge mode
+            if (typeof (tuned as any).spawnIntervalMs === 'number') {
+                (tuned as any).spawnIntervalMs = Math.round((tuned as any).spawnIntervalMs * 0.8);
+            }
+            if (typeof (tuned as any).baseVelocity === 'number') {
+                (tuned as any).baseVelocity = (tuned as any).baseVelocity * 1.3;
             }
         }
 

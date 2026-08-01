@@ -28,7 +28,44 @@ export class MathModule implements IGameModule {
 
         // 4. Select Factory & Generate
         const factory = this.getFactoryForType(finalType);
-        return factory.generate(level, finalType, effectiveConfig);
+
+        // 5. Anti-repeat: regenerate if signature matches excludeSignatures
+        const excludeSignatures: string[] = params?.excludeSignatures || [];
+        let problem: Problem;
+        let attempts = 0;
+        const maxAttempts = 5;
+
+        do {
+            problem = factory.generate(level, finalType, effectiveConfig);
+            attempts++;
+        } while (excludeSignatures.length > 0 && attempts < maxAttempts && this.signatureMatches(problem, excludeSignatures));
+
+        return problem;
+    }
+
+    private signatureMatches(problem: Problem, signatures: string[]): boolean {
+        const sig = this.problemSignature(problem);
+        return signatures.includes(sig);
+    }
+
+    private problemSignature(p: Problem): string {
+        if (p.type === 'arithmetic') {
+            return `${p.type}:${p.num1}:${p.operator}:${p.num2}:${p.answer}`;
+        }
+        if (p.type === 'compare') {
+            return `${p.type}:${p.num1}:${p.num2}`;
+        }
+        if (p.type === 'series') {
+            return `${p.type}:${p.sequence.join(',')}:${p.answer}`;
+        }
+        if (p.type === 'word') {
+            return `${p.type}:${p.questionKey}:${p.params?.n1}:${p.params?.n2}:${p.answer}`;
+        }
+        if (p.type === 'sensory') {
+            return `${p.type}:${p.target}`;
+        }
+        // Fallback for any future problem types
+        return `${(p as Problem).type}:${(p as Problem).id}`;
     }
 
     private getFactoryForType(type: string): IProblemFactory {
@@ -64,7 +101,15 @@ export class MathModule implements IGameModule {
         5: ['division', 'sub_zero']
     };
 
-    private pickProblemType(level: number): string {
+    // Types that MathBehaviorStrategy (bubble game) can actually render.
+    // Excludes comparison/series/word — those need different UI.
+    private static readonly BUBBLE_SUPPORTED_TYPES: ReadonlySet<string> = new Set([
+        'addition_simple', 'addition_carry',
+        'sub_simple', 'sub_borrow', 'sub_zero',
+        'multiplication', 'division',
+    ]);
+
+    private pickProblemType(level: number, supportedTypes?: ReadonlySet<string>): string {
         // Start with base types available at Level 0/1
         const availableTypes: string[] = ['addition_simple'];
 
@@ -76,7 +121,12 @@ export class MathModule implements IGameModule {
             }
         }
 
-        // Randomly select one
-        return availableTypes[Math.floor(Math.random() * availableTypes.length)];
+        // Filter to supported types if a whitelist is provided (e.g. bubble game)
+        const filtered = supportedTypes
+            ? availableTypes.filter(t => supportedTypes.has(t))
+            : availableTypes;
+
+        const pool = filtered.length > 0 ? filtered : availableTypes;
+        return pool[Math.floor(Math.random() * pool.length)];
     }
 }

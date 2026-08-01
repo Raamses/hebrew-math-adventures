@@ -1,0 +1,21 @@
+{
+  "resource": {
+    "name": "sessions/7914897145378215769",
+    "title": "Jules connectivity test",
+    "createTime": "2026-07-29T16:23:18.420013726Z",
+    "updateTime": "2026-07-29T16:23:31.528678Z",
+    "state": "inProgress",
+    "prompt": "Add a comment // Jules connectivity test to the first line of README.md",
+    "url": "https://jules.google.com/session/7914897145378215769",
+    "id": "7914897145378215769",
+    "archived": false,
+    "outputs": [],
+    "outcome": {
+      "sessionId": "7914897145378215769",
+      "title": "Jules connectivity test",
+      "state": "completed",
+      "outputs": []
+    }
+  },
+  "_lastSyncedAt": 1785342213205
+}

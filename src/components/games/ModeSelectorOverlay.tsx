@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Calculator, Heart, Trophy } from 'lucide-react';
+import { Clock, Calculator, Heart, Trophy, Layers, Rocket } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { GameMode } from '../../hooks/usePracticeSession'; // Will define this next
 
@@ -56,7 +56,7 @@ const ModeCard: React.FC<Omit<ModeCardProps, 'delay'>> = ({ mode, title, descrip
             }}
             variants={itemVariants}
             onClick={() => onSelect(mode)}
-            className="group relative w-full h-auto min-h-[16rem] sm:min-h-[16rem] bg-white/90 backdrop-blur-sm rounded-3xl p-6 
+            className="group relative w-full h-auto min-h-[14rem] sm:min-h-[14rem] bg-white/90 backdrop-blur-sm rounded-3xl p-4 sm:p-6 
                        flex flex-col items-center text-center justify-between
                        shadow-xl border-2 border-transparent hover:border-white/50
                        transition-all hover:scale-[1.02]"
@@ -135,7 +135,7 @@ export const ModeSelectorOverlay: React.FC<ModeSelectorOverlayProps> = ({ onSele
                         </button>
 
                         {/* Cards Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 sm:gap-6 w-full">
                             <ModeCard
                                 mode="STANDARD"
                                 title={t('practice.zen.title', 'Zen Math')}
@@ -162,6 +162,24 @@ export const ModeSelectorOverlay: React.FC<ModeSelectorOverlayProps> = ({ onSele
                                 color="bg-rose-500"
                                 onSelect={onSelectMode}
                                 bestScore={bestScores?.['SURVIVAL']}
+                            />
+                            <ModeCard
+                                mode="MEMORY"
+                                title={t('memory.title', 'Memory Duel')}
+                                description={t('memory.selectMode', 'Match equations with their answers!')}
+                                icon={Layers}
+                                color="bg-violet-500"
+                                onSelect={onSelectMode}
+                                bestScore={bestScores?.['MEMORY']}
+                            />
+                            <ModeCard
+                                mode="INVADERS"
+                                title={t('invaders.title', 'Math Invaders')}
+                                description={t('invaders.selectMode', 'Defend your ship from math aliens!')}
+                                icon={Rocket}
+                                color="bg-indigo-500"
+                                onSelect={onSelectMode}
+                                bestScore={bestScores?.['INVADERS']}
                             />
                         </div>
 

@@ -1,37 +1,82 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import { useSound } from '../../hooks/useSound';
 
 interface FrenzyOverlayProps {
     isActive: boolean;
+    combo: number;
 }
 
 const PARTICLE_COUNT = 5;
-const PARTICLES = Array.from({ length: PARTICLE_COUNT }, (_, i) => i);
 
-export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive }) => {
-    const { t } = useTranslation();
+// Combo milestone tiers
+type FrenzyTier = 'frenzy' | 'super' | 'mega';
+
+const getFrenzyTier = (combo: number): FrenzyTier | null => {
+    if (combo >= 15) return 'mega';
+    if (combo >= 10) return 'super';
+    if (combo >= 5) return 'frenzy';
+    return null;
+};
+
+const TIER_CONFIG: Record<FrenzyTier, {
+    label: string;
+    colors: string;
+    border: string;
+    glow: string;
+    textGradient: string;
+    multiplier: number;
+}> = {
+    frenzy: {
+        label: 'FRENZY!',
+        colors: 'border-orange-500/50',
+        border: 'border-orange-500/50',
+        glow: 'shadow-[inset_0_0_50px_rgba(255,100,0,0.5)]',
+        textGradient: 'from-yellow-300 to-red-600',
+        multiplier: 2,
+    },
+    super: {
+        label: 'SUPER FRENZY!',
+        colors: 'border-purple-500/60',
+        border: 'border-purple-500/60',
+        glow: 'shadow-[inset_0_0_60px_rgba(168,85,247,0.6)]',
+        textGradient: 'from-yellow-300 via-pink-400 to-purple-600',
+        multiplier: 3,
+    },
+    mega: {
+        label: 'MEGA FRENZY!',
+        colors: 'border-rose-500/70',
+        border: 'border-rose-500/70',
+        glow: 'shadow-[inset_0_0_80px_rgba(244,63,94,0.7)]',
+        textGradient: 'from-yellow-300 via-orange-400 to-rose-600',
+        multiplier: 5,
+    },
+};
+
+export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive, combo }) => {
     const { play } = useSound();
 
+    const tier = getFrenzyTier(combo);
+    const config = tier ? TIER_CONFIG[tier] : null;
+
     useEffect(() => {
-        if (isActive) {
+        if (isActive && tier) {
             play('frenzy');
         }
-    }, [isActive, play]);
+    }, [isActive, tier, play]);
 
     return (
         <AnimatePresence>
-            {isActive && (
+            {isActive && config && (
                 <div
                     className="absolute inset-0 z-30 pointer-events-none overflow-hidden"
                     role="status"
                     aria-live="polite"
-                    aria-label="Frenzy Mode Activated"
+                    aria-label={`${config.label} Mode Activated`}
                 >
                     {/* Pulsing Border */}
                     <motion.div
-                        className="absolute inset-0 border-[8px] border-orange-500/50 shadow-[inset_0_0_50px_rgba(255,100,0,0.5)]"
+                        className={`absolute inset-0 border-[8px] ${config.border} ${config.glow}`}
                         initial={{ opacity: 0 }}
                         animate={{
                             opacity: [0.5, 1, 0.5],
@@ -56,18 +101,32 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive }) => {
                         exit={{ scale: 1.5, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 15 }}
                     >
-                        <h2 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-red-600 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-widest italic animate-pulse">
-                            {t('game.frenzy')}
+                        <h2 className={`text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b ${config.textGradient} drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-widest italic animate-pulse`}>
+                            {config.label}
                         </h2>
+                        {tier !== 'frenzy' && (
+                            <motion.p
+                                className="text-center text-2xl font-bold text-white drop-shadow-lg mt-1"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                            >
+                                {config.multiplier}x Score!
+                            </motion.p>
+                        )}
                     </motion.div>
 
-                    {/* Ember Particles (Lightweight) */}
-                    {PARTICLES.map((i) => (
+                    {/* Ember Particles (Lightweight) — more particles for higher tiers */}
+                    {Array.from({ length: PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1) }, (_, i) => (
                         <motion.div
                             key={i}
-                            className="absolute bottom-0 w-2 h-2 bg-orange-400 rounded-full"
+                            className={`absolute bottom-0 w-2 h-2 rounded-full ${
+                                tier === 'mega' ? 'bg-rose-400' :
+                                tier === 'super' ? 'bg-purple-400' :
+                                'bg-orange-400'
+                            }`}
                             style={{
-                                left: `${20 + i * 15}%`,
+                                left: `${10 + (i * 7) % 80}%`,
                             }}
                             initial={{ y: 0, opacity: 1 }}
                             animate={{
@@ -78,11 +137,23 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive }) => {
                             transition={{
                                 duration: 1 + Math.random(),
                                 repeat: Infinity,
-                                delay: i * 0.2,
+                                delay: (i * 0.1) % 1.5,
                                 ease: "easeOut"
                             }}
                         />
                     ))}
+
+                    {/* Mega Frenzy screen shake effect */}
+                    {tier === 'mega' && (
+                        <motion.div
+                            className="absolute inset-0 bg-rose-500/5"
+                            animate={{
+                                opacity: [0, 0.1, 0],
+                                scale: [1, 1.01, 1],
+                                transition: { duration: 0.5, repeat: Infinity }
+                            }}
+                        />
+                    )}
                 </div>
             )}
         </AnimatePresence>

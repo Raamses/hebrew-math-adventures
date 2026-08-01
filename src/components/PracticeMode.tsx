@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProfile } from '../context/ProfileContext';
 import { useSound } from '../hooks/useSound';
+import { useMusicalSound } from '../hooks/useMusicalSound';
 import { usePracticeSession } from '../hooks/usePracticeSession';
 import { useAnswerFlow } from '../hooks/useAnswerFlow';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useQuest } from '../context/QuestContext';
 import { formatProblemEquation } from '../lib/gameLogic';
 
 // Sub-components
@@ -30,17 +32,32 @@ interface PracticeModeProps {
     targetLevel: number;
     onExit: () => void;
     problemConfig?: BaseProblemConfig;
-    onComplete?: (success: boolean) => void;
+    onComplete?: (success: boolean, correct: number, attempts: number) => void;
+    onMemoryMode?: () => void;
+    onInvadersMode?: () => void;
+    dailyChallengeMode?: string;
+    dailyChallengeTarget?: number;
 }
 
-export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete }) => {
+export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete, onMemoryMode, onInvadersMode, dailyChallengeMode, dailyChallengeTarget }) => {
     const { t, i18n } = useTranslation();
-    const { profile, incrementStreak, resetStreak, updateArcadeBestScore } = useProfile();
+    const { profile, incrementStreak, resetStreak, updateArcadeBestScore, recordSession } = useProfile();
     const { playSound } = useSound();
+    const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
     const { logEvent } = useAnalytics();
+    const { completeDailyChallenge, todayChallenge, addDailyChallengeCorrect, dailyChallengeCorrect } = useQuest();
+    // Track daily challenge completion to avoid double-calling
+    const dailyChallengeClaimedRef = useRef(false);
+    // Track accumulated correct in a ref to avoid stale closures
+    const dailyChallengeCorrectRef = useRef(dailyChallengeCorrect);
+    useEffect(() => {
+        dailyChallengeCorrectRef.current = dailyChallengeCorrect;
+    }, [dailyChallengeCorrect]);
 
     // Track start time for current problem
     const problemStartTime = useRef(Date.now());
+    // Track start time for entire session (for analytics)
+    const sessionStartTime = useRef(Date.now());
 
     // Reset timer when problem changes
     useEffect(() => {
@@ -52,6 +69,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         session,
         problem,
         initSession,
+        nextProblem,
         restartSession,
         submitResult,
         evaluateAnswer
@@ -79,6 +97,44 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     // Summary State
     const [showSummary, setShowSummary] = useState(false);
 
+    // Daily challenge: check completion at session end.
+    // Progress accumulates across sessions via QuestContext (for when target > session length).
+    // IMPORTANT: Zen levels are only 10 questions, but daily target can be up to 19.
+    const effectiveDailyMode = dailyChallengeMode || todayChallenge.mode;
+    const effectiveDailyTarget = dailyChallengeTarget || todayChallenge.target;
+    // Track how many correct answers from this session have already been added to the daily total.
+    // This lets us check after EVERY correct answer while only accumulating the delta.
+    const sessionAddedCorrectRef = useRef(0);
+    const checkDailyChallenge = (sessionCorrect: number) => {
+        if (dailyChallengeClaimedRef.current) return;
+        // Only accumulate the new correct answers since last check
+        const newCorrect = sessionCorrect - sessionAddedCorrectRef.current;
+        if (newCorrect <= 0) return;
+        // Check if current session mode matches today's challenge mode
+        const currentSession = sessionRef.current;
+        const sessionMode = currentSession.mode.toLowerCase();
+        const challengeMode = effectiveDailyMode.toLowerCase();
+        // STANDARD maps to 'zen'/'classic', TIME_ATTACK maps to 'blitz', SURVIVAL maps to 'survival'
+        const modeMatches =
+            sessionMode === challengeMode ||
+            (sessionMode === 'standard' && (challengeMode === 'zen' || challengeMode === 'classic')) ||
+            (sessionMode === 'time_attack' && challengeMode === 'blitz');
+        if (!modeMatches) return;
+        // Accumulate only the delta into the daily total
+        addDailyChallengeCorrect(newCorrect);
+        sessionAddedCorrectRef.current = sessionCorrect;
+        // Check if accumulated total meets the target.
+        // NOTE: addDailyChallengeCorrect updates React state, but the ref updates via useEffect (async).
+        // So compute the expected accumulated value manually from the current ref + delta.
+        const accumulated = dailyChallengeCorrectRef.current + newCorrect;
+        if (accumulated < effectiveDailyTarget) return;
+        const result = completeDailyChallenge();
+        if (result) {
+            dailyChallengeClaimedRef.current = true;
+            console.log(`[DC DEBUG] Daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
+        }
+    };
+
     // Answer Flow Hook (Timing & Transitions)
     const { isProcessing, submitAnswer } = useAnswerFlow({
         correctDelay: 2000,
@@ -95,12 +151,28 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             // Check completion for Standard Mode (Fixed Length)
             // Arcade modes continue until Game Over
+            console.log('[DC DEBUG] onCorrectComplete', { mode: currentSession.mode, count: currentSession.count, correct: currentSession.correct, SESSION_LENGTH });
             if (currentSession.mode === 'STANDARD' && currentSession.count >= SESSION_LENGTH) {
                 playSound('levelUp');
+                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                recordSession({
+                    date: new Date().toISOString().slice(0, 10),
+                    durationSec: Math.round((Date.now() - sessionStartTime.current) / 1000),
+                    correct: currentSession.correct,
+                    attempts: currentSession.attempts,
+                    skillFocus: problemConfig?.type || 'mixed',
+                    gameMode: 'practice',
+                });
+                // Check daily challenge completion
+                checkDailyChallenge(currentSession.correct);
                 setShowSummary(true);
-                if (onComplete) onComplete(true);
+                if (onComplete) onComplete(true, currentSession.correct, currentSession.attempts);
             } else {
-                initSession(currentSession.mode); // Generate next
+                // Check daily challenge after EVERY correct answer (not just session end)
+                // This is essential for Zen mode where sessions are only 10 questions
+                // but the daily target can be up to 19 — progress accumulates across sessions
+                checkDailyChallenge(currentSession.correct);
+                nextProblem(); // Generate next problem WITHOUT resetting state
             }
         },
         onWrongComplete: () => {
@@ -130,8 +202,19 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             }
 
             playSound('levelUp'); // Or 'gameOver' sound if we had one
+            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            recordSession({
+                date: new Date().toISOString().slice(0, 10),
+                durationSec: Math.round((Date.now() - sessionStartTime.current) / 1000),
+                correct: session.correct,
+                attempts: session.attempts,
+                skillFocus: problemConfig?.type || 'mixed',
+                gameMode: 'practice',
+            });
+            // Check daily challenge completion on Game Over
+            checkDailyChallenge(session.correct);
             setShowSummary(true);
-            if (onComplete) onComplete(false); // Game Over isn't necessarily a "Win"
+            if (onComplete) onComplete(false, session.correct, session.attempts); // Game Over isn't necessarily a "Win"
         }
     }, [session, showSummary, onComplete, playSound, isProcessing, updateArcadeBestScore]);
 
@@ -150,8 +233,20 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     }, [targetLevel, profile, problem, t, initSession, problemConfig]);
 
     const handleModeSelect = (mode: GameMode) => {
+        if (mode === 'MEMORY' && onMemoryMode) {
+            setIsModeSelectorOpen(false);
+            onMemoryMode();
+            return;
+        }
+        if (mode === 'INVADERS' && onInvadersMode) {
+            setIsModeSelectorOpen(false);
+            onInvadersMode();
+            return;
+        }
         setIsModeSelectorOpen(false);
         hasInitializedRef.current = true;
+        sessionStartTime.current = Date.now();
+        sessionAddedCorrectRef.current = 0; // reset for new session
         initSession(mode);
     };
 
@@ -172,7 +267,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         submitResult(isCorrect); // Update session state
 
         if (isCorrect) {
-            playSound('correct');
+            if (profile?.settings?.soundGarden) {
+                playMelodyNote();
+            } else {
+                playSound('correct');
+            }
+            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
             // Toast mainly for Standard/Zen. Arcade has the HUD.
             if (session.mode === 'STANDARD') {
                 setScoreToast({ message: t('feedback.correct') });
@@ -191,7 +291,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             if (incrementStreak) incrementStreak();
         } else {
-            playSound('wrong');
+            if (profile?.settings?.soundGarden) {
+                playWrongMelody();
+            } else {
+                playSound('wrong');
+            }
+            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
             const evalResult = evaluateAnswer(problem, 'WRONG');
             setFeedback(t(evalResult.message || 'feedback.defaultError'));
 
@@ -208,6 +313,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
     const handleRestart = () => {
         setIsMenuOpen(false);
+        sessionStartTime.current = Date.now();
+        sessionAddedCorrectRef.current = 0; // reset daily challenge tracking for new session
         // If it was Free Play, show selector again. If Saga, just restart Standard.
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
@@ -218,6 +325,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
     const handlePlayAgain = () => {
         setShowSummary(false);
+        sessionStartTime.current = Date.now();
+        sessionAddedCorrectRef.current = 0; // reset daily challenge tracking for new session
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
         } else {

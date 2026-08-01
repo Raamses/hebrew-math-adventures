@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { type UserProfile } from '../types/user';
+import { type UserProfile, type PetState, type PetSpecies } from '../types/user';
+import type { SessionRecord } from '../types/analytics';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { isValidProfileName } from '../lib/validation';
+
+const PET_DEFAULT: PetState = { species: 'owl', name: 'באדי', happiness: 60, unlockedTricks: [], lastFedDate: null };
 
 interface ProfileContextType {
     profile: UserProfile | null;
@@ -16,6 +19,18 @@ interface ProfileContextType {
     updateMascot: (mascotId: 'owl' | 'bear' | 'ant' | 'lion') => void;
     updateProfile: (id: string, updates: Partial<UserProfile>) => void;
     updateArcadeBestScore: (mode: string, score: number) => void;
+    addCoins: (amount: number) => void;
+    spendCoins: (amount: number) => boolean;
+    unlockBadge: (badgeId: string) => void;
+    buyItem: (itemId: string, price: number) => boolean;
+    equipItem: (category: string, itemId: string) => void;
+    toggleSoundGarden: () => void;
+    recordSession: (record: SessionRecord) => void;
+    addGems: (amount: number) => void;
+    spendGems: (amount: number) => boolean;
+    feedPet: () => void;
+    setPetSpecies: (species: PetSpecies) => void;
+    renamePet: (name: string) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -81,7 +96,12 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
             typeof s.sfxVolume === 'number' &&
             typeof s.isMuted === 'boolean'
         ) {
-            sanitized.settings = { musicVolume: s.musicVolume, sfxVolume: s.sfxVolume, isMuted: s.isMuted };
+            sanitized.settings = {
+                musicVolume: s.musicVolume,
+                sfxVolume: s.sfxVolume,
+                isMuted: s.isMuted,
+                soundGarden: typeof s.soundGarden === 'boolean' ? s.soundGarden : false,
+            };
         } else {
             console.warn('Attempted to update profile with invalid settings, skipping update');
         }
@@ -119,6 +139,88 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
         }
     }
 
+    if (updates.sessionHistory !== undefined) {
+        if (Array.isArray(updates.sessionHistory)) {
+            sanitized.sessionHistory = updates.sessionHistory;
+        } else {
+            console.warn('Attempted to update profile with invalid sessionHistory, skipping update');
+        }
+    }
+
+    if (updates.coins !== undefined) {
+        if (typeof updates.coins === 'number' && Number.isFinite(updates.coins) && updates.coins >= 0) {
+            sanitized.coins = updates.coins;
+        } else {
+            console.warn('Attempted to update profile with invalid coins, skipping update');
+        }
+    }
+
+    if (updates.unlockedBadges !== undefined) {
+        if (Array.isArray(updates.unlockedBadges) && updates.unlockedBadges.every(v => typeof v === 'string')) {
+            sanitized.unlockedBadges = updates.unlockedBadges;
+        } else {
+            console.warn('Attempted to update profile with invalid unlockedBadges, skipping update');
+        }
+    }
+
+    if (updates.ownedItems !== undefined) {
+        if (Array.isArray(updates.ownedItems) && updates.ownedItems.every(v => typeof v === 'string')) {
+            sanitized.ownedItems = updates.ownedItems;
+        } else {
+            console.warn('Attempted to update profile with invalid ownedItems, skipping update');
+        }
+    }
+
+    if (updates.equippedItems !== undefined) {
+        if (isPlainObject(updates.equippedItems)) {
+            sanitized.equippedItems = updates.equippedItems;
+        } else {
+            console.warn('Attempted to update profile with invalid equippedItems, skipping update');
+        }
+    }
+
+    if (updates.dailyStamps !== undefined) {
+        if (Array.isArray(updates.dailyStamps) && updates.dailyStamps.every(v => typeof v === 'string')) {
+            sanitized.dailyStamps = updates.dailyStamps;
+        } else {
+            console.warn('Attempted to update profile with invalid dailyStamps, skipping update');
+        }
+    }
+
+    if (updates.lastDailyDate !== undefined) {
+        if (updates.lastDailyDate === null || typeof updates.lastDailyDate === 'string') {
+            sanitized.lastDailyDate = updates.lastDailyDate;
+        } else {
+            console.warn('Attempted to update profile with invalid lastDailyDate, skipping update');
+        }
+    }
+
+    if (updates.gems !== undefined) {
+        if (typeof updates.gems === 'number' && Number.isFinite(updates.gems) && updates.gems >= 0) {
+            sanitized.gems = updates.gems;
+        } else {
+            console.warn('Attempted to update profile with invalid gems, skipping update');
+        }
+    }
+
+    if (updates.pet !== undefined) {
+        const VALID_SPECIES: PetSpecies[] = ['owl', 'cat', 'dragon', 'robot'];
+        const p = updates.pet;
+        if (
+            p === null ||
+            (isPlainObject(p) &&
+                typeof p.species === 'string' && VALID_SPECIES.includes(p.species as PetSpecies) &&
+                typeof p.name === 'string' && p.name.length <= 20 &&
+                typeof p.happiness === 'number' && Number.isFinite(p.happiness) && p.happiness >= 0 && p.happiness <= 100 &&
+                Array.isArray(p.unlockedTricks) && p.unlockedTricks.every((t: unknown) => typeof t === 'string') &&
+                (p.lastFedDate === null || typeof p.lastFedDate === 'string'))
+        ) {
+            sanitized.pet = p as PetState | null;
+        } else {
+            console.warn('Attempted to update profile with invalid pet, skipping update');
+        }
+    }
+
     return sanitized;
 };
 
@@ -135,11 +237,19 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     ...p,
                     mascotId: p.mascotId || (p as any).mascot || 'owl',
                     avatarId: p.avatarId || (p as any).avatar || '🦁',
-                    settings: p.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false },
+                    settings: p.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false, soundGarden: false },
                     capabilities: p.capabilities || { ...INITIAL_CAPABILITY_PROFILE, age: p.age },
-
                     streak: p.streak || 0,
-                    arcadeStats: p.arcadeStats || {}
+                    arcadeStats: p.arcadeStats || {},
+                    coins: p.coins ?? 0,
+                    unlockedBadges: p.unlockedBadges || [],
+                    ownedItems: p.ownedItems || [],
+                    equippedItems: p.equippedItems || {},
+                    dailyStamps: p.dailyStamps || [],
+                    lastDailyDate: p.lastDailyDate ?? null,
+                    sessionHistory: p.sessionHistory || [],
+                    gems: p.gems ?? 0,
+                    pet: p.pet ?? PET_DEFAULT,
                 }));
             } catch (error) {
                 console.error('Failed to parse profiles from local storage:', error);
@@ -182,7 +292,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             settings: {
                 musicVolume: 1,
                 sfxVolume: 1,
-                isMuted: false
+                isMuted: false,
+                soundGarden: false
             },
             capabilities: { ...INITIAL_CAPABILITY_PROFILE, age },
             arcadeStats: {}
@@ -292,6 +403,105 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [profile, updateProfile]);
 
+    const addCoins = useCallback((amount: number) => {
+        if (!profile || amount <= 0) return;
+        updateProfile(profile.id, { coins: (profile.coins || 0) + amount });
+    }, [profile, updateProfile]);
+
+    const spendCoins = useCallback((amount: number): boolean => {
+        if (!profile) return false;
+        const current = profile.coins || 0;
+        if (current < amount) return false;
+        updateProfile(profile.id, { coins: current - amount });
+        return true;
+    }, [profile, updateProfile]);
+
+    const unlockBadge = useCallback((badgeId: string) => {
+        if (!profile) return;
+        const existing = profile.unlockedBadges || [];
+        if (existing.includes(badgeId)) return;
+        updateProfile(profile.id, {
+            unlockedBadges: [...existing, badgeId],
+        });
+    }, [profile, updateProfile]);
+
+    const buyItem = useCallback((itemId: string, price: number): boolean => {
+        if (!profile) return false;
+        const currentCoins = profile.coins || 0;
+        if (currentCoins < price) return false;
+        const owned = profile.ownedItems || [];
+        if (owned.includes(itemId)) return false;
+        updateProfile(profile.id, {
+            coins: currentCoins - price,
+            ownedItems: [...owned, itemId],
+        });
+        return true;
+    }, [profile, updateProfile]);
+
+    const equipItem = useCallback((category: string, itemId: string) => {
+        if (!profile) return;
+        const equipped = profile.equippedItems || {};
+        updateProfile(profile.id, {
+            equippedItems: { ...equipped, [category]: itemId },
+        });
+    }, [profile, updateProfile]);
+
+    const toggleSoundGarden = useCallback(() => {
+        if (!profile) return;
+        const currentSettings = profile.settings || { musicVolume: 1, sfxVolume: 1, isMuted: false, soundGarden: false };
+        updateProfile(profile.id, {
+            settings: {
+                ...currentSettings,
+                soundGarden: !currentSettings.soundGarden,
+            },
+        });
+    }, [profile, updateProfile]);
+
+    const recordSession = useCallback((record: SessionRecord) => {
+        if (!profile) return;
+        const history = profile.sessionHistory || [];
+        const newHistory = [...history, record];
+        // Cap at 100 entries (FIFO)
+        if (newHistory.length > 100) {
+            newHistory.splice(0, newHistory.length - 100);
+        }
+        updateProfile(profile.id, { sessionHistory: newHistory });
+    }, [profile, updateProfile]);
+
+    const addGems = useCallback((amount: number) => {
+        if (!profile || amount <= 0) return;
+        updateProfile(profile.id, { gems: (profile.gems || 0) + amount });
+    }, [profile, updateProfile]);
+
+    const spendGems = useCallback((amount: number): boolean => {
+        if (!profile) return false;
+        const current = profile.gems || 0;
+        if (current < amount) return false;
+        updateProfile(profile.id, { gems: current - amount });
+        return true;
+    }, [profile, updateProfile]);
+
+    const feedPet = useCallback(() => {
+        if (!profile || !profile.pet) return;
+        if ((profile.gems || 0) < 2) return;
+        const todayISO = new Date().toISOString().slice(0, 10);
+        if (profile.pet.lastFedDate === todayISO) return; // already fed today
+        updateProfile(profile.id, {
+            gems: (profile.gems || 0) - 2,
+            pet: { ...profile.pet, happiness: Math.min(100, profile.pet.happiness + 25), lastFedDate: todayISO },
+        });
+    }, [profile, updateProfile]);
+
+    const setPetSpecies = useCallback((species: PetSpecies) => {
+        if (!profile || !profile.pet) return;
+        updateProfile(profile.id, { pet: { ...profile.pet, species } });
+    }, [profile, updateProfile]);
+
+    const renamePet = useCallback((name: string) => {
+        if (!profile || !profile.pet) return;
+        updateProfile(profile.id, { pet: { ...profile.pet, name: name.slice(0, 20) } });
+    }, [profile, updateProfile]);
+
     const value = useMemo(() => ({
         profile,
         allProfiles,
@@ -303,8 +513,20 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         incrementStreak,
         updateMascot,
         updateProfile,
-        updateArcadeBestScore
-    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore]);
+        updateArcadeBestScore,
+        addCoins,
+        spendCoins,
+        unlockBadge,
+        buyItem,
+        equipItem,
+        toggleSoundGarden,
+        recordSession,
+        addGems,
+        spendGems,
+        feedPet,
+        setPetSpecies,
+        renamePet,
+    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore, addCoins, spendCoins, unlockBadge, buyItem, equipItem, toggleSoundGarden, recordSession, addGems, spendGems, feedPet, setPetSpecies, renamePet]);
 
     return (
         <ProfileContext.Provider value={value}>

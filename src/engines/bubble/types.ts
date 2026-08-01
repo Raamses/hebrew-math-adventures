@@ -6,6 +6,19 @@ export type FailConditionType = 'timer_zero' | 'screen_full' | 'missed_target_li
 export type DifficultyCurve = 'linear' | 'exponential' | 'static';
 export type GameTheme = 'space' | 'underwater' | 'standard';
 
+/** Arcade game mode selector */
+export type ArcadeMode = 'zen' | 'classic' | 'blitz' | 'survival';
+
+// --- Power-Ups ---
+
+export type PowerUpType = 'freeze' | 'double_points' | 'pop_distractors' | 'slow_motion' | 'lightning_chain' | 'rainbow_magnet';
+
+export interface PowerUpState {
+    type: PowerUpType;
+    active: boolean;
+    expiresAt: number; // timestamp (ms)
+}
+
 // --- Configuration ---
 
 export interface GameConfig {
@@ -42,6 +55,10 @@ export interface GameConfig {
     theme: GameTheme;
     vfxEnabled: boolean;
 
+    // -- Power-Ups --
+    /** Time in ms between power-up bubble spawns (default 15000 = 15s) */
+    powerUpSpawnIntervalMs?: number;
+
     // -- Custom Flags --
     [key: string]: any; // Allow extensibility for specific strategies (e.g. isMathSensory)
 }
@@ -69,6 +86,16 @@ export interface BubbleEntity<T = any> {
     createdAt: number;
     /** Timestamp when popped (ms) for cleanup */
     poppedAt?: number;
+    /** Marks this bubble as a power-up bubble (no answer validation needed) */
+    isPowerUp?: boolean;
+    /** Which power-up effect this bubble grants when popped */
+    powerUpType?: PowerUpType;
+    /** Marks this bubble as a boss bubble (requires multiple correct pops to defeat) */
+    isBoss?: boolean;
+    /** Current health of a boss bubble (decrements on each correct pop) */
+    bossHealth?: number;
+    /** Maximum health of a boss bubble (for rendering the health bar) */
+    bossMaxHealth?: number;
 }
 
 // --- Interfaces ---
@@ -89,6 +116,9 @@ export interface IGameBehavior {
 
     /** Optional: Get current objective instruction (e.g. "2 + 2 = ?") */
     getInstruction?(): string;
+
+    /** Force-regenerate the current problem (for mid-session level changes). */
+    regenerateProblem(level: number, config: GameConfig): void;
 }
 
 export interface GameState {
@@ -100,4 +130,6 @@ export interface GameState {
     isGameOver: boolean;
     isVictory: boolean;
     isFrenzy: boolean;
+    /** Active power-up state (null when none active) */
+    powerUpState: PowerUpState | null;
 }

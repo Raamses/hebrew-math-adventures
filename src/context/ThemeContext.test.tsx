@@ -27,7 +27,14 @@ describe('ThemeContext', () => {
             incrementStreak: vi.fn(),
             updateMascot: vi.fn(),
             updateProfile: mockUpdateProfile,
-            updateArcadeBestScore: vi.fn()
+            updateArcadeBestScore: vi.fn(),
+            addCoins: vi.fn(),
+            spendCoins: vi.fn(),
+            unlockBadge: vi.fn(),
+            buyItem: vi.fn(),
+            equipItem: vi.fn(),
+            toggleSoundGarden: vi.fn(),
+            recordSession: vi.fn()
         });
     });
 
@@ -55,7 +62,12 @@ describe('ThemeContext', () => {
             incrementStreak: vi.fn(),
             updateMascot: vi.fn(),
             updateProfile: mockUpdateProfile,
-            updateArcadeBestScore: vi.fn()
+            updateArcadeBestScore: vi.fn(),
+            addCoins: vi.fn(),
+            spendCoins: vi.fn(),
+            unlockBadge: vi.fn(),
+            buyItem: vi.fn(),
+            equipItem: vi.fn()
         } as any);
 
         const { result } = renderHook(() => useTheme(), { wrapper: ThemeProvider });

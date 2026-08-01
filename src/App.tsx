@@ -4,12 +4,16 @@ import './i18n'; // Initialize translations
 import { ProfileProvider, useProfile } from './context/ProfileContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { ProgressProvider } from './context/ProgressContext'
+import { QuestProvider } from './context/QuestContext'
 import { ProfileSelector } from './components/onboarding/ProfileSelector'
 import { ParentGate } from './components/parent/ParentGate'
 import { ParentDashboard } from './components/parent/ParentDashboard'
 import { SagaMap } from './components/map/SagaMap'
 import { GameOrchestrator } from './components/GameOrchestrator'
+import { MascotGreeting } from './components/mascot/MascotGreeting'
+import { PetScreen } from './components/pet/PetScreen'
 import type { LearningNode } from './types/learningPath'
+import type { ArcadeMode } from './engines/bubble/types'
 
 import { useAnalytics } from './hooks/useAnalytics';
 
@@ -22,9 +26,13 @@ const AppContent = () => {
   }, [logEvent]);
 
   const { profile, logout } = useProfile();
-  const [view, setView] = useState<'select' | 'map' | 'game' | 'parent'>('select');
+  const [view, setView] = useState<'select' | 'map' | 'game' | 'parent' | 'pet'>('select');
   const [showParentGate, setShowParentGate] = useState(false);
   const [selectedNode, setSelectedNode] = useState<LearningNode | null>(null);
+  const [arcadeMode, setArcadeMode] = useState<ArcadeMode | undefined>(undefined);
+  const [dailyChallengeMode, setDailyChallengeMode] = useState<string | undefined>(undefined);
+  const [dailyChallengeTarget, setDailyChallengeTarget] = useState<number | undefined>(undefined);
+  const [showGreeting, setShowGreeting] = useState(false);
 
   console.log('App Render:', { view, profileId: profile?.id, selectedNode });
 
@@ -34,6 +42,10 @@ const AppContent = () => {
     effectiveView = 'select';
   } else if (profile && view === 'select') {
     effectiveView = 'map';
+    // Show greeting when a profile is first selected
+    if (!showGreeting) {
+      setShowGreeting(true);
+    }
   }
 
   const handleNodeSelect = (node: LearningNode) => {
@@ -42,25 +54,36 @@ const AppContent = () => {
     setView('game');
   };
 
-  const handleArcadeMode = () => {
+  const handleArcadeMode = (mode?: ArcadeMode, dailyMode?: string, dailyTarget?: number) => {
     if (!profile) return;
     setSelectedNode(null); // Explicitly null for Free Play
+    setArcadeMode(mode);
+    setDailyChallengeMode(dailyMode);
+    setDailyChallengeTarget(dailyTarget);
     setView('game');
   };
 
   const handleGameExit = () => {
     setView('map');
     setSelectedNode(null);
+    setArcadeMode(undefined);
+    setDailyChallengeMode(undefined);
+    setDailyChallengeTarget(undefined);
   };
 
   const handleLogout = () => {
     logout();
     setView('select');
     setSelectedNode(null);
+    setShowGreeting(false);
   };
 
   if (effectiveView === 'parent') {
     return <ParentDashboard onExit={() => setView('select')} />;
+  }
+
+  if (effectiveView === 'pet') {
+    return <PetScreen onBack={() => setView('map')} />;
   }
 
   if (!profile) {
@@ -82,7 +105,16 @@ const AppContent = () => {
 
   if (effectiveView === 'map') {
     return (
-      <SagaMap onNodeSelect={handleNodeSelect} onLogout={handleLogout} onArcadeMode={handleArcadeMode} />
+      <>
+        {showGreeting && profile && (
+          <MascotGreeting
+            mascotId={profile.mascotId}
+            streak={profile.streak || 0}
+            onDismiss={() => setShowGreeting(false)}
+          />
+        )}
+        <SagaMap onNodeSelect={handleNodeSelect} onLogout={handleLogout} onArcadeMode={handleArcadeMode} onOpenPet={() => setView('pet')} />
+      </>
     );
   }
 
@@ -104,6 +136,9 @@ const AppContent = () => {
         onExit={handleGameExit}
         targetLevel={effectiveLevel}
         node={selectedNode}
+        arcadeMode={arcadeMode}
+        dailyChallengeMode={dailyChallengeMode}
+        dailyChallengeTarget={dailyChallengeTarget}
       />
     );
   }
@@ -117,9 +152,11 @@ const App = () => {
   return (
     <ProfileProvider>
       <ProgressProvider>
-        <ThemeProvider>
-          <AppContent />
-        </ThemeProvider>
+        <QuestProvider>
+          <ThemeProvider>
+            <AppContent />
+          </ThemeProvider>
+        </QuestProvider>
       </ProgressProvider>
     </ProfileProvider>
   );

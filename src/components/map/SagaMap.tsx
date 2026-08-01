@@ -1,15 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CURRICULUM } from '../../data/learningPath';
 import { useProgress } from '../../context/ProgressContext';
 import type { LearningNode } from '../../types/learningPath';
-import { Star, Lock, LogOut, Globe } from 'lucide-react';
+import { Star, Lock, LogOut, Globe, Award, ShoppingBag, Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { motion, type Variants } from 'framer-motion';
+import { motion, type Variants, AnimatePresence } from 'framer-motion';
+import type { ArcadeMode } from '../../engines/bubble/types';
+import { ARCADE_MODE_LABELS } from '../../lib/arcadeModes';
+import { QuestPanel } from '../quests/QuestPanel';
+import { BadgeCollection } from '../badges/BadgeCollection';
+import { TreasureShop } from '../shop/TreasureShop';
+import { PetAvatar } from '../pet/PetAvatar';
+import { useProfile } from '../../context/ProfileContext';
+import { useAnalytics } from '../../hooks/useAnalytics';
+import { useQuest } from '../../context/QuestContext';
 
 interface SagaMapProps {
     onNodeSelect: (node: LearningNode) => void;
     onLogout: () => void;
-    onArcadeMode: () => void;
+    onArcadeMode: (mode?: ArcadeMode, dailyMode?: string, dailyTarget?: number) => void;
+    onOpenPet: () => void;
 }
 
 const containerVariants: Variants = {
@@ -36,12 +46,15 @@ const nodeVariants: Variants = {
     }
 };
 
-import { useAnalytics } from '../../hooks/useAnalytics';
-
-export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode }) => {
+export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode, onOpenPet }) => {
     const { isNodeLocked, getStars } = useProgress();
     const { t, i18n } = useTranslation();
     const { logEvent } = useAnalytics();
+    const { profile } = useProfile();
+    const { todayChallenge } = useQuest();
+    const [showModeSelector, setShowModeSelector] = useState(false);
+    const [showBadges, setShowBadges] = useState(false);
+    const [showShop, setShowShop] = useState(false);
 
     const isRtl = i18n.language === 'he';
 
@@ -55,29 +68,74 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
     };
 
     return (
-        <div className="w-full min-h-screen bg-slate-100 pb-20 overflow-y-auto" dir={isRtl ? 'rtl' : 'ltr'}>
-            <header className="sticky top-0 bg-white/90 backdrop-blur z-50 shadow-sm border-b border-slate-200 px-4 py-4 flex items-center justify-between">
+        <div className="w-full min-h-screen bg-slate-100 pb-[calc(5rem+env(safe-area-inset-bottom))] overflow-y-auto" dir={isRtl ? 'rtl' : 'ltr'}>
+            <header className="sticky top-0 bg-white/90 backdrop-blur z-50 shadow-sm border-b border-slate-200 px-2 py-3 flex items-center justify-between">
                 <button
                     onClick={toggleLanguage}
-                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors flex gap-2 items-center"
-                    title={t('app.switchLanguage')}
+                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+                    title={i18n.language.toUpperCase()}
                     aria-label={t('app.switchLanguage')}
                 >
                     <Globe size={20} aria-hidden="true" />
-                    <span className="text-sm font-bold">{i18n.language.toUpperCase()}</span>
                 </button>
 
-                <h1 className="text-2xl font-bold text-slate-700">
+                <h1 className="text-lg md:text-2xl font-bold text-slate-700">
                     {t('app.journey')}
                 </h1>
 
-                <div className="flex gap-2">
+                <div className="flex gap-1 items-center">
+                    {/* Coin balance */}
+                    <div className="flex items-center gap-1 bg-yellow-100 px-1.5 py-0.5 rounded-full">
+                        <span className="text-xs">🪙</span>
+                        <span className="text-xs font-bold text-yellow-700">{profile?.coins || 0}</span>
+                    </div>
+
+                    {/* Gem balance */}
+                    <div className="flex items-center gap-1 bg-purple-100 px-1.5 py-0.5 rounded-full">
+                        <span className="text-xs">💎</span>
+                        <span className="text-xs font-bold text-purple-700">{profile?.gems || 0}</span>
+                    </div>
+
+                    {/* Pet button */}
+                    {profile?.pet && (
+                        <button
+                            onClick={onOpenPet}
+                            className="p-1.5 bg-pink-100 hover:bg-pink-200 rounded-full transition-colors"
+                            title={t('pet.title', 'החיה שלי')}
+                            aria-label={t('pet.title', 'החיה שלי')}
+                        >
+                            <PetAvatar pet={profile.pet} level={profile.capabilities?.estimatedLevel ?? 1} variant="badge" className="!text-xl" />
+                        </button>
+                    )}
+
+                    {/* Badge collection button */}
                     <button
-                        onClick={onArcadeMode}
-                        className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-bold shadow-sm transition-colors flex items-center gap-1"
+                        onClick={() => setShowBadges(true)}
+                        className="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-full transition-colors"
+                        title={t('badges.collection')}
+                        aria-label={t('badges.collection')}
                     >
-                        <Globe size={16} /> {/* Should probably import Joystick or Gamepad icon but Globe is available */}
-                        <span>{t('app.arcade')}</span>
+                        <Award size={20} aria-hidden="true" />
+                    </button>
+
+                    {/* Shop button */}
+                    <button
+                        onClick={() => setShowShop(true)}
+                        className="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-full transition-colors"
+                        title={t('shop.title')}
+                        aria-label={t('shop.title')}
+                    >
+                        <ShoppingBag size={20} aria-hidden="true" />
+                    </button>
+
+                    {/* Arcade button */}
+                    <button
+                        onClick={() => setShowModeSelector(true)}
+                        className="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-sm transition-colors"
+                        title={t('app.arcade')}
+                        aria-label={t('app.arcade')}
+                    >
+                        <Globe size={18} aria-hidden="true" />
                     </button>
 
                     <button
@@ -90,6 +148,65 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                     </button>
                 </div>
             </header>
+
+            {/* Quest Panel banner */}
+            <QuestPanel onStartChallenge={() => onArcadeMode(todayChallenge.mode as ArcadeMode, todayChallenge.mode, todayChallenge.target)} />
+
+            {/* Arcade Mode Selector Modal */}
+            <AnimatePresence>
+                {showModeSelector && (
+                    <motion.div
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowModeSelector(false)}
+                    >
+                        <motion.div
+                            className="bg-white rounded-3xl p-6 m-4 max-w-sm w-full shadow-2xl"
+                            initial={{ scale: 0.8, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.8, y: 20 }}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <h2 className="text-2xl font-bold text-center text-slate-700 mb-1">{t('app.arcade')}</h2>
+                            <p className="text-center text-slate-400 text-sm mb-6">Pick your challenge! 🎮</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                {(['zen', 'classic', 'blitz', 'survival'] as ArcadeMode[]).map(mode => {
+                                    const info = ARCADE_MODE_LABELS[mode];
+                                    return (
+                                        <button
+                                            key={mode}
+                                            onClick={() => {
+                                                logEvent('arcade_mode_select', { arcade_mode: mode });
+                                                setShowModeSelector(false);
+                                                onArcadeMode(mode);
+                                            }}
+                                            className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-slate-200 hover:border-orange-400 hover:bg-orange-50 transition-colors text-center"
+                                        >
+                                            <span className="text-4xl">{info.emoji}</span>
+                                            <span className="font-bold text-slate-700 text-lg">{info.name}</span>
+                                            <span className="text-xs text-slate-400">{info.desc}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <button
+                                onClick={() => setShowModeSelector(false)}
+                                className="mt-4 w-full py-2 text-slate-400 hover:text-slate-600 font-bold text-sm"
+                            >
+                                Cancel
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Badge Collection Modal */}
+            <BadgeCollection open={showBadges} onClose={() => setShowBadges(false)} />
+
+            {/* Treasure Shop Modal */}
+            <TreasureShop open={showShop} onClose={() => setShowShop(false)} />
 
             <motion.div
                 className="max-w-md mx-auto relative"
@@ -136,7 +253,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                                     <motion.div
                                         key={node.id}
                                         className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer"
-                                        style={{ left: `${node.position.x}%`, top: `${150 * (index + 0.5)}px` }} // Simple vertical spacing
+                                        style={{ left: `${node.position.x}%`, top: `${150 * (index + 0.5)}px` }}
                                         onClick={() => {
                                             if (!locked) {
                                                 logEvent('node_select', {
@@ -192,7 +309,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                                         <motion.div
                                             className="mt-2 text-center bg-white px-3 py-1 rounded-lg text-xs font-bold shadow-md whitespace-nowrap z-10 pointer-events-none text-slate-700"
                                             initial={{ opacity: 0, y: -5 }}
-                                            whileInView={{ opacity: 1, y: 0 }} // Always show name for accessibility/clarity, or keep hover logic
+                                            whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true }}
                                         >
                                             {t(`saga.${node.id}_title`)}

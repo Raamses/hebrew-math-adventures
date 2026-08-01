@@ -7,6 +7,7 @@ import type { Problem } from '../lib/gameLogic';
 describe('MathCard', () => {
     const mockProblem: Problem = {
         type: 'arithmetic',
+        id: 'test-1',
         num1: 5,
         operator: '+',
         num2: 3,
