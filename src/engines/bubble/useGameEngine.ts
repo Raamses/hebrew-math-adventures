@@ -251,7 +251,7 @@ export const useGameEngine = (
             laneCount.current = computeLaneCount(currentConfig);
             const powerUpLane = assignFreeLane(laneCount.current);
             const jitter = (Math.random() - 0.5) * 4; // ±2vw organic jitter
-            const spawnX = getLaneCenter(powerUpLane, laneCount.current) + jitter;
+            const spawnX = Math.max(8, Math.min(92, getLaneCenter(powerUpLane, laneCount.current) + jitter));
 
             const newPowerUpBubble: BubbleEntity = {
                 id: `powerup-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -305,6 +305,8 @@ export const useGameEngine = (
             const spawnY = 110 + (spawnIndex * 12);
             // Slightly vary x per bubble even within the same lane for organic look
             spawnX += (Math.random() - 0.5) * 2;
+            // Clamp to 8-92vw safe boundary (prevents edge drift from jitter + offset)
+            spawnX = Math.max(8, Math.min(92, spawnX));
 
             const newBubble: BubbleEntity = {
                 id: `bubble-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -348,7 +350,7 @@ export const useGameEngine = (
         // Asymmetric despawn TTL: targets live longer, distractors shorter
         const getTtlForEntity = (e: BubbleEntity): number => {
             if (e.isPopped || e.isPowerUp || e.isBoss) return 30000;
-            return isTargetEntity(e) ? 35000 : 22000;
+            return isTargetEntity(e) ? 35000 : 25000;
         };
 
         // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
