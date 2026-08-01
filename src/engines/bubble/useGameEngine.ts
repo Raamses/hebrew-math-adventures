@@ -4,13 +4,15 @@ import type { GameConfig, GameState, BubbleEntity, IGameBehavior, PowerUpType, P
 // --- Power-Up Constants ---
 
 const POWER_UP_SPAWN_INTERVAL_MS = 15000; // default 15s
-const POWER_UP_TYPES: PowerUpType[] = ['freeze', 'double_points', 'pop_distractors', 'slow_motion'];
+export const POWER_UP_TYPES: PowerUpType[] = ['freeze', 'double_points', 'pop_distractors', 'slow_motion', 'lightning_chain', 'rainbow_magnet'];
 
 const POWER_UP_DURATIONS: Record<PowerUpType, number> = {
     freeze: 3000,
     double_points: 5000,
     pop_distractors: 0, // instant
     slow_motion: 4000,
+    lightning_chain: 0,    // instant
+    rainbow_magnet: 3000,  // 3 seconds of magnet
 };
 
 const POWER_UP_EMOJI: Record<PowerUpType, string> = {
@@ -18,6 +20,8 @@ const POWER_UP_EMOJI: Record<PowerUpType, string> = {
     double_points: '✨',
     pop_distractors: '💥',
     slow_motion: '🐌',
+    lightning_chain: '⚡',
+    rainbow_magnet: '🌈',
 };
 
 export const getPowerUpEmoji = (type: PowerUpType): string => POWER_UP_EMOJI[type];
@@ -218,7 +222,14 @@ export const useGameEngine = (
 
         // --- Normal Bubble Spawn ---
         // When a boss is on screen, only spawn distractors (no target bubbles)
-        const newBubbleProps = behavior.generateNext(currentConfig);
+        // Rainbow Magnet: boost target spawn ratio while active
+        let effectiveConfig = currentConfig;
+        const ps = gameStateRef.current.powerUpState;
+        if (ps?.active && ps.type === 'rainbow_magnet') {
+            // 70% target chance (distractorRatio ~0.43 → 1/(0.43+1) ≈ 0.7)
+            effectiveConfig = { ...currentConfig, distractorRatio: 0.43 };
+        }
+        const newBubbleProps = behavior.generateNext(effectiveConfig);
         // If boss is on screen, override: generate a distractor instead of a target
         // We detect target vs distractor by checking if the generated bubble would be "correct"
         // The simplest approach: if boss is on screen, generate a distractor value
@@ -337,6 +348,56 @@ export const useGameEngine = (
             // No ongoing state needed for instant effect
             setGameState(prev => {
                 const next = { ...prev, powerUpState: null };
+                gameStateRef.current = next;
+                return next;
+            });
+            return;
+        }
+
+        // --- Lightning Chain (instant effect) ---
+        // Pops the 3 nearest distractor bubbles to center and awards bonus points
+        if (type === 'lightning_chain') {
+            setEntities(prev => {
+                const next = [...prev];
+                // Find all unpopped, non-target, non-powerup, non-boss bubbles
+                const distractors: { index: number; x: number }[] = [];
+                for (let i = 0; i < next.length; i++) {
+                    const e = next[i];
+                    if (!e.isPopped && !e.isPowerUp && !e.isBoss) {
+                        const isTarget = behavior.validate(e);
+                        if (!isTarget) {
+                            distractors.push({ index: i, x: e.x });
+                        }
+                    }
+                }
+                // Sort by distance to center (x=50) and pop the 3 closest
+                distractors.sort((a, b) => Math.abs(a.x - 50) - Math.abs(b.x - 50));
+                const toPop = distractors.slice(0, 3);
+                for (const d of toPop) {
+                    next[d.index] = { ...next[d.index], isPopped: true, poppedAt: now };
+                }
+                entitiesRef.current = next;
+                return next;
+            });
+            // Award small score bonus for lightning chain
+            setGameState(prev => {
+                const next = { ...prev, score: prev.score + 30 };
+                gameStateRef.current = next;
+                return next;
+            });
+            return;
+        }
+
+        // --- Rainbow Magnet (timed effect) ---
+        // While active, target spawn ratio is boosted (more targets = easier to score)
+        if (type === 'rainbow_magnet') {
+            const newPowerUpState: PowerUpState = {
+                type,
+                active: true,
+                expiresAt: now + duration,
+            };
+            setGameState(prev => {
+                const next = { ...prev, powerUpState: newPowerUpState };
                 gameStateRef.current = next;
                 return next;
             });

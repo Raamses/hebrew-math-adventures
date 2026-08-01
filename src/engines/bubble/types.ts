@@ -11,7 +11,7 @@ export type ArcadeMode = 'zen' | 'classic' | 'blitz' | 'survival';
 
 // --- Power-Ups ---
 
-export type PowerUpType = 'freeze' | 'double_points' | 'pop_distractors' | 'slow_motion';
+export type PowerUpType = 'freeze' | 'double_points' | 'pop_distractors' | 'slow_motion' | 'lightning_chain' | 'rainbow_magnet';
 
 export interface PowerUpState {
     type: PowerUpType;

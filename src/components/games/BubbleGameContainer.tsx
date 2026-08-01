@@ -33,6 +33,8 @@ const POWER_UP_LABELS: Record<PowerUpType, string> = {
     double_points: '✨ Double Points!',
     pop_distractors: '💥 Distractors Popped!',
     slow_motion: '🐌 Slow Motion!',
+    lightning_chain: '⚡ Lightning Chain! Distractors zapped!',
+    rainbow_magnet: '🌈 Rainbow Magnet! Super target boost!',
 };
 
 interface BubbleGameContainerProps {
@@ -280,7 +282,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             play('frenzy');
 
             // Show toast for instant effects (timed effects handled by state-change useEffect)
-            if (entity.powerUpType === 'pop_distractors') {
+            if (entity.powerUpType === 'pop_distractors' || entity.powerUpType === 'lightning_chain') {
                 showPowerUpToast(entity.powerUpType);
             }
 
