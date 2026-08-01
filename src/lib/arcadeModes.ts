@@ -15,7 +15,7 @@ export function getArcadeModeConfig(mode: ArcadeMode): Partial<GameConfig> {
                 winCondition: { type: 'endless', value: 0 },
                 failCondition: { type: 'strikes', value: 0 },
                 spawnIntervalMs: 2000,
-                distractorRatio: 1,
+                distractorRatio: 0.8,
             };
 
         case 'blitz':
@@ -24,6 +24,7 @@ export function getArcadeModeConfig(mode: ArcadeMode): Partial<GameConfig> {
                 winCondition: { type: 'time_limit', value: 60 },
                 failCondition: { type: 'strikes', value: 0 },
                 spawnIntervalMs: 1200,
+                distractorRatio: 1.2,
             };
 
         case 'survival':
@@ -33,6 +34,7 @@ export function getArcadeModeConfig(mode: ArcadeMode): Partial<GameConfig> {
                 failCondition: { type: 'strikes', value: 3 },
                 spawnIntervalMs: 800,
                 levelMultiplier: 1.5,
+                distractorRatio: 1.5,
             };
 
         case 'classic':
@@ -43,6 +45,7 @@ export function getArcadeModeConfig(mode: ArcadeMode): Partial<GameConfig> {
                 failCondition: { type: 'strikes', value: 3 },
                 spawnIntervalMs: 800,
                 levelMultiplier: 1.0,
+                distractorRatio: 1.5,
             };
     }
 }

@@ -190,6 +190,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
     // --- Session Leveling Logic ---
     const handleSessionLeveling = useCallback((isCorrect: boolean) => {
+        const correctCount = gameState.targetsPopped + (isCorrect ? 1 : 0);
         if (isCorrect) {
             consecutiveCorrectRef.current++;
             consecutiveWrongRef.current = 0;
@@ -202,13 +203,13 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     ...config,
                     distractorRatio: Math.round(config.distractorRatio * 1.3),
                 };
-                behavior.regenerateProblem(sessionLevelRef.current, harderConfig);
+                behavior.regenerateProblem(sessionLevelRef.current, harderConfig, correctCount);
             }
 
             // Problem rotation within a level (every N correct)
             if (correctSinceRotationRef.current >= PROBLEM_ROTATION_EVERY) {
                 correctSinceRotationRef.current = 0;
-                behavior.regenerateProblem(sessionLevelRef.current, config);
+                behavior.regenerateProblem(sessionLevelRef.current, config, correctCount);
             }
 
             // Level up check (accelerating thresholds)
@@ -225,7 +226,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
                     setTimeout(() => setShowLevelUp(false), 2000);
                     // Regenerate problem at new level
-                    behavior.regenerateProblem(newLevel, config);
+                    behavior.regenerateProblem(newLevel, config, correctCount);
                     logEvent('session_level_up', { level: newLevel });
                 }
             }
@@ -242,7 +243,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     ...config,
                     distractorRatio: Math.max(1, Math.round(config.distractorRatio * 0.5)),
                 };
-                behavior.regenerateProblem(sessionLevelRef.current, simplerConfig);
+                behavior.regenerateProblem(sessionLevelRef.current, simplerConfig, correctCount);
             }
 
             // Level down after too many consecutive wrong (floor at 1)
@@ -251,11 +252,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 const newLevel = sessionLevelRef.current - 1;
                 setSessionLevel(newLevel);
                 sessionLevelRef.current = newLevel;
-                behavior.regenerateProblem(newLevel, config);
+                behavior.regenerateProblem(newLevel, config, correctCount);
                 logEvent('session_level_down', { level: newLevel });
             }
         }
-    }, [behavior, config, logEvent, play]);
+    }, [behavior, config, logEvent, play, gameState.targetsPopped]);
 
     const onPopWrapper = useCallback((id: string, val: number | string, x: number, y: number) => {
         // Find entity to check if it's a power-up BEFORE popping
@@ -277,7 +278,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 sessionLevelRef.current = newLevel;
                 setShowLevelUp(true);
                 setTimeout(() => setShowLevelUp(false), 2000);
-                behavior.regenerateProblem(newLevel, config);
+                behavior.regenerateProblem(newLevel, config, gameState.targetsPopped + 1);
                 logEvent('boss_defeated', { level: bossResult.level, bonus: bossResult.bonusPoints, newLevel });
                 recordQuestEvent('boss_defeated', 1);
             }

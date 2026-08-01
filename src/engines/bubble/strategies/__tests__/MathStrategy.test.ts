@@ -20,10 +20,10 @@ const makeConfig = (): GameConfig => ({
 
 describe('MathBehaviorStrategy', () => {
     describe('P1-11: Anti-repeat window', () => {
-        it('MAX_RECENT_SIGNATURES should be 18', () => {
+        it('MAX_RECENT_SIGNATURES should be 12', () => {
             // Access static private via any cast
             const Strategy = MathBehaviorStrategy as any;
-            expect(Strategy.MAX_RECENT_SIGNATURES).toBe(18);
+            expect(Strategy.MAX_RECENT_SIGNATURES).toBe(12);
         });
 
         it('MAX_REGEN_ATTEMPTS should be 8', () => {
@@ -49,7 +49,7 @@ describe('MathBehaviorStrategy', () => {
             }
         });
 
-        it('tracks up to 18 recent signatures', () => {
+        it('tracks up to 12 recent signatures', () => {
             const strategy = new MathBehaviorStrategy();
             const config = makeConfig();
 
@@ -57,9 +57,9 @@ describe('MathBehaviorStrategy', () => {
                 strategy.regenerateProblem(1, config);
             }
 
-            // After 25 generations, the recentSignatures array should be capped at 18
+            // After 25 generations, the recentSignatures array should be capped at 12
             const recent = (strategy as any).recentSignatures as string[];
-            expect(recent.length).toBeLessThanOrEqual(18);
+            expect(recent.length).toBeLessThanOrEqual(12);
         });
     });
 

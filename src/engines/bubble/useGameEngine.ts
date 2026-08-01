@@ -55,10 +55,16 @@ export const useGameEngine = (
 
     // --- Refs (Mutable state for Game Loop) ---
     const requestRef = useRef<number | undefined>(undefined);
+    const lastFrameTime = useRef<number>(0);
     const lastSpawnTime = useRef<number>(0);
     const lastPowerUpSpawnTime = useRef<number>(0);
+    const spawnCredits = useRef<number>(0);
+    const lastTargetSeenTime = useRef<number>(0);
     const gameStateRef = useRef(gameState);
     const entitiesRef = useRef<BubbleEntity[]>([]);
+    // Lane-based spawn placement: divide the 8-92vw range into discrete lanes
+    const laneCount = useRef<number>(6);
+    const laneOccupied = useRef<boolean[]>([]);
     // Keep a ref of the latest config so the game loop picks up adaptive changes
     // to spawnIntervalMs and baseVelocity without recreating the loop callback.
     const configRef = useRef(config);
@@ -97,7 +103,7 @@ export const useGameEngine = (
         const currentConfig = configRef.current;
 
         // Generate the current target problem to get the answer
-        const bossProps = behavior.generateNext(currentConfig);
+        const bossProps = behavior.generateNext(currentConfig, { forceTarget: true });
 
         // Use the same internalValue as the current target (boss shows the answer)
         const bossBubble: BubbleEntity = {
@@ -127,7 +133,66 @@ export const useGameEngine = (
 
     // --- Spawn System ---
 
+    const MAX_BANKED_CREDITS = 3;
+
+    const isTargetEntity = useCallback((e: BubbleEntity): boolean => {
+        // Strict filter: don't count popped, power-up, or boss entities
+        if (e.isPopped || e.isPowerUp || e.isBoss) return false;
+        return behavior.validate(e);
+    }, [behavior]);
+
+    const computeLaneCount = useCallback((currentCfg: GameConfig) =>
+        Math.min(currentCfg.maxOnScreen, Math.max(3, Math.floor(window.innerWidth / 80)))
+    , []);
+
+    const getLaneCenter = (laneIndex: number, count: number): number => {
+        // 8-92vw range = 84vw total; lane i center = 8 + (i + 0.5) * (84 / count)
+        return 8 + (laneIndex + 0.5) * (84 / count);
+    };
+
+    const recomputeLaneOccupancy = useCallback((count: number) => {
+        const occupied: boolean[] = new Array(count).fill(false);
+        for (const e of entitiesRef.current) {
+            if (e.isPopped || e.lane === undefined) continue;
+            // Only consider bubbles still near the bottom spawn zone
+            if (e.y > 85 && e.lane >= 0 && e.lane < count) {
+                occupied[e.lane] = true;
+            }
+        }
+        return occupied;
+    }, []);
+
+    const assignFreeLane = useCallback((count: number): number => {
+        laneOccupied.current = recomputeLaneOccupancy(count);
+        const freeLanes: number[] = [];
+        for (let i = 0; i < count; i++) {
+            if (!laneOccupied.current[i]) freeLanes.push(i);
+        }
+        if (freeLanes.length === 0) {
+            // Fall back to least occupied lane
+            return Math.floor(Math.random() * count);
+        }
+        return freeLanes[Math.floor(Math.random() * freeLanes.length)];
+    }, [recomputeLaneOccupancy]);
+
     const spawnSystem = useCallback((time: number) => {
+        // Seed frame timing on first callback so we don't accumulate dt from 0
+        if (lastFrameTime.current === 0) {
+            lastFrameTime.current = time;
+            lastSpawnTime.current = time;
+            lastTargetSeenTime.current = time; // Seed safety net so it doesn't fire on cold start
+        }
+
+        // Per-frame delta
+        const dt = time - lastFrameTime.current;
+        lastFrameTime.current = time;
+
+        // Tab backgrounded: reset credits and skip accumulation this frame
+        if (dt > 2000) {
+            spawnCredits.current = 0;
+            return;
+        }
+
         // Read latest config from ref so adaptive difficulty changes to
         // spawnIntervalMs and baseVelocity take effect without recreating the callback.
         const currentConfig = configRef.current;
@@ -137,28 +202,32 @@ export const useGameEngine = (
             ? currentConfig.spawnIntervalMs * 0.6
             : currentConfig.spawnIntervalMs;
 
-        // Catch-Up Mechanic:
-        // If screen is empty (low count), spawn faster to refill
         let activeCount = 0;
+        let activeTargetCount = 0;
         const currentEntities = entitiesRef.current;
         for (let i = 0; i < currentEntities.length; i++) {
-            if (!currentEntities[i].isPopped) {
+            const e = currentEntities[i];
+            if (!e.isPopped) {
                 activeCount++;
+                if (isTargetEntity(e)) {
+                    activeTargetCount++;
+                }
             }
         }
 
-        if (activeCount < currentConfig.maxOnScreen - 2) {
-            // 50% faster if we have gaps to fill
-            currentInterval = currentInterval * 0.5;
+        const comboBonus = Math.min(0.3, gameStateRef.current.combo * 0.02);
+        let timeBonus = 0;
+        if (currentConfig.winCondition.type === 'time_limit' && currentConfig.winCondition.value > 0) {
+            const timeLeft = gameStateRef.current.timeLeft ?? currentConfig.winCondition.value;
+            const elapsed = currentConfig.winCondition.value - timeLeft;
+            timeBonus = (elapsed / currentConfig.winCondition.value) * 0.2;
         }
-
-        const progressRatio = currentConfig.winCondition.value > 0
-            ? gameStateRef.current.targetsPopped / currentConfig.winCondition.value
-            : 0;
-        const speedMultiplier = Math.min(1.4, 1 + (progressRatio * 0.4));
+        const speedMultiplier = Math.min(1.6, 1 + comboBonus + timeBonus);
         currentInterval = currentInterval / speedMultiplier;
 
-        if (time - lastSpawnTime.current <= currentInterval) return;
+        // Credit accumulator scheduling
+        spawnCredits.current += dt / currentInterval;
+        spawnCredits.current = Math.min(spawnCredits.current, MAX_BANKED_CREDITS);
 
         // When boss is on screen, reduce normal bubble spawns (just distractors for ambiance)
         const effectiveMaxOnScreen = bossOnScreenRef.current
@@ -166,6 +235,7 @@ export const useGameEngine = (
             : currentConfig.maxOnScreen;
 
         if (activeCount >= effectiveMaxOnScreen) return;
+        if (spawnCredits.current < 1) return;
 
         // --- Power-Up Spawn Check ---
         const powerUpInterval = currentConfig.powerUpSpawnIntervalMs ?? POWER_UP_SPAWN_INTERVAL_MS;
@@ -173,27 +243,15 @@ export const useGameEngine = (
         const shouldSpawnPowerUp = timeSinceLastPowerUp >= powerUpInterval && activeCount < currentConfig.maxOnScreen;
 
         if (shouldSpawnPowerUp) {
+            spawnCredits.current -= 1;
             // Spawn a power-up bubble instead of a normal one
             const powerUpType = POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)];
 
-            // Collision avoidance (same as normal bubbles)
-            // Safe range: 8-92vw to keep bubbles fully visible
-            let spawnX = Math.random() * 84 + 8;
-            const minDistanceVw = 22;
-            const effectiveMin = activeCount >= currentConfig.maxOnScreen - 1 ? minDistanceVw * 0.6 : minDistanceVw;
-            for (let attempt = 0; attempt < 5; attempt++) {
-                const candidate = Math.random() * 84 + 8;
-                const tooClose = entitiesRef.current.some(e =>
-                    !e.isPopped && Math.abs(e.x - candidate) < effectiveMin
-                );
-                if (!tooClose) {
-                    spawnX = candidate;
-                    break;
-                }
-                if (attempt === 4) {
-                    spawnX = candidate;
-                }
-            }
+            // Lane-based spawn placement (replaces random X + collision avoidance)
+            laneCount.current = computeLaneCount(currentConfig);
+            const powerUpLane = assignFreeLane(laneCount.current);
+            const jitter = (Math.random() - 0.5) * 4; // ±2vw organic jitter
+            const spawnX = getLaneCenter(powerUpLane, laneCount.current) + jitter;
 
             const newPowerUpBubble: BubbleEntity = {
                 id: `powerup-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -208,6 +266,7 @@ export const useGameEngine = (
                 variant: 'medium',
                 isPowerUp: true,
                 powerUpType,
+                lane: powerUpLane,
             };
 
             setEntities(prev => {
@@ -220,71 +279,85 @@ export const useGameEngine = (
             return;
         }
 
-        // --- Normal Bubble Spawn ---
-        // When a boss is on screen, only spawn distractors (no target bubbles)
-        // Rainbow Magnet: boost target spawn ratio while active
-        let effectiveConfig = currentConfig;
-        const ps = gameStateRef.current.powerUpState;
-        if (ps?.active && ps.type === 'rainbow_magnet') {
-            // 70% target chance (distractorRatio ~0.43 → 1/(0.43+1) ≈ 0.7)
-            effectiveConfig = { ...currentConfig, distractorRatio: 0.43 };
-        }
-        const newBubbleProps = behavior.generateNext(effectiveConfig);
-        // If boss is on screen, override: generate a distractor instead of a target
-        // We detect target vs distractor by checking if the generated bubble would be "correct"
-        // The simplest approach: if boss is on screen, generate a distractor value
-        // For now we just let generateNext work normally - the boss itself contains the target answer
-        // and the normal spawn will add variety. But we want to avoid spawning the SAME answer as the boss.
-        // We'll handle this by checking after generation.
-
-        // Collision avoidance: try up to 5 positions
-        // Safe range: 8-92vw to keep bubbles fully visible
-        const minDistanceVw = 22;
-        let spawnX = Math.random() * 84 + 8;
-        const effectiveMin = activeCount >= currentConfig.maxOnScreen - 1 ? minDistanceVw * 0.6 : minDistanceVw;
-        for (let attempt = 0; attempt < 5; attempt++) {
-            const candidate = Math.random() * 84 + 8;
-            const tooClose = entitiesRef.current.some(e =>
-                !e.isPopped && Math.abs(e.x - candidate) < effectiveMin
-            );
-            if (!tooClose) {
-                spawnX = candidate;
-                break;
+        // --- Normal Bubble Spawn (multi-credit loop) ---
+        let spawnIndex = 0;
+        while (spawnCredits.current >= 1 && activeCount < effectiveMaxOnScreen) {
+            // Target safety net: if no active targets for > 6s, force the next spawn to be a target
+            let forceTarget = false;
+            if (activeTargetCount === 0 && lastTargetSeenTime.current !== 0 && time - lastTargetSeenTime.current > 6000) {
+                forceTarget = true;
             }
-            if (attempt === 4) {
-                // All attempts failed — use last candidate, will likely be caught by maxOnScreen check next frame
-                spawnX = candidate;
+
+            const newBubbleProps = behavior.generateNext(currentConfig, forceTarget ? { forceTarget: true } : undefined);
+
+            // Clear force after exactly one forced target and record we saw a target
+            if (forceTarget) {
+                activeTargetCount += 1;
+                lastTargetSeenTime.current = time;
+            }
+
+            // Lane-based spawn placement (replaces random X + collision avoidance)
+            laneCount.current = computeLaneCount(currentConfig);
+            const bubbleLane = assignFreeLane(laneCount.current);
+            const jitter = (Math.random() - 0.5) * 4; // ±2vw organic jitter
+            let spawnX = getLaneCenter(bubbleLane, laneCount.current) + jitter;
+            // If this is a multi-credit burst, stagger Y so they don't stack exactly
+            const spawnY = 110 + (spawnIndex * 12);
+            // Slightly vary x per bubble even within the same lane for organic look
+            spawnX += (Math.random() - 0.5) * 2;
+
+            const newBubble: BubbleEntity = {
+                id: `bubble-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                x: spawnX,
+                y: spawnY,
+                velocity: currentConfig.baseVelocity,
+                isPopped: false,
+                createdAt: Date.now(),
+                speedMultiplier,
+                lane: bubbleLane,
+                ...newBubbleProps
+            } as BubbleEntity;
+
+            setEntities(prev => {
+                const next = [...prev, newBubble];
+                entitiesRef.current = next;
+                return next;
+            });
+
+            activeCount++;
+            spawnCredits.current -= 1;
+            spawnIndex++;
+
+            // Update target bookkeeping when a real target spawns
+            // Use behavior.validate() instead of reaching into private fields
+            if (!forceTarget) {
+                const testEntity = { ...newBubble, internalValue: newBubbleProps.internalValue } as BubbleEntity;
+                if (isTargetEntity(testEntity)) {
+                    lastTargetSeenTime.current = time;
+                    activeTargetCount += 1;
+                }
             }
         }
 
-        const newBubble: BubbleEntity = {
-            id: `bubble-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            x: spawnX, // 5% to 95% width
-            y: 110, // Start below screen
-            velocity: currentConfig.baseVelocity,
-            isPopped: false,
-            createdAt: Date.now(),
-            speedMultiplier,
-            ...newBubbleProps
-        } as BubbleEntity;
-
-        setEntities(prev => {
-            const next = [...prev, newBubble];
-            entitiesRef.current = next;
-            return next;
-        });
         lastSpawnTime.current = time;
-    }, [behavior]);
+    }, [behavior, isTargetEntity]);
 
     const cleanupSystem = useCallback(() => {
         const now = Date.now();
+
+        // Asymmetric despawn TTL: targets live longer, distractors shorter
+        const getTtlForEntity = (e: BubbleEntity): number => {
+            if (e.isPopped || e.isPowerUp || e.isBoss) return 30000;
+            return isTargetEntity(e) ? 35000 : 22000;
+        };
 
         // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
         let needsCleanup = false;
         const currentEntities = entitiesRef.current;
         for (let i = 0; i < currentEntities.length; i++) {
             const e = currentEntities[i];
-            const isOld = (now - e.createdAt) > 30000;
+            const ttl = getTtlForEntity(e);
+            const isOld = (now - e.createdAt) > ttl;
             const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
             if (isOld || isPoppedAndDone) {
                 needsCleanup = true;
@@ -298,7 +371,8 @@ export const useGameEngine = (
             const next = [];
             for (let i = 0; i < prev.length; i++) {
                 const e = prev[i];
-                const isOld = (now - e.createdAt) > 30000;
+                const ttl = getTtlForEntity(e);
+                const isOld = (now - e.createdAt) > ttl;
                 const isPoppedAndDone = e.isPopped && e.poppedAt && (now - e.poppedAt) > 1000;
                 if (!isOld && !isPoppedAndDone) {
                     next.push(e);
@@ -309,7 +383,7 @@ export const useGameEngine = (
             entitiesRef.current = next;
             return next;
         });
-    }, []);
+    }, [isTargetEntity]);
 
     // --- Power-Up Expiry Check ---
     const checkPowerUpExpiry = useCallback(() => {

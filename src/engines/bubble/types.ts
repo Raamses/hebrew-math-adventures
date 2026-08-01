@@ -86,6 +86,9 @@ export interface BubbleEntity<T = any> {
     createdAt: number;
     /** Timestamp when popped (ms) for cleanup */
     poppedAt?: number;
+    /** Lane index for lane-based spawn placement */
+    lane?: number;
+
     /** Marks this bubble as a power-up bubble (no answer validation needed) */
     isPowerUp?: boolean;
     /** Which power-up effect this bubble grants when popped */
@@ -102,7 +105,7 @@ export interface BubbleEntity<T = any> {
 
 export interface IGameBehavior {
     /** Generate the next bubble's content based on the current config */
-    generateNext(config: GameConfig): Partial<BubbleEntity>;
+    generateNext(config: GameConfig, opts?: { forceTarget?: boolean }): Partial<BubbleEntity>;
 
     /** Check if the popped bubble is correct */
     validate(entity: BubbleEntity): boolean;
@@ -118,7 +121,7 @@ export interface IGameBehavior {
     getInstruction?(): string;
 
     /** Force-regenerate the current problem (for mid-session level changes). */
-    regenerateProblem(level: number, config: GameConfig): void;
+    regenerateProblem(level: number, config: GameConfig, correctCount?: number): void;
 }
 
 export interface GameState {
