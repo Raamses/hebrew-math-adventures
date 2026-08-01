@@ -8,6 +8,7 @@ interface MascotProps {
     character: MascotCharacter;
     emotion: MascotEmotion;
     className?: string;
+    size?: 'sm' | 'md' | 'lg';
 }
 
 // Hook for random blinking
@@ -403,14 +404,20 @@ const LionMascot: React.FC<{ emotion: MascotEmotion; blinking: boolean }> = ({ e
     );
 };
 
-export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = '' }) => {
+export const Mascot: React.FC<MascotProps> = ({ character, emotion, className = '', size = 'md' }) => {
     const isBlinking = useBlink();
     // React.useId provides a stable ID for hydration, replacing manual random strings.
     // We strip colons because they can be problematic in SVG ID references in some contexts.
     const uniqueId = React.useId().replace(/:/g, '');
 
+    const sizeClasses = {
+        sm: 'w-16 h-16 md:w-20 md:h-20',
+        md: 'w-32 h-32 md:w-48 md:h-48',
+        lg: 'w-40 h-40 md:w-56 md:h-56',
+    };
+
     return (
-        <div className={`w-32 h-32 md:w-48 md:h-48 ${className}`}>
+        <div className={`${sizeClasses[size]} ${className}`}>
             {character === 'owl' && <OwlMascot emotion={emotion} blinking={isBlinking} uniqueId={uniqueId} />}
             {character === 'bear' && <BearMascot emotion={emotion} blinking={isBlinking} uniqueId={uniqueId} />}
             {character === 'ant' && <AntMascot emotion={emotion} blinking={isBlinking} />}
