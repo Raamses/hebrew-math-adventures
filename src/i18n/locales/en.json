@@ -22,7 +22,8 @@
     "resume": "Resume Playing",
     "restart": "Restart Level",
     "exitToMap": "Exit to Map",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "back": "Back"
   },
   "mascot": {
     "title": "Choose Your Companion",
@@ -197,6 +198,21 @@
       "errorAge": "Age must be between 4 and 12",
       "errorLevel": "Level must be between 1 and 10",
       "errorXP": "XP cannot be negative"
+    },
+    "heatmap": {
+      "future": "Future",
+      "activity": "Activity",
+      "less": "Less",
+      "more": "More",
+      "dayLabels": [
+        "S",
+        "M",
+        "T",
+        "W",
+        "T",
+        "F",
+        "S"
+      ]
     }
   },
   "analytics": {
@@ -222,7 +238,9 @@
   },
   "skills": {
     "addition": "Addition",
+    "addition_carry": "Addition (Carry)",
     "subtraction": "Subtraction",
+    "subtraction_borrow": "Subtraction (Borrow)",
     "multiplication": "Multiplication",
     "division": "Division",
     "series": "Series",
@@ -352,14 +370,26 @@
       "additionExplainer": "We have {{op1}}, we add {{op2}}, together they make {{answer}}!",
       "borrow10": "Borrow 10 from neighbor!",
       "carry1": "Carry the 1!",
-      "result": "Result!"
+      "result": "Result!",
+      "additionVisual": "Let's count together!",
+      "simpleCalc": "Let's calculate step by step!"
     },
     "placeValues": {
       "ones": "Ones",
       "tens": "Tens",
       "hundreds": "Hundreds"
     },
-    "frenzy": "FRENZY!"
+    "frenzy": "FRENZY!",
+    "superFrenzy": "SUPER FRENZY!",
+    "megaFrenzy": "MEGA FRENZY!",
+    "scoreMultiplier": "{{multiplier}}x Score!",
+    "frenzyActivated": "{{label}} Mode Activated",
+    "levelUp": "Level {{level}}!",
+    "levelUpCongrats": "Well done! 🎉",
+    "emptyInput": "Number?",
+    "combo": "{{combo}}x COMBO!",
+    "scoreLabel": "Score",
+    "tip": "💡 Tip:"
   },
   "wordProblems": {
     "apples_add": "Dan has {{n1}} apples. He gets {{n2}} more. How many apples does Dan have now?",
@@ -481,7 +511,8 @@
     "survival": {
       "title": "Survival",
       "desc": "3 Lives. Don't make a mistake!"
-    }
+    },
+    "bestScore": "Best: {{score}}"
   },
   "memory": {
     "title": "Memory Duel",
@@ -605,14 +636,15 @@
     "happiness": "Happiness",
     "feed": "Feed",
     "fedToday": "Fed today",
-    "chooseSpecies": "Choose animal",
+    "chooseSpecies": "Choose a pet",
     "stage": {
       "egg": "Egg",
       "baby": "Baby",
       "child": "Child",
       "teen": "Teen",
       "adult": "Adult"
-    }
+    },
+    "defaultName": "Buddy"
   },
   "quest": {
     "title": "Daily Quests",
@@ -630,5 +662,21 @@
     "boss1_d": "Defeat one boss",
     "daily": "Daily challenge",
     "daily_d": "Complete the daily challenge"
+  },
+  "common": {
+    "close": "Close",
+    "next": "Next",
+    "prev": "Previous",
+    "save": "Save",
+    "step": "Step"
+  },
+  "themes": {
+    "default": "Default",
+    "forest": "Forest",
+    "space": "Space",
+    "candy": "Candy"
+  },
+  "bubble": {
+    "targets": "Targets"
   }
 }

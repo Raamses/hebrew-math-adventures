@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from '../../hooks/useSound';
+import { useTranslation } from 'react-i18next';
 
 type FrenzyVariant = 'bubble' | 'practice' | 'invaders';
 
@@ -23,7 +24,7 @@ const getFrenzyTier = (combo: number): FrenzyTier | null => {
 };
 
 const TIER_CONFIG: Record<FrenzyTier, {
-    label: string;
+    labelKey: string;
     colors: string;
     border: string;
     glow: string;
@@ -31,7 +32,7 @@ const TIER_CONFIG: Record<FrenzyTier, {
     multiplier: number;
 }> = {
     frenzy: {
-        label: 'FRENZY!',
+        labelKey: 'game.frenzy',
         colors: 'border-orange-500/50',
         border: 'border-orange-500/50',
         glow: 'shadow-[inset_0_0_50px_rgba(255,100,0,0.5)]',
@@ -39,7 +40,7 @@ const TIER_CONFIG: Record<FrenzyTier, {
         multiplier: 2,
     },
     super: {
-        label: 'SUPER FRENZY!',
+        labelKey: 'game.superFrenzy',
         colors: 'border-purple-500/60',
         border: 'border-purple-500/60',
         glow: 'shadow-[inset_0_0_60px_rgba(168,85,247,0.6)]',
@@ -47,7 +48,7 @@ const TIER_CONFIG: Record<FrenzyTier, {
         multiplier: 3,
     },
     mega: {
-        label: 'MEGA FRENZY!',
+        labelKey: 'game.megaFrenzy',
         colors: 'border-rose-500/70',
         border: 'border-rose-500/70',
         glow: 'shadow-[inset_0_0_80px_rgba(244,63,94,0.7)]',
@@ -88,6 +89,7 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
     variant = 'bubble',
 }) => {
     const { play } = useSound();
+    const { t } = useTranslation();
 
     const tier = getFrenzyTier(combo);
     const config = tier ? TIER_CONFIG[tier] : null;
@@ -123,7 +125,7 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
                     className="absolute inset-0 z-30 pointer-events-none overflow-hidden"
                     role="status"
                     aria-live="polite"
-                    aria-label={`${config.label} Mode Activated`}
+                    aria-label={t('game.frenzyActivated', { label: t(config.labelKey) })}
                 >
                     {/* Pulsing Border */}
                     <motion.div
@@ -156,7 +158,7 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
                             >
                                 <div className="flex flex-col items-center bg-black/40 rounded-2xl px-6 py-3">
                                     <h2 className={`text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b ${config.textGradient} drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-widest italic`}>
-                                        {config.label}
+                                        {t(config.labelKey)}
                                     </h2>
                                     {tier !== 'frenzy' && (
                                         <motion.p
@@ -165,7 +167,7 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.2 }}
                                         >
-                                            {config.multiplier}x Score!
+                                            {t('game.scoreMultiplier', { multiplier: config.multiplier })}
                                         </motion.p>
                                     )}
                                 </div>

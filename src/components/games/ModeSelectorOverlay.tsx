@@ -44,7 +44,8 @@ interface ModeSelectorOverlayProps {
     bestScores?: Record<string, number>;
 }
 
-const ModeCard: React.FC<Omit<ModeCardProps, 'delay'>> = ({ mode, title, description, icon: Icon, color, onSelect, bestScore }) => {
+const ModeCard: React.FC<Omit<ModeCardProps, 'delay'>> = ({ mode, title, description, icon: Icon, color, onSelect, bestScore }: Omit<ModeCardProps, 'delay'>) => {
+    const { t } = useTranslation();
     return (
         <motion.button
             tabIndex={0}
@@ -78,7 +79,7 @@ const ModeCard: React.FC<Omit<ModeCardProps, 'delay'>> = ({ mode, title, descrip
             <div className="mt-4 flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-full shrink-0">
                 <Trophy size={14} className="text-yellow-500" />
                 <span className="text-xs font-bold text-slate-600">
-                    {bestScore ? `Best: ${bestScore}` : 'No Record'}
+                    {bestScore ? t('practice.bestScore', { score: bestScore }) : t('practice.noRecord', 'No Record')}
                 </span>
             </div>
         </motion.button>
@@ -185,7 +186,7 @@ export const ModeSelectorOverlay: React.FC<ModeSelectorOverlayProps> = ({ onSele
 
                         {/* Keyboard Hint */}
                         <motion.p variants={itemVariants} className="mt-8 text-white/80 font-medium text-sm md:text-base">
-                            💡 Tip: {t('practice.keyboardHint', 'Prefer typing? Try Practice Mode for keyboard-friendly play')}
+                            {t('game.tip')} {t('practice.keyboardHint', 'Prefer typing? Try Practice Mode for keyboard-friendly play')}
                         </motion.p>
                     </motion.div>
                 </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface StreakHeatmapProps {
     dailyStamps: string[];
@@ -10,6 +11,7 @@ interface StreakHeatmapProps {
  * Rows = days of week (Sun..Sat).
  */
 export const StreakHeatmap: React.FC<StreakHeatmapProps> = ({ dailyStamps }) => {
+    const { t } = useTranslation();
     const today = new Date();
     const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -49,7 +51,7 @@ export const StreakHeatmap: React.FC<StreakHeatmapProps> = ({ dailyStamps }) => 
         return '#15803d'; // multiple (shouldn't happen with stamps, but just in case) — green-700
     };
 
-    const dayLabels = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+    const dayLabels: string[] = (t('parent.heatmap.dayLabels', { returnObjects: true }) as string[]) || ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 
     return (
         <div dir="rtl" className="w-full">
@@ -77,7 +79,7 @@ export const StreakHeatmap: React.FC<StreakHeatmapProps> = ({ dailyStamps }) => 
                                         minHeight: '16px',
                                         aspectRatio: '1',
                                     }}
-                                    title={cell.count < 0 ? 'עתידי' : `${cell.date}${cell.count > 0 ? ' — פעילות' : ''}`}
+                                    title={cell.count < 0 ? t('parent.heatmap.future') : `${cell.date}${cell.count > 0 ? ' — ' + t('parent.heatmap.activity') : ''}`}
                                 />
                             ))}
                         </div>
@@ -87,13 +89,13 @@ export const StreakHeatmap: React.FC<StreakHeatmapProps> = ({ dailyStamps }) => 
 
             {/* Legend */}
             <div className="flex items-center gap-2 mt-3 justify-end">
-                <span className="text-[10px] text-slate-400">פחות</span>
+                <span className="text-[10px] text-slate-400">{t('parent.heatmap.less')}</span>
                 <div className="flex gap-0.5">
                     <div className="w-3 h-3 rounded-sm bg-slate-200" />
                     <div className="w-3 h-3 rounded-sm bg-green-500" />
                     <div className="w-3 h-3 rounded-sm bg-green-700" />
                 </div>
-                <span className="text-[10px] text-slate-400">יותר</span>
+                <span className="text-[10px] text-slate-400">{t('parent.heatmap.more')}</span>
             </div>
         </div>
     );

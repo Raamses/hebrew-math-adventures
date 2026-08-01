@@ -4,56 +4,46 @@ import { useProfile } from '../../context/ProfileContext';
 import { deriveSkillInsights } from '../../lib/skillAnalysis';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
 
-// Canonical skill keys and their Hebrew labels + problem config for targeted practice
-const SKILL_CONFIGS: Record<string, { labelHe: string; labelEn: string; config: BaseProblemConfig }> = {
+// Canonical skill keys and their i18n keys + problem config for targeted practice
+const SKILL_CONFIGS: Record<string, { i18nKey: string; config: BaseProblemConfig }> = {
     addition: {
-        labelHe: 'חיבור',
-        labelEn: 'Addition',
+        i18nKey: 'skills.addition',
         config: { type: 'addition_simple' },
     },
     'addition_carry': {
-        labelHe: 'חיבור בשאלה',
-        labelEn: 'Addition (Carry)',
+        i18nKey: 'skills.addition',
         config: { type: 'addition_carry' },
     },
     subtraction: {
-        labelHe: 'חיסור',
-        labelEn: 'Subtraction',
+        i18nKey: 'skills.subtraction',
         config: { type: 'sub_simple' },
     },
     'subtraction_borrow': {
-        labelHe: 'חיסור בשאילה',
-        labelEn: 'Subtraction (Borrow)',
+        i18nKey: 'skills.subtraction',
         config: { type: 'sub_borrow' },
     },
     multiplication: {
-        labelHe: 'כפל',
-        labelEn: 'Multiplication',
+        i18nKey: 'skills.multiplication',
         config: { type: 'multiplication' },
     },
     division: {
-        labelHe: 'חילוק',
-        labelEn: 'Division',
+        i18nKey: 'skills.division',
         config: { type: 'division' },
     },
     series: {
-        labelHe: 'סדרות',
-        labelEn: 'Series',
+        i18nKey: 'skills.series',
         config: { type: 'series_simple' },
     },
     comparison: {
-        labelHe: 'השוואה',
-        labelEn: 'Comparison',
+        i18nKey: 'skills.comparison',
         config: { type: 'comparison_simple' },
     },
     word_problems: {
-        labelHe: 'בעיות מילוליות',
-        labelEn: 'Word Problems',
+        i18nKey: 'skills.word_problems',
         config: { type: 'word' },
     },
     algebraic: {
-        labelHe: 'אלגברה',
-        labelEn: 'Algebra',
+        i18nKey: 'skills.algebraic',
         config: { type: 'addition_simple' }, // fallback
     },
 };
@@ -121,7 +111,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                             <div className="flex-1">
                                 <div className="text-xs font-bold text-amber-600">{t('analytics.strongest')}</div>
                                 <div className="text-lg font-black text-slate-700">
-                                    {SKILL_CONFIGS[analysis.strongest.skillKey]?.labelHe || analysis.strongest.skillKey}
+                                    {t(SKILL_CONFIGS[analysis.strongest.skillKey]?.i18nKey || 'skills.addition')}
                                 </div>
                                 <div className="text-sm text-slate-500">
                                     {analysis.strongest.accuracy}% · {analysis.strongest.avgSpeedSec}s
@@ -137,7 +127,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                             <div className="flex-1">
                                 <div className="text-xs font-bold text-red-500">{t('analytics.weakest')}</div>
                                 <div className="text-lg font-black text-slate-700">
-                                    {SKILL_CONFIGS[weakest.skillKey]?.labelHe || weakest.skillKey}
+                                    {t(SKILL_CONFIGS[weakest.skillKey]?.i18nKey || 'skills.addition')}
                                 </div>
                                 <div className="text-sm text-slate-500">
                                     {weakest.accuracy}% · {weakest.avgSpeedSec}s
@@ -172,7 +162,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                     <div className="space-y-4">
                         {analysis.insights.map((insight) => {
                             const config = SKILL_CONFIGS[insight.skillKey];
-                            const label = config?.labelHe || insight.skillKey;
+                            const label = t(config?.i18nKey || 'skills.addition');
                             const isWeakest = analysis.weakest?.skillKey === insight.skillKey;
                             const isStrongest = analysis.strongest?.skillKey === insight.skillKey;
 

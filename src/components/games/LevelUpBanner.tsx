@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface LevelUpBannerProps {
     level: number;
@@ -8,6 +9,7 @@ interface LevelUpBannerProps {
 }
 
 export const LevelUpBanner: React.FC<LevelUpBannerProps> = ({ level, show }) => {
+    const { t } = useTranslation();
     return (
         <AnimatePresence>
             {show && (
@@ -28,10 +30,10 @@ export const LevelUpBanner: React.FC<LevelUpBannerProps> = ({ level, show }) => 
                         <Star className="w-10 h-10 fill-yellow-300 text-yellow-300" />
                         <div className="flex flex-col">
                             <span className="text-3xl font-black tracking-wide">
-                                Level {level}!
+                                {t('game.levelUp', { level })}
                             </span>
                             <span className="text-sm font-medium opacity-90">
-                                כל הכבוד! 🎉
+                                {t('game.levelUpCongrats')}
                             </span>
                         </div>
                     </motion.div>

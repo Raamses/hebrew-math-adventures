@@ -8,7 +8,7 @@ export const DailyQuestList: React.FC = () => {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-bold text-slate-700 text-center">{t('quest.title', 'משימות יומיות')}</h3>
+      <h3 className="text-lg font-bold text-slate-700 text-center">{t('quest.title')}</h3>
       {todayQuests.map((q) => {
         const progress = questProgress[q.id] || 0;
         const isComplete = progress >= q.target;
@@ -40,13 +40,13 @@ export const DailyQuestList: React.FC = () => {
             <div className="flex items-center justify-between mt-1.5">
               <span className="text-xs text-slate-500">{progress} / {q.target}</span>
               {isClaimed ? (
-                <span className="text-xs font-bold text-green-600">✓ {t('quest.claimed', 'נתבע')}</span>
+                <span className="text-xs font-bold text-green-600">✓ {t('quest.claimed')}</span>
               ) : isComplete ? (
                 <button
                   onClick={() => claimQuest(q.id)}
                   className="text-xs font-bold text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded-full transition-colors"
                 >
-                  {t('quest.claim', 'תבע')} 💎
+                  {t('quest.claim')} 💎
                 </button>
               ) : null}
             </div>

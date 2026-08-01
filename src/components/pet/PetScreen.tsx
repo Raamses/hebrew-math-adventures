@@ -19,7 +19,7 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
   if (!profile || !profile.pet) {
     return (
       <div className="w-full min-h-screen bg-slate-100 flex items-center justify-center">
-        <p className="text-slate-400">{t('pet.noPet', 'אין חיית מחמד')}</p>
+        <p className="text-slate-400">{t('pet.noPet')}</p>
       </div>
     );
   }
@@ -53,11 +53,11 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
         <button
           onClick={onBack}
           className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
-          aria-label={t('menu.back', 'חזור')}
+          aria-label={t('menu.back')}
         >
           <ArrowRight size={20} className="rotate-180" />
         </button>
-        <h1 className="text-lg font-bold text-slate-700">{t('pet.title', 'החיית שלי')}</h1>
+        <h1 className="text-lg font-bold text-slate-700">{t('pet.title')}</h1>
         {/* Gems balance */}
         <div className="flex items-center gap-1 bg-purple-100 px-2 py-1 rounded-full">
           <span className="text-sm">💎</span>
@@ -85,7 +85,7 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
                 onClick={handleNameSubmit}
                 className="text-sm font-bold text-white bg-blue-500 px-3 py-1 rounded-full"
               >
-                {t('common.save', 'שמור')}
+                {t('common.save')}
               </button>
             </div>
           ) : (
@@ -98,19 +98,19 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
           )}
           {/* Stage badge */}
           <div className="text-sm text-slate-400">
-            {t(`pet.stage.${stage.key}`, stage.key)} · {t('pet.level', 'רמה')} {level}
+            {t(`pet.stage.${stage.key}`, stage.key)} · {t('pet.level')} {level}
           </div>
           {/* Levels to grow */}
           {levelsToGrow > 0 && (
             <div className="text-xs text-purple-500 bg-purple-50 px-3 py-1 rounded-full">
-              {levelsToGrow} {t('pet.levelsToGrow', 'רמות לגדילה')} 🌱
+              {levelsToGrow} {t('pet.levelsToGrow')} 🌱
             </div>
           )}
         </div>
 
         {/* Species Selector */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-          <h3 className="text-sm font-bold text-slate-500 mb-3 text-center">{t('pet.chooseSpecies', 'בחר חיה')}</h3>
+          <h3 className="text-sm font-bold text-slate-500 mb-3 text-center">{t('pet.chooseSpecies')}</h3>
           <div className="flex justify-center gap-3">
             {PET_SPECIES_OPTIONS.map((opt) => (
               <button
@@ -132,7 +132,7 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
         {/* Happiness Bar */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-slate-500">{t('pet.happiness', 'אושר')}</h3>
+            <h3 className="text-sm font-bold text-slate-500">{t('pet.happiness')}</h3>
             <span className="text-sm font-bold text-pink-500">{happiness}%</span>
           </div>
           <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden">
@@ -155,12 +155,12 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
               }`}
             >
               <span>🍎</span>
-              <span>{t('pet.feed', 'להאכיל')}</span>
+              <span>{t('pet.feed')}</span>
               <span className="text-xs opacity-75">(2💎)</span>
             </button>
           </div>
           {alreadyFedToday && (
-            <p className="text-center text-xs text-green-500 mt-2">✓ {t('pet.fedToday', 'הואכל היום')}</p>
+            <p className="text-center text-xs text-green-500 mt-2">✓ {t('pet.fedToday')}</p>
           )}
         </div>
 

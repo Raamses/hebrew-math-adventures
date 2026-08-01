@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Clock, Trophy } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useTranslation } from 'react-i18next';
 import type { GameMode } from '../../hooks/usePracticeSession';
 
 interface ArcadeHUDProps {
@@ -13,6 +14,7 @@ interface ArcadeHUDProps {
 }
 
 export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLeft, combo }) => {
+    const { t } = useTranslation();
     // Local state to animate score increments
     const [displayScore, setDisplayScore] = useState(score);
 
@@ -67,7 +69,7 @@ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLe
                                 exit={{ scale: 0 }}
                                 className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-black px-4 py-1 rounded-full shadow-md text-sm whitespace-nowrap"
                             >
-                                {combo}x COMBO!
+                                {t('game.combo', { combo })}
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -76,7 +78,7 @@ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLe
                 {/* Right: Score */}
                 <div className="flex items-center justify-end w-1/3 gap-3">
                     <div className="flex flex-col items-end">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Score</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('game.scoreLabel')}</span>
                         <motion.span
                             key={score}
                             initial={{ scale: 1.2, color: '#f59e0b' }}

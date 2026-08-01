@@ -1,12 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Check, Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useProgress } from '../context/ProgressContext';
 import { isThemeUnlocked, type Theme } from '../lib/themes';
 import { cn } from '../lib/cn';
 
 export const ThemeSelector: React.FC = () => {
+    const { t } = useTranslation();
     const { currentTheme, setTheme, availableThemes } = useTheme();
     const { totalStars } = useProgress();
 
@@ -57,7 +59,7 @@ export const ThemeSelector: React.FC = () => {
 
                         {/* Theme Name */}
                         <h3 className="text-lg font-bold mb-2" style={{ color: unlocked ? theme.colors.text : '#64748b' }}>
-                            {theme.nameHebrew}
+                            {t(`themes.${theme.id}`, theme.name)}
                         </h3>
 
                         {/* Color Preview */}

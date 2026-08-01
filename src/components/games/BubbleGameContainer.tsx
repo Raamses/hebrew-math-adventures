@@ -9,6 +9,7 @@ import { FrenzyOverlay } from './FrenzyOverlay';
 import { LevelUpBanner } from './LevelUpBanner';
 import { Zap, Star, Clock, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 // Session-level theme mapping (visual progression as kids advance)
 const SESSION_THEMES = [
@@ -72,6 +73,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const { profile, updateProfile, recordSession } = useProfile();
     const { recordQuestEvent } = useQuest();
     const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
+    const { t } = useTranslation();
 
     // --- Session-Internal Leveling State ---
     const [sessionLevel, setSessionLevel] = useState(() => {
@@ -545,8 +547,8 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 {isTimeLimit && (
                     <div className="w-full px-2">
                         <div className="flex justify-between text-xs font-bold text-slate-500">
-                            <span>Score: {gameState.score.toLocaleString()}</span>
-                            <span>Targets: {gameState.targetsPopped}</span>
+                            <span>{t('game.scoreLabel')}: {gameState.score.toLocaleString()}</span>
+                            <span>{t('bubble.targets', 'Targets')}: {gameState.targetsPopped}</span>
                         </div>
                     </div>
                 )}
@@ -555,8 +557,8 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 {isEndless && (
                     <div className="w-full px-2">
                         <div className="flex justify-between text-xs font-bold text-slate-400">
-                            <span>🎯 Popped: {gameState.targetsPopped}</span>
-                            <span>⭐ Score: {gameState.score.toLocaleString()}</span>
+                            <span>🎯 {t('bubble.targets', 'Targets')}: {gameState.targetsPopped}</span>
+                            <span>⭐ {t('game.scoreLabel')}: {gameState.score.toLocaleString()}</span>
                         </div>
                     </div>
                 )}

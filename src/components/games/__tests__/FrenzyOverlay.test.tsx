@@ -50,46 +50,46 @@ describe('FrenzyOverlay', () => {
     it('renders burst text when active with combo >= 5', () => {
         render(<FrenzyOverlay isActive={true} combo={5} variant="bubble" />);
         // The tier label should appear (FRENZY, SUPER FRENZY, or MEGA FRENZY)
-        expect(screen.getByText(/FRENZY/i)).toBeInTheDocument();
+        expect(screen.getByText(/טירוף|FRENZY/i)).toBeInTheDocument();
     });
 
     it('does not render frenzy text when active but combo < 5', () => {
         render(<FrenzyOverlay isActive={true} combo={3} variant="bubble" />);
         // No frenzy tier reached, so no label should appear
-        expect(screen.queryByText(/FRENZY/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/טירוף|FRENZY/i)).not.toBeInTheDocument();
     });
 
     // 3. Shows correct tier label for each combo threshold
     it('shows "FRENZY!" label at combo 5', () => {
         render(<FrenzyOverlay isActive={true} combo={5} variant="bubble" />);
-        expect(screen.getByText('FRENZY!')).toBeInTheDocument();
+        expect(screen.getByText('טירוף!')).toBeInTheDocument();
     });
 
     it('shows "SUPER FRENZY!" label at combo 10', () => {
         render(<FrenzyOverlay isActive={true} combo={10} variant="bubble" />);
-        expect(screen.getByText('SUPER FRENZY!')).toBeInTheDocument();
+        expect(screen.getByText('טירוף על!')).toBeInTheDocument();
     });
 
     it('shows "MEGA FRENZY!" label at combo 15', () => {
         render(<FrenzyOverlay isActive={true} combo={15} variant="bubble" />);
-        expect(screen.getByText('MEGA FRENZY!')).toBeInTheDocument();
+        expect(screen.getByText('טירוף מטורף!')).toBeInTheDocument();
     });
 
     // 4. Shows correct multiplier for each tier
     it('does not show multiplier for base frenzy tier (combo 5)', () => {
         // Base frenzy (2x) does not show the multiplier subtitle per the component design
         render(<FrenzyOverlay isActive={true} combo={5} variant="bubble" />);
-        expect(screen.queryByText(/2x Score/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/2x ניקוד/i)).not.toBeInTheDocument();
     });
 
     it('shows 3x multiplier for super frenzy (combo 10)', () => {
         render(<FrenzyOverlay isActive={true} combo={10} variant="bubble" />);
-        expect(screen.getByText('3x Score!')).toBeInTheDocument();
+        expect(screen.getByText('3x ניקוד!')).toBeInTheDocument();
     });
 
     it('shows 5x multiplier for mega frenzy (combo 15)', () => {
         render(<FrenzyOverlay isActive={true} combo={15} variant="bubble" />);
-        expect(screen.getByText('5x Score!')).toBeInTheDocument();
+        expect(screen.getByText('5x ניקוד!')).toBeInTheDocument();
     });
 
     // 5. Badge persists (does not depend on burst state)
@@ -136,6 +136,6 @@ describe('FrenzyOverlay', () => {
     // 8. Defaults gracefully when no variant is passed (backward compat)
     it('renders without variant prop (backward compat)', () => {
         expect(() => render(<FrenzyOverlay isActive={true} combo={5} />)).not.toThrow();
-        expect(screen.getByText('FRENZY!')).toBeInTheDocument();
+        expect(screen.getByText('טירוף!')).toBeInTheDocument();
     });
 });

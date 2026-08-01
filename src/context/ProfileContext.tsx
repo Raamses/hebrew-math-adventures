@@ -5,7 +5,7 @@ import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { isValidProfileName } from '../lib/validation';
 
-const PET_DEFAULT: PetState = { species: 'owl', name: 'באדי', happiness: 60, unlockedTricks: [], lastFedDate: null };
+const PET_DEFAULT: PetState = { species: 'owl', name: 'Buddy', happiness: 60, unlockedTricks: [], lastFedDate: null };
 
 interface ProfileContextType {
     profile: UserProfile | null;
