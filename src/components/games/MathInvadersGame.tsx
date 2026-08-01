@@ -213,7 +213,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
                 style={{ minHeight: '400px' }}
             >
                 {/* Frenzy Overlay */}
-                <FrenzyOverlay isActive={state.frenzy} combo={state.combo} />
+                <FrenzyOverlay isActive={state.frenzy} combo={state.combo} variant="invaders" />
 
                 {/* Equation Bubbles */}
                 <AnimatePresence>

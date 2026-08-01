@@ -594,7 +594,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     onComplete={() => setExplosions(prev => prev.filter(e => e.id !== exp.id))}
                 />
             ))}
-            <FrenzyOverlay isActive={gameState.isFrenzy} combo={gameState.combo} />
+            <FrenzyOverlay isActive={gameState.isFrenzy} combo={gameState.combo} variant="bubble" />
         </div>
     );
 };

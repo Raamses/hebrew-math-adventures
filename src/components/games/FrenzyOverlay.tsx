@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSound } from '../../hooks/useSound';
+
+type FrenzyVariant = 'bubble' | 'practice' | 'invaders';
 
 interface FrenzyOverlayProps {
     isActive: boolean;
     combo: number;
+    variant?: FrenzyVariant;
 }
 
 const PARTICLE_COUNT = 5;
@@ -53,17 +56,65 @@ const TIER_CONFIG: Record<FrenzyTier, {
     },
 };
 
-export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive, combo }) => {
+// Mode-aware positioning: where the burst flash and persistent badge appear
+const VARIANT_LAYOUT: Record<FrenzyVariant, {
+    burstPosition: string;
+    badgePosition: string;
+}> = {
+    bubble: {
+        burstPosition: 'top-[140px] left-1/2 -translate-x-1/2',
+        badgePosition: 'top-[130px] right-3',
+    },
+    practice: {
+        burstPosition: 'top-[100px] left-1/2 -translate-x-1/2',
+        badgePosition: 'top-2 right-3',
+    },
+    invaders: {
+        burstPosition: 'top-[90px] left-1/2 -translate-x-1/2',
+        badgePosition: 'top-2 right-3',
+    },
+};
+
+// Tier emoji for the persistent badge
+const TIER_EMOJI: Record<FrenzyTier, string> = {
+    frenzy: '✨',
+    super: '⚡',
+    mega: '🔥',
+};
+
+export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
+    isActive,
+    combo,
+    variant = 'bubble',
+}) => {
     const { play } = useSound();
 
     const tier = getFrenzyTier(combo);
     const config = tier ? TIER_CONFIG[tier] : null;
+    const layout = VARIANT_LAYOUT[variant];
+
+    // Burst state: transient announcement that shows on activation / tier upgrade
+    const [showBurst, setShowBurst] = useState(false);
+    const prevTierRef = useRef<FrenzyTier | null>(null);
 
     useEffect(() => {
         if (isActive && tier) {
             play('frenzy');
         }
     }, [isActive, tier, play]);
+
+    // Burst logic: show on activation or tier upgrade, auto-hide after 1.8s
+    useEffect(() => {
+        if (isActive && tier && tier !== prevTierRef.current) {
+            setShowBurst(true);
+            const timer = setTimeout(() => setShowBurst(false), 1800);
+            prevTierRef.current = tier;
+            return () => clearTimeout(timer);
+        }
+        if (!isActive) {
+            prevTierRef.current = null;
+        }
+    }, [isActive, tier]);
 
     return (
         <AnimatePresence>
@@ -93,29 +144,55 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({ isActive, combo })
                         }}
                     />
 
-                    {/* FRENZY Text */}
+                    {/* BURST: Transient announcement text (shows for ~1.8s on activation / tier upgrade) */}
+                    <AnimatePresence>
+                        {showBurst && (
+                            <motion.div
+                                className={`absolute ${layout.burstPosition}`}
+                                initial={{ scale: 0, opacity: 0, rotate: -10 }}
+                                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                exit={{ scale: 1.5, opacity: 0 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                            >
+                                <div className="flex flex-col items-center bg-black/40 rounded-2xl px-6 py-3">
+                                    <h2 className={`text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b ${config.textGradient} drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-widest italic`}>
+                                        {config.label}
+                                    </h2>
+                                    {tier !== 'frenzy' && (
+                                        <motion.p
+                                            className="text-center text-xl sm:text-2xl font-bold text-white drop-shadow-lg mt-1"
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2 }}
+                                        >
+                                            {config.multiplier}x Score!
+                                        </motion.p>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* BADGE: Persistent small pill that stays for the entire frenzy duration */}
                     <motion.div
-                        className="absolute top-1/3 left-1/2 -translate-x-1/2"
-                        initial={{ scale: 0, opacity: 0, rotate: -10 }}
-                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                        exit={{ scale: 1.5, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                        className={`absolute ${layout.badgePosition}`}
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{
+                            scale: [1, 1.08, 1],
+                            opacity: [0.85, 1, 0.85],
+                        }}
+                        transition={{
+                            scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+                            opacity: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+                        }}
                     >
-                        {/* Semi-transparent backdrop for readability against game bubbles */}
-                        <div className="flex flex-col items-center bg-black/40 rounded-2xl px-6 py-3">
-                            <h2 className={`text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b ${config.textGradient} drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-widest italic animate-pulse`}>
-                                {config.label}
-                            </h2>
-                            {tier !== 'frenzy' && (
-                                <motion.p
-                                    className="text-center text-xl sm:text-2xl font-bold text-white drop-shadow-lg mt-1"
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                >
-                                    {config.multiplier}x Score!
-                                </motion.p>
-                            )}
+                        <div className={`flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2.5 py-1 border-2 ${config.border}`}>
+                            <span className="text-sm">
+                                {TIER_EMOJI[tier!]}
+                            </span>
+                            <span className={`text-xs font-black text-transparent bg-clip-text bg-gradient-to-b ${config.textGradient}`}>
+                                {config.multiplier}x
+                            </span>
                         </div>
                     </motion.div>
 

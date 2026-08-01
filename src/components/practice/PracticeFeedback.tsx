@@ -27,7 +27,7 @@ export const PracticeFeedback: React.FC<PracticeFeedbackProps> = ({
 
     return (
         <>
-            <FrenzyOverlay isActive={(profile?.streak || 0) >= 5} combo={profile?.streak || 0} />
+            <FrenzyOverlay isActive={(profile?.streak || 0) >= 5} combo={profile?.streak || 0} variant="practice" />
             {showStars && <FlyingStars onComplete={onStarsComplete} />}
             {showConfetti && <Confetti />}
 
