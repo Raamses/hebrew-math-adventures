@@ -43,7 +43,7 @@ export interface UserProfile {
     lastDailyDate?: string | null;
     sessionHistory?: SessionRecord[]; // capped at 100 entries (FIFO)
     // Phase 3 fields
-    pet?: PetState;
+    pet?: PetState | null;
     gems?: number;
 }
 

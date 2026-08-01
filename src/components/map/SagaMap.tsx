@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CURRICULUM } from '../../data/learningPath';
 import { useProgress } from '../../context/ProgressContext';
 import type { LearningNode } from '../../types/learningPath';
-import { Star, Lock, LogOut, Globe, Award, ShoppingBag, Heart } from 'lucide-react';
+import { Star, Lock, LogOut, Globe, Award, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, type Variants, AnimatePresence } from 'framer-motion';
 import type { ArcadeMode } from '../../engines/bubble/types';

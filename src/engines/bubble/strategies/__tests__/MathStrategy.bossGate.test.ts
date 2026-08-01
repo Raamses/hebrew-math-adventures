@@ -1,23 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { MathBehaviorStrategy } from '../MathStrategy';
-import type { BossGate, BossGateType } from '../../../lib/bossGate';
-import type { ArithmeticProblem } from '../../../lib/gameLogic';
-import type { GameConfig } from '../../types';
-
-// Helper: minimal valid GameConfig
-const makeConfig = (): GameConfig => ({
-    modeName: 'test',
-    spawnIntervalMs: 1000,
-    maxOnScreen: 8,
-    distractorRatio: 2,
-    baseVelocity: 0.5,
-    winCondition: { type: 'target_count', value: 10 },
-    failCondition: { type: 'strikes', value: 3 },
-    difficultyScale: 'linear',
-    levelMultiplier: 1.0,
-    theme: 'space',
-    vfxEnabled: true,
-});
+import type { BossGate, BossGateType } from '../../../../lib/bossGate';
+import type { ArithmeticProblem } from '../../../../lib/gameLogic';
 
 // Helper: create a simple arithmetic problem
 const makeProblem = (overrides: Partial<ArithmeticProblem> = {}): ArithmeticProblem => ({

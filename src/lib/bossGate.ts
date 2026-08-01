@@ -74,6 +74,7 @@ export function generateBossGate(
 
       // Recalculate so the answer is the missing operand
       // Guard against division by zero
+      const ans = Number(modified.answer);
       const safeNum1 = modified.num1 || 1;
       const safeNum2 = modified.num2 || 1;
 
@@ -81,32 +82,32 @@ export function generateBossGate(
         // We need: num1 OP num2 = result → solve for num1
         switch (modified.operator) {
           case '+':
-            modified.num1 = modified.answer - modified.num2;
+            modified.num1 = ans - modified.num2;
             break;
           case '-':
-            modified.num1 = modified.answer + modified.num2;
+            modified.num1 = ans + modified.num2;
             break;
           case '*':
-            modified.num1 = Math.floor(modified.answer / safeNum2);
+            modified.num1 = Math.floor(ans / safeNum2);
             break;
           case '/':
-            modified.num1 = modified.answer * modified.num2;
+            modified.num1 = ans * modified.num2;
             break;
         }
       } else if (modified.missing === 'num2') {
         switch (modified.operator) {
           case '+':
-            modified.num2 = modified.answer - modified.num1;
+            modified.num2 = ans - modified.num1;
             break;
           case '-':
             // Ensure non-negative for kids' game
-            modified.num2 = Math.max(0, modified.num1 - modified.answer);
+            modified.num2 = Math.max(0, modified.num1 - ans);
             break;
           case '*':
-            modified.num2 = Math.floor(modified.answer / safeNum1);
+            modified.num2 = Math.floor(ans / safeNum1);
             break;
           case '/':
-            modified.num2 = Math.max(1, Math.floor(modified.num1 / Math.max(1, modified.answer)));
+            modified.num2 = Math.max(1, Math.floor(modified.num1 / Math.max(1, ans)));
             break;
         }
       }

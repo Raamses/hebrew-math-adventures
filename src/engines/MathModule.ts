@@ -103,7 +103,7 @@ export class MathModule implements IGameModule {
 
     // Types that MathBehaviorStrategy (bubble game) can actually render.
     // Excludes comparison/series/word — those need different UI.
-    private static readonly BUBBLE_SUPPORTED_TYPES: ReadonlySet<string> = new Set([
+    static readonly BUBBLE_SUPPORTED_TYPES: ReadonlySet<string> = new Set([
         'addition_simple', 'addition_carry',
         'sub_simple', 'sub_borrow', 'sub_zero',
         'multiplication', 'division',

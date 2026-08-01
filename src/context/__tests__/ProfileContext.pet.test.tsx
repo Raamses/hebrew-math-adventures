@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import React from 'react';
+// React import not needed with jsx: react-jsx
 import { ProfileProvider, useProfile } from '../ProfileContext';
 
 describe('ProfileContext — pet/gems validation (P0-profile)', () => {
@@ -8,7 +8,7 @@ describe('ProfileContext — pet/gems validation (P0-profile)', () => {
         localStorage.clear();
     });
 
-    const createProfile = async (result: ReturnType<typeof renderHook<ReturnType<typeof useProfile>>['result']>) => {
+    const createProfile = async (result: { current: ReturnType<typeof useProfile> }) => {
         await act(async () => {
             await result.current.createProfile('TestKid', 7, '👧', 'owl');
         });
@@ -127,7 +127,7 @@ describe('ProfileContext — pet/gems validation (P0-profile)', () => {
             result.current.updateProfile(profileId, { pet: null });
         });
 
-        expect(result.current.profile?.pet).toBeNull();
+        expect(result.current.profile?.pet).toBeUndefined();
     });
 
     it('negative gems are stripped', async () => {

@@ -215,7 +215,7 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
                 Array.isArray(p.unlockedTricks) && p.unlockedTricks.every((t: unknown) => typeof t === 'string') &&
                 (p.lastFedDate === null || typeof p.lastFedDate === 'string'))
         ) {
-            sanitized.pet = p as PetState | null;
+            sanitized.pet = p === null ? undefined : (p as PetState);
         } else {
             console.warn('Attempted to update profile with invalid pet, skipping update');
         }

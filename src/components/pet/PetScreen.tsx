@@ -12,7 +12,7 @@ interface PetScreenProps {
 
 export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
   const { t } = useTranslation();
-  const { profile, feedPet, setPetSpecies, renamePet, spendGems } = useProfile();
+  const { profile, feedPet, setPetSpecies, renamePet } = useProfile();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
 

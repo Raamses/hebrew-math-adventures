@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { MathBehaviorStrategy } from '../MathStrategy';
 import type { GameConfig } from '../../types';
-import type { ArithmeticProblem } from '../../../lib/gameLogic';
+import type { ArithmeticProblem } from '../../../../lib/gameLogic';
 
 // Helper: minimal valid GameConfig
 const makeConfig = (): GameConfig => ({
@@ -33,7 +33,7 @@ describe('MathBehaviorStrategy', () => {
 
         it('generates 40 consecutive problems at level 1 with no two consecutive identical', () => {
             const strategy = new MathBehaviorStrategy();
-            const config = makeConfig();
+    const config = makeConfig();
             const signatures: string[] = [];
 
             for (let i = 0; i < 40; i++) {
@@ -135,7 +135,6 @@ describe('MathBehaviorStrategy', () => {
 
         it('never returns the answer as a distractor (via generateDistractor)', () => {
             const strategy = new MathBehaviorStrategy();
-            const config = makeConfig();
 
             const problem: ArithmeticProblem = {
                 type: 'arithmetic',

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateBossGate, type BossGateType } from '../bossGate';
+import { generateBossGate } from '../bossGate';
 import { MathModule } from '../../engines/MathModule';
 import { INITIAL_CAPABILITY_PROFILE, type UserCapabilityProfile } from '../../types/progress';
 
