@@ -207,6 +207,8 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
 
                                 {/* Card front (face-up) */}
                                 <div
+                                    dir="ltr"
+                                    style={{ unicodeBidi: 'isolate' }}
                                     className={cn(
                                         "absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl flex items-center justify-center shadow-lg border-2",
                                         isMatched

@@ -10,8 +10,8 @@ export class MathBehaviorStrategy implements IGameBehavior {
 
     // Anti-repeat: track recent problem signatures to avoid duplicates
     private recentSignatures: string[] = [];
-    private static readonly MAX_RECENT_SIGNATURES = 10;
-    private static readonly MAX_REGEN_ATTEMPTS = 5;
+    private static readonly MAX_RECENT_SIGNATURES = 18;
+    private static readonly MAX_REGEN_ATTEMPTS = 8;
 
     // Config Constants
     private static readonly CONFIG = {
@@ -63,6 +63,21 @@ export class MathBehaviorStrategy implements IGameBehavior {
             attempts++;
         } while (this.recentSignatures.includes(signature) && attempts < MathBehaviorStrategy.MAX_REGEN_ATTEMPTS);
 
+        // P1-11: If still colliding after max attempts, try adjacent levels as fallback
+        if (this.recentSignatures.includes(signature)) {
+            const fallbackLevels = [level + 1, Math.max(1, level - 1), level + 2];
+            for (const fallbackLevel of fallbackLevels) {
+                const fallbackProfile = { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: fallbackLevel };
+                problem = this.mathModule.generateProblem(fallbackProfile, {
+                    difficulty: fallbackLevel,
+                    supportedTypes: ['arithmetic'],
+                    excludeSignatures: this.recentSignatures,
+                });
+                signature = this.problemSignature(problem);
+                if (!this.recentSignatures.includes(signature)) break;
+            }
+        }
+
         // Ensure we only accept arithmetic/sensory problems for this strategy
         if (this.isSupportedProblem(problem)) {
             this.setProblem(problem);
@@ -70,18 +85,21 @@ export class MathBehaviorStrategy implements IGameBehavior {
             this.setProblem(MathBehaviorStrategy.FALLBACK_PROBLEM);
         }
 
-        // Track signature for anti-repeat
-        this.pushSignature(signature);
+        // P0-8: Track the DISPLAYED signature (what the player actually sees),
+        // not the generated one. If we fell back to FALLBACK_PROBLEM, track that
+        // signature — otherwise duplicates of the fallback go undetected.
+        const displayedSig = this.problemSignature(this.currentProblem as ArithmeticProblem | SensoryProblem);
+        this.pushSignature(displayedSig);
     }
 
-    private problemSignature(p: Problem): string {
+    private problemSignature(p: Problem | ArithmeticProblem | SensoryProblem): string {
         if (p.type === 'arithmetic') {
             return `${p.type}:${p.num1}:${p.operator}:${p.num2}:${p.answer}`;
         }
         if (p.type === 'sensory') {
             return `${p.type}:${p.target}`;
         }
-        return `${p.type}:${p.id}`;
+        return `${p.type}:${(p as Problem).id}`;
     }
 
     private pushSignature(sig: string): void {
@@ -121,7 +139,43 @@ export class MathBehaviorStrategy implements IGameBehavior {
 
     private generateDistractor(): number {
         const safeTarget = Math.max(1, this.targetValue);
-        const range = Math.max(10, Math.floor(safeTarget * 0.4));
+
+        // P1-13: Pedagogical (misconception-based) distractors
+        if (this.currentProblem && this.currentProblem.type === 'arithmetic' && Math.random() < 0.5) {
+            const ap = this.currentProblem as ArithmeticProblem;
+            const answer = Number(ap.answer);
+            const candidates: number[] = [];
+
+            // Off-by-one errors
+            candidates.push(answer + 1, answer - 1);
+
+            // Operation confusion
+            if (ap.operator === '+') {
+                candidates.push(ap.num1 * ap.num2);
+            }
+            if (ap.operator === '*') {
+                candidates.push(ap.num1 + ap.num2);
+            }
+            if (ap.operator === '-') {
+                candidates.push(ap.num1 + ap.num2);
+            }
+
+            // Digit swap for 2-digit answers (10-99)
+            if (answer >= 10 && answer <= 99) {
+                const swapped = (answer % 10) * 10 + Math.floor(answer / 10);
+                candidates.push(swapped);
+            }
+
+            // Filter: remove answer, negatives, > 999
+            const valid = candidates.filter(c => c !== answer && c >= 0 && c <= 999);
+
+            if (valid.length > 0) {
+                return valid[Math.floor(Math.random() * valid.length)];
+            }
+        }
+
+        // P1-12: Scale distractor range to target magnitude (min 5 instead of 10)
+        const range = Math.max(5, Math.floor(safeTarget * 0.4));
         const offset = Math.floor(range / 2);
         let value: number;
         do {

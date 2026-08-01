@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { type UserProfile } from '../types/user';
+import { type UserProfile, type PetState, type PetSpecies } from '../types/user';
 import type { SessionRecord } from '../types/analytics';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -188,6 +188,32 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
         }
     }
 
+    if (updates.gems !== undefined) {
+        if (typeof updates.gems === 'number' && Number.isFinite(updates.gems) && updates.gems >= 0) {
+            sanitized.gems = updates.gems;
+        } else {
+            console.warn('Attempted to update profile with invalid gems, skipping update');
+        }
+    }
+
+    if (updates.pet !== undefined) {
+        const VALID_SPECIES: PetSpecies[] = ['owl', 'cat', 'dragon', 'robot'];
+        const p = updates.pet;
+        if (
+            p === null ||
+            (isPlainObject(p) &&
+                typeof p.species === 'string' && VALID_SPECIES.includes(p.species as PetSpecies) &&
+                typeof p.name === 'string' && p.name.length <= 20 &&
+                typeof p.happiness === 'number' && Number.isFinite(p.happiness) && p.happiness >= 0 && p.happiness <= 100 &&
+                Array.isArray(p.unlockedTricks) && p.unlockedTricks.every((t: unknown) => typeof t === 'string') &&
+                (p.lastFedDate === null || typeof p.lastFedDate === 'string'))
+        ) {
+            sanitized.pet = p as PetState | null;
+        } else {
+            console.warn('Attempted to update profile with invalid pet, skipping update');
+        }
+    }
+
     return sanitized;
 };
 
@@ -215,6 +241,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     dailyStamps: p.dailyStamps || [],
                     lastDailyDate: p.lastDailyDate ?? null,
                     sessionHistory: p.sessionHistory || [],
+                    gems: p.gems ?? 0,
+                    pet: p.pet ?? null,
                 }));
             } catch (error) {
                 console.error('Failed to parse profiles from local storage:', error);
