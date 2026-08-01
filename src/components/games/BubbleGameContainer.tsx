@@ -433,7 +433,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
             {/* Boss Gate Banner — shows gate type and progress while boss is active */}
             {bossOnScreen && behavior instanceof MathBehaviorStrategy && (behavior as MathBehaviorStrategy).isBossGateActive() && (
-                <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold">
+                <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold">
                     <span>{(behavior as MathBehaviorStrategy).getBossGateIcon()}</span>
                     <span>{(behavior as MathBehaviorStrategy).getBossGateLabel()}</span>
                     <span className="opacity-75">
@@ -472,7 +472,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             )}
 
             {/* Header Area — Clean 3-row layout */}
-            <div className="w-full max-w-md flex flex-col items-center gap-1.5 z-20 px-3 pt-3 pb-1">
+            <div className="w-full max-w-md flex flex-col items-center gap-1.5 z-40 px-3 pt-3 pb-1">
                 {/* Row 1: Stats badges (left) + Settings (right) */}
                 <div className="w-full flex items-center justify-between">
                     <div className="flex items-center gap-1.5">

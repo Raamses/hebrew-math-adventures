@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PracticeMode } from './PracticeMode';
 import { LessonModal } from './lessons/LessonModal';
 import { MultiplicationLesson } from '../lessons/lesson1_multiplication';
@@ -10,6 +10,7 @@ import type { LearningNode } from '../types/learningPath';
 import { MathModule } from '../engines/MathModule';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useProfile } from '../context/ProfileContext';
+import { useQuest } from '../context/QuestContext';
 import { MemoryDuelGame } from './games/MemoryDuelGame';
 import { MathInvadersGame } from './games/MathInvadersGame';
 import type { ArcadeMode } from '../engines/bubble/types';
@@ -33,6 +34,45 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
     const { t } = useTranslation();
     const { logEvent } = useAnalytics();
     const { profile } = useProfile();
+    const { todayChallenge, addDailyChallengeCorrect, completeDailyChallenge, dailyChallengeCorrect } = useQuest();
+
+    // --- Daily Challenge tracking for arcade (SENSORY) modes ---
+    // Mirrors the logic in PracticeMode: accumulate correct answers and check completion.
+    const dailyChallengeClaimedRef = useRef(false);
+    const dailyChallengeCorrectRef = useRef(dailyChallengeCorrect);
+    useEffect(() => {
+        dailyChallengeCorrectRef.current = dailyChallengeCorrect;
+    }, [dailyChallengeCorrect]);
+
+    const checkArcadeDailyChallenge = (correct: number) => {
+        if (dailyChallengeClaimedRef.current) return;
+        if (correct <= 0) return;
+
+        // Determine the effective challenge mode and target.
+        // dailyChallengeMode is set when the user explicitly launched the challenge.
+        // If not set (free play), still check if the arcade mode matches today's challenge.
+        const effectiveDailyMode = dailyChallengeMode || todayChallenge.mode;
+        const effectiveDailyTarget = dailyChallengeTarget || todayChallenge.target;
+
+        // Match: arcadeMode must match the daily challenge mode (zen→zen, classic→classic, etc.)
+        const currentArcadeMode = (arcadeMode || '').toLowerCase();
+        const challengeMode = effectiveDailyMode.toLowerCase();
+        if (currentArcadeMode !== challengeMode) return;
+
+        // Accumulate correct answers into the daily total
+        addDailyChallengeCorrect(correct);
+
+        // Check if accumulated total meets the target.
+        // Compute expected accumulated value from the current ref + this batch.
+        const accumulated = dailyChallengeCorrectRef.current + correct;
+        if (accumulated < effectiveDailyTarget) return;
+
+        const result = completeDailyChallenge();
+        if (result) {
+            dailyChallengeClaimedRef.current = true;
+            console.log(`[DC DEBUG] Arcade daily challenge complete! +${result.total} coins, streak: ${result.newStreak}`);
+        }
+    };
 
     // Compute stars based on session accuracy
     const computeStars = (correct: number, attempts: number): number => {
@@ -134,6 +174,10 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
                 arcadeMode={arcadeMode as ArcadeMode | undefined}
                 profile={profile?.capabilities || undefined}
                 onComplete={(success, correct, attempts) => {
+                    // Track daily challenge progress for arcade modes
+                    if (arcadeMode && !node) {
+                        checkArcadeDailyChallenge(correct || 0);
+                    }
                     if (node) {
                         if (success) {
                             const stars = computeStars(correct || 1, attempts || 1);
