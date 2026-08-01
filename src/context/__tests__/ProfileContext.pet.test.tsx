@@ -178,7 +178,7 @@ describe('ProfileContext — pet/gems validation (P0-profile)', () => {
         });
 
         expect(result.current.profile?.gems).toBe(0);
-        expect(result.current.profile?.pet).toBeNull();
+        expect(result.current.profile?.pet).toEqual({ species: 'owl', name: 'באדי', happiness: 60, unlockedTricks: [], lastFedDate: null });
     });
 
     it('pet with name > 20 chars is stripped', async () => {

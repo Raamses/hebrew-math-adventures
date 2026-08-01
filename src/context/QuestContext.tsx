@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { getDailyChallenge, getStreakMultiplier, type DailyChallenge } from '../data/dailyChallenges';
+import { getDailyQuests, type DailyQuest, type QuestMetric } from '../data/dailyQuests';
 import { useProfile } from './ProfileContext';
 
 interface DailyProgress {
@@ -7,6 +8,9 @@ interface DailyProgress {
   totalCoinsEarned: number;
   dailyChallengeCorrect: number; // accumulated correct answers for today's challenge
   dailyChallengeDate: string; // date of current challenge progress (resets daily)
+  questProgress?: Record<string, number>;  // questId → progress count
+  questClaimed?: string[];                  // claimed quest IDs
+  questDate?: string;                       // date of current quest progress (resets daily)
 }
 
 interface QuestContextType {
@@ -18,29 +22,40 @@ interface QuestContextType {
   addDailyChallengeCorrect: (count: number) => void; // add correct answers
   completeDailyChallenge: () => { reward: number; bonus: number; total: number; newStreak: number } | null;
   stampAlbumProgress: number; // 0-7 for current week
+  // Quest system
+  todayQuests: DailyQuest[];
+  questProgress: Record<string, number>;
+  questClaimed: string[];
+  recordQuestEvent: (metric: QuestMetric, amount?: number) => void;
+  claimQuest: (questId: string) => void;
 }
 
 const STORAGE_KEY = 'hebrew-math-daily-progress';
 
 const QuestContext = createContext<QuestContextType | undefined>(undefined);
 
+const EMPTY_PROGRESS: DailyProgress = { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '', questProgress: {}, questClaimed: [], questDate: '' };
+
 function loadProgress(profileId: string): DailyProgress {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' };
+    if (!raw) return { ...EMPTY_PROGRESS };
     const all = JSON.parse(raw);
     const entry = all[profileId];
     if (!entry || !Array.isArray(entry.dailyStamps)) {
-      return { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' };
+      return { ...EMPTY_PROGRESS };
     }
     return {
       dailyStamps: entry.dailyStamps,
       totalCoinsEarned: entry.totalCoinsEarned || 0,
       dailyChallengeCorrect: entry.dailyChallengeCorrect || 0,
       dailyChallengeDate: entry.dailyChallengeDate || '',
+      questProgress: entry.questProgress || {},
+      questClaimed: entry.questClaimed || [],
+      questDate: entry.questDate || '',
     };
   } catch {
-    return { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' };
+    return { ...EMPTY_PROGRESS };
   }
 }
 
@@ -83,19 +98,26 @@ function computeStreak(stamps: string[]): number {
 }
 
 export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { profile, updateProfile, unlockBadge } = useProfile();
+  const { profile, updateProfile, unlockBadge, addGems } = useProfile();
   const todayChallenge = getDailyChallenge();
   const todayStr = todayChallenge.date;
+  const todayQuests = useMemo(() => getDailyQuests(), []);
 
   const [dailyProgress, setDailyProgress] = useState<DailyProgress>(() => {
-    if (!profile) return { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' };
+    if (!profile) return { ...EMPTY_PROGRESS };
     const loaded = loadProgress(profile.id);
     // Reset daily challenge progress if it's from a different day
     if (loaded.dailyChallengeDate !== todayStr) {
       loaded.dailyChallengeCorrect = 0;
       loaded.dailyChallengeDate = todayStr;
-      saveProgress(profile.id, loaded);
     }
+    // Reset quest progress if it's from a different day
+    if (loaded.questDate !== todayStr) {
+      loaded.questProgress = {};
+      loaded.questClaimed = [];
+      loaded.questDate = todayStr;
+    }
+    saveProgress(profile.id, loaded);
     return loaded;
   });
 
@@ -107,11 +129,17 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (loaded.dailyChallengeDate !== todayStr) {
         loaded.dailyChallengeCorrect = 0;
         loaded.dailyChallengeDate = todayStr;
-        saveProgress(profile.id, loaded);
       }
+      // Reset quest progress if it's from a different day
+      if (loaded.questDate !== todayStr) {
+        loaded.questProgress = {};
+        loaded.questClaimed = [];
+        loaded.questDate = todayStr;
+      }
+      saveProgress(profile.id, loaded);
       setDailyProgress(loaded);
     } else {
-      setDailyProgress({ dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '' });
+      setDailyProgress({ ...EMPTY_PROGRESS });
     }
   }, [profile?.id]);
 
@@ -192,6 +220,87 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return { reward: baseReward, bonus, total, newStreak };
   }, [profile, dailyProgress, todayChallenge, todayStr, updateProfile, unlockBadge]);
 
+  // --- Quest System ---
+  // Use a ref for batching quest events to avoid re-render thrashing on every bubble pop.
+  const questEventBatchRef = useRef<Record<string, number>>({});
+  const questFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Flush batched quest progress to state + localStorage
+  const flushQuestProgress = useCallback(() => {
+    if (!profile) return;
+    const batch = questEventBatchRef.current;
+    if (Object.keys(batch).length === 0) return;
+    questEventBatchRef.current = {};
+    setDailyProgress(prev => {
+      const newQuestProgress = { ...(prev.questProgress || {}) };
+      for (const [qid, inc] of Object.entries(batch)) {
+        newQuestProgress[qid] = (newQuestProgress[qid] || 0) + inc;
+      }
+      const newProgress = { ...prev, questProgress: newQuestProgress, questDate: todayStr };
+      saveProgress(profile.id, newProgress);
+      return newProgress;
+    });
+  }, [profile, todayStr]);
+
+  // Flush on unmount
+  useEffect(() => {
+    return () => {
+      if (questFlushTimerRef.current) {
+        clearTimeout(questFlushTimerRef.current);
+      }
+      // Flush any remaining batched progress
+      if (profile) {
+        const batch = questEventBatchRef.current;
+        if (Object.keys(batch).length > 0) {
+          const loaded = loadProgress(profile.id);
+          const newQuestProgress = { ...(loaded.questProgress || {}) };
+          for (const [qid, inc] of Object.entries(batch)) {
+            newQuestProgress[qid] = (newQuestProgress[qid] || 0) + inc;
+          }
+          loaded.questProgress = newQuestProgress;
+          loaded.questDate = todayStr;
+          saveProgress(profile.id, loaded);
+        }
+      }
+    };
+  }, [profile, todayStr]);
+
+  const recordQuestEvent = useCallback((metric: QuestMetric, amount = 1) => {
+    if (!profile) return;
+    // Find today's quests matching this metric
+    for (const q of todayQuests) {
+      if (q.metric === metric) {
+        // Cap progress at target
+        const current = questEventBatchRef.current[q.id] || 0;
+        questEventBatchRef.current[q.id] = current + amount;
+      }
+    }
+    // Debounce flush: 2 seconds
+    if (questFlushTimerRef.current) {
+      clearTimeout(questFlushTimerRef.current);
+    }
+    questFlushTimerRef.current = setTimeout(() => flushQuestProgress(), 2000);
+  }, [profile, todayQuests, flushQuestProgress]);
+
+  const claimQuest = useCallback((questId: string) => {
+    if (!profile) return;
+    const quest = todayQuests.find(q => q.id === questId);
+    if (!quest) return;
+    const progress = (dailyProgress.questProgress || {})[questId] || 0;
+    if (progress < quest.target) return; // not complete
+    const claimed = dailyProgress.questClaimed || [];
+    if (claimed.includes(questId)) return; // already claimed
+    // Award gems
+    addGems(quest.gemReward);
+    // Mark as claimed
+    const newClaimed = [...claimed, questId];
+    setDailyProgress(prev => {
+      const newProgress = { ...prev, questClaimed: newClaimed, questDate: todayStr };
+      saveProgress(profile.id, newProgress);
+      return newProgress;
+    });
+  }, [profile, todayQuests, dailyProgress, addGems, todayStr]);
+
   const value: QuestContextType = {
     todayChallenge,
     hasCompletedToday,
@@ -201,6 +310,11 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addDailyChallengeCorrect,
     completeDailyChallenge,
     stampAlbumProgress: Math.min(stampAlbumProgress, 7),
+    todayQuests,
+    questProgress: dailyProgress.questProgress || {},
+    questClaimed: dailyProgress.questClaimed || [],
+    recordQuestEvent,
+    claimQuest,
   };
 
   return <QuestContext.Provider value={value}>{children}</QuestContext.Provider>;

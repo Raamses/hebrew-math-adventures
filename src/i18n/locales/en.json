@@ -596,5 +596,39 @@
     "playAgain": "Play Again",
     "bossWave": "BOSS WAVE!",
     "frenzy": "FRENZY!"
+  },
+  "pet": {
+    "title": "My Pet",
+    "noPet": "No pet yet",
+    "level": "Level",
+    "levelsToGrow": "levels to grow",
+    "happiness": "Happiness",
+    "feed": "Feed",
+    "fedToday": "Fed today",
+    "chooseSpecies": "Choose animal",
+    "stage": {
+      "egg": "Egg",
+      "baby": "Baby",
+      "child": "Child",
+      "teen": "Teen",
+      "adult": "Adult"
+    }
+  },
+  "quest": {
+    "title": "Daily Quests",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "pop15": "Pop 15 bubbles",
+    "pop15_d": "Answer 15 questions correctly",
+    "pop25": "Pop 25 bubbles",
+    "pop25_d": "Answer 25 questions correctly",
+    "combo5": "Combo of 5",
+    "combo5_d": "Reach a combo of 5 correct answers",
+    "play2": "Play 2 games",
+    "play2_d": "Finish 2 games",
+    "boss1": "Defeat a boss",
+    "boss1_d": "Defeat one boss",
+    "daily": "Daily challenge",
+    "daily_d": "Complete the daily challenge"
   }
 }

@@ -5,6 +5,8 @@ import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { isValidProfileName } from '../lib/validation';
 
+const PET_DEFAULT: PetState = { species: 'owl', name: 'באדי', happiness: 60, unlockedTricks: [], lastFedDate: null };
+
 interface ProfileContextType {
     profile: UserProfile | null;
     allProfiles: UserProfile[];
@@ -24,6 +26,11 @@ interface ProfileContextType {
     equipItem: (category: string, itemId: string) => void;
     toggleSoundGarden: () => void;
     recordSession: (record: SessionRecord) => void;
+    addGems: (amount: number) => void;
+    spendGems: (amount: number) => boolean;
+    feedPet: () => void;
+    setPetSpecies: (species: PetSpecies) => void;
+    renamePet: (name: string) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -242,7 +249,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     lastDailyDate: p.lastDailyDate ?? null,
                     sessionHistory: p.sessionHistory || [],
                     gems: p.gems ?? 0,
-                    pet: p.pet ?? null,
+                    pet: p.pet ?? PET_DEFAULT,
                 }));
             } catch (error) {
                 console.error('Failed to parse profiles from local storage:', error);
@@ -461,6 +468,40 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateProfile(profile.id, { sessionHistory: newHistory });
     }, [profile, updateProfile]);
 
+    const addGems = useCallback((amount: number) => {
+        if (!profile || amount <= 0) return;
+        updateProfile(profile.id, { gems: (profile.gems || 0) + amount });
+    }, [profile, updateProfile]);
+
+    const spendGems = useCallback((amount: number): boolean => {
+        if (!profile) return false;
+        const current = profile.gems || 0;
+        if (current < amount) return false;
+        updateProfile(profile.id, { gems: current - amount });
+        return true;
+    }, [profile, updateProfile]);
+
+    const feedPet = useCallback(() => {
+        if (!profile || !profile.pet) return;
+        if ((profile.gems || 0) < 2) return;
+        const todayISO = new Date().toISOString().slice(0, 10);
+        if (profile.pet.lastFedDate === todayISO) return; // already fed today
+        updateProfile(profile.id, {
+            gems: (profile.gems || 0) - 2,
+            pet: { ...profile.pet, happiness: Math.min(100, profile.pet.happiness + 25), lastFedDate: todayISO },
+        });
+    }, [profile, updateProfile]);
+
+    const setPetSpecies = useCallback((species: PetSpecies) => {
+        if (!profile || !profile.pet) return;
+        updateProfile(profile.id, { pet: { ...profile.pet, species } });
+    }, [profile, updateProfile]);
+
+    const renamePet = useCallback((name: string) => {
+        if (!profile || !profile.pet) return;
+        updateProfile(profile.id, { pet: { ...profile.pet, name: name.slice(0, 20) } });
+    }, [profile, updateProfile]);
+
     const value = useMemo(() => ({
         profile,
         allProfiles,
@@ -479,8 +520,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         buyItem,
         equipItem,
         toggleSoundGarden,
-        recordSession
-    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore, addCoins, spendCoins, unlockBadge, buyItem, equipItem, toggleSoundGarden, recordSession]);
+        recordSession,
+        addGems,
+        spendGems,
+        feedPet,
+        setPetSpecies,
+        renamePet,
+    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore, addCoins, spendCoins, unlockBadge, buyItem, equipItem, toggleSoundGarden, recordSession, addGems, spendGems, feedPet, setPetSpecies, renamePet]);
 
     return (
         <ProfileContext.Provider value={value}>

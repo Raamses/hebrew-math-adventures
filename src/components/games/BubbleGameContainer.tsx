@@ -64,7 +64,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 }) => {
 
     // --- Session-Internal Leveling State ---
-    const [sessionLevel, setSessionLevel] = useState(1);
+    const [sessionLevel, setSessionLevel] = useState(() => {
+        // Seed from profile.estimatedLevel (capped at 10, warmup floor at 1)
+        const profileLevel = profile?.capabilities?.estimatedLevel ?? 1;
+        return Math.max(1, Math.min(Math.round(profileLevel), 10));
+    });
     const [showLevelUp, setShowLevelUp] = useState(false);
     const theme = getThemeForLevel(sessionLevel);
     const consecutiveCorrectRef = useRef(0);
@@ -214,7 +218,9 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             }
         } else if (isCorrect === false) {
             consecutiveWrongRef.current++;
-            consecutiveCorrectRef.current = 0;
+            // P0-9b: Soft streak decay — decrement by 1 instead of full reset
+            // A single distractor misclick shouldn't wipe a 15-correct streak
+            consecutiveCorrectRef.current = Math.max(0, consecutiveCorrectRef.current - 1);
 
             // Adaptive difficulty: struggling (>= 2 wrong, before level-down threshold of 3)
             // Reduce distractorRatio by 0.5x for a simpler problem, keep level same
@@ -339,7 +345,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             }
             if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
         }
-    }, [enginePop, playSound, play, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, playMelodyNote, playWrongMelody]);
+    }, [enginePop, playSound, play, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, playMelodyNote, playWrongMelody, recordQuestEvent, gameState.combo]);
 
     // Monitor Game Over / Victory
     useEffect(() => {
@@ -370,7 +376,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             });
             setTimeout(() => onComplete(false, sessionCorrectRef.current, sessionAttemptsRef.current), 1500);
         }
-    }, [gameState.isVictory, gameState.isGameOver, onComplete, playSound, recordSession]);
+    }, [gameState.isVictory, gameState.isGameOver, onComplete, playSound, recordSession, recordQuestEvent]);
 
     const instruction = behavior.getInstruction ? behavior.getInstruction() : undefined;
 
@@ -480,7 +486,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         {title || 'Blast Off'}
                     </h1>
                     {instruction && (
-                        <div className="bg-white/85 backdrop-blur-md px-4 py-1 rounded-xl shadow-sm border border-blue-100">
+                        <div dir="ltr" style={{ unicodeBidi: 'isolate' }} className="bg-white/85 backdrop-blur-md px-4 py-1 rounded-xl shadow-sm border border-blue-100">
                             <span className={`text-lg font-bold ${theme.accent} tracking-wide font-mono leading-tight`}>
                                 {instruction}
                             </span>

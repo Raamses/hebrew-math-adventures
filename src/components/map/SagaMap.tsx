@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CURRICULUM } from '../../data/learningPath';
 import { useProgress } from '../../context/ProgressContext';
 import type { LearningNode } from '../../types/learningPath';
-import { Star, Lock, LogOut, Globe, Award, ShoppingBag } from 'lucide-react';
+import { Star, Lock, LogOut, Globe, Award, ShoppingBag, Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, type Variants, AnimatePresence } from 'framer-motion';
 import type { ArcadeMode } from '../../engines/bubble/types';
@@ -10,6 +10,7 @@ import { ARCADE_MODE_LABELS } from '../../lib/arcadeModes';
 import { QuestPanel } from '../quests/QuestPanel';
 import { BadgeCollection } from '../badges/BadgeCollection';
 import { TreasureShop } from '../shop/TreasureShop';
+import { PetAvatar } from '../pet/PetAvatar';
 import { useProfile } from '../../context/ProfileContext';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { useQuest } from '../../context/QuestContext';
@@ -18,6 +19,7 @@ interface SagaMapProps {
     onNodeSelect: (node: LearningNode) => void;
     onLogout: () => void;
     onArcadeMode: (mode?: ArcadeMode, dailyMode?: string, dailyTarget?: number) => void;
+    onOpenPet: () => void;
 }
 
 const containerVariants: Variants = {
@@ -44,7 +46,7 @@ const nodeVariants: Variants = {
     }
 };
 
-export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode }) => {
+export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode, onOpenPet }) => {
     const { isNodeLocked, getStars } = useProgress();
     const { t, i18n } = useTranslation();
     const { logEvent } = useAnalytics();
@@ -87,6 +89,24 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                         <span className="text-xs">🪙</span>
                         <span className="text-xs font-bold text-yellow-700">{profile?.coins || 0}</span>
                     </div>
+
+                    {/* Gem balance */}
+                    <div className="flex items-center gap-1 bg-purple-100 px-1.5 py-0.5 rounded-full">
+                        <span className="text-xs">💎</span>
+                        <span className="text-xs font-bold text-purple-700">{profile?.gems || 0}</span>
+                    </div>
+
+                    {/* Pet button */}
+                    {profile?.pet && (
+                        <button
+                            onClick={onOpenPet}
+                            className="p-1.5 bg-pink-100 hover:bg-pink-200 rounded-full transition-colors"
+                            title={t('pet.title', 'החיה שלי')}
+                            aria-label={t('pet.title', 'החיה שלי')}
+                        >
+                            <PetAvatar pet={profile.pet} level={profile.capabilities?.estimatedLevel ?? 1} variant="badge" className="!text-xl" />
+                        </button>
+                    )}
 
                     {/* Badge collection button */}
                     <button

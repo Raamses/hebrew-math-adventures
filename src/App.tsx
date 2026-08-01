@@ -11,6 +11,7 @@ import { ParentDashboard } from './components/parent/ParentDashboard'
 import { SagaMap } from './components/map/SagaMap'
 import { GameOrchestrator } from './components/GameOrchestrator'
 import { MascotGreeting } from './components/mascot/MascotGreeting'
+import { PetScreen } from './components/pet/PetScreen'
 import type { LearningNode } from './types/learningPath'
 import type { ArcadeMode } from './engines/bubble/types'
 
@@ -25,7 +26,7 @@ const AppContent = () => {
   }, [logEvent]);
 
   const { profile, logout } = useProfile();
-  const [view, setView] = useState<'select' | 'map' | 'game' | 'parent'>('select');
+  const [view, setView] = useState<'select' | 'map' | 'game' | 'parent' | 'pet'>('select');
   const [showParentGate, setShowParentGate] = useState(false);
   const [selectedNode, setSelectedNode] = useState<LearningNode | null>(null);
   const [arcadeMode, setArcadeMode] = useState<ArcadeMode | undefined>(undefined);
@@ -81,6 +82,10 @@ const AppContent = () => {
     return <ParentDashboard onExit={() => setView('select')} />;
   }
 
+  if (effectiveView === 'pet') {
+    return <PetScreen onBack={() => setView('map')} />;
+  }
+
   if (!profile) {
     return (
       <>
@@ -108,7 +113,7 @@ const AppContent = () => {
             onDismiss={() => setShowGreeting(false)}
           />
         )}
-        <SagaMap onNodeSelect={handleNodeSelect} onLogout={handleLogout} onArcadeMode={handleArcadeMode} />
+        <SagaMap onNodeSelect={handleNodeSelect} onLogout={handleLogout} onArcadeMode={handleArcadeMode} onOpenPet={() => setView('pet')} />
       </>
     );
   }
