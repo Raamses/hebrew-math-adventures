@@ -67,6 +67,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     onOpenSettings = () => { },
     onPause = () => { }
 }) => {
+    const { playSound, play } = useSound();
+    const { logEvent } = useAnalytics();
+    const { profile, updateProfile, recordSession } = useProfile();
+    const { recordQuestEvent } = useQuest();
+    const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
 
     // --- Session-Internal Leveling State ---
     const [sessionLevel, setSessionLevel] = useState(() => {
@@ -100,11 +105,6 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
     // Hook into Engine
     const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget } = useGameEngine(config, behavior);
-    const { playSound, play } = useSound();
-    const { logEvent } = useAnalytics();
-    const { profile, updateProfile, recordSession } = useProfile();
-    const { recordQuestEvent } = useQuest();
-    const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
 
     // --- Boss Bubble State ---
     const BOSS_LEVELS = [3, 6, 9]; // Boss appears at these session levels
