@@ -31,7 +31,7 @@ export const PracticeFeedback: React.FC<PracticeFeedbackProps> = ({
             {showStars && <FlyingStars onComplete={onStarsComplete} />}
             {showConfetti && <Confetti />}
 
-            <div className="relative mt-4 ml-auto md:absolute md:right-4 md:bottom-12 z-20 pointer-events-none">
+            <div className="relative mt-4 ml-auto md:absolute md:right-4 md:bottom-12 z-40 pointer-events-none">
                 <div className="relative">
                     <SpeechBubble text={mascotMessage} isVisible={showBubble} />
                     <Mascot

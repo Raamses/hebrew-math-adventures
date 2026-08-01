@@ -146,7 +146,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
             </div>
 
             {/* HUD */}
-            <div className="w-full max-w-3xl flex items-center justify-between p-3 z-20 relative">
+            <div className="w-full max-w-3xl flex items-center justify-between p-3 z-40 relative">
                 <button
                     onClick={onExit}
                     className="flex items-center gap-1.5 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full px-3 py-2 transition-all min-h-[48px]"
@@ -203,7 +203,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
             </div>
 
             {/* Title */}
-            <h2 className="text-xl sm:text-2xl font-black text-white mb-2 tracking-tight text-center z-20 relative">
+            <h2 className="text-xl sm:text-2xl font-black text-white mb-2 tracking-tight text-center z-40 relative">
                 🚀 {t('invaders.title', 'Math Invaders')}
             </h2>
 
