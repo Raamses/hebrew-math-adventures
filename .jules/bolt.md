@@ -1,0 +1,3 @@
+## 2024-06-25 - [Bypass React Render Phase for Numeric Animations]
+**Learning:** Animating a primitive numeric value like a score via `setInterval` and `setState` causes 60 reconciliations per second in React, severely impacting performance.
+**Action:** Use Framer Motion's `useSpring` (and `useTransform` for formatting) mapped to a `<motion.span>` to directly manipulate the DOM and bypass the React render phase altogether.
