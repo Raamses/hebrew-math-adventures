@@ -75,7 +75,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
     }
 
 
-    private generateAndSetProblem(level: number, config: GameConfig, correctCount = 0): void {
+    private generateAndSetProblem(level: number, config: GameConfig): void {
         // Store config override so generateNext can use the adaptive ratio
         this.configOverride = config;
         const profile = { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: level };
@@ -84,9 +84,9 @@ export class MathBehaviorStrategy implements IGameBehavior {
         let attempts = 0;
         let signature = '';
 
-        const trivialSignatures = correctCount >= 3
-            ? this.collectTrivialSignatures()
-            : [];
+        // Anti-repeat: always exclude trivial signatures (0+0, 1-1, 0*N),
+        // not just after correctCount >= 3, to prevent back-to-back duplicates.
+        const trivialSignatures = this.collectTrivialSignatures();
 
         // Try up to MAX_REGEN_ATTEMPTS to get a non-repeating problem
         do {
@@ -133,6 +133,28 @@ export class MathBehaviorStrategy implements IGameBehavior {
                 });
                 signature = this.problemSignature(problem);
                 if (!this.recentSignatures.includes(signature)) break;
+            }
+        }
+
+        // ADR 2026-08-zen-answer-race (Fix 2): final anti-repeat re-check.
+        // If every fallback level still collided, force a perturbation so a
+        // duplicate is never admitted to setProblem (the previous path could
+        // pass the colliding problem through with no final check -> 0+0 repeats).
+        if (this.recentSignatures.includes(signature) && problem.type === 'arithmetic') {
+            const ap = problem as ArithmeticProblem;
+            // Perturb: swap operator to its inverse-ish pair, or bump num2 by +1,
+            // then re-validate against recent signatures before accepting.
+            const candidates: ArithmeticProblem[] = [
+                { ...ap, num2: ap.num2 + 1 },
+                { ...ap, num2: Math.max(0, ap.num2 - 1) },
+            ];
+            for (const cand of candidates) {
+                const candSig = this.problemSignature(cand);
+                if (!this.recentSignatures.includes(candSig)) {
+                    problem = cand;
+                    signature = candSig;
+                    break;
+                }
             }
         }
 

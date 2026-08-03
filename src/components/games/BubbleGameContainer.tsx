@@ -19,6 +19,9 @@ const SESSION_THEMES = [
   { bg: 'bg-indigo-50', accent: 'text-indigo-600' },  // Lv 7-8: Space
   { bg: 'bg-rose-50', accent: 'text-rose-600' },      // Lv 9-10: Volcano
 ];
+// ADR 2026-08-zen-answer-race (Fix 1): lock window to drop cross-entity
+// rapid pops that could validate a second pop against a rotated targetValue.
+const ANSWER_LOCK_MS = 120;
 const getThemeForLevel = (level: number) => SESSION_THEMES[Math.min(Math.floor((level - 1) / 2), SESSION_THEMES.length - 1)];
 import { SettingsMenu } from '../SettingsMenu';
 import { useSound } from '../../hooks/useSound';
@@ -87,6 +90,8 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const consecutiveWrongRef = useRef(0);
     const correctSinceRotationRef = useRef(0);
     const sessionLevelRef = useRef(1);
+    // ADR 2026-08-zen-answer-race (Fix 1): cross-entity pop lock
+    const answerLockRef = useRef(false);
 
     // --- Session Accuracy Tracking ---
     const sessionCorrectRef = useRef(0);
@@ -261,6 +266,15 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     }, [behavior, config, logEvent, play, gameState.targetsPopped]);
 
     const onPopWrapper = useCallback((id: string, val: number | string, x: number, y: number) => {
+        // ADR 2026-08-zen-answer-race (Fix 1): answer-lock to prevent the
+        // cross-entity race. A target + distractor popped near-simultaneously
+        // would both be processed, letting the second validate against a stale/
+        // rotated targetValue (breaking score + resetting answer state in zen).
+        // While a pop is being processed, drop further pops for a short window.
+        if (answerLockRef.current) return;
+        answerLockRef.current = true;
+        window.setTimeout(() => { answerLockRef.current = false; }, ANSWER_LOCK_MS);
+
         // Find entity to check if it's a power-up BEFORE popping
         const entity = entities.find(e => e.id === id);
         const isPowerUpBubble = entity?.isPowerUp === true;

@@ -20,6 +20,7 @@ tags: [roadmap, current, work]
 - `4cf1017` — guard test tsc-compatible
 
 ## In flight / next
+- **Zen-mode answer race + anti-repeat duplicate-slip fix** (ADR 2026-08-zen-answer-race) — implementing now.
 - **Playability validation** of the bubble spawn overhaul in real playtesting (watch item — see [[domain/bubble-spawn-design]]).
 - Challenge clutter reduction (`CHALLENGE_CLUTTER_PLAN.md`).
 - PracticeMode design review follow-ups (`DESIGN_REVIEW_PRACTICEMODE.md`).
