@@ -147,28 +147,34 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
                     >
                         {problem.type !== 'compare' ? (
                             <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
-                                <ArithmeticView
-                                    problem={problem}
-                                    answer={answer}
-                                    setAnswer={handleAnswerChange}
-                                    isProcessing={isProcessing}
-                                    wrongAttempts={wrongAttempts}
-                                    onKeyDown={handleInputKeyDown}
-                                />
-                                <SeriesView
-                                    problem={problem}
-                                    answer={answer}
-                                    setAnswer={handleAnswerChange}
-                                    isProcessing={isProcessing}
-                                    onKeyDown={handleInputKeyDown}
-                                />
-                                <WordProblemView
-                                    problem={problem}
-                                    answer={answer}
-                                    setAnswer={handleAnswerChange}
-                                    isProcessing={isProcessing}
-                                    onKeyDown={handleInputKeyDown}
-                                />
+                                {problem.type === 'arithmetic' && (
+                                    <ArithmeticView
+                                        problem={problem}
+                                        answer={answer}
+                                        setAnswer={handleAnswerChange}
+                                        isProcessing={isProcessing}
+                                        wrongAttempts={wrongAttempts}
+                                        onKeyDown={handleInputKeyDown}
+                                    />
+                                )}
+                                {problem.type === 'series' && (
+                                    <SeriesView
+                                        problem={problem}
+                                        answer={answer}
+                                        setAnswer={handleAnswerChange}
+                                        isProcessing={isProcessing}
+                                        onKeyDown={handleInputKeyDown}
+                                    />
+                                )}
+                                {problem.type === 'word' && (
+                                    <WordProblemView
+                                        problem={problem}
+                                        answer={answer}
+                                        setAnswer={handleAnswerChange}
+                                        isProcessing={isProcessing}
+                                        onKeyDown={handleInputKeyDown}
+                                    />
+                                )}
 
                                 <AnimatePresence>
                                     {isEmptySubmitted && (
