@@ -101,7 +101,11 @@ export const ProfileManager: React.FC = () => {
                 <button
                     onClick={() => {
                         if (confirm(t('parent.danger.resetConfirm'))) {
-                            localStorage.clear();
+                            try {
+                                localStorage.clear();
+                            } catch {
+                                // ignore error
+                            }
                             window.location.reload();
                         }
                     }}

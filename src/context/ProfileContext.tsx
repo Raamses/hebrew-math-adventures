@@ -226,7 +226,12 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
-        const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        let savedProfiles: string | null = null;
+        try {
+            savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        } catch {
+            // ignore localStorage error
+        }
         let profiles: UserProfile[] = [];
 
         if (savedProfiles) {
@@ -265,7 +270,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Persist profiles whenever they change
     useEffect(() => {
         if (allProfiles.length > 0) {
-            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            try {
+                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            } catch (error) {
+                console.error('Failed to save profiles to local storage:', error);
+            }
         }
     }, [allProfiles]);
 
@@ -279,8 +288,19 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             throw new Error('Invalid profile name');
         }
 
+        let newId: string;
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            newId = crypto.randomUUID();
+        } else {
+            // standard UUID v4 polyfill fallback for non-secure HTTP environments where crypto is undefined
+            newId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
         const newProfile: UserProfile = {
-            id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `profile-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: newId,
             name: sanitizedName,
             age,
             avatarId,
