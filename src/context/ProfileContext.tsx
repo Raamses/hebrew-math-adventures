@@ -226,7 +226,12 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
-        const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        let savedProfiles: string | null = null;
+        try {
+            savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        } catch (error) {
+            console.warn('Failed to get profiles from localStorage', error);
+        }
         let profiles: UserProfile[] = [];
 
         if (savedProfiles) {
@@ -265,7 +270,11 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Persist profiles whenever they change
     useEffect(() => {
         if (allProfiles.length > 0) {
-            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            try {
+                localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            } catch (error) {
+                console.warn('Failed to save profiles to localStorage', error);
+            }
         }
     }, [allProfiles]);
 
