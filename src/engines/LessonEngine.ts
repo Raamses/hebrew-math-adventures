@@ -6,6 +6,10 @@ export class LessonEngine {
     private lesson: LessonDefinition;
     private currentStepIndex: number = 0;
 
+    // Performance tracking — used to award dynamic star tiers on completion.
+    private correctCount: number = 0;
+    private mistakeCount: number = 0;
+
     // Runtime State
     private items: LessonItem[] = [];
     private targets: LessonTarget[] = [];
@@ -25,6 +29,27 @@ export class LessonEngine {
         this.targets = structuredClone(step.targets);
 
         this.notify();
+    }
+
+    /**
+     * Reports an incorrect action (e.g. a drop into empty space or an invalid
+     * target). The UI calls this on drops that the engine's placement logic
+     * rejects. Used to compute the Pass/Good/Perfect star tier.
+     */
+    public recordMistake(): void {
+        this.mistakeCount++;
+    }
+
+    /**
+     * Returns the accumulated performance result across all completed steps of
+     * the lesson, combining correct fills with recorded mistakes. Used to
+     * compute the Pass/Good/Perfect star tier at lesson completion.
+     */
+    public getPerformance(): { correct: number; attempts: number } {
+        return {
+            correct: this.correctCount,
+            attempts: this.correctCount + this.mistakeCount,
+        };
     }
 
     public subscribe(listener: (state: ReturnType<LessonEngine['getCurrentState']>) => void) {
@@ -69,9 +94,18 @@ export class LessonEngine {
                 // Update item pos to target center (visual snap)
                 item.position = { ...target.position }; // Snap to center
 
+                // A successful fill counts toward the performance tier.
+                this.correctCount++;
+
                 // Trigger Validation Check
                 this.checkValidation();
+            } else {
+                // Target is full (capacity reached) or target missing → mistake.
+                this.recordMistake();
             }
+        } else {
+            // Dropped into empty space (no target) → mistake.
+            this.recordMistake();
         }
 
         this.notify();

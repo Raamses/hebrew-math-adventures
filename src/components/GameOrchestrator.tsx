@@ -11,6 +11,7 @@ import { MathModule } from '../engines/MathModule';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useProfile } from '../context/ProfileContext';
 import { useQuest } from '../context/QuestContext';
+import { computeStarsByTier } from '../lib/stars';
 import { MemoryDuelGame } from './games/MemoryDuelGame';
 import { MathInvadersGame } from './games/MathInvadersGame';
 import type { ArcadeMode } from '../engines/bubble/types';
@@ -74,14 +75,9 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         }
     };
 
-    // Compute stars based on session accuracy
-    const computeStars = (correct: number, attempts: number): number => {
-        if (attempts === 0) return 1;
-        const mistakes = attempts - correct;
-        if (mistakes <= 1) return 3;
-        if (mistakes <= 3) return 2;
-        return 1;
-    };
+    // Compute stars based on session accuracy (Pass/Good/Perfect tier).
+    // Delegates to the shared star-tier helper so every mode uses one source of truth.
+    const computeStars = (correct: number, attempts: number): number => computeStarsByTier(correct, attempts);
 
     const [internalMode, setInternalMode] = useState<GameMode | null>(null);
 
@@ -108,10 +104,21 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         setInternalMode(null);
     }, [node]);
 
-    const handleLessonComplete = () => {
+    const handleLessonComplete = (performance: { correct: number; attempts: number }) => {
         setIsLessonOpen(false);
         if (node) {
-            completeNode(node.id, 3);
+            // Award stars dynamically by the lesson's Pass/Good/Perfect tier
+            // instead of hardcoding a full 3-star completion.
+            const stars = computeStars(performance.correct, performance.attempts);
+            completeNode(node.id, stars);
+            logEvent('node_complete', {
+                node_id: node.id,
+                success: true,
+                stars_earned: stars,
+                node_type: 'LESSON',
+                correct: performance.correct,
+                attempts: performance.attempts,
+            });
             onExit();
         } else {
             setInternalMode('PRACTICE');

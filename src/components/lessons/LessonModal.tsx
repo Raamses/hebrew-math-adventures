@@ -11,7 +11,8 @@ interface LessonModalProps {
     isOpen: boolean;
     lesson: LessonDefinition;
     onClose: () => void;
-    onComplete: () => void;
+    /** Called when the final step is completed. Receives the lesson's performance result for star-tiering. */
+    onComplete: (performance: { correct: number; attempts: number }) => void;
 }
 
 export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClose, onComplete }) => {
@@ -35,7 +36,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
 
     const handleNext = () => {
         if (isLastStep) {
-            onComplete();
+            onComplete(engine.getPerformance());
         } else {
             engine.nextStep();
         }
@@ -120,6 +121,9 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                                 if (targetEl) {
                                     const targetId = targetEl.getAttribute('data-target-id');
                                     if (targetId) engine.onItemDropped(item.id, targetId);
+                                } else {
+                                    // Dropped into empty space (no valid target) → mistake.
+                                    engine.recordMistake();
                                 }
                             }}
                             className="absolute w-20 h-20 flex items-center justify-center cursor-grab active:cursor-grabbing -ml-10 -mt-10 touch-none"

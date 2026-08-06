@@ -35,6 +35,8 @@ Everything about this project, one place. **Start here.**
 
 ## 🧭 Decisions (ADRs — dated)
 - [[decisions/2026-07-spawn-overhaul]] — bubble spawn engine rework (P0+P1)
+- [[decisions/2026-08-dynamic-star-tiers]] — dynamic star rewards by performance tier
+- [[decisions/2026-08-zen-answer-race]] — zen answer race + anti-repeat fix
 - *(add new decisions here as they're made)*
 
 ## 📚 Domain / Curriculum
