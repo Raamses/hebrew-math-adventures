@@ -1,5 +1,6 @@
 import type { IGameDirector, BaseGameConfig } from './interfaces';
 import type { UserCapabilityProfile } from '../types/progress';
+import { DIRECTOR_CONFIG, MAX_LEVEL } from '../lib/worldConfig';
 
 // The Smart Director's Logic
 // Decision Tree:
@@ -8,12 +9,12 @@ import type { UserCapabilityProfile } from '../types/progress';
 // 3. else -> Stability Mode (Keep current Focus)
 
 export class GameDirector implements IGameDirector {
-    private static readonly CHALLENGE_THRESHOLD = 5;
-    private static readonly STREAK_THRESHOLD = 5; // Global streak
+    // Use DIRECTOR_CONFIG.CHALLENGE_THRESHOLD from worldConfig
+    // Use DIRECTOR_CONFIG.STREAK_THRESHOLD from worldConfig
 
-    private static readonly RESCUE_MULTIPLIER = 0.8;
-    private static readonly CHALLENGE_MULTIPLIER = 1.2;
-    private static readonly MIN_MAX_VALUE = 5;
+    // Use DIRECTOR_CONFIG.RESCUE_MULTIPLIER from worldConfig
+    // Use DIRECTOR_CONFIG.CHALLENGE_MULTIPLIER from worldConfig
+    // Use DIRECTOR_CONFIG.MIN_MAX_VALUE from worldConfig
 
     // The new "Decorator" method: Takes a base static config and adapts it to the user
     tuneConfig<T extends BaseGameConfig>(baseConfig: T, profile: UserCapabilityProfile): T {
@@ -25,7 +26,7 @@ export class GameDirector implements IGameDirector {
 
         // 1. Rescue Mode (Heuristic: >2 consecutive failures)
         // If the user is struggling, we simplify the problem temporarily.
-        const rescueThreshold = profile.age && profile.age >= 8 ? 3 : 2;
+        const rescueThreshold = profile.age && profile.age >= 8 ? DIRECTOR_CONFIG.RESCUE_THRESHOLD_ADULT : DIRECTOR_CONFIG.RESCUE_THRESHOLD_CHILD;
         if (profile.consecutiveFailures >= rescueThreshold) {
             tuned.isRescue = true;
             tuned.isChallenge = false;
@@ -33,8 +34,8 @@ export class GameDirector implements IGameDirector {
             // Heuristic A: Reduce Max Number
             if (typeof tuned.max === 'number') {
                 tuned.max = Math.max(
-                    GameDirector.MIN_MAX_VALUE,
-                    Math.floor(tuned.max * GameDirector.RESCUE_MULTIPLIER)
+                    DIRECTOR_CONFIG.MIN_MAX_VALUE,
+                    Math.floor(tuned.max * DIRECTOR_CONFIG.RESCUE_MULTIPLIER)
                 );
             }
 
@@ -70,13 +71,13 @@ export class GameDirector implements IGameDirector {
         // 2. Challenge Mode (Heuristic: >5 consecutive correct on this specific skill)
         // Note: We need to know the *current topic* to check stats.
         // For now, we use a global heuristic or assume 'math_core' generic skills.
-        else if ((currentSkill && currentSkill.consecutiveCorrect >= GameDirector.CHALLENGE_THRESHOLD) || (profile.streak > GameDirector.STREAK_THRESHOLD)) {
+        else if ((currentSkill && currentSkill.consecutiveCorrect >= DIRECTOR_CONFIG.CHALLENGE_THRESHOLD) || (profile.streak > DIRECTOR_CONFIG.STREAK_THRESHOLD)) {
             tuned.isChallenge = true;
             tuned.isRescue = false;
 
             // Heuristic A: Increase Difficulty slightly (push limits)
             if (typeof tuned.max === 'number') {
-                tuned.max = Math.floor(tuned.max * GameDirector.CHALLENGE_MULTIPLIER);
+                tuned.max = Math.floor(tuned.max * DIRECTOR_CONFIG.CHALLENGE_MULTIPLIER);
             }
 
             // Heuristic: Add more distractors in challenge mode
@@ -132,12 +133,12 @@ export class GameDirector implements IGameDirector {
         }
 
         // 3. Mastery-based level growth
-        const MASTERY_THRESHOLD = 10;
-        const MASTERY_ACCURACY = 0.8;
+        const MASTERY_THRESHOLD = DIRECTOR_CONFIG.MASTERY_THRESHOLD;
+        const MASTERY_ACCURACY = DIRECTOR_CONFIG.MASTERY_ACCURACY;
         const masteredCount = Object.values(newProfile.skills)
             .filter(s => s.attempts >= MASTERY_THRESHOLD && (s.correct / s.attempts) >= MASTERY_ACCURACY)
             .length;
-        const newLevel = Math.min(10, 1 + Math.floor(masteredCount / 3));
+        const newLevel = Math.min(MAX_LEVEL, 1 + Math.floor(masteredCount / 3));
         if (newLevel > newProfile.estimatedLevel) {
             newProfile.estimatedLevel = newLevel;
             onLevelUp?.(newLevel);

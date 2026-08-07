@@ -237,6 +237,8 @@ export const WORD_PROBLEM_TEMPLATES: WordProblemTemplate[] = [
  *   medium: ages 7-9 (levels 3-5)
  *   hard: ages 9-11 (levels 5-10)
  */
+import { DIFFICULTY_BREAKPOINTS } from '../lib/worldConfig';
+
 export function getTemplatesByDifficulty(difficulty: 'easy' | 'medium' | 'hard'): WordProblemTemplate[] {
     return WORD_PROBLEM_TEMPLATES.filter((t) => t.difficulty === difficulty);
 }
@@ -245,7 +247,7 @@ export function getTemplatesByDifficulty(difficulty: 'easy' | 'medium' | 'hard')
  * Get difficulty based on target level.
  */
 export function difficultyFromLevel(level: number): 'easy' | 'medium' | 'hard' {
-    if (level <= 3) return 'easy';
-    if (level <= 6) return 'medium';
+    if (level <= DIFFICULTY_BREAKPOINTS.EASY_MAX_LEVEL) return 'easy';
+    if (level <= DIFFICULTY_BREAKPOINTS.MEDIUM_MAX_LEVEL) return 'medium';
     return 'hard';
 }

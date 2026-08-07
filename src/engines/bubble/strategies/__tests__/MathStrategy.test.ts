@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { MathBehaviorStrategy } from '../MathStrategy';
+import { SPAWN_CONFIG } from '../../../../lib/worldConfig';
 import type { GameConfig } from '../../types';
 import type { ArithmeticProblem } from '../../../../lib/gameLogic';
 
@@ -20,15 +21,12 @@ const makeConfig = (): GameConfig => ({
 
 describe('MathBehaviorStrategy', () => {
     describe('P1-11: Anti-repeat window', () => {
-        it('MAX_RECENT_SIGNATURES should be 12', () => {
-            // Access static private via any cast
-            const Strategy = MathBehaviorStrategy as any;
-            expect(Strategy.MAX_RECENT_SIGNATURES).toBe(12);
+        it('MAX_RECENT_SIGNATURES should be 12 (from SPAWN_CONFIG)', () => {
+            expect(SPAWN_CONFIG.MAX_RECENT_SIGNATURES).toBe(12);
         });
 
-        it('MAX_REGEN_ATTEMPTS should be 8', () => {
-            const Strategy = MathBehaviorStrategy as any;
-            expect(Strategy.MAX_REGEN_ATTEMPTS).toBe(8);
+        it('MAX_REGEN_ATTEMPTS should be 8 (from SPAWN_CONFIG)', () => {
+            expect(SPAWN_CONFIG.MAX_REGEN_ATTEMPTS).toBe(8);
         });
 
         it('generates 40 consecutive problems at level 1 with no two consecutive identical', () => {

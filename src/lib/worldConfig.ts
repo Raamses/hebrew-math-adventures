@@ -1,4 +1,37 @@
+/**
+ * worldConfig.ts — Single source of truth for all game-world constants.
+ *
+ * This module is a TRUE LEAF: it imports only from `lucide-react` (for zone
+ * icons) and `types/game` (for shared type definitions).  It never imports
+ * from engines/, components/, hooks/, context/, or data/.
+ *
+ * All other modules import config FROM here; nothing in here imports FROM
+ * them.
+ *
+ * Migration is additive-first: existing exports (WORLD_ZONES, getZoneForLevel,
+ * ZoneConfig) remain unchanged.  New config namespaces are added below and
+ * consumers are gradually switched over.
+ */
+
 import { type LucideIcon, Palmtree, Trees, Mountain, Sparkles } from 'lucide-react';
+import type {
+    WinConditionType,
+    FailConditionType,
+    ArcadeMode,
+} from '../types/game';
+
+// ================================================================
+//  Global Scalars
+// ================================================================
+
+export const MAX_LEVEL = 10;
+export const MIN_LEVEL = 0;
+export const BOSS_LEVELS = [3, 6, 9] as const;
+export const BOSS_GATE_PROBLEM_COUNT = 3;
+
+// ================================================================
+//  Zone Config (existing — kept as-is)
+// ================================================================
 
 export interface ZoneConfig {
     id: string;
@@ -57,3 +90,299 @@ export const WORLD_ZONES: ZoneConfig[] = [
 export const getZoneForLevel = (level: number): ZoneConfig | undefined => {
     return WORLD_ZONES.find(z => level >= z.minLevel && level <= z.maxLevel);
 };
+
+// ================================================================
+//  Director Config
+// ================================================================
+
+export const DIRECTOR_CONFIG = {
+    CHALLENGE_THRESHOLD: 5,
+    STREAK_THRESHOLD: 5,
+    RESCUE_MULTIPLIER: 0.8,
+    CHALLENGE_MULTIPLIER: 1.2,
+    MIN_MAX_VALUE: 5,
+    MASTERY_THRESHOLD: 10,
+    MASTERY_ACCURACY: 0.8,
+    /** Age-based rescue threshold: age >= 8 → 3 consecutive failures, else 2. */
+    RESCUE_THRESHOLD_ADULT: 3,
+    RESCUE_THRESHOLD_CHILD: 2,
+} as const;
+
+// ================================================================
+//  Star Tier Config
+// ================================================================
+
+export const STAR_CONFIG = {
+    PERFECT_MAX_MISTAKES: 1,
+    GOOD_MAX_MISTAKES: 3,
+} as const;
+
+// ================================================================
+//  Pet Config
+// ================================================================
+
+export interface PetStageConfig {
+    index: 0 | 1 | 2 | 3 | 4;
+    key: 'egg' | 'baby' | 'child' | 'teen' | 'adult';
+    minLevel: number;
+}
+
+export const PET_STAGES: PetStageConfig[] = [
+    { index: 0, key: 'egg',   minLevel: 1 },
+    { index: 1, key: 'baby',  minLevel: 2 },
+    { index: 2, key: 'child', minLevel: 4 },
+    { index: 3, key: 'teen',  minLevel: 6 },
+    { index: 4, key: 'adult', minLevel: 8 },
+] as const;
+
+// ================================================================
+//  Theme Unlock Config
+// ================================================================
+
+/**
+ * THEME_UNLOCKS holds just the star thresholds.  The full Theme objects
+ * (with colors, patterns, etc.) remain in themes.ts and import these
+ * thresholds from here.  This separates "when does a theme unlock?" (config)
+ * from "what does a theme look like?" (content).
+ */
+export const THEME_UNLOCKS = [
+    { id: 'default', unlockStars: 0 },
+    { id: 'forest',  unlockStars: 30 },
+    { id: 'space',   unlockStars: 60 },
+    { id: 'candy',   unlockStars: 90 },
+] as const;
+
+// ================================================================
+//  Mascot Unlock Config
+// ================================================================
+
+/**
+ * MASCOT_UNLOCKS holds the star thresholds for mascot unlocks.
+ * The mascot display data (emoji, name, species) stays in MascotSelector.tsx
+ * and pet.ts.  This centralises the unlock-gate values.
+ */
+export const MASCOT_UNLOCKS = [
+    { id: 'owl',  unlockStars: 0 },
+    { id: 'bear', unlockStars: 50 },
+    { id: 'ant',  unlockStars: 100 },
+    { id: 'lion', unlockStars: 150 },
+] as const;
+
+// ================================================================
+//  Problem Type Progression
+// ================================================================
+
+export const LEVEL_PROGRESSION: Record<number, readonly string[]> = {
+    1: ['sub_simple', 'comparison'],
+    2: ['series'],
+    3: ['addition_carry', 'sub_borrow', 'word'],
+    4: ['multiplication'],
+    5: ['division', 'sub_zero'],
+} as const;
+
+export const BUBBLE_SUPPORTED_TYPES: ReadonlySet<string> = new Set([
+    'addition_simple', 'addition_carry',
+    'sub_simple', 'sub_borrow', 'sub_zero',
+    'multiplication', 'division',
+]);
+
+// ================================================================
+//  Memory Game Operations
+// ================================================================
+
+export const MEMORY_LEVEL_OPS: Record<number, readonly ('+' | '-' | '×' | '÷')[]> = {
+    1:  ['+', '-'],
+    2:  ['+', '-'],
+    3:  ['+', '-'],
+    4:  ['+', '-', '×'],
+    5:  ['+', '-', '×', '÷'],
+    6:  ['+', '-', '×', '÷'],
+    7:  ['+', '-', '×', '÷'],
+    8:  ['+', '-', '×', '÷'],
+    9:  ['+', '-', '×', '÷'],
+    10: ['+', '-', '×', '÷'],
+} as const;
+
+// ================================================================
+//  Word Problem Difficulty Breakpoints
+// ================================================================
+
+export const DIFFICULTY_BREAKPOINTS = {
+    EASY_MAX_LEVEL: 3,
+    MEDIUM_MAX_LEVEL: 6,
+} as const;
+
+// ================================================================
+//  Arcade Mode Config
+// ================================================================
+
+/**
+ * ARCADE_CONFIGS holds the per-mode configuration data.
+ * getArcadeModeConfig() in arcadeModes.ts returns Partial<GameConfig> by
+ * looking up these values.  This moves the *data* out of the switch
+ * statement while keeping the *function* in arcadeModes.ts.
+ *
+ * Types WinConditionType and FailConditionType come from types/game.ts
+ * (not engines/bubble/types.ts) to maintain leaf-module purity.
+ */
+export interface ArcadeModeConfigEntry {
+    winCondition: { type: WinConditionType; value: number };
+    failCondition: { type: FailConditionType; value: number };
+    spawnIntervalMs: number;
+    distractorRatio: number;
+    levelMultiplier?: number;
+}
+
+export const ARCADE_CONFIGS: Record<ArcadeMode, ArcadeModeConfigEntry> = {
+    zen: {
+        winCondition: { type: 'endless', value: 0 },
+        failCondition: { type: 'strikes', value: 0 },
+        spawnIntervalMs: 2000,
+        distractorRatio: 0.8,
+    },
+    blitz: {
+        winCondition: { type: 'time_limit', value: 60 },
+        failCondition: { type: 'strikes', value: 0 },
+        spawnIntervalMs: 1200,
+        distractorRatio: 1.2,
+    },
+    survival: {
+        winCondition: { type: 'endless', value: 0 },
+        failCondition: { type: 'strikes', value: 3 },
+        spawnIntervalMs: 800,
+        levelMultiplier: 1.5,
+        distractorRatio: 1.5,
+    },
+    classic: {
+        winCondition: { type: 'target_count', value: 20 },
+        failCondition: { type: 'strikes', value: 3 },
+        spawnIntervalMs: 800,
+        levelMultiplier: 1.0,
+        distractorRatio: 1.5,
+    },
+} as const;
+
+export const ARCADE_MODE_LABELS: Record<string, { emoji: string; name: string; desc: string }> = {
+    zen:      { emoji: '🧘', name: 'Zen',      desc: 'Pop at your own pace — no timer, no fails' },
+    classic:  { emoji: '🎯', name: 'Classic',  desc: 'Hit 10 targets — but watch your strikes!' },
+    blitz:    { emoji: '⚡', name: 'Blitz',    desc: '60 seconds — pop as many as you can!' },
+    survival: { emoji: '🔥', name: 'Survival', desc: 'Endless mode — 3 strikes and you\'re out' },
+    memory:   { emoji: '🎴', name: 'Memory Duel', desc: 'Match equations with their answers!' },
+    invaders: { emoji: '🚀', name: 'Math Invaders', desc: 'Defend your ship from math aliens!' },
+};
+
+// ================================================================
+//  Session Config (bubble game internal leveling)
+// ================================================================
+
+export const SESSION_CONFIG = {
+    LEVEL_UP_THRESHOLDS: [5, 5, 4, 4, 3, 3, 3, 3, 3] as const,
+    LEVEL_DOWN_THRESHOLD: 3,
+    PROBLEM_ROTATION_EVERY: 3,
+    ANSWER_LOCK_MS: 120,
+} as const;
+
+export const SESSION_THEMES = [
+    { bg: 'bg-blue-50',    accent: 'text-blue-600' },
+    { bg: 'bg-emerald-50', accent: 'text-emerald-600' },
+    { bg: 'bg-amber-50',   accent: 'text-amber-600' },
+    { bg: 'bg-indigo-50',  accent: 'text-indigo-600' },
+    { bg: 'bg-rose-50',    accent: 'text-rose-600' },
+] as const;
+
+// ================================================================
+//  Power-Up Config
+// ================================================================
+
+export const POWER_UP_CONFIG = {
+    SPAWN_INTERVAL_MS: 15000,
+    MAX_BANKED_CREDITS: 3,
+    TYPES: ['freeze', 'double_points', 'pop_distractors', 'slow_motion', 'lightning_chain', 'rainbow_magnet'] as const,
+    DURATIONS: {
+        freeze: 3000,
+        double_points: 5000,
+        pop_distractors: 0,     // instant
+        slow_motion: 4000,
+        lightning_chain: 0,     // instant
+        rainbow_magnet: 3000,
+    } as const,
+    EMOJI: {
+        freeze: '❄️',
+        double_points: '✨',
+        pop_distractors: '💥',
+        slow_motion: '🐌',
+        lightning_chain: '⚡',
+        rainbow_magnet: '🌈',
+    } as const,
+} as const;
+
+// ================================================================
+//  Spawn Strategy Config
+// ================================================================
+
+export const SPAWN_CONFIG = {
+    MAX_RECENT_SIGNATURES: 12,
+    MAX_REGEN_ATTEMPTS: 8,
+    CHANCE_LARGE: 0.8,
+    CHANCE_MEDIUM: 0.5,
+} as const;
+
+// ================================================================
+//  Invader Config
+// ================================================================
+
+export const INVADER_CONFIG = {
+    INITIAL_LIVES: 3,
+    MAX_LIVES: 3,
+    VICTORY_TIME_MS: 60_000,
+    BOSS_WAVE_INTERVAL_MS: 30_000,
+    SPEED_RAMP_INTERVAL_MS: 10_000,
+    FRENZY_COMBO_THRESHOLD: 5,
+} as const;
+
+// ================================================================
+//  Practice Session Config
+// ================================================================
+
+export const PRACTICE_CONFIG = {
+    INITIAL_LIVES: 3,
+    INITIAL_TIME: 60,
+    TIME_BONUS: 2,
+} as const;
+
+// ================================================================
+//  Frenzy Config (shared score multipliers)
+// ================================================================
+
+export const FRENZY_CONFIG = {
+    /** Combo count to trigger frenzy mode */
+    FRENZY_THRESHOLD: 5,
+    SUPER_THRESHOLD: 10,
+    MEGA_THRESHOLD: 15,
+    /** Score multipliers per frenzy tier */
+    FRENZY_MULTIPLIER: 2,
+    SUPER_MULTIPLIER: 3,
+    MEGA_MULTIPLIER: 5,
+} as const;
+
+// ================================================================
+//  Deferred Constants (acknowledged in plan, not yet migrated)
+// ================================================================
+
+/**
+ * Badge thresholds — defined in src/data/badges.ts.
+ * totalCorrect >= 10 → first badge, >= 50 → second, >= 100 → third.
+ * maxCombo >= 10 → combo badge.
+ * Deferred: these are content-adjacent and may move in a future pass.
+ */
+
+/**
+ * Streak multiplier thresholds — defined in src/data/dailyChallenges.ts.
+ * streak >= 3 → 1.5x, streak >= 7 → 2x.
+ * Deferred: challenge-specific, may move in a future pass.
+ */
+
+/**
+ * Frenzy score multipliers — were duplicated in useGameEngine.ts (2x/3x/5x)
+ * and useInvaderEngine.ts (2x/3x/5x). Now consolidated in FRENZY_CONFIG above.
+ */

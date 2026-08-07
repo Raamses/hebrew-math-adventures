@@ -3,6 +3,7 @@ import { MathModule } from '../../MathModule';
 import { INITIAL_CAPABILITY_PROFILE } from '../../../types/progress';
 import type { ArithmeticProblem, Problem, SensoryProblem } from '../../../lib/gameLogic';
 import type { BossGate } from '../../../lib/bossGate';
+import { SPAWN_CONFIG } from '../../../lib/worldConfig';
 
 // Helper: compute the result of an arithmetic operation
 function computeResult(num1: number, num2: number, operator: string): number {
@@ -22,8 +23,8 @@ export class MathBehaviorStrategy implements IGameBehavior {
 
     // Anti-repeat: track recent problem signatures to avoid duplicates
     private recentSignatures: string[] = [];
-    private static readonly MAX_RECENT_SIGNATURES = 12;
-    private static readonly MAX_REGEN_ATTEMPTS = 8;
+    // Now from SPAWN_CONFIG in worldConfig
+    // Now from SPAWN_CONFIG in worldConfig
 
     // Spawn bag: guarantees target/distractor ratio over short windows
     private spawnBag: boolean[] = [];
@@ -40,10 +41,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
     private bossGateIndex = 0;
 
     // Config Constants
-    private static readonly CONFIG = {
-        CHANCE_LARGE: 0.8,
-        CHANCE_MEDIUM: 0.5,
-    } as const;
+    // CHANCE_LARGE and CHANCE_MEDIUM now from SPAWN_CONFIG in worldConfig
 
     private FALLBACK_PROBLEM: ArithmeticProblem = {
         type: 'arithmetic',
@@ -75,7 +73,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
     }
 
 
-    private generateAndSetProblem(level: number, config: GameConfig): void {
+    private generateAndSetProblem(level: number, config: GameConfig, _correctCount?: number): void {
         // Store config override so generateNext can use the adaptive ratio
         this.configOverride = config;
         const profile = { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: level };
@@ -96,7 +94,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
             });
             signature = this.problemSignature(problem);
             attempts++;
-        } while (this.recentSignatures.includes(signature) && attempts < MathBehaviorStrategy.MAX_REGEN_ATTEMPTS);
+        } while (this.recentSignatures.includes(signature) && attempts < SPAWN_CONFIG.MAX_REGEN_ATTEMPTS);
 
         // P0-4: Progressive anti-repeat relaxation (before level fallback)
         if (this.recentSignatures.includes(signature)) {
@@ -230,7 +228,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
 
     private pushSignature(sig: string): void {
         this.recentSignatures.push(sig);
-        if (this.recentSignatures.length > MathBehaviorStrategy.MAX_RECENT_SIGNATURES) {
+        if (this.recentSignatures.length > SPAWN_CONFIG.MAX_RECENT_SIGNATURES) {
             this.recentSignatures.shift();
         }
     }
@@ -374,8 +372,8 @@ export class MathBehaviorStrategy implements IGameBehavior {
 
     private determineVariant(): 'small' | 'medium' | 'large' {
         const rand = Math.random();
-        if (rand > MathBehaviorStrategy.CONFIG.CHANCE_LARGE) return 'large';
-        if (rand > MathBehaviorStrategy.CONFIG.CHANCE_MEDIUM) return 'medium';
+        if (rand > SPAWN_CONFIG.CHANCE_LARGE) return 'large';
+        if (rand > SPAWN_CONFIG.CHANCE_MEDIUM) return 'medium';
         return 'small';
     }
 

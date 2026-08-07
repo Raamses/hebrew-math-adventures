@@ -13,6 +13,8 @@
  * rewarded for accuracy, never for simply finishing.
  */
 
+import { STAR_CONFIG } from './worldConfig';
+
 /** Result tiers, ordered best → worst. */
 export type StarTier = 'PERFECT' | 'GOOD' | 'PASS';
 
@@ -29,8 +31,8 @@ const STAR_TIERS: readonly StarTier[] = ['PERFECT', 'GOOD', 'PASS'];
 export function getTier(result: PerformanceResult): StarTier | null {
     if (result.attempts <= 0) return null;
     const mistakes = result.attempts - result.correct;
-    if (mistakes <= 1) return 'PERFECT';
-    if (mistakes <= 3) return 'GOOD';
+    if (mistakes <= STAR_CONFIG.PERFECT_MAX_MISTAKES) return 'PERFECT';
+    if (mistakes <= STAR_CONFIG.GOOD_MAX_MISTAKES) return 'GOOD';
     return 'PASS';
 }
 

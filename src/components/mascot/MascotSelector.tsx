@@ -6,18 +6,15 @@ import { useTranslation } from 'react-i18next';
 import { Mascot } from './Mascot';
 import { useProgress } from '../../context/ProgressContext';
 import { cn } from '../../lib/cn';
+import { MASCOT_UNLOCKS } from '../../lib/worldConfig';
 
 interface MascotOption {
     id: MascotId;
     unlockStars: number;
 }
 
-const MASCOTS: MascotOption[] = [
-    { id: 'owl', unlockStars: 0 },
-    { id: 'bear', unlockStars: 50 },
-    { id: 'ant', unlockStars: 100 },
-    { id: 'lion', unlockStars: 150 }
-];
+// MASCOTS now sourced from MASCOT_UNLOCKS in worldConfig (single source of truth).
+const MASCOTS: MascotOption[] = MASCOT_UNLOCKS.map(m => ({ id: m.id as MascotId, unlockStars: m.unlockStars }));
 
 interface MascotSelectorProps {
     selectedMascot: MascotId;

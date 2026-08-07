@@ -3,6 +3,7 @@ import type { UserCapabilityProfile } from '../types/progress';
 import type { Problem } from '../lib/gameLogic';
 import { ArithmeticFactory, AlgebraicFactory, ComparisonFactory, SeriesFactory, WordProblemFactory, type IProblemFactory } from './ProblemFactory';
 import { Director } from './GameDirector';
+import { LEVEL_PROGRESSION, BUBBLE_SUPPORTED_TYPES } from '../lib/worldConfig';
 
 export class MathModule implements IGameModule {
     moduleId = 'math_core';
@@ -91,23 +92,11 @@ export class MathModule implements IGameModule {
         return problem.answer.toString() === answer.toString();
     }
 
-    // Configuration for Level Progression
-    // Maps Level -> New Problem Types introduced at that level
-    private static readonly LEVEL_PROGRESSION: Record<number, string[]> = {
-        1: ['sub_simple', 'comparison'],
-        2: ['series'],
-        3: ['addition_carry', 'sub_borrow', 'word'],
-        4: ['multiplication'],
-        5: ['division', 'sub_zero']
-    };
+    // Level Progression now imported from worldConfig (LEVEL_PROGRESSION)
+    // Kept as private accessor for backward compat within this class.
 
-    // Types that MathBehaviorStrategy (bubble game) can actually render.
-    // Excludes comparison/series/word — those need different UI.
-    static readonly BUBBLE_SUPPORTED_TYPES: ReadonlySet<string> = new Set([
-        'addition_simple', 'addition_carry',
-        'sub_simple', 'sub_borrow', 'sub_zero',
-        'multiplication', 'division',
-    ]);
+    // BUBBLE_SUPPORTED_TYPES now imported from worldConfig
+    static readonly BUBBLE_SUPPORTED_TYPES: ReadonlySet<string> = BUBBLE_SUPPORTED_TYPES;
 
     private pickProblemType(level: number, supportedTypes?: ReadonlySet<string>): string {
         // Start with base types available at Level 0/1
@@ -115,7 +104,7 @@ export class MathModule implements IGameModule {
 
         // Accumulate types from all levels up to the current one
         for (let l = 1; l <= level; l++) {
-            const newTypes = MathModule.LEVEL_PROGRESSION[l];
+            const newTypes = LEVEL_PROGRESSION[l];
             if (newTypes) {
                 availableTypes.push(...newTypes);
             }

@@ -11,17 +11,10 @@ import { Zap, Star, Clock, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
-// Session-level theme mapping (visual progression as kids advance)
-const SESSION_THEMES = [
-  { bg: 'bg-blue-50', accent: 'text-blue-600' },     // Lv 1-2: Beach
-  { bg: 'bg-emerald-50', accent: 'text-emerald-600' }, // Lv 3-4: Forest
-  { bg: 'bg-amber-50', accent: 'text-amber-600' },    // Lv 5-6: Mountain
-  { bg: 'bg-indigo-50', accent: 'text-indigo-600' },  // Lv 7-8: Space
-  { bg: 'bg-rose-50', accent: 'text-rose-600' },      // Lv 9-10: Volcano
-];
+// SESSION_THEMES now imported from worldConfig
 // ADR 2026-08-zen-answer-race (Fix 1): lock window to drop cross-entity
 // rapid pops that could validate a second pop against a rotated targetValue.
-const ANSWER_LOCK_MS = 120;
+// SESSION_CONFIG.ANSWER_LOCK_MS now from SESSION_CONFIG in worldConfig
 const getThemeForLevel = (level: number) => SESSION_THEMES[Math.min(Math.floor((level - 1) / 2), SESSION_THEMES.length - 1)];
 import { SettingsMenu } from '../SettingsMenu';
 import { useSound } from '../../hooks/useSound';
@@ -33,6 +26,7 @@ import { Director } from '../../engines/GameDirector';
 import { INITIAL_CAPABILITY_PROFILE } from '../../types/progress';
 import { generateBossGate } from '../../lib/bossGate';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
+import { SESSION_CONFIG, SESSION_THEMES, BOSS_LEVELS, MAX_LEVEL } from '../../lib/worldConfig';
 
 // --- Power-Up Toast Labels ---
 const POWER_UP_LABELS: Record<PowerUpType, string> = {
@@ -56,10 +50,7 @@ interface BubbleGameContainerProps {
     onPause?: () => void;
 }
 
-// Session-internal leveling thresholds (accelerating: 5,5,4,4,3,3...)
-const LEVEL_UP_THRESHOLDS = [5, 5, 4, 4, 3, 3, 3, 3, 3];
-const LEVEL_DOWN_THRESHOLD = 3; // consecutive wrong before down-level
-const PROBLEM_ROTATION_EVERY = 3; // rotate problem every N correct pops within a level
+// Session leveling thresholds now from SESSION_CONFIG in worldConfig
 
 export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     config,
@@ -82,7 +73,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const [sessionLevel, setSessionLevel] = useState(() => {
         // Seed from profile.estimatedLevel (capped at 10, warmup floor at 1)
         const profileLevel = profile?.capabilities?.estimatedLevel ?? 1;
-        return Math.max(1, Math.min(Math.round(profileLevel), 10));
+        return Math.max(1, Math.min(Math.round(profileLevel), MAX_LEVEL));
     });
     const [showLevelUp, setShowLevelUp] = useState(false);
     const theme = getThemeForLevel(sessionLevel);
@@ -114,7 +105,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget } = useGameEngine(config, behavior);
 
     // --- Boss Bubble State ---
-    const BOSS_LEVELS = [3, 6, 9]; // Boss appears at these session levels
+    // BOSS_LEVELS now imported from worldConfig
     const [showBossBanner, setShowBossBanner] = useState(false);
     const [bossDefeatedCelebration, setBossDefeatedCelebration] = useState(false);
     const bossSpawnedForLevelRef = useRef<Set<number>>(new Set());
@@ -126,7 +117,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
     // Trigger boss spawn when reaching boss levels
     useEffect(() => {
-        if (BOSS_LEVELS.includes(sessionLevel) && !bossSpawnedForLevelRef.current.has(sessionLevel)) {
+        if ((BOSS_LEVELS as readonly number[]).includes(sessionLevel) && !bossSpawnedForLevelRef.current.has(sessionLevel)) {
             bossSpawnedForLevelRef.current.add(sessionLevel);
             // Small delay so level-up animation finishes first
             setTimeout(() => {
@@ -214,14 +205,14 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             }
 
             // Problem rotation within a level (every N correct)
-            if (correctSinceRotationRef.current >= PROBLEM_ROTATION_EVERY) {
+            if (correctSinceRotationRef.current >= SESSION_CONFIG.PROBLEM_ROTATION_EVERY) {
                 correctSinceRotationRef.current = 0;
                 behavior.regenerateProblem(sessionLevelRef.current, config, correctCount);
             }
 
             // Level up check (accelerating thresholds)
-            const thresholdIndex = Math.min(sessionLevelRef.current - 1, LEVEL_UP_THRESHOLDS.length - 1);
-            const needed = LEVEL_UP_THRESHOLDS[thresholdIndex];
+            const thresholdIndex = Math.min(sessionLevelRef.current - 1, SESSION_CONFIG.LEVEL_UP_THRESHOLDS.length - 1);
+            const needed = SESSION_CONFIG.LEVEL_UP_THRESHOLDS[thresholdIndex];
             if (consecutiveCorrectRef.current >= needed) {
                 consecutiveCorrectRef.current = 0;
                 if (sessionLevelRef.current < 10) {
@@ -245,7 +236,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
             // Adaptive difficulty: struggling (>= 2 wrong, before level-down threshold of 3)
             // Reduce distractorRatio by 0.5x for a simpler problem, keep level same
-            if (consecutiveWrongRef.current >= 2 && consecutiveWrongRef.current < LEVEL_DOWN_THRESHOLD) {
+            if (consecutiveWrongRef.current >= 2 && consecutiveWrongRef.current < SESSION_CONFIG.LEVEL_DOWN_THRESHOLD) {
                 const simplerConfig: GameConfig = {
                     ...config,
                     distractorRatio: Math.max(1, Math.round(config.distractorRatio * 0.5)),
@@ -254,7 +245,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             }
 
             // Level down after too many consecutive wrong (floor at 1)
-            if (consecutiveWrongRef.current >= LEVEL_DOWN_THRESHOLD && sessionLevelRef.current > 1) {
+            if (consecutiveWrongRef.current >= SESSION_CONFIG.LEVEL_DOWN_THRESHOLD && sessionLevelRef.current > 1) {
                 consecutiveWrongRef.current = 0;
                 const newLevel = sessionLevelRef.current - 1;
                 setSessionLevel(newLevel);
@@ -273,7 +264,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         // While a pop is being processed, drop further pops for a short window.
         if (answerLockRef.current) return;
         answerLockRef.current = true;
-        window.setTimeout(() => { answerLockRef.current = false; }, ANSWER_LOCK_MS);
+        window.setTimeout(() => { answerLockRef.current = false; }, SESSION_CONFIG.ANSWER_LOCK_MS);
 
         // Find entity to check if it's a power-up BEFORE popping
         const entity = entities.find(e => e.id === id);

@@ -1,28 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { GameConfig, GameState, BubbleEntity, IGameBehavior, PowerUpType, PowerUpState } from './types';
+import { POWER_UP_CONFIG } from '../../lib/worldConfig';
 
 // --- Power-Up Constants ---
 
-const POWER_UP_SPAWN_INTERVAL_MS = 15000; // default 15s
-export const POWER_UP_TYPES: PowerUpType[] = ['freeze', 'double_points', 'pop_distractors', 'slow_motion', 'lightning_chain', 'rainbow_magnet'];
+// POWER_UP_CONFIG.SPAWN_INTERVAL_MS now from worldConfig (POWER_UP_CONFIG.SPAWN_INTERVAL_MS)
+export const POWER_UP_TYPES = POWER_UP_CONFIG.TYPES;
 
-const POWER_UP_DURATIONS: Record<PowerUpType, number> = {
-    freeze: 3000,
-    double_points: 5000,
-    pop_distractors: 0, // instant
-    slow_motion: 4000,
-    lightning_chain: 0,    // instant
-    rainbow_magnet: 3000,  // 3 seconds of magnet
-};
+const POWER_UP_DURATIONS = POWER_UP_CONFIG.DURATIONS;
 
-const POWER_UP_EMOJI: Record<PowerUpType, string> = {
-    freeze: '❄️',
-    double_points: '✨',
-    pop_distractors: '💥',
-    slow_motion: '🐌',
-    lightning_chain: '⚡',
-    rainbow_magnet: '🌈',
-};
+const POWER_UP_EMOJI = POWER_UP_CONFIG.EMOJI;
 
 export const getPowerUpEmoji = (type: PowerUpType): string => POWER_UP_EMOJI[type];
 
@@ -133,7 +120,7 @@ export const useGameEngine = (
 
     // --- Spawn System ---
 
-    const MAX_BANKED_CREDITS = 3;
+    const MAX_BANKED_CREDITS = POWER_UP_CONFIG.MAX_BANKED_CREDITS;
 
     const isTargetEntity = useCallback((e: BubbleEntity): boolean => {
         // Strict filter: don't count popped, power-up, or boss entities
@@ -238,7 +225,7 @@ export const useGameEngine = (
         if (spawnCredits.current < 1) return;
 
         // --- Power-Up Spawn Check ---
-        const powerUpInterval = currentConfig.powerUpSpawnIntervalMs ?? POWER_UP_SPAWN_INTERVAL_MS;
+        const powerUpInterval = currentConfig.powerUpSpawnIntervalMs ?? POWER_UP_CONFIG.SPAWN_INTERVAL_MS;
         const timeSinceLastPowerUp = time - lastPowerUpSpawnTime.current;
         const shouldSpawnPowerUp = timeSinceLastPowerUp >= powerUpInterval && activeCount < currentConfig.maxOnScreen;
 

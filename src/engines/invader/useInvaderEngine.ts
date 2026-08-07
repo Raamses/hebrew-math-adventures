@@ -15,6 +15,7 @@ import {
     FRENZY_COMBO_THRESHOLD,
     createInitialInvaderState,
 } from './types';
+import { FRENZY_CONFIG } from '../../lib/worldConfig';
 
 // --- Helpers ---
 
@@ -273,7 +274,7 @@ export const useInvaderEngine = ({
 
             if (isCorrect) {
                 const newCombo = prev.combo + 1;
-                const frenzyMultiplier = newCombo >= 15 ? 5 : newCombo >= 10 ? 3 : newCombo >= FRENZY_COMBO_THRESHOLD ? 2 : 1;
+                const frenzyMultiplier = newCombo >= FRENZY_CONFIG.MEGA_THRESHOLD ? FRENZY_CONFIG.MEGA_MULTIPLIER : newCombo >= FRENZY_CONFIG.SUPER_THRESHOLD ? FRENZY_CONFIG.SUPER_MULTIPLIER : newCombo >= FRENZY_COMBO_THRESHOLD ? FRENZY_CONFIG.FRENZY_MULTIPLIER : 1;
                 const baseScore = targetEquation.isBoss ? 100 : 10;
                 const scoreGain = baseScore * frenzyMultiplier;
 

@@ -1,13 +1,23 @@
 
 // --- Enums & Unions ---
+// Re-exported from types/game.ts for backward compatibility.
+// Canonical definitions live in src/types/game.ts to avoid a lib→engines
+// layer violation when worldConfig.ts (lib/) needs these types.
 
-export type WinConditionType = 'target_count' | 'time_limit' | 'endless';
-export type FailConditionType = 'timer_zero' | 'screen_full' | 'missed_target_limit' | 'strikes';
-export type DifficultyCurve = 'linear' | 'exponential' | 'static';
-export type GameTheme = 'space' | 'underwater' | 'standard';
+import type {
+    WinConditionType,
+    FailConditionType,
+    DifficultyCurve,
+    GameTheme,
+} from '../../types/game';
 
-/** Arcade game mode selector */
-export type ArcadeMode = 'zen' | 'classic' | 'blitz' | 'survival';
+export type {
+    WinConditionType,
+    FailConditionType,
+    DifficultyCurve,
+    GameTheme,
+    ArcadeMode,
+} from '../../types/game';
 
 // --- Power-Ups ---
 
