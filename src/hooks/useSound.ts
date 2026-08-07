@@ -155,5 +155,43 @@ export const useSound = () => {
 
     const toggleMute = () => setIsMuted(prev => !prev);
 
-    return { playSound, play: playSound, isMuted, toggleMute };
+    // ── Centralized semantic sound API ─────────────────────────────────────
+    // Components should prefer these over raw playSound(type) calls so that
+    // sound-choice logic (e.g. Sound Garden vs. classic beeps, level-up cues)
+    // lives in ONE place instead of being re-implemented per component.
+
+    /**
+     * Play the correct-answer sound, honoring Sound Garden mode.
+     * @param soundGardenEnabled Whether the profile has Sound Garden enabled.
+     * @param playMelodyNote     Musical hook to use when Sound Garden is on.
+     */
+    const playAnswerCorrect = useCallback((soundGardenEnabled: boolean, playMelodyNote?: () => void) => {
+        if (isMuted) return;
+        if (soundGardenEnabled && playMelodyNote) {
+            playMelodyNote();
+        } else {
+            playSound('correct');
+        }
+    }, [isMuted, playSound]);
+
+    /**
+     * Play the wrong-answer sound, honoring Sound Garden mode.
+     */
+    const playAnswerWrong = useCallback((soundGardenEnabled: boolean, playWrongMelody?: () => void) => {
+        if (isMuted) return;
+        if (soundGardenEnabled && playWrongMelody) {
+            playWrongMelody();
+        } else {
+            playSound('wrong');
+        }
+    }, [isMuted, playSound]);
+
+    /**
+     * Play the level-up / session-complete / game-over cue in one place.
+     */
+    const playLevelUp = useCallback(() => {
+        playSound('levelUp');
+    }, [playSound]);
+
+    return { playSound, play: playSound, isMuted, toggleMute, playAnswerCorrect, playAnswerWrong, playLevelUp };
 };
