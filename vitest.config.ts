@@ -13,6 +13,19 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    exclude: ['e2e/**', 'node_modules/**', 'test-results/**'],
+    // Exclude git worktrees (duplicate copies of the same tests) and e2e specs.
+    // Without this, vitest picks up ~4x the test files and the suite times out.
+    exclude: [
+      'e2e/**',
+      'node_modules/**',
+      'test-results/**',
+      '.worktrees/**',
+      '**/e2e/**',
+    ],
+    // Cap workers to avoid memory exhaustion on the 8GB Pi.
+    maxWorkers: 2,
+    // Guard against individual tests hanging indefinitely.
+    testTimeout: 30000,
+    hookTimeout: 30000,
   },
 });
