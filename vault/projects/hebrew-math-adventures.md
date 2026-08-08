@@ -9,6 +9,9 @@ status: active
 current_branch: sdlc/loop-v0
 domain: education
 audience: "Israeli kids ages 5-11 (grades 1-6)"
+project: hebrew-math-adventures
+updated: 2026-08-08
+tags: [project, spec, overview]
 stack:
   - React 19
   - TypeScript

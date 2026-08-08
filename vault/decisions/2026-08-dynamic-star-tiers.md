@@ -2,6 +2,7 @@
 type: decision
 status: accepted
 date: 2026-08-06
+updated: 2026-08-06
 project: hebrew-math-adventures
 decision: "Dynamic star rewards by performance tier (Pass/Good/Perfect → 1/2/3)"
 related: [rules/game-flow, rules/math-curriculum, architecture/feature-inventory]

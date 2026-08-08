@@ -5,6 +5,8 @@ severity: must
 applies_to: [hebrew-math-adventures]
 trigger: always_on
 category: stack
+project: hebrew-math-adventures
+updated: 2026-08-08
 tags: [react, vite, tailwind, framer-motion, typescript]
 ---
 

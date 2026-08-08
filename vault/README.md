@@ -4,6 +4,8 @@ purpose: "Single source of truth for Hebrew Math Adventures"
 created: 2026-08-03
 owner: ram
 source-of-truth: true
+project: hebrew-math-adventures
+updated: 2026-08-08
 tags: [vault, index, home]
 ---
 

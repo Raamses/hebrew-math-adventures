@@ -1,3 +1,14 @@
+---
+type: review
+project: hebrew-math-adventures
+updated: 2026-08-07
+status: blocked
+reviewer: reviewer-opus
+plan: e2e/EXPANDED_COVERAGE_PLAN.md
+verdict: "BLOCKED — 3 blockers, 5 major issues, 6 minor issues"
+tags: [review, e2e, coverage, testing, devil-advocate]
+---
+
 # Devil's Advocate Review: E2E Coverage Expansion Plan
 
 > **Reviewer:** reviewer-opus  

@@ -38,6 +38,7 @@ Everything about this project, one place. **Start here.**
 - [[decisions/2026-08-dynamic-star-tiers]] — dynamic star rewards by performance tier
 - [[decisions/2026-08-zen-answer-race]] — zen answer race + anti-repeat fix
 - [[decisions/2026-08-centralize-sound]] — centralize sound handling in `useSound`
+- [[decisions/2026-08-world-config-consolidation]] — consolidate world config into `worldConfig.ts`
 - *(add new decisions here as they're made)*
 
 ## 📚 Domain / Curriculum
@@ -45,6 +46,8 @@ Everything about this project, one place. **Start here.**
 - [[domain/math-generation]] — Bag Deck algorithm, 3-digit rules, repetition guard
 - [[domain/bubble-spawn-design]] — playability design intent (anti-stale-gameplay)
 - [[domain/analytics]] — GA4 analytics: event taxonomy, real data, playability metrics
+- [[domain/daily-quests]] — daily challenge, quests, streak bonuses, stamp album
+- [[domain/powerups]] — power-up system: types, config, spawn, activation
 
 ## 🗺 Roadmap & Backlog
 - [[roadmap/current-work]] — what's in flight right now
@@ -52,10 +55,14 @@ Everything about this project, one place. **Start here.**
 - [[roadmap/known-issues]] — open problems (e.g. bubble spawn playability)
 
 ## 📄 References (source docs in repo)
+- [[references/git-sync]] — how to keep the vault in sync (laptop Obsidian ↔ Pi repo)
 - `docs/plans/PRODUCT_OVERVIEW.md` — the canonical feature/architecture audit
 - `docs/plans/roadmap.md`, `docs/plans/backlog.md`
 - `ANTIGRAVITY_RULES.md`, `.agent/rules/*.md`
 - `SPAWN_OVERHAUL_PLAN.md`, `CHALLENGE_CLUTTER_PLAN.md`
+
+## 🔍 Reviews
+- [[reviews/e2e-coverage-review]] — devil's advocate review of E2E coverage expansion (BLOCKED)
 
 ## 🧭 Conventions
 - Every significant decision → dated note in [[decisions/]]

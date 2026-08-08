@@ -5,6 +5,8 @@ severity: critical
 applies_to: [hebrew-math-adventures]
 trigger: always_on
 category: compliance
+project: hebrew-math-adventures
+updated: 2026-08-08
 tags: [rtl, hebrew, i18n]
 ---
 

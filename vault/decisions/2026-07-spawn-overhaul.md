@@ -2,6 +2,7 @@
 type: decision
 status: accepted
 date: 2026-07-31
+updated: 2026-07-31
 project: hebrew-math-adventures
 decision: "Bubble spawn engine overhaul (P0+P1)"
 related: [domain/bubble-spawn-design, rules/game-flow]

@@ -2,6 +2,7 @@
 type: decision
 status: accepted
 date: 2026-08-03
+updated: 2026-08-03
 project: hebrew-math-adventures
 decision: "Fix zen-mode answer race + anti-repeat duplicate-slip"
 related: [rules/game-flow, rules/math-curriculum, domain/bubble-spawn-design, decisions/2026-07-spawn-overhaul]

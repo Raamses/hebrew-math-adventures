@@ -2,6 +2,7 @@
 type: decision
 status: accepted
 date: 2026-08-06
+updated: 2026-08-06
 project: hebrew-math-adventures
 decision: "Centralize sound handling in useSound via semantic feedback API"
 related: [architecture/system-overview, rules/quality-gates, roadmap/backlog]

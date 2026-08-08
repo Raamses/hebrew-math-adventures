@@ -26,4 +26,4 @@ Distilled from `docs/plans/backlog.md`. Keep this current as work moves.
 
 ## Open questions / concerns
 - Bubble spawn playability still to be validated in real use — GA4 data shows 94% node-start → node-complete drop-off (see [[domain/bubble-spawn-design]], [[domain/analytics]]).
-- Zen-mode stale-bubble fix in progress (card `cea832da`) — see [[decisions/2026-08-zen-answer-race]] for original ADR and `handoff-zen-bug.md` for updated investigation.
+- Zen-mode stale-bubble fix landed (commit `0deaef6`) — see [[decisions/2026-08-zen-answer-race]] for the ADR and `handoff-zen-bug.md` for the investigation.
