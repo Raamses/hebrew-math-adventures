@@ -41,3 +41,13 @@ Fix both, minimal + test-driven:
 
 ## Revisit if
 - A real RTL-math bug surfaces in other game modes (not bubble) — re-verify then, not now.
+
+## Update (2026-08-08): answer-lock was insufficient — stale-bubble validation bug
+
+**The answer-lock fix above did NOT fully resolve the zen-mode state reset.** Further investigation (see `handoff-zen-bug.md`) found the root cause:
+
+When a correct answer triggers `handleSessionLeveling` → `regenerateProblem()`, the target rotates **synchronously**. Already-spawned target bubbles on screen still carry the OLD `internalValue`. After rotation, `MathStrategy.validate()` returns `false` for them. If the player taps one (within or after the 120ms lock), `handlePop` treats it as a **wrong answer** → `combo = 0`, `strikes+1`, no score. This is the observed "state reset."
+
+The `answerLockRef` (120ms) only prevents a *second* pop from being processed while one is in flight. It does not prevent the synchronous target rotation, nor does it clear/ignore the now-stale bubbles.
+
+**Fix (in progress, card `cea832da`):** snapshot `targetValue` per accepted pop. In `useGameEngine.handlePop`, capture the target at the moment of validation and validate the entity against that snapshot. A stale bubble should be **ignored** (not counted as wrong), not flagged as a wrong answer. See `handoff-zen-bug.md` for full investigation. Tests: `zenStateReset.test.ts` (1 failing test proves the bug).

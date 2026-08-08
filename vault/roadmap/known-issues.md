@@ -1,19 +1,22 @@
 ---
 type: roadmap
 project: hebrew-math-adventures
-updated: 2026-08-03
+updated: 2026-08-08
 tags: [roadmap, issues, known]
 ---
 
 # Known Issues & Watch Items
 
-- **Bubble spawn playability** (⚠️ active concern): after P0 overhaul, validate no dead zones / no idle waiting in real kid playtesting. See [[domain/bubble-spawn-design]].
-- **Zen-mode answer race** (in fix, ADR 2026-08-zen-answer-race): cross-entity pop race can reset answer state / mis-score in zen mode. Fix = answer-lock in BubbleGameContainer.
-- **Anti-repeat duplicate-slip** (in fix, ADR 2026-08-zen-answer-race): fallback can admit a colliding signature → `0+0` repeats. Fix = final re-check + perturbation.
-- **Lesson coverage**: only 1 real lesson; others fall back to practice. Content gap.
-- **WorldMap dead code**: exists but unlinked; possible cleanup with `worldConfig.ts` consolidation.
-- **Star rewards** hardcoded to 3 — doesn't reflect performance.
-- **Sound calls** not fully centralized in `PracticeMode`.
+- **Bubble spawn playability** (⚠️ active concern): after P0 overhaul, validate no dead zones / no idle waiting in real kid playtesting. GA4 data (2026-08-08) shows 94% node-start → node-complete drop-off and 23% of node starters never answer a question. See [[domain/bubble-spawn-design]] and [[domain/analytics]].
+- **Zen-mode stale-bubble validation** (🔧 fix in progress, card `cea832da`): the answer-lock from ADR 2026-08-zen-answer-race was insufficient. Synchronous target rotation in `onPopWrapper` leaves stale bubbles that validate as wrong. Fix = snapshot `targetValue` per pop, ignore stale bubbles. See [[decisions/2026-08-zen-answer-race]] for the original ADR; updated investigation in `handoff-zen-bug.md`.
+- **Anti-repeat duplicate-slip** (✅ fixed, ADR 2026-08-zen-answer-race): final re-check + perturbation landed in commit `be4af87`.
+- **Lesson coverage**: only 1 real lesson (`lesson1_multiplication`); others fall back to practice. Content gap.
+- **Sound calls** in `BubbleGameContainer`/`MathInvadersGame`/`MemoryDuelGame` — raw `soundGarden` ternaries remain (ADR 2026-08-centralize-sound follow-up). `PracticeMode` migration done ✅.
+- **GA4 custom dimensions not yet tested**: event params like `profile_id`, `node_id`, `equation`, `response_time_ms` exist in the code but haven't been queried as custom dimensions via the Data API. See [[domain/analytics]].
+
+## Resolved (kept for reference)
+- ~~**Star rewards hardcoded to 3**~~ — ✅ fixed (ADR 2026-08-dynamic-star-tiers, commit `a3e664c`).
+- ~~**WorldMap dead code**~~ — ✅ resolved (world-config consolidation, commit `45304c4`).
 
 ## How to log new issues
 Create a dated note in `roadmap/known-issues.md` or link from [[INDEX]]. Keep entries factual with a "status" field.

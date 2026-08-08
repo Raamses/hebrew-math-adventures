@@ -2,7 +2,7 @@
 type: moc
 purpose: "Map of Content — single entry point to the whole project"
 project: hebrew-math-adventures
-updated: 2026-08-03
+updated: 2026-08-08
 tags: [index, moc]
 ---
 
@@ -37,12 +37,14 @@ Everything about this project, one place. **Start here.**
 - [[decisions/2026-07-spawn-overhaul]] — bubble spawn engine rework (P0+P1)
 - [[decisions/2026-08-dynamic-star-tiers]] — dynamic star rewards by performance tier
 - [[decisions/2026-08-zen-answer-race]] — zen answer race + anti-repeat fix
+- [[decisions/2026-08-centralize-sound]] — centralize sound handling in `useSound`
 - *(add new decisions here as they're made)*
 
 ## 📚 Domain / Curriculum
 - [[domain/curriculum-levels]] — level-by-level math standards (ages 5–11)
 - [[domain/math-generation]] — Bag Deck algorithm, 3-digit rules, repetition guard
 - [[domain/bubble-spawn-design]] — playability design intent (anti-stale-gameplay)
+- [[domain/analytics]] — GA4 analytics: event taxonomy, real data, playability metrics
 
 ## 🗺 Roadmap & Backlog
 - [[roadmap/current-work]] — what's in flight right now

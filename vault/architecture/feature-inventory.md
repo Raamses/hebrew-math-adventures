@@ -27,10 +27,10 @@ Source: `docs/plans/PRODUCT_OVERVIEW.md` (canonical audit). Status: ✅ works / 
 | Mascot System | ✅ | Owl/Bear/Ant/Lion, emotion states, SVG |
 | Theme Customization | ✅ | Default/Forest/Space/Candy, unlock by stars |
 | Audio Synthesizer | ✅ | Web Audio API, no external files |
-| Analytics & Telemetry | ✅ | Firebase Analytics, env-safe fallback to console logger |
+| Analytics & Telemetry | ✅ | Firebase Analytics (GA4 property 519138010). 16 typed events: lifecycle, progression, performance, engagement. Env-safe fallback to console. See [[domain/analytics]]. |
 | Internationalization | ✅ | Hebrew RTL primary + English LTR, i18next |
 
 ## Known gaps / partials to watch
 - **Lessons**: only 1 real lesson exists; other LESSON nodes fall back.
-- **WorldMap**: dead code, possible consolidation with SagaMap (see backlog).
-- **Bubble spawn playability**: see [[domain/bubble-spawn-design]] — stale-gameplay issue Ram flagged.
+- **Bubble spawn playability**: see [[domain/bubble-spawn-design]] — GA4 data shows 94% node-start → node-complete drop-off (2026-08-08).
+- **GA4 custom dimensions**: event params exist in code but not yet registered/tested as queryable GA4 dimensions. See [[domain/analytics]].
