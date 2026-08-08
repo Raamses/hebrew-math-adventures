@@ -634,7 +634,46 @@ export const useGameEngine = (
         }
 
         // --- Normal Bubble Handling ---
-        const isCorrect = behavior.validate(target);
+        // ADR 2026-08-zen-answer-race (Fix 2): Snapshot the target value BEFORE
+        // validation. After a correct answer, handleSessionLeveling calls
+        // regenerateProblem() which rotates targetValue synchronously. Bubbles
+        // already on screen carry the OLD internalValue and would validate as
+        // wrong. Using validateAgainst() lets us distinguish:
+        //   'correct' — matches current target (normal correct answer)
+        //   'stale'   — matches a previous target (was correct before rotation)
+        //   'wrong'   — doesn't match any known target (genuine distractor)
+        // Stale bubbles are IGNORED (no score change, no strike) instead of
+        // being counted as wrong, which was causing the zen-mode "state reset".
+        let isCorrect: boolean | undefined;
+        let isStale = false;
+
+        if ('validateAgainst' in behavior && 'getTargetValue' in behavior) {
+            const snapshot = (behavior as any).getTargetValue() as number;
+            const verdict = (behavior as any).validateAgainst(target, snapshot);
+            if (verdict === 'stale') {
+                isStale = true;
+                isCorrect = undefined; // ignore — not correct, not wrong
+            } else {
+                isCorrect = verdict === 'correct';
+            }
+        } else {
+            isCorrect = behavior.validate(target);
+        }
+
+        // If the bubble is stale (from before a target rotation), pop it
+        // visually but don't change score/combo/strikes — it was correct when
+        // it was spawned, the player shouldn't be penalized for tapping it.
+        if (isStale) {
+            setEntities(prev => {
+                const index = prev.findIndex(e => e.id === id);
+                if (index === -1) return prev;
+                const next = [...prev];
+                next[index] = { ...next[index], isPopped: true, poppedAt: Date.now() };
+                entitiesRef.current = next;
+                return next;
+            });
+            return undefined; // ignored — no score, no strike
+        }
 
         // 2. Visual Update (Optimistic)
         setEntities(prev => {

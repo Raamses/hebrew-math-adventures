@@ -377,8 +377,36 @@ export class MathBehaviorStrategy implements IGameBehavior {
         return 'small';
     }
 
+    /**
+     * Returns the current target value. Used by the engine to snapshot
+     * the target at the moment of a pop, so bubbles spawned before a
+     * target rotation can be detected as stale and ignored.
+     */
+    getTargetValue(): number {
+        return this.targetValue;
+    }
+
+    /**
+     * Validate an entity against the CURRENT target (normal path).
+     */
     validate(entity: BubbleEntity): boolean {
         return entity.internalValue === this.targetValue;
+    }
+
+    /**
+     * Validate an entity against a SNAPSHOT target value.
+     *
+     * After a correct answer rotates the problem via regenerateProblem(),
+     * already-spawned target bubbles still carry the OLD internalValue.
+     * Using this method with a snapshot taken BEFORE the rotation lets the
+     * engine distinguish:
+     *   - bubble matches snapshot → stale (was correct before rotation) → ignore
+     *   - bubble doesn't match snapshot → genuinely wrong → count as wrong
+     */
+    validateAgainst(entity: BubbleEntity, snapshotTarget: number): 'correct' | 'stale' | 'wrong' {
+        if (entity.internalValue === this.targetValue) return 'correct';
+        if (entity.internalValue === snapshotTarget) return 'stale';
+        return 'wrong';
     }
 
     // --- Boss Gate Methods ---
