@@ -134,9 +134,17 @@ export class GameDirector implements IGameDirector {
         // 3. Mastery-based level growth
         const MASTERY_THRESHOLD = 10;
         const MASTERY_ACCURACY = 0.8;
-        const masteredCount = Object.values(newProfile.skills)
-            .filter(s => s.attempts >= MASTERY_THRESHOLD && (s.correct / s.attempts) >= MASTERY_ACCURACY)
-            .length;
+
+        // ⚡ Bolt: Use for...in loop instead of Object.values().filter().length
+        // to avoid allocating two intermediate arrays on every result update
+        let masteredCount = 0;
+        for (const key in newProfile.skills) {
+            const s = newProfile.skills[key];
+            if (s.attempts >= MASTERY_THRESHOLD && (s.correct / s.attempts) >= MASTERY_ACCURACY) {
+                masteredCount++;
+            }
+        }
+
         const newLevel = Math.min(10, 1 + Math.floor(masteredCount / 3));
         if (newLevel > newProfile.estimatedLevel) {
             newProfile.estimatedLevel = newLevel;
