@@ -295,3 +295,172 @@ If a single-card approach is preferred, they can be done in sequence within one 
 4. **All existing tests pass** with no regressions.
 5. **New tests** cover: memory adapter boundaries, invaders adapter (or real counts), PracticeMode `starsGained` computation, `tierToLabel` mapping.
 6. **`STAR_CONFIG` in `worldConfig.ts`** remains the single source of truth for tier thresholds.
+
+
+---
+
+## 8. Deep Audit Addendum (Second Pass — 2026-08-08 18:47 GMT+3)
+
+A second deep-dive pass through all game-mode engines, hooks, and UI components
+revealed the following additional findings that refine the plan above.
+
+### 8.1 Invaders: Tracking Already Exists (Simpler Than Expected)
+
+**Discovery:** `MathInvadersGame.tsx` **already tracks** `sessionCorrectRef` and
+`sessionAttemptsRef` (lines 27–28) and increments them in `handleTap` (lines 98–99).
+These counters are passed to `recordSession()` for analytics — but are **not** passed
+in the `onComplete` callback.
+
+**Implication:** Child Card #2 is much simpler than originally planned. No engine
+refactor is needed. The work is:
+
+1. **Extend `onComplete` signature** in `MathInvadersGame` to include `correct` and `attempts`:
+   ```typescript
+   onComplete?: (stats: { score: number; lives: number; victory: boolean; correct: number; attempts: number }) => void;
+   ```
+2. **Pass the tracked values** in both the `onVictory` and `onGameOver` callback paths.
+3. **Replace internal star display** (line 122–123) with `computeStarsByTier(sessionCorrectRef.current, sessionAttemptsRef.current)`.
+4. **Update `GameOrchestrator` INVADERS branch** to use the new `correct`/`attempts` from
+   the extended callback, replacing the lives-based hardcoded logic.
+
+**No changes needed to `useInvaderEngine.ts` or `invader/types.ts`.** This eliminates
+the "engine refactor" risk entirely.
+
+### 8.2 Memory Duel: Field Name Correction
+
+**Discovery:** The `MemoryDuelGame.onComplete` callback passes
+`{ time, moves, matchedCount }` — **not** `matches`.
+
+**Correction to §3.1:** The adapter must use `matchedCount`, not `matches`:
+
+```typescript
+export function memoryDuelToPerformance(stats: {
+    moves: number;
+    matchedCount: number;
+}): PerformanceResult {
+    const correct = stats.matchedCount;
+    const mistakes = Math.max(0, stats.moves - stats.matchedCount);
+    return { correct, attempts: correct + mistakes };
+}
+```
+
+**Why this works naturally with `STAR_CONFIG`:**
+- 6 pairs, 6 moves (perfect) → 6 correct, 6 attempts → 0 mistakes → PERFECT (3★)
+- 6 pairs, 7 moves → 6 correct, 7 attempts → 1 mistake → PERFECT (3★)
+- 6 pairs, 9 moves → 6 correct, 9 attempts → 3 mistakes → GOOD (2★)
+- 6 pairs, 12 moves → 6 correct, 12 attempts → 6 mistakes → PASS (1★)
+
+The generic thresholds map perfectly to Memory Duel without mode-specific config.
+
+### 8.3 MathInvadersGame Internal Star Display (Line 122)
+
+**Discovery:** `MathInvadersGame.tsx` has its **own star display** for the end screen
+(line 122–123):
+```typescript
+const stars = isVictory
+    ? (state.lives >= 2 ? 3 : state.lives === 1 ? 2 : 1)
+    : 0;
+```
+
+This is a **separate hardcoded path** from the `GameOrchestrator` INVADERS branch —
+it controls the visual star rating shown on the Invaders end screen. Both must be
+migrated to `computeStarsByTier` to ensure consistency.
+
+**Fix:** Replace with:
+```typescript
+const stars = isVictory
+    ? computeStarsByTier(sessionCorrectRef.current, sessionAttemptsRef.current)
+    : 0;
+```
+
+### 8.4 Zen Mode Edge Case
+
+**Discovery:** Zen mode in `ARCADE_CONFIGS` has `failCondition: { type: 'strikes', value: 0 }`
+— meaning it can never fail. `BubbleGameContainer` already tracks `sessionCorrectRef` and
+`sessionAttemptsRef` and passes them to `onComplete`. The SENSORY branch in
+`GameOrchestrator` already calls `computeStars(correct, attempts)`.
+
+**Conclusion:** Zen mode (and all arcade modes) are **already correctly handled** — no
+changes needed. The `onComplete(true, correct, attempts)` path from
+`BubbleGameContainer` feeds directly into `computeStarsByTier`. ✅
+
+### 8.5 SessionSummary: Single Consumer
+
+**Discovery:** `SessionSummary` is imported only by `PracticeMode.tsx` (line 17).
+No other component uses it. This makes the `starsGained` fix low-risk — only one
+call site needs updating.
+
+### 8.6 ProgressOverview: Hardcoded Total Stars
+
+**Discovery:** `src/components/parent/ProgressOverview.tsx` line 10:
+```typescript
+const TOTAL_POSSIBLE_STARS = 150; // 50 nodes × 3 stars
+```
+
+**Issue:** This is a brittle constant. If the learning path adds/removes nodes,
+this number will be wrong. Should be computed dynamically:
+```typescript
+const TOTAL_POSSIBLE_STARS = CURRICULUM.length * 3;
+```
+
+**Scope decision:** This is a pre-existing tech debt issue, not directly part of
+the star-rewards migration. **Recommend a separate cleanup card** rather than
+expanding this plan's scope. Noting it here for visibility.
+
+### 8.7 `computeStars` Wrapper Removal
+
+**Discovery:** `GameOrchestrator.tsx` line 60:
+```typescript
+const computeStars = (correct: number, attempts: number): number => computeStarsByTier(correct, attempts);
+```
+
+This is a trivial identity wrapper. It adds an extra hop on every call. **Recommend
+removing it** and calling `computeStarsByTier` directly at all call sites (PRACTICE,
+SENSORY, LESSON branches). This is a pure refactor with no behavioral change.
+
+### 8.8 Revised Child Card Breakdown
+
+Based on the deep audit, the child cards can be refined:
+
+| # | Title | Scope | Effort | Dependencies |
+|---|-------|-------|--------|-------------|
+| 1 | **Memory Duel: Migrate to tier-based stars** | Create `memoryDuelToPerformance` adapter in `starAdapters.ts`, update GameOrchestrator MEMORY branch, add adapter tests | Small | None |
+| 2 | **Math Invaders: Pass tracked counts and migrate to tier-based stars** | Extend `onComplete` signature with `correct`/`attempts`, replace hardcoded star logic in both `MathInvadersGame` and `GameOrchestrator`, add tests | Small (no engine refactor needed!) | None |
+| 3 | **PracticeMode: Replace hardcoded SessionSummary stars with `computeStarsByTier`** | Update `starsGained` prop, add test | Trivial | None |
+| 4 | **Add `tierToLabel` to stars.ts + remove `computeStars` wrapper** | Extend `stars.ts`, add tests, remove wrapper in `GameOrchestrator`, update all call sites | Small | None |
+
+**Key change from original plan:** Card #2 is now **Small** effort instead of Medium,
+because the Invaders engine already tracks correct/attempts — no engine refactor needed.
+
+### 8.9 Verification Matrix
+
+| Mode | Tracks | Adapter | Star Path | Status |
+|------|--------|---------|-----------|--------|
+| PRACTICE | `session.correct`, `session.attempts` | None (direct) | `computeStarsByTier(correct, attempts)` | ✅ Already done |
+| SENSORY (all arcade modes) | `sessionCorrectRef`, `sessionAttemptsRef` | None (direct) | `computeStarsByTier(correct, attempts)` | ✅ Already done |
+| LESSON | `engine.getPerformance()` → `{correct, attempts}` | None (direct) | `computeStarsByTier(correct, attempts)` | ✅ Already done |
+| MEMORY | `stats.moves`, `stats.matchedCount` | `memoryDuelToPerformance` | `computeStarsByTier(correct, attempts)` via adapter | ❌ Needs Card #1 |
+| INVADERS | `sessionCorrectRef`, `sessionAttemptsRef` (already tracked!) | None (just pass them) | `computeStarsByTier(correct, attempts)` | ❌ Needs Card #2 |
+| SessionSummary | `session.correct`, `session.attempts` | None (direct) | `computeStarsByTier(correct, attempts)` | ❌ Needs Card #3 |
+
+### 8.10 Creative Suggestions
+
+1. **Star animation on tier upgrade:** When a player improves their tier (e.g., 2→3 stars),
+   `SessionSummary` could show a celebratory animation with the tier label ("Perfect!").
+   The `tierToLabel()` function from Card #4 enables this.
+
+2. **Tier-based coin rewards:** If future cards add coin economy, `tierToCoins()` gives:
+   PERFECT=30, GOOD=20, PASS=10. This is sketched in §3.5 but should be deferred until
+   the coin system is wired in.
+
+3. **Memory Duel "Flawless" badge:** A perfect memory game (moves = matchedCount, zero
+   mistakes) could trigger a special visual effect. The adapter makes this trivial to
+   detect: `mistakes === 0` → show "Flawless!" overlay.
+
+4. **Invaders combo → tier bonus:** If the Invaders engine exposes `maxCombo`, a high
+   combo could bump the tier by one level (PASS→GOOD, GOOD→PERFECT). This is a future
+   enhancement, not part of the current plan, but the infrastructure supports it.
+
+5. **Adaptive thresholds for young children:** `STAR_CONFIG` could have an age-based
+   variant: `PERFECT_MAX_MISTAKES=2` for ages < 7. This would require a
+   `getStarConfigForProfile(profile)` helper. Deferred but architecturally compatible.
