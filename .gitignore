@@ -26,4 +26,4 @@ dist-ssr
 
 # Build cache / generated artifacts
 .firebase/
-.jules/
+.jules/.worktrees/
