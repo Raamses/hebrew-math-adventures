@@ -36,9 +36,9 @@ vi.mock('../../../engines/invader/useInvaderEngine', () => ({
                 { id: 'e2', equation: '7 - 2', x: 30, y: 40, isBoss: false },
             ],
             answers: [
-                { id: 'a1', value: 8, x: 25, y: 70, isPopped: false },
-                { id: 'a2', value: 5, x: 75, y: 70, isPopped: false },
-                { id: 'a3', value: 3, x: 50, y: 85, isPopped: false },
+                { id: 'a1', value: 8, x: 25, y: 70, isPopped: false, equationId: 'e1' },
+                { id: 'a2', value: 5, x: 75, y: 70, isPopped: false, equationId: 'e2' },
+                { id: 'a3', value: 3, x: 50, y: 85, isPopped: false, equationId: 'e1' },
             ],
             score: 0,
             lives: 3,

@@ -188,7 +188,7 @@ export const useInvaderEngine = ({
         const baseInterval = 2000;
         if (time - lastAnswerSpawnRef.current < baseInterval) return;
 
-        // Find the lowest equation (most urgent)
+        // Find the lowest equation (most urgent) and tag answers to it
         const sorted = [...currentState.equations].sort((a, b) => b.y - a.y);
         const targetEquation = sorted[0];
         const correctValue = targetEquation.answer;
@@ -210,6 +210,7 @@ export const useInvaderEngine = ({
             velocity: 0.1 + Math.random() * 0.05,
             isCorrect: val === correctValue,
             isPopped: false,
+            equationId: targetEquation.id,
         }));
 
         setState((prev) => {
@@ -259,10 +260,9 @@ export const useInvaderEngine = ({
         const answerBubble = currentState.answers.find((a) => a.id === answerId);
         if (!answerBubble || answerBubble.isPopped) return false;
 
-        // Find the lowest equation (most urgent)
-        const sorted = [...currentState.equations].sort((a, b) => b.y - a.y);
-        if (sorted.length === 0) return false;
-        const targetEquation = sorted[0];
+        // Find the source equation this answer bubble was spawned for
+        const targetEquation = currentState.equations.find((e) => e.id === answerBubble.equationId);
+        if (!targetEquation) return false; // Source equation no longer exists (stale answer)
 
         const isCorrect = answerBubble.value === targetEquation.answer;
 

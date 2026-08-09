@@ -31,12 +31,14 @@ export interface AnswerBubble {
     y: number;
     /** Ascending speed in percentage units per frame */
     velocity: number;
-    /** Whether this is the correct answer for the lowest equation */
+    /** Whether this is the correct answer for the source equation */
     isCorrect: boolean;
     /** Visual pop state */
     isPopped: boolean;
     /** Timestamp when popped (ms) for cleanup */
     poppedAt?: number;
+    /** ID of the equation bubble this answer was spawned for */
+    equationId: string;
 }
 
 export interface InvaderState {
