@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
-import { useSound } from '../../hooks/useSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
 import { SettingsMenu } from '../SettingsMenu';
 
 interface PracticeHeaderProps {
@@ -18,7 +18,7 @@ export const PracticeHeader: React.FC<PracticeHeaderProps> = ({
 }) => {
     const { t } = useTranslation();
     const { profile } = useProfile();
-    const { isMuted, toggleMute } = useSound();
+    const { isMuted, toggleMute } = useSoundManager();
 
     if (!profile) return null;
 

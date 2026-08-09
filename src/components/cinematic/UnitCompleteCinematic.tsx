@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { CURRICULUM } from '../../data/learningPath';
-import { useSound } from '../../hooks/useSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
 
 // --- Mascot emoji mapping ---
 const MASCOT_EMOJI: Record<string, string> = {
@@ -96,7 +96,7 @@ export const UnitCompleteCinematic: React.FC<UnitCompleteCinematicProps> = ({
     onComplete,
 }) => {
     const { t } = useTranslation();
-    const { playSound } = useSound();
+    const { playSound } = useSoundManager();
     const [phase, setPhase] = useState<CinematicPhase>('charge');
     const stars = useMemo(() => generateStarParticles(10), []);
 

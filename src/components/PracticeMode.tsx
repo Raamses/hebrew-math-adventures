@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProfile } from '../context/ProfileContext';
-import { useSound } from '../hooks/useSound';
-import { useMusicalSound } from '../hooks/useMusicalSound';
+import { useSoundManager } from '../hooks/useSoundManager';
 import { usePracticeSession } from '../hooks/usePracticeSession';
 import { useAnswerFlow } from '../hooks/useAnswerFlow';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -42,9 +41,7 @@ interface PracticeModeProps {
 export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete, onMemoryMode, onInvadersMode, dailyChallengeMode, dailyChallengeTarget }) => {
     const { t, i18n } = useTranslation();
     const { profile, incrementStreak, resetStreak, updateArcadeBestScore, recordSession } = useProfile();
-    const { playAnswerCorrect, playAnswerWrong, playLevelUp } = useSound();
-    const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
-    const soundGardenEnabled = profile?.settings?.soundGarden ?? false;
+    const soundManager = useSoundManager({ soundGardenEnabled: profile?.settings?.soundGarden ?? false });
     const { logEvent } = useAnalytics();
     const { completeDailyChallenge, todayChallenge, addDailyChallengeCorrect, dailyChallengeCorrect } = useQuest();
     // Track daily challenge completion to avoid double-calling
@@ -154,8 +151,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             // Arcade modes continue until Game Over
             console.log('[DC DEBUG] onCorrectComplete', { mode: currentSession.mode, count: currentSession.count, correct: currentSession.correct, SESSION_LENGTH });
             if (currentSession.mode === 'STANDARD' && currentSession.count >= SESSION_LENGTH) {
-                playLevelUp();
-                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                soundManager.playLevelUp();
+                soundManager.vibrate([100, 50, 100]);
                 recordSession({
                     date: new Date().toISOString().slice(0, 10),
                     durationSec: Math.round((Date.now() - sessionStartTime.current) / 1000),
@@ -202,8 +199,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 updateArcadeBestScore(session.mode, session.score);
             }
 
-            playLevelUp(); // Or 'gameOver' sound if we had one
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            soundManager.playLevelUp(); // Or 'gameOver' sound if we had one
+            soundManager.vibrate([100, 50, 100]);
             recordSession({
                 date: new Date().toISOString().slice(0, 10),
                 durationSec: Math.round((Date.now() - sessionStartTime.current) / 1000),
@@ -268,8 +265,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         submitResult(isCorrect); // Update session state
 
         if (isCorrect) {
-            playAnswerCorrect(soundGardenEnabled, playMelodyNote);
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
+            soundManager.playCorrect();
+            soundManager.vibrate(50);
             // Toast mainly for Standard/Zen. Arcade has the HUD.
             if (session.mode === 'STANDARD') {
                 setScoreToast({ message: t('feedback.correct') });
@@ -288,8 +285,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             if (incrementStreak) incrementStreak();
         } else {
-            playAnswerWrong(soundGardenEnabled, playWrongMelody);
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            soundManager.playWrong();
+            soundManager.vibrate([30, 50, 30]);
             const evalResult = evaluateAnswer(problem, 'WRONG');
             setFeedback(t(evalResult.message || 'feedback.defaultError'));
 

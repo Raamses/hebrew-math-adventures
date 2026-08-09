@@ -17,8 +17,7 @@ import { useTranslation } from 'react-i18next';
 // SESSION_CONFIG.ANSWER_LOCK_MS now from SESSION_CONFIG in worldConfig
 const getThemeForLevel = (level: number) => SESSION_THEMES[Math.min(Math.floor((level - 1) / 2), SESSION_THEMES.length - 1)];
 import { SettingsMenu } from '../SettingsMenu';
-import { useSound } from '../../hooks/useSound';
-import { useMusicalSound } from '../../hooks/useMusicalSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { useProfile } from '../../context/ProfileContext';
 import { useQuest } from '../../context/QuestContext';
@@ -62,11 +61,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     onOpenSettings = () => { },
     onPause = () => { }
 }) => {
-    const { playSound, play } = useSound();
+    const soundManager = useSoundManager({ soundGardenEnabled: profile?.settings?.soundGarden ?? false });
+    const { playSound, play } = soundManager;
     const { logEvent } = useAnalytics();
     const { profile, updateProfile, recordSession } = useProfile();
     const { recordQuestEvent } = useQuest();
-    const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
     const { t } = useTranslation();
 
     // --- Session-Internal Leveling State ---
@@ -221,7 +220,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     sessionLevelRef.current = newLevel;
                     setShowLevelUp(true);
                     play('levelUp');
-                    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    soundManager.vibrate([100, 50, 100]);
                     setTimeout(() => setShowLevelUp(false), 2000);
                     // Regenerate problem at new level
                     behavior.regenerateProblem(newLevel, config, correctCount);
@@ -366,27 +365,19 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         setExplosions(prev => [...prev, { id: `${id}-exp`, x, y }]);
 
         if (isCorrect) {
-            if (profile?.settings?.soundGarden) {
-                playMelodyNote();
-            } else {
-                playSound('correct');
-            }
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
+            soundManager.playCorrect();
+            soundManager.vibrate(50);
         } else if (isCorrect === false) { // distinct from undefined
-            if (profile?.settings?.soundGarden) {
-                playWrongMelody();
-            } else {
-                playSound('wrong');
-            }
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            soundManager.playWrong();
+            soundManager.vibrate([30, 50, 30]);
         }
-    }, [enginePop, playSound, play, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, playMelodyNote, playWrongMelody, recordQuestEvent, gameState.combo, updateBossTarget, behavior]);
+    }, [enginePop, playSound, play, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, soundManager, recordQuestEvent, gameState.combo, updateBossTarget, behavior]);
 
     // Monitor Game Over / Victory
     useEffect(() => {
         if (gameState.isVictory) {
             playSound('levelUp');
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            soundManager.vibrate([100, 50, 100]);
             recordSession({
                 date: new Date().toISOString().slice(0, 10),
                 durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
@@ -400,7 +391,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             // Handle Loss - Retry?
             // For now just exit false
             playSound('wrong');
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            soundManager.vibrate([100, 50, 100]);
             recordSession({
                 date: new Date().toISOString().slice(0, 10),
                 durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
@@ -411,7 +402,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             });
             setTimeout(() => onComplete(false, sessionCorrectRef.current, sessionAttemptsRef.current), 1500);
         }
-    }, [gameState.isVictory, gameState.isGameOver, onComplete, playSound, recordSession, recordQuestEvent]);
+    }, [gameState.isVictory, gameState.isGameOver, onComplete, soundManager, recordSession, recordQuestEvent]);
 
     const instruction = behavior.getInstruction ? behavior.getInstruction() : undefined;
 

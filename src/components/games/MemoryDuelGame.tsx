@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, RotateCcw, ArrowLeft, Check, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useMemoryGame } from '../../hooks/useMemoryGame';
-import { useSound } from '../../hooks/useSound';
-import { useMusicalSound } from '../../hooks/useMusicalSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
 import { useProfile } from '../../context/ProfileContext';
 import type { UserCapabilityProfile } from '../../types/progress';
 
@@ -30,9 +29,8 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
     // Memoize config so initGame callback stays stable (prevents infinite re-render)
     const gameConfig = useMemo(() => ({ level, cardCount, problemTypes: [] }), [level, cardCount]);
 
-    const { playSound } = useSound();
     const { profile: contextProfile, recordSession } = useProfile();
-    const { playMelodyNote, playWrongMelody } = useMusicalSound(contextProfile?.settings?.soundGarden ?? false);
+    const soundManager = useSoundManager({ soundGardenEnabled: contextProfile?.settings?.soundGarden ?? false });
     const sessionStartTimeRef = useRef(Date.now());
 
     const {
@@ -89,23 +87,15 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
         setTimeout(() => {
             const newMatched = matchedCount;
             if (newMatched > prevMatchedRef.current) {
-                if (contextProfile?.settings?.soundGarden) {
-                    playMelodyNote();
-                } else {
-                    playSound('correct');
-                }
-                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
+                soundManager.playCorrect();
+                soundManager.vibrate(50);
             } else if (wrongPair.length > 0) {
-                if (contextProfile?.settings?.soundGarden) {
-                    playWrongMelody();
-                } else {
-                    playSound('wrong');
-                }
-                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
+                soundManager.playWrong();
+                soundManager.vibrate([30, 50, 30]);
             }
             prevMatchedRef.current = newMatched;
         }, 50);
-    }, [flipCard, matchedCount, wrongPair, contextProfile, playMelodyNote, playWrongMelody, playSound]);
+    }, [flipCard, matchedCount, wrongPair, soundManager]);
 
     const isComplete = status === 'complete';
 

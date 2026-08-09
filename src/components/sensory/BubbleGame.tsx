@@ -4,7 +4,7 @@ import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrate
 import type { GameConfig, ArcadeMode } from '../../engines/bubble/types';
 import type { SensoryProblem } from '../../lib/gameLogic';
 import { getArcadeModeConfig } from '../../lib/arcadeModes';
-import { useSound } from '../../hooks/useSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
 import { GameMenuModal } from '../GameMenuModal';
 import { SettingsModal } from '../SettingsModal';
 import { Director } from '../../engines/GameDirector';
@@ -21,7 +21,7 @@ interface BubbleGameProps {
 }
 
 export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onExit, title, profile, arcadeMode }) => {
-    const { isMuted, toggleMute } = useSound();
+    const { isMuted, toggleMute } = useSoundManager();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [gameId, setGameId] = useState(0);

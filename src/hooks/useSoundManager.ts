@@ -75,6 +75,10 @@ export interface UseSoundManagerReturn {
     playMelodyNote: (operation?: OperationType) => void;
     /** Play the descending wrong-answer melody (Sound Garden). */
     playWrongMelody: () => void;
+
+    // ── Haptics ───────────────────────────────────────────────────────────────
+    /** Vibrate the device if supported (no-op when muted or unsupported). */
+    vibrate: (pattern: number | number[]) => void;
 }
 
 // ── AudioContext singleton ─────────────────────────────────────────────────
@@ -377,6 +381,17 @@ export const useSoundManager = (
         playSound('milestone');
     }, [playSound]);
 
+    // ── Haptics ──────────────────────────────────────────────────────────────────
+    const vibrate = useCallback(
+        (pattern: number | number[]) => {
+            if (isMuted) return;
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                navigator.vibrate(pattern);
+            }
+        },
+        [isMuted],
+    );
+
     const toggleMute = useCallback(() => setIsMuted((prev) => !prev), []);
 
     return {
@@ -404,5 +419,8 @@ export const useSoundManager = (
         resetMelodyCombo,
         playMelodyNote,
         playWrongMelody,
+
+        // Haptics
+        vibrate,
     };
 };

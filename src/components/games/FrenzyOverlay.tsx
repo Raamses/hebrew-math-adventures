@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSound } from '../../hooks/useSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
 import { useTranslation } from 'react-i18next';
 
 type FrenzyVariant = 'bubble' | 'practice' | 'invaders';
@@ -88,7 +88,7 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
     combo,
     variant = 'bubble',
 }) => {
-    const { play } = useSound();
+    const { play } = useSoundManager();
     const { t } = useTranslation();
 
     const tier = getFrenzyTier(combo);
