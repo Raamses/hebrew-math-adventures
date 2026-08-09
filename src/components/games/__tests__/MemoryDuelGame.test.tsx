@@ -12,13 +12,17 @@ vi.mock('framer-motion', () => ({
     AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
 }))
 
-vi.mock('lucide-react', () => ({
-    Clock: () => React.createElement('span', { 'data-testid': 'icon-clock' }),
-    RotateCcw: () => React.createElement('span', { 'data-testid': 'icon-rotate' }),
-    ArrowLeft: () => React.createElement('span', { 'data-testid': 'icon-arrow' }),
-    Check: () => React.createElement('span', { 'data-testid': 'icon-check' }),
-    Sparkles: () => React.createElement('span', { 'data-testid': 'icon-sparkles' }),
-}))
+vi.mock('lucide-react', async (importOriginal) => {
+    const actual = await importOriginal() as typeof import('lucide-react')
+    return {
+        ...actual,
+        Clock: () => React.createElement('span', { 'data-testid': 'icon-clock' }),
+        RotateCcw: () => React.createElement('span', { 'data-testid': 'icon-rotate' }),
+        ArrowLeft: () => React.createElement('span', { 'data-testid': 'icon-arrow' }),
+        Check: () => React.createElement('span', { 'data-testid': 'icon-check' }),
+        Sparkles: () => React.createElement('span', { 'data-testid': 'icon-sparkles' }),
+    }
+})
 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (_k: string, f: string) => f }),
