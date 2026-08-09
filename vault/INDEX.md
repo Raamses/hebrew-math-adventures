@@ -2,7 +2,7 @@
 type: moc
 purpose: "Map of Content — single entry point to the whole project"
 project: hebrew-math-adventures
-updated: 2026-08-08
+updated: 2026-08-09
 tags: [index, moc]
 ---
 
@@ -46,8 +46,16 @@ Everything about this project, one place. **Start here.**
 - [[domain/math-generation]] — Bag Deck algorithm, 3-digit rules, repetition guard
 - [[domain/bubble-spawn-design]] — playability design intent (anti-stale-gameplay)
 - [[domain/analytics]] — GA4 analytics: event taxonomy, real data, playability metrics
+- [[domain/engagement-trend-2026-08-09]] — engagement time trend by date (28-day window, queried 2026-08-09)
 - [[domain/daily-quests]] — daily challenge, quests, streak bonuses, stamp album
 - [[domain/powerups]] — power-up system: types, config, spawn, activation
+
+
+## 📊 GA4 Snapshots (automated daily)
+- `vault/snapshots/` — daily GA4 analytics snapshots (cron at 09:00 GMT+3)
+- Latest: [[snapshots/ga4-2026-08-09]]
+- Script: `scripts/ga4-snapshot.sh` — queries GA4 Data API via `gog` CLI
+- Config: `PROPERTY_ID=519138010`, 1-day window + 28-day funnel context
 
 ## 🗺 Roadmap & Backlog
 - [[roadmap/current-work]] — what's in flight right now
@@ -63,6 +71,7 @@ Everything about this project, one place. **Start here.**
 
 ## 🔍 Reviews
 - [[reviews/e2e-coverage-review]] — devil's advocate review of E2E coverage expansion (BLOCKED)
+- [[reviews/vault-completeness-audit]] — vault completeness audit: missing domain docs & consistency (2026-08-09)
 
 ## 🧭 Conventions
 - Every significant decision → dated note in [[decisions/]]

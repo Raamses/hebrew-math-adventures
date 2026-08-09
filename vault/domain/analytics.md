@@ -1,7 +1,7 @@
 ---
 type: domain
 project: hebrew-math-adventures
-updated: 2026-08-08
+updated: 2026-08-09
 status: active
 tags: [domain, analytics, ga4, telemetry, instrumentation]
 ---
@@ -34,6 +34,28 @@ gog analytics report 519138010 \
 ```
 
 **Note:** gog uses its own OAuth client project (561495735345), separate from the Firebase project. Both the Analytics Admin API and Analytics Data API must be enabled on **both** projects. Do not use `gcloud` for GA4 queries — its token lacks analytics scopes.
+
+### Automated daily snapshots (cron)
+
+A cron job runs `scripts/ga4-snapshot.sh` daily at 09:00 GMT+3, querying GA4 and writing a dated Markdown snapshot to `vault/snapshots/`.
+
+Each snapshot includes:
+- **Daily overview** — active users, sessions, events, engagement duration by date
+- **Event breakdown** — all events with counts and active users for the window
+- **Events by date** — date × event cross-tab
+- **28-day funnel** — always-included trend context with key metric ratios
+- **Key metrics** — node_complete/node_start ratio, question_answered/node_start ratio, etc.
+
+```bash
+# Manual run (default: 1-day window)
+./scripts/ga4-snapshot.sh
+
+# Custom window
+./scripts/ga4-snapshot.sh 7   # last 7 days
+```
+
+Snapshots: `vault/snapshots/ga4-YYYY-MM-DD.md`
+Cron: `0 9 * * * .../scripts/ga4-snapshot.sh >> .../scripts/ga4-snapshot.log 2>&1`
 
 ## Event Taxonomy
 
@@ -128,3 +150,8 @@ When Firebase Analytics is not initialized (missing env vars, dev mode), events 
 
 ### Custom parameters not yet queried
 The event params include rich custom data (`profile_id`, `node_id`, `equation`, `response_time_ms`, `age_group`) that can be used as GA4 custom dimensions. These have not yet been tested as queryable dimensions via the Data API — worth testing `--dimensions=customParameter:profile_id` in a future query.
+## Engagement Trend Report (2026-08-09)
+
+Full engagement time trend by date analysis: [[engagement-trend-2026-08-09]]
+
+Key takeaway: 5/28 active days, engagement per user declining from 129s (Aug 1) to 11.6s (Aug 7). Session duration collapsed 383s → 20s over the same period. Recommendations include investigating Aug 5–6 regression, adding `session_end` event, and implementing daily return triggers.
