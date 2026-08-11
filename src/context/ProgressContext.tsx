@@ -3,6 +3,7 @@ import type { SagaProgress } from '../types/learningPath';
 import { CURRICULUM } from '../data/learningPath';
 import { useProfile } from './ProfileContext';
 import { getInitialProgress } from '../lib/progression';
+import { STORAGE_KEYS } from '../lib/worldConfig';
 
 interface ProgressContextType {
     progress: SagaProgress;
@@ -14,12 +15,11 @@ interface ProgressContextType {
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'hebrew_game_saga_progress_v1';
 
 const loadProgressForProfile = (profile: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!profile) return {};
 
-    const userKey = `${STORAGE_KEY}_${profile.id}`;
+    const userKey = `${STORAGE_KEYS.SAGA_PROGRESS}_${profile.id}`;
     const saved = localStorage.getItem(userKey);
 
     if (saved) {
@@ -33,14 +33,14 @@ const loadProgressForProfile = (profile: any) => { // eslint-disable-line @types
     } else {
         // New User or Migration
         // Check for legacy global progress to migrate
-        const legacyGlobal = localStorage.getItem(STORAGE_KEY);
+        const legacyGlobal = localStorage.getItem(STORAGE_KEYS.SAGA_PROGRESS);
         if (legacyGlobal) {
             try {
                 const legacyProgress = JSON.parse(legacyGlobal);
                 // Only migrate if it looks valid
                 if (legacyProgress && typeof legacyProgress === 'object' && Object.keys(legacyProgress).length > 0) {
                     localStorage.setItem(userKey, JSON.stringify(legacyProgress));
-                    localStorage.removeItem(STORAGE_KEY);
+                    localStorage.removeItem(STORAGE_KEYS.SAGA_PROGRESS);
                     return legacyProgress;
                 }
             } catch {
@@ -68,7 +68,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Save on change (Debounced slightly by React batching, but good to be safe)
     useEffect(() => {
         if (profile && Object.keys(progress).length > 0) {
-            const userKey = `${STORAGE_KEY}_${profile.id}`;
+            const userKey = `${STORAGE_KEYS.SAGA_PROGRESS}_${profile.id}`;
             localStorage.setItem(userKey, JSON.stringify(progress));
         }
     }, [progress, profile]);

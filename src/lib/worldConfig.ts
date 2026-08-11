@@ -365,6 +365,98 @@ export const FRENZY_CONFIG = {
     MEGA_MULTIPLIER: 5,
 } as const;
 
+
+// ================================================================
+//  Storage Keys (localStorage)
+// ================================================================
+
+/**
+ * Central registry for all localStorage keys used across the app.
+ * Every module that reads/writes localStorage should import from here
+ * to prevent key drift and silent data loss.
+ */
+export const STORAGE_KEYS = {
+    PROFILES: 'hebrew-math-profiles',
+    SAGA_PROGRESS: 'hebrew_game_saga_progress_v1',
+    DAILY_PROGRESS: 'hebrew-math-daily-progress',
+    THEME: 'hebrew-math-theme',
+    MEMORY_BEST_SCORE: 'hebrew-math-memory-best',
+    INVADERS_BEST_SCORE: 'hebrew-math-invaders-best',
+    CINEMATIC_SEEN: 'cinematic_seen_units',
+    IS_MUTED: 'isMuted',
+} as const;
+
+// ================================================================
+//  Sensory Factory Config
+// ================================================================
+
+/**
+ * Default parameters for the SensoryFactory — controls target value,
+ * item count, density of target items, and probability of close
+ * distractors in sensory mode bubbles.
+ */
+export const SENSORY_CONFIG = {
+    DEFAULT_TARGET: 5,
+    DEFAULT_COUNT: 15,
+    DEFAULT_DENSITY: 0.3,
+    PROBABILITY_CLOSE_DISTRACTOR: 0.3,
+} as const;
+
+// ================================================================
+//  Behavioral UI Config
+// ================================================================
+
+/**
+ * UI constants that affect game behavior (not purely cosmetic).
+ * - SESSION_LENGTH: questions per practice session
+ * - BOSS_SIZE_MULTIPLIER: boss bubble rendering scale
+ * - GREETING_DURATION_MS: mascot greeting display time
+ */
+export const UI_CONFIG = {
+    SESSION_LENGTH: 10,
+    BOSS_SIZE_MULTIPLIER: 1.5,
+    GREETING_DURATION_MS: 4000,
+} as const;
+
+// ================================================================
+//  Scoring Config (shared across game modes)
+// ================================================================
+
+/**
+ * Scoring constants shared across bubble and invader game modes.
+ * Centralised to prevent divergence between engines.
+ */
+export const SCORING_CONFIG = {
+    BASE_SCORE_CORRECT: 10,
+    BASE_SCORE_BOSS: 100,
+    BOSS_DEFEAT_BONUS_MULTIPLIER: 500,  // bonusPoints = BOSS_DEFEAT_BONUS_MULTIPLIER * level
+    COMBO_SCORE_FACTOR: 0.1,            // baseScoreBonus = BASE_SCORE_CORRECT * (1 + combo * COMBO_SCORE_FACTOR)
+    INVADER_SPAWN_BASE_INTERVAL_MS: 2500,
+    INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS: 2000,
+} as const;
+
+// ================================================================
+//  Bubble Engine Config
+// ================================================================
+
+/**
+ * Internal constants for the bubble game engine — lane geometry,
+ * combo/speed caps, power-up slow speed, stale-frame threshold,
+ * and bubble lifespans.
+ */
+export const BUBBLE_ENGINE_CONFIG = {
+    LANE_COUNT: 6,
+    SPAWN_Y_OFFSET: 110,
+    SPAWN_Y_STEP: 12,
+    COMBO_BONUS_PER_COMBO: 0.02,
+    COMBO_BONUS_CAP: 0.3,
+    SPEED_MULTIPLIER_CAP: 1.6,
+    POWER_UP_SLOW_SPEED: 0.3,
+    STALE_FRAME_THRESHOLD_MS: 2000,
+    TARGET_LIFESPAN_MS: 35000,
+    DISTRACTOR_LIFESPAN_MS: 22000,
+} as const;
+
 // ================================================================
 //  Deferred Constants (acknowledged in plan, not yet migrated)
 // ================================================================

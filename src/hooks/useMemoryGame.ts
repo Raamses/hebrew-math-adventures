@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { MemoryFactory, type MemoryCard, type MemoryGameConfig } from '../engines/memory/MemoryFactory';
 import type { UserCapabilityProfile } from '../types/progress';
+import { STORAGE_KEYS } from '../lib/worldConfig';
 
 export interface MemoryGameStats {
     time: number;
@@ -15,7 +16,6 @@ export interface MemoryBestScore {
     bestMoves: number | null;
 }
 
-const BEST_SCORE_KEY = 'hebrew-math-memory-best';
 
 type GameStatus = 'idle' | 'playing' | 'complete';
 
@@ -62,7 +62,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     const [bestScore, setBestScore] = useState<MemoryBestScore>({ bestTime: null, bestMoves: null });
     const loadBestScore = useCallback(() => {
         try {
-            const raw = localStorage.getItem(BEST_SCORE_KEY);
+            const raw = localStorage.getItem(STORAGE_KEYS.MEMORY_BEST_SCORE);
             if (raw) {
                 const parsed = JSON.parse(raw);
                 setBestScore({
@@ -78,13 +78,13 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     // Save best score to localStorage
     const saveBestScore = useCallback((time: number, movesCount: number) => {
         try {
-            const raw = localStorage.getItem(BEST_SCORE_KEY);
+            const raw = localStorage.getItem(STORAGE_KEYS.MEMORY_BEST_SCORE);
             const current = raw ? JSON.parse(raw) : { bestTime: null, bestMoves: null };
             const newBest = {
                 bestTime: current.bestTime === null || time < current.bestTime ? time : current.bestTime,
                 bestMoves: current.bestMoves === null || movesCount < current.bestMoves ? movesCount : current.bestMoves,
             };
-            localStorage.setItem(BEST_SCORE_KEY, JSON.stringify(newBest));
+            localStorage.setItem(STORAGE_KEYS.MEMORY_BEST_SCORE, JSON.stringify(newBest));
             setBestScore(newBest);
         } catch {
             // ignore storage errors

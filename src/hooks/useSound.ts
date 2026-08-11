@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { STORAGE_KEYS } from '../lib/worldConfig';
 
 // Placeholder sounds (using short, pleasant beeps/chimes from online sources or data URIs could be better, 
 // but for now we'll use simple reliable URLs or just empty strings if we want to simulate)
@@ -22,7 +23,7 @@ const getAudioContext = () => {
 export const useSound = () => {
     const [isMuted, setIsMuted] = useState<boolean>(() => {
         try {
-            const saved = localStorage.getItem('isMuted');
+            const saved = localStorage.getItem(STORAGE_KEYS.IS_MUTED);
             return saved ? JSON.parse(saved) : false;
         } catch {
             return false;
@@ -30,7 +31,7 @@ export const useSound = () => {
     });
 
     useEffect(() => {
-        localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        localStorage.setItem(STORAGE_KEYS.IS_MUTED, JSON.stringify(isMuted));
     }, [isMuted]);
 
     const playSound = useCallback((type: SoundType) => {

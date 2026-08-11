@@ -3,6 +3,11 @@ import {
     WORLD_ZONES,
     getZoneForLevel,
     type ZoneConfig,
+    STORAGE_KEYS,
+    SENSORY_CONFIG,
+    UI_CONFIG,
+    SCORING_CONFIG,
+    BUBBLE_ENGINE_CONFIG,
 } from '../worldConfig';
 
 /* ------------------------------------------------------------------ *
@@ -541,5 +546,345 @@ describe('edge cases and invariants', () => {
         for (let lvl = 0; lvl <= 10; lvl++) {
             expect(getZoneForLevel(lvl)?.id).toBe('sensory_beach');
         }
+    });
+});
+
+/* ---------- 7. STORAGE_KEYS ---------- */
+
+describe('STORAGE_KEYS', () => {
+    it('exports an object with all 8 keys', () => {
+        expect(STORAGE_KEYS).toBeDefined();
+        expect(typeof STORAGE_KEYS).toBe('object');
+        expect(Object.keys(STORAGE_KEYS)).toHaveLength(8);
+    });
+
+    it('has all expected key names', () => {
+        expect(STORAGE_KEYS).toHaveProperty('PROFILES');
+        expect(STORAGE_KEYS).toHaveProperty('SAGA_PROGRESS');
+        expect(STORAGE_KEYS).toHaveProperty('DAILY_PROGRESS');
+        expect(STORAGE_KEYS).toHaveProperty('THEME');
+        expect(STORAGE_KEYS).toHaveProperty('MEMORY_BEST_SCORE');
+        expect(STORAGE_KEYS).toHaveProperty('INVADERS_BEST_SCORE');
+        expect(STORAGE_KEYS).toHaveProperty('CINEMATIC_SEEN');
+        expect(STORAGE_KEYS).toHaveProperty('IS_MUTED');
+    });
+
+    it('every value is a non-empty string', () => {
+        for (const key of Object.keys(STORAGE_KEYS)) {
+            const value = (STORAGE_KEYS as Record<string, string>)[key];
+            expect(typeof value).toBe('string');
+            expect(value.length).toBeGreaterThan(0);
+        }
+    });
+
+    it('every value is unique (no duplicate storage keys)', () => {
+        const values = Object.values(STORAGE_KEYS);
+        expect(new Set(values).size).toBe(values.length);
+    });
+
+    it('no key value is a substring of another key value', () => {
+        // Prevents accidental partial key collisions in localStorage
+        const values = Object.values(STORAGE_KEYS);
+        for (let i = 0; i < values.length; i++) {
+            for (let j = 0; j < values.length; j++) {
+                if (i === j) continue;
+                // Skip if one is a prefix of the other with a delimiter
+                // (e.g., 'hebrew-math-theme' vs 'hebrew-math-theme-extra')
+                expect(values[j]).not.toContain(values[i]);
+            }
+        }
+    });
+
+    it('values match expected string literals (prevents key drift)', () => {
+        expect(STORAGE_KEYS.PROFILES).toBe('hebrew-math-profiles');
+        expect(STORAGE_KEYS.SAGA_PROGRESS).toBe('hebrew_game_saga_progress_v1');
+        expect(STORAGE_KEYS.DAILY_PROGRESS).toBe('hebrew-math-daily-progress');
+        expect(STORAGE_KEYS.THEME).toBe('hebrew-math-theme');
+        expect(STORAGE_KEYS.MEMORY_BEST_SCORE).toBe('hebrew-math-memory-best');
+        expect(STORAGE_KEYS.INVADERS_BEST_SCORE).toBe('hebrew-math-invaders-best');
+        expect(STORAGE_KEYS.CINEMATIC_SEEN).toBe('cinematic_seen_units');
+        expect(STORAGE_KEYS.IS_MUTED).toBe('isMuted');
+    });
+
+    it('keys follow a consistent naming convention (alphanumeric, hyphen or underscore separated)', () => {
+        for (const value of Object.values(STORAGE_KEYS)) {
+            // All values should be alphanumeric with hyphens or underscores
+            expect(value).toMatch(/^[a-zA-Z0-9_-]+$/);
+        }
+    });
+});
+
+/* ---------- 8. SENSORY_CONFIG ---------- */
+
+describe('SENSORY_CONFIG', () => {
+    it('exports an object with all 4 fields', () => {
+        expect(SENSORY_CONFIG).toBeDefined();
+        expect(typeof SENSORY_CONFIG).toBe('object');
+        expect(Object.keys(SENSORY_CONFIG)).toHaveLength(4);
+    });
+
+    it('has all expected field names', () => {
+        expect(SENSORY_CONFIG).toHaveProperty('DEFAULT_TARGET');
+        expect(SENSORY_CONFIG).toHaveProperty('DEFAULT_COUNT');
+        expect(SENSORY_CONFIG).toHaveProperty('DEFAULT_DENSITY');
+        expect(SENSORY_CONFIG).toHaveProperty('PROBABILITY_CLOSE_DISTRACTOR');
+    });
+
+    it('every field is a number', () => {
+        expect(typeof SENSORY_CONFIG.DEFAULT_TARGET).toBe('number');
+        expect(typeof SENSORY_CONFIG.DEFAULT_COUNT).toBe('number');
+        expect(typeof SENSORY_CONFIG.DEFAULT_DENSITY).toBe('number');
+        expect(typeof SENSORY_CONFIG.PROBABILITY_CLOSE_DISTRACTOR).toBe('number');
+    });
+
+    it('DEFAULT_TARGET is a positive integer', () => {
+        expect(SENSORY_CONFIG.DEFAULT_TARGET).toBeGreaterThan(0);
+        expect(Number.isInteger(SENSORY_CONFIG.DEFAULT_TARGET)).toBe(true);
+    });
+
+    it('DEFAULT_COUNT is a positive integer', () => {
+        expect(SENSORY_CONFIG.DEFAULT_COUNT).toBeGreaterThan(0);
+        expect(Number.isInteger(SENSORY_CONFIG.DEFAULT_COUNT)).toBe(true);
+    });
+
+    it('DEFAULT_DENSITY is in range (0, 1]', () => {
+        expect(SENSORY_CONFIG.DEFAULT_DENSITY).toBeGreaterThan(0);
+        expect(SENSORY_CONFIG.DEFAULT_DENSITY).toBeLessThanOrEqual(1);
+    });
+
+    it('PROBABILITY_CLOSE_DISTRACTOR is in range [0, 1]', () => {
+        expect(SENSORY_CONFIG.PROBABILITY_CLOSE_DISTRACTOR).toBeGreaterThanOrEqual(0);
+        expect(SENSORY_CONFIG.PROBABILITY_CLOSE_DISTRACTOR).toBeLessThanOrEqual(1);
+    });
+
+    it('values match expected defaults (prevents accidental rebalancing)', () => {
+        expect(SENSORY_CONFIG.DEFAULT_TARGET).toBe(5);
+        expect(SENSORY_CONFIG.DEFAULT_COUNT).toBe(15);
+        expect(SENSORY_CONFIG.DEFAULT_DENSITY).toBe(0.3);
+        expect(SENSORY_CONFIG.PROBABILITY_CLOSE_DISTRACTOR).toBe(0.3);
+    });
+});
+
+/* ---------- 9. UI_CONFIG ---------- */
+
+describe('UI_CONFIG', () => {
+    it('exports an object with all 3 fields', () => {
+        expect(UI_CONFIG).toBeDefined();
+        expect(typeof UI_CONFIG).toBe('object');
+        expect(Object.keys(UI_CONFIG)).toHaveLength(3);
+    });
+
+    it('has all expected field names', () => {
+        expect(UI_CONFIG).toHaveProperty('SESSION_LENGTH');
+        expect(UI_CONFIG).toHaveProperty('BOSS_SIZE_MULTIPLIER');
+        expect(UI_CONFIG).toHaveProperty('GREETING_DURATION_MS');
+    });
+
+    it('every field is a number', () => {
+        expect(typeof UI_CONFIG.SESSION_LENGTH).toBe('number');
+        expect(typeof UI_CONFIG.BOSS_SIZE_MULTIPLIER).toBe('number');
+        expect(typeof UI_CONFIG.GREETING_DURATION_MS).toBe('number');
+    });
+
+    it('SESSION_LENGTH is a positive integer', () => {
+        expect(UI_CONFIG.SESSION_LENGTH).toBeGreaterThan(0);
+        expect(Number.isInteger(UI_CONFIG.SESSION_LENGTH)).toBe(true);
+    });
+
+    it('BOSS_SIZE_MULTIPLIER is a positive number', () => {
+        expect(UI_CONFIG.BOSS_SIZE_MULTIPLIER).toBeGreaterThan(0);
+    });
+
+    it('BOSS_SIZE_MULTIPLIER is greater than 1 (boss is bigger than normal)', () => {
+        expect(UI_CONFIG.BOSS_SIZE_MULTIPLIER).toBeGreaterThan(1);
+    });
+
+    it('GREETING_DURATION_MS is a positive integer', () => {
+        expect(UI_CONFIG.GREETING_DURATION_MS).toBeGreaterThan(0);
+        expect(Number.isInteger(UI_CONFIG.GREETING_DURATION_MS)).toBe(true);
+    });
+
+    it('values match expected defaults', () => {
+        expect(UI_CONFIG.SESSION_LENGTH).toBe(10);
+        expect(UI_CONFIG.BOSS_SIZE_MULTIPLIER).toBe(1.5);
+        expect(UI_CONFIG.GREETING_DURATION_MS).toBe(4000);
+    });
+});
+
+/* ---------- 10. SCORING_CONFIG ---------- */
+
+describe('SCORING_CONFIG', () => {
+    it('exports an object with all 6 fields', () => {
+        expect(SCORING_CONFIG).toBeDefined();
+        expect(typeof SCORING_CONFIG).toBe('object');
+        expect(Object.keys(SCORING_CONFIG)).toHaveLength(6);
+    });
+
+    it('has all expected field names', () => {
+        expect(SCORING_CONFIG).toHaveProperty('BASE_SCORE_CORRECT');
+        expect(SCORING_CONFIG).toHaveProperty('BASE_SCORE_BOSS');
+        expect(SCORING_CONFIG).toHaveProperty('BOSS_DEFEAT_BONUS_MULTIPLIER');
+        expect(SCORING_CONFIG).toHaveProperty('COMBO_SCORE_FACTOR');
+        expect(SCORING_CONFIG).toHaveProperty('INVADER_SPAWN_BASE_INTERVAL_MS');
+        expect(SCORING_CONFIG).toHaveProperty('INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS');
+    });
+
+    it('every field is a number', () => {
+        expect(typeof SCORING_CONFIG.BASE_SCORE_CORRECT).toBe('number');
+        expect(typeof SCORING_CONFIG.BASE_SCORE_BOSS).toBe('number');
+        expect(typeof SCORING_CONFIG.BOSS_DEFEAT_BONUS_MULTIPLIER).toBe('number');
+        expect(typeof SCORING_CONFIG.COMBO_SCORE_FACTOR).toBe('number');
+        expect(typeof SCORING_CONFIG.INVADER_SPAWN_BASE_INTERVAL_MS).toBe('number');
+        expect(typeof SCORING_CONFIG.INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS).toBe('number');
+    });
+
+    it('BASE_SCORE_CORRECT is a positive integer', () => {
+        expect(SCORING_CONFIG.BASE_SCORE_CORRECT).toBeGreaterThan(0);
+        expect(Number.isInteger(SCORING_CONFIG.BASE_SCORE_CORRECT)).toBe(true);
+    });
+
+    it('BASE_SCORE_BOSS is a positive integer', () => {
+        expect(SCORING_CONFIG.BASE_SCORE_BOSS).toBeGreaterThan(0);
+        expect(Number.isInteger(SCORING_CONFIG.BASE_SCORE_BOSS)).toBe(true);
+    });
+
+    it('BASE_SCORE_BOSS > BASE_SCORE_CORRECT (boss worth more than regular)', () => {
+        expect(SCORING_CONFIG.BASE_SCORE_BOSS).toBeGreaterThan(SCORING_CONFIG.BASE_SCORE_CORRECT);
+    });
+
+    it('BOSS_DEFEAT_BONUS_MULTIPLIER is a positive integer', () => {
+        expect(SCORING_CONFIG.BOSS_DEFEAT_BONUS_MULTIPLIER).toBeGreaterThan(0);
+        expect(Number.isInteger(SCORING_CONFIG.BOSS_DEFEAT_BONUS_MULTIPLIER)).toBe(true);
+    });
+
+    it('COMBO_SCORE_FACTOR is a positive number', () => {
+        expect(SCORING_CONFIG.COMBO_SCORE_FACTOR).toBeGreaterThan(0);
+    });
+
+    it('INVADER_SPAWN_BASE_INTERVAL_MS is a positive integer', () => {
+        expect(SCORING_CONFIG.INVADER_SPAWN_BASE_INTERVAL_MS).toBeGreaterThan(0);
+        expect(Number.isInteger(SCORING_CONFIG.INVADER_SPAWN_BASE_INTERVAL_MS)).toBe(true);
+    });
+
+    it('INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS is a positive integer', () => {
+        expect(SCORING_CONFIG.INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS).toBeGreaterThan(0);
+        expect(Number.isInteger(SCORING_CONFIG.INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS)).toBe(true);
+    });
+
+    it('INVADER_SPAWN_BASE_INTERVAL_MS > INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS (equations spawn slower than answers)', () => {
+        expect(SCORING_CONFIG.INVADER_SPAWN_BASE_INTERVAL_MS)
+            .toBeGreaterThan(SCORING_CONFIG.INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS);
+    });
+
+    it('values match expected defaults', () => {
+        expect(SCORING_CONFIG.BASE_SCORE_CORRECT).toBe(10);
+        expect(SCORING_CONFIG.BASE_SCORE_BOSS).toBe(100);
+        expect(SCORING_CONFIG.BOSS_DEFEAT_BONUS_MULTIPLIER).toBe(500);
+        expect(SCORING_CONFIG.COMBO_SCORE_FACTOR).toBe(0.1);
+        expect(SCORING_CONFIG.INVADER_SPAWN_BASE_INTERVAL_MS).toBe(2500);
+        expect(SCORING_CONFIG.INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS).toBe(2000);
+    });
+});
+
+/* ---------- 11. BUBBLE_ENGINE_CONFIG ---------- */
+
+describe('BUBBLE_ENGINE_CONFIG', () => {
+    it('exports an object with all 10 fields', () => {
+        expect(BUBBLE_ENGINE_CONFIG).toBeDefined();
+        expect(typeof BUBBLE_ENGINE_CONFIG).toBe('object');
+        expect(Object.keys(BUBBLE_ENGINE_CONFIG)).toHaveLength(10);
+    });
+
+    it('has all expected field names', () => {
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('LANE_COUNT');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('SPAWN_Y_OFFSET');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('SPAWN_Y_STEP');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('COMBO_BONUS_PER_COMBO');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('COMBO_BONUS_CAP');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('SPEED_MULTIPLIER_CAP');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('POWER_UP_SLOW_SPEED');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('STALE_FRAME_THRESHOLD_MS');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('TARGET_LIFESPAN_MS');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('DISTRACTOR_LIFESPAN_MS');
+    });
+
+    it('every field is a number', () => {
+        expect(typeof BUBBLE_ENGINE_CONFIG.LANE_COUNT).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.SPAWN_Y_STEP).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.COMBO_BONUS_PER_COMBO).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.COMBO_BONUS_CAP).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.SPEED_MULTIPLIER_CAP).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.POWER_UP_SLOW_SPEED).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBe('number');
+    });
+
+    it('LANE_COUNT is a positive integer', () => {
+        expect(BUBBLE_ENGINE_CONFIG.LANE_COUNT).toBeGreaterThan(0);
+        expect(Number.isInteger(BUBBLE_ENGINE_CONFIG.LANE_COUNT)).toBe(true);
+    });
+
+    it('SPAWN_Y_OFFSET is a positive number', () => {
+        expect(BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET).toBeGreaterThan(0);
+    });
+
+    it('SPAWN_Y_STEP is a positive number', () => {
+        expect(BUBBLE_ENGINE_CONFIG.SPAWN_Y_STEP).toBeGreaterThan(0);
+    });
+
+    it('COMBO_BONUS_PER_COMBO is a positive number', () => {
+        expect(BUBBLE_ENGINE_CONFIG.COMBO_BONUS_PER_COMBO).toBeGreaterThan(0);
+    });
+
+    it('COMBO_BONUS_CAP is a positive number', () => {
+        expect(BUBBLE_ENGINE_CONFIG.COMBO_BONUS_CAP).toBeGreaterThan(0);
+    });
+
+    it('SPEED_MULTIPLIER_CAP is a positive number', () => {
+        expect(BUBBLE_ENGINE_CONFIG.SPEED_MULTIPLIER_CAP).toBeGreaterThan(0);
+    });
+
+    it('SPEED_MULTIPLIER_CAP > 1 (speed can increase above base)', () => {
+        expect(BUBBLE_ENGINE_CONFIG.SPEED_MULTIPLIER_CAP).toBeGreaterThan(1);
+    });
+
+    it('POWER_UP_SLOW_SPEED is in range (0, 1)', () => {
+        expect(BUBBLE_ENGINE_CONFIG.POWER_UP_SLOW_SPEED).toBeGreaterThan(0);
+        expect(BUBBLE_ENGINE_CONFIG.POWER_UP_SLOW_SPEED).toBeLessThan(1);
+    });
+
+    it('STALE_FRAME_THRESHOLD_MS is a positive integer', () => {
+        expect(BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS).toBeGreaterThan(0);
+        expect(Number.isInteger(BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS)).toBe(true);
+    });
+
+    it('TARGET_LIFESPAN_MS is a positive integer', () => {
+        expect(BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS).toBeGreaterThan(0);
+        expect(Number.isInteger(BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS)).toBe(true);
+    });
+
+    it('DISTRACTOR_LIFESPAN_MS is a positive integer', () => {
+        expect(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBeGreaterThan(0);
+        expect(Number.isInteger(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS)).toBe(true);
+    });
+
+    it('TARGET_LIFESPAN_MS > DISTRACTOR_LIFESPAN_MS (targets live longer than distractors)', () => {
+        expect(BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS)
+            .toBeGreaterThan(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS);
+    });
+
+    it('values match expected defaults', () => {
+        expect(BUBBLE_ENGINE_CONFIG.LANE_COUNT).toBe(6);
+        expect(BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET).toBe(110);
+        expect(BUBBLE_ENGINE_CONFIG.SPAWN_Y_STEP).toBe(12);
+        expect(BUBBLE_ENGINE_CONFIG.COMBO_BONUS_PER_COMBO).toBe(0.02);
+        expect(BUBBLE_ENGINE_CONFIG.COMBO_BONUS_CAP).toBe(0.3);
+        expect(BUBBLE_ENGINE_CONFIG.SPEED_MULTIPLIER_CAP).toBe(1.6);
+        expect(BUBBLE_ENGINE_CONFIG.POWER_UP_SLOW_SPEED).toBe(0.3);
+        expect(BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS).toBe(2000);
+        expect(BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS).toBe(35000);
+        expect(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBe(22000);
     });
 });
