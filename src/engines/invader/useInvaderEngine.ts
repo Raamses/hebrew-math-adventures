@@ -15,7 +15,7 @@ import {
     FRENZY_COMBO_THRESHOLD,
     createInitialInvaderState,
 } from './types';
-import { FRENZY_CONFIG } from '../../lib/worldConfig';
+import { FRENZY_CONFIG, SCORING_CONFIG } from '../../lib/worldConfig';
 
 // --- Helpers ---
 
@@ -145,7 +145,7 @@ export const useInvaderEngine = ({
         if (currentState.isBossWave) return; // Don't spawn normal equations during boss
 
         // Spawn interval scales with level
-        const baseInterval = 2500 / speedMultiplierRef.current;
+        const baseInterval = SCORING_CONFIG.INVADER_SPAWN_BASE_INTERVAL_MS / speedMultiplierRef.current;
         const frenzyMultiplier = currentState.frenzy ? 0.6 : 1;
         const interval = baseInterval * frenzyMultiplier;
 
@@ -185,7 +185,7 @@ export const useInvaderEngine = ({
         if (currentState.equations.length === 0) return;
         if (currentState.answers.filter((a) => !a.isPopped).length >= 4) return;
 
-        const baseInterval = 2000;
+        const baseInterval = SCORING_CONFIG.INVADER_ANSWER_SPAWN_BASE_INTERVAL_MS;
         if (time - lastAnswerSpawnRef.current < baseInterval) return;
 
         // Find the lowest equation (most urgent) and tag answers to it
@@ -275,7 +275,7 @@ export const useInvaderEngine = ({
             if (isCorrect) {
                 const newCombo = prev.combo + 1;
                 const frenzyMultiplier = newCombo >= FRENZY_CONFIG.MEGA_THRESHOLD ? FRENZY_CONFIG.MEGA_MULTIPLIER : newCombo >= FRENZY_CONFIG.SUPER_THRESHOLD ? FRENZY_CONFIG.SUPER_MULTIPLIER : newCombo >= FRENZY_COMBO_THRESHOLD ? FRENZY_CONFIG.FRENZY_MULTIPLIER : 1;
-                const baseScore = targetEquation.isBoss ? 100 : 10;
+                const baseScore = targetEquation.isBoss ? SCORING_CONFIG.BASE_SCORE_BOSS : SCORING_CONFIG.BASE_SCORE_CORRECT;
                 const scoreGain = baseScore * frenzyMultiplier;
 
                 let newEquations = prev.equations;
@@ -287,7 +287,7 @@ export const useInvaderEngine = ({
                     const newHP = (targetEquation.hp ?? 1) - 1;
                     if (newHP <= 0) {
                         // Boss defeated!
-                        const bonusPoints = 500 * prev.level;
+                        const bonusPoints = SCORING_CONFIG.BOSS_DEFEAT_BONUS_MULTIPLIER * prev.level;
                         newEquations = prev.equations.filter((e) => e.id !== targetEquation.id);
                         newBossHP = 0;
                         newIsBossWave = false;

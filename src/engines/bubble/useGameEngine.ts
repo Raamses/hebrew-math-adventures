@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { GameConfig, GameState, BubbleEntity, IGameBehavior, PowerUpType, PowerUpState } from './types';
-import { POWER_UP_CONFIG } from '../../lib/worldConfig';
+import { POWER_UP_CONFIG, FRENZY_CONFIG, SCORING_CONFIG, BUBBLE_ENGINE_CONFIG } from '../../lib/worldConfig';
 
 // --- Power-Up Constants ---
 
@@ -50,7 +50,7 @@ export const useGameEngine = (
     const gameStateRef = useRef(gameState);
     const entitiesRef = useRef<BubbleEntity[]>([]);
     // Lane-based spawn placement: divide the 8-92vw range into discrete lanes
-    const laneCount = useRef<number>(6);
+    const laneCount = useRef<number>(BUBBLE_ENGINE_CONFIG.LANE_COUNT);
     const laneOccupied = useRef<boolean[]>([]);
     // Keep a ref of the latest config so the game loop picks up adaptive changes
     // to spawnIntervalMs and baseVelocity without recreating the loop callback.
@@ -75,7 +75,7 @@ export const useGameEngine = (
     const getEffectiveSpeedMultiplier = useCallback((): number => {
         const ps = gameStateRef.current.powerUpState;
         if (!ps || !ps.active) return 1;
-        if (ps.type === 'slow_motion') return 0.3;
+        if (ps.type === 'slow_motion') return BUBBLE_ENGINE_CONFIG.POWER_UP_SLOW_SPEED;
         if (ps.type === 'freeze') return 0; // frozen
         return 1;
     }, []);
@@ -96,7 +96,7 @@ export const useGameEngine = (
         const bossBubble: BubbleEntity = {
             id: `boss-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             x: 50, // Center of screen
-            y: 110,
+            y: BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET,
             content: bossProps.content ?? '🛡️',
             internalValue: bossProps.internalValue,
             velocity: currentConfig.baseVelocity * 0.3, // Slow
@@ -179,7 +179,7 @@ export const useGameEngine = (
         lastFrameTime.current = time;
 
         // Tab backgrounded: reset credits and skip accumulation this frame
-        if (dt > 2000) {
+        if (dt > BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS) {
             spawnCredits.current = 0;
             return;
         }
@@ -206,14 +206,14 @@ export const useGameEngine = (
             }
         }
 
-        const comboBonus = Math.min(0.3, gameStateRef.current.combo * 0.02);
+        const comboBonus = Math.min(BUBBLE_ENGINE_CONFIG.COMBO_BONUS_CAP, gameStateRef.current.combo * BUBBLE_ENGINE_CONFIG.COMBO_BONUS_PER_COMBO);
         let timeBonus = 0;
         if (currentConfig.winCondition.type === 'time_limit' && currentConfig.winCondition.value > 0) {
             const timeLeft = gameStateRef.current.timeLeft ?? currentConfig.winCondition.value;
             const elapsed = currentConfig.winCondition.value - timeLeft;
             timeBonus = (elapsed / currentConfig.winCondition.value) * 0.2;
         }
-        const speedMultiplier = Math.min(1.6, 1 + comboBonus + timeBonus);
+        const speedMultiplier = Math.min(BUBBLE_ENGINE_CONFIG.SPEED_MULTIPLIER_CAP, 1 + comboBonus + timeBonus);
         currentInterval = currentInterval / speedMultiplier;
 
         // Credit accumulator scheduling
@@ -247,7 +247,7 @@ export const useGameEngine = (
             const newPowerUpBubble: BubbleEntity = {
                 id: `powerup-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
                 x: spawnX,
-                y: 110,
+                y: BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET,
                 content: POWER_UP_EMOJI[powerUpType],
                 internalValue: powerUpType,
                 velocity: currentConfig.baseVelocity,
@@ -293,7 +293,7 @@ export const useGameEngine = (
             const jitter = (Math.random() - 0.5) * 4; // ±2vw organic jitter
             let spawnX = getLaneCenter(bubbleLane, laneCount.current) + jitter;
             // If this is a multi-credit burst, stagger Y so they don't stack exactly
-            const spawnY = 110 + (spawnIndex * 12);
+            const spawnY = BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET + (spawnIndex * BUBBLE_ENGINE_CONFIG.SPAWN_Y_STEP);
             // Slightly vary x per bubble even within the same lane for organic look
             spawnX += (Math.random() - 0.5) * 2;
             // Clamp to 8-92vw safe boundary (prevents edge drift from jitter + offset)
@@ -342,7 +342,7 @@ export const useGameEngine = (
         const getTtlForEntity = (e: BubbleEntity): number => {
             if (e.isPopped || e.isPowerUp || e.isBoss) return 30000;
             // M3 Fix: Plan specifies 22s for distractors (was 25s — undocumented deviation)
-            return isTargetEntity(e) ? 35000 : 22000;
+            return isTargetEntity(e) ? BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS : BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS;
         };
 
         // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
@@ -567,7 +567,7 @@ export const useGameEngine = (
                 if (newHealth <= 0) {
                     // Boss defeated!
                     const level = sessionLevelRefForBoss.current;
-                    const bonusPoints = 500 * level;
+                    const bonusPoints = SCORING_CONFIG.BOSS_DEFEAT_BONUS_MULTIPLIER * level;
 
                     // Visual pop
                     setEntities(prev => {
@@ -615,7 +615,7 @@ export const useGameEngine = (
                             ...prev,
                             combo: newCombo,
                             score: prev.score + 25,
-                            isFrenzy: newCombo >= 5,
+                            isFrenzy: newCombo >= FRENZY_CONFIG.FRENZY_THRESHOLD,
                         };
                         gameStateRef.current = nextGameState;
                         return nextGameState;
@@ -693,14 +693,14 @@ export const useGameEngine = (
         // 3. Game State Update
         setGameState(prev => {
             const newCombo = isCorrect ? prev.combo + 1 : 0;
-            const baseScoreBonus = isCorrect ? (10 * (1 + newCombo * 0.1)) : 0;
+            const baseScoreBonus = isCorrect ? (SCORING_CONFIG.BASE_SCORE_CORRECT * (1 + newCombo * SCORING_CONFIG.COMBO_SCORE_FACTOR)) : 0;
             // Combo milestone multiplier: Frenzy (combo≥5) = 2x, Super (≥10) = 3x, Mega (≥15) = 5x
-            const frenzyMultiplier = newCombo >= 15 ? 5 : newCombo >= 10 ? 3 : newCombo >= 5 ? 2 : 1;
+            const frenzyMultiplier = newCombo >= FRENZY_CONFIG.MEGA_THRESHOLD ? FRENZY_CONFIG.MEGA_MULTIPLIER : newCombo >= FRENZY_CONFIG.SUPER_THRESHOLD ? FRENZY_CONFIG.SUPER_MULTIPLIER : newCombo >= FRENZY_CONFIG.FRENZY_THRESHOLD ? FRENZY_CONFIG.FRENZY_MULTIPLIER : 1;
             // Double points power-up: 2x score (stacks with frenzy)
             const doublePointsMultiplier = (prev.powerUpState?.active && prev.powerUpState.type === 'double_points') ? 2 : 1;
             const scoreBonus = isCorrect ? baseScoreBonus * frenzyMultiplier * doublePointsMultiplier : 0;
 
-            const isFrenzy = isCorrect ? newCombo >= 5 : false;
+            const isFrenzy = isCorrect ? newCombo >= FRENZY_CONFIG.FRENZY_THRESHOLD : false;
 
             const nextGameState: GameState = {
                 ...prev,
