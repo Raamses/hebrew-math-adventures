@@ -132,6 +132,21 @@ export interface IGameBehavior {
 
     /** Force-regenerate the current problem (for mid-session level changes). */
     regenerateProblem(level: number, config: GameConfig, correctCount?: number): void;
+
+    /**
+     * Returns the current target value. Used by the engine to snapshot
+     * the target at the moment of a pop, so stale bubbles can be detected.
+     * Optional — only MathBehaviorStrategy implements this.
+     */
+    getTargetValue?(): number;
+
+    /**
+     * Validate an entity against a SNAPSHOT target value.
+     * Returns 'correct' (matches current), 'stale' (matches previous target),
+     * or 'wrong' (doesn't match any known target).
+     * Optional — only MathBehaviorStrategy implements this.
+     */
+    validateAgainst?(entity: BubbleEntity, snapshotTarget: number): 'correct' | 'stale' | 'wrong';
 }
 
 export interface GameState {

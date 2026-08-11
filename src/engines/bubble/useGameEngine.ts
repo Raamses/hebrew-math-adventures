@@ -129,7 +129,8 @@ export const useGameEngine = (
     }, [behavior]);
 
     const computeLaneCount = useCallback((currentCfg: GameConfig) =>
-        Math.min(currentCfg.maxOnScreen, Math.max(3, Math.floor(window.innerWidth / 80)))
+        // M2 Fix: Guard against SSR/non-browser environments where window is undefined.
+        Math.min(currentCfg.maxOnScreen, Math.max(3, Math.floor((typeof window !== 'undefined' ? window.innerWidth : 480) / 80)))
     , []);
 
     const getLaneCenter = (laneIndex: number, count: number): number => {
@@ -168,6 +169,9 @@ export const useGameEngine = (
             lastFrameTime.current = time;
             lastSpawnTime.current = time;
             lastTargetSeenTime.current = time; // Seed safety net so it doesn't fire on cold start
+            // M1 Fix: Initial bubble burst — seed 3 credits so the screen
+            // populates in the first 1-2 frames instead of waiting 4-8s.
+            spawnCredits.current = 3;
         }
 
         // Per-frame delta
@@ -337,7 +341,8 @@ export const useGameEngine = (
         // Asymmetric despawn TTL: targets live longer, distractors shorter
         const getTtlForEntity = (e: BubbleEntity): number => {
             if (e.isPopped || e.isPowerUp || e.isBoss) return 30000;
-            return isTargetEntity(e) ? 35000 : 25000;
+            // M3 Fix: Plan specifies 22s for distractors (was 25s — undocumented deviation)
+            return isTargetEntity(e) ? 35000 : 22000;
         };
 
         // Performance Optimization: Pre-check before enqueueing a React state update at 60fps
@@ -647,9 +652,9 @@ export const useGameEngine = (
         let isCorrect: boolean | undefined;
         let isStale = false;
 
-        if ('validateAgainst' in behavior && 'getTargetValue' in behavior) {
-            const snapshot = (behavior as any).getTargetValue() as number;
-            const verdict = (behavior as any).validateAgainst(target, snapshot);
+        if (behavior.getTargetValue && behavior.validateAgainst) {
+            const snapshot = behavior.getTargetValue();
+            const verdict = behavior.validateAgainst(target, snapshot);
             if (verdict === 'stale') {
                 isStale = true;
                 isCorrect = undefined; // ignore — not correct, not wrong

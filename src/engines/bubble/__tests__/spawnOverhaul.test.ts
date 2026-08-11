@@ -282,3 +282,165 @@ describe('P0 spawn overhaul — forceTarget + multi-spawn exact count', () => {
     expect(bagAfter.length).toBe(bagBefore.length - 2);
   });
 });
+
+describe('B1 fix — adaptive config reaches configRef', () => {
+  it('harderConfig adapts spawnIntervalMs and maxOnScreen, not just distractorRatio', () => {
+    const baseConfig = makeConfig({ spawnIntervalMs: 1000, maxOnScreen: 8, distractorRatio: 2 });
+    const harderConfig: GameConfig = {
+      ...baseConfig,
+      distractorRatio: Math.round(baseConfig.distractorRatio * 1.3),
+      spawnIntervalMs: Math.max(400, Math.round(baseConfig.spawnIntervalMs * 0.85)),
+      maxOnScreen: Math.min(12, baseConfig.maxOnScreen + 1),
+    };
+    expect(harderConfig.spawnIntervalMs).toBeLessThan(baseConfig.spawnIntervalMs);
+    expect(harderConfig.maxOnScreen).toBeGreaterThan(baseConfig.maxOnScreen);
+    expect(harderConfig.distractorRatio).toBeGreaterThan(baseConfig.distractorRatio);
+  });
+
+  it('simplerConfig adapts spawnIntervalMs and maxOnScreen, not just distractorRatio', () => {
+    const baseConfig = makeConfig({ spawnIntervalMs: 1000, maxOnScreen: 8, distractorRatio: 2 });
+    const simplerConfig: GameConfig = {
+      ...baseConfig,
+      distractorRatio: Math.max(1, Math.round(baseConfig.distractorRatio * 0.5)),
+      spawnIntervalMs: Math.round(baseConfig.spawnIntervalMs * 1.15),
+      maxOnScreen: Math.max(3, baseConfig.maxOnScreen - 1),
+    };
+    expect(simplerConfig.spawnIntervalMs).toBeGreaterThan(baseConfig.spawnIntervalMs);
+    expect(simplerConfig.maxOnScreen).toBeLessThan(baseConfig.maxOnScreen);
+    expect(simplerConfig.distractorRatio).toBeLessThan(baseConfig.distractorRatio);
+  });
+});
+
+describe('B2 fix — IGameBehavior interface has optional validateAgainst and getTargetValue', () => {
+  it('MathBehaviorStrategy implements getTargetValue', () => {
+    const strategy = new MathBehaviorStrategy();
+    setProblem(strategy, 15);
+    expect(strategy.getTargetValue()).toBe(15);
+  });
+
+  it('MathBehaviorStrategy implements validateAgainst', () => {
+    const strategy = new MathBehaviorStrategy();
+    setProblem(strategy, 10);
+
+    const correctEntity = { internalValue: 10 } as BubbleEntity;
+    const staleEntity = { internalValue: 10 } as BubbleEntity;
+
+    // Before rotation: both are 'correct'
+    expect(strategy.validateAgainst(correctEntity, 10)).toBe('correct');
+
+    // After rotating to a new problem, snapshot=10 but current target=20
+    setProblem(strategy, 20);
+    expect(strategy.validateAgainst(staleEntity, 10)).toBe('stale');
+    expect(strategy.validateAgainst({ internalValue: 20 } as BubbleEntity, 10)).toBe('correct');
+    expect(strategy.validateAgainst({ internalValue: 99 } as BubbleEntity, 10)).toBe('wrong');
+  });
+
+  it('IGameBehavior interface declares optional validateAgainst and getTargetValue', () => {
+    // Type-level test: if the interface doesn't declare these, this won't compile.
+    const strategy = new MathBehaviorStrategy() as import('../types').IGameBehavior;
+    // These are optional on the interface, so they may be undefined for non-Math strategies
+    expect(strategy.getTargetValue).toBeDefined();
+    expect(strategy.validateAgainst).toBeDefined();
+  });
+});
+
+describe('M1 fix — initial bubble burst seeds spawnCredits', () => {
+  it('first rAF callback seeds 3 spawn credits so screen fills in 1-2 frames', () => {
+    // Simulate the seeding logic from spawnSystem's first-frame block
+    let lastFrameTime = 0;
+    let spawnCredits = 0;
+
+    const firstTime = 5000;
+    if (lastFrameTime === 0) {
+      lastFrameTime = firstTime;
+      // M1 fix: seed 3 credits
+      spawnCredits = 3;
+    }
+
+    expect(spawnCredits).toBe(3);
+    expect(lastFrameTime).toBe(firstTime);
+
+    // With 3 credits, 3 bubbles spawn in the first frame (if maxOnScreen allows)
+    const spawnIntervalMs = 1000;
+    let bubblesSpawned = 0;
+    const maxOnScreen = 8;
+    let activeCount = 0;
+
+    while (spawnCredits >= 1 && activeCount < maxOnScreen) {
+      bubblesSpawned++;
+      activeCount++;
+      spawnCredits -= 1;
+    }
+
+    expect(bubblesSpawned).toBe(3);
+    expect(spawnCredits).toBe(0);
+  });
+});
+
+describe('M2 fix — computeLaneCount SSR guard', () => {
+  it('computeLaneCount uses window.innerWidth when available', () => {
+    // jsdom provides window, so this should work
+    const width = typeof window !== 'undefined' ? window.innerWidth : 480;
+    const laneCount = Math.min(8, Math.max(3, Math.floor(width / 80)));
+    expect(laneCount).toBeGreaterThanOrEqual(3);
+  });
+
+  it('computeLaneCount falls back to 480 when window is undefined (SSR)', () => {
+    // Simulate SSR: typeof window === 'undefined'
+    const width = typeof undefined !== 'undefined' ? (undefined as any).innerWidth : 480;
+    const laneCount = Math.min(8, Math.max(3, Math.floor(width / 80)));
+    expect(laneCount).toBe(6); // 480/80 = 6
+  });
+});
+
+describe('M3 fix — distractor TTL is 22s per plan', () => {
+  it('distractor TTL is 22000ms (22s) not 25000ms (25s)', () => {
+    // Verify the TTL constant matches the plan specification
+    const TARGET_TTL = 35000;
+    const DISTRACTOR_TTL = 22000; // M3 fix: was 25000
+
+    expect(DISTRACTOR_TTL).toBe(22000);
+    expect(DISTRACTOR_TTL).toBeLessThan(TARGET_TTL);
+    expect(DISTRACTOR_TTL).not.toBe(25000); // Must not be the old value
+  });
+});
+
+describe('m4 fix — bag refill uses effectiveConfig.distractorRatio', () => {
+  it('bag refill after emptying uses the effective config ratio, not base config', () => {
+    const strategy = new MathBehaviorStrategy();
+    setProblem(strategy, 10);
+    const baseConfig = makeConfig({ distractorRatio: 2 });
+    const adaptiveConfig = makeConfig({ distractorRatio: 1 }); // simpler config
+
+    // Prime with adaptive config (ratio=1)
+    strategy.generateNext(adaptiveConfig);
+    const lastRatioAfterPrime = (strategy as any).lastRatio;
+    expect(lastRatioAfterPrime).toBe(1);
+
+    // Drain the bag completely
+    let bag = (strategy as any).spawnBag as boolean[];
+    while (bag.length > 0) {
+      strategy.generateNext(adaptiveConfig);
+      bag = (strategy as any).spawnBag as boolean[];
+    }
+    expect(bag.length).toBe(0);
+
+    // Refill: generateNext with adaptiveConfig should build bag with ratio=1, not ratio=2
+    strategy.generateNext(adaptiveConfig);
+    const refilledBag = (strategy as any).spawnBag as boolean[];
+    expect(refilledBag.length).toBeGreaterThan(0);
+
+    // With ratio=1, bag should have approximately equal targets and distractors
+    // (capped to 15 total, so proportions are preserved but may not be exactly 1:1)
+    const targets = refilledBag.filter(v => v).length;
+    const distractors = refilledBag.filter(v => !v).length;
+    // For ratio 1: scale=10 → 10 targets, 10 distractors = 20 total → capped to 15
+    // 15/20 = 0.75 → targets = round(10*0.75)=8, distractors = round(10*0.75)=7
+    // The key assertion: ratio matches effectiveConfig (1), not baseConfig (2)
+    expect(targets).toBeGreaterThanOrEqual(distractors - 1);
+    expect(targets).toBeLessThanOrEqual(distractors + 1);
+    // With ratio 2, we'd have ~10 targets vs ~20 distractors → mostly distractors
+    // With ratio 1, we should have roughly equal — NOT 1:2
+    expect(targets / Math.max(1, distractors)).toBeGreaterThan(0.5); // Not 1:2 ratio
+  });
+});

@@ -266,9 +266,9 @@ export class MathBehaviorStrategy implements IGameBehavior {
             this.lastRatio = effectiveConfig.distractorRatio;
         }
 
-        // Refill empty bag
+        // Refill empty bag — use effectiveConfig ratio (m4 fix: was using base config.distractorRatio)
         if (this.spawnBag.length === 0) {
-            this.spawnBag = this.buildSpawnBag(config.distractorRatio);
+            this.spawnBag = this.buildSpawnBag(effectiveConfig.distractorRatio);
         }
 
         // Pop next target/distractor decision from shuffled bag

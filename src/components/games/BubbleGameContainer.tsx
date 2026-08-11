@@ -75,6 +75,10 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         return Math.max(1, Math.min(Math.round(profileLevel), MAX_LEVEL));
     });
     const [showLevelUp, setShowLevelUp] = useState(false);
+    // B1 Fix: Adaptive config state that feeds into useGameEngine's configRef.
+    // When harderConfig/simplerConfig are created, we also update this state
+    // so the spawn loop picks up changes to spawnIntervalMs and maxOnScreen.
+    const [adaptiveConfig, setAdaptiveConfig] = useState<GameConfig | null>(null);
     const theme = getThemeForLevel(sessionLevel);
     const consecutiveCorrectRef = useRef(0);
     const consecutiveWrongRef = useRef(0);
@@ -101,7 +105,10 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     }, [behavior, config]);
 
     // Hook into Engine
-    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget } = useGameEngine(config, behavior);
+    // B1 Fix: Merge adaptive config into base config so configRef in useGameEngine
+    // picks up changes to spawnIntervalMs, maxOnScreen, and distractorRatio.
+    const effectiveConfig = adaptiveConfig ?? config;
+    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget } = useGameEngine(effectiveConfig, behavior);
 
     // --- Boss Bubble State ---
     // BOSS_LEVELS now imported from worldConfig
@@ -199,13 +206,18 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 const harderConfig: GameConfig = {
                     ...config,
                     distractorRatio: Math.round(config.distractorRatio * 1.3),
+                    // B1 Fix: Also adapt spawn rate (faster) and max on screen (more)
+                    spawnIntervalMs: Math.max(400, Math.round(config.spawnIntervalMs * 0.85)),
+                    maxOnScreen: Math.min(12, config.maxOnScreen + 1),
                 };
+                setAdaptiveConfig(harderConfig);
                 behavior.regenerateProblem(sessionLevelRef.current, harderConfig, correctCount);
             }
 
             // Problem rotation within a level (every N correct)
             if (correctSinceRotationRef.current >= SESSION_CONFIG.PROBLEM_ROTATION_EVERY) {
                 correctSinceRotationRef.current = 0;
+                setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on rotation
                 behavior.regenerateProblem(sessionLevelRef.current, config, correctCount);
             }
 
@@ -219,6 +231,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     setSessionLevel(newLevel);
                     sessionLevelRef.current = newLevel;
                     setShowLevelUp(true);
+                    setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on level change
                     play('levelUp');
                     soundManager.vibrate([100, 50, 100]);
                     setTimeout(() => setShowLevelUp(false), 2000);
@@ -239,7 +252,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 const simplerConfig: GameConfig = {
                     ...config,
                     distractorRatio: Math.max(1, Math.round(config.distractorRatio * 0.5)),
+                    // B1 Fix: Also adapt spawn rate (slower) and max on screen (fewer)
+                    spawnIntervalMs: Math.round(config.spawnIntervalMs * 1.15),
+                    maxOnScreen: Math.max(3, config.maxOnScreen - 1),
                 };
+                setAdaptiveConfig(simplerConfig);
                 behavior.regenerateProblem(sessionLevelRef.current, simplerConfig, correctCount);
             }
 
@@ -249,6 +266,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 const newLevel = sessionLevelRef.current - 1;
                 setSessionLevel(newLevel);
                 sessionLevelRef.current = newLevel;
+                setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on level change
                 behavior.regenerateProblem(newLevel, config, correctCount);
                 logEvent('session_level_down', { level: newLevel });
             }
