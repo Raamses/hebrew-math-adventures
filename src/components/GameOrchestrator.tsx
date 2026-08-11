@@ -83,7 +83,7 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
 
     // Determine effective mode
     // arcadeMode: 'zen' | 'classic' | 'blitz' | 'survival' → route to SENSORY (bubble game)
-    const effectiveMode: GameMode = internalMode || (arcadeMode ? 'SENSORY' : node?.type === 'SENSORY' ? 'SENSORY' : 'PRACTICE');
+    const effectiveMode: GameMode = internalMode || (arcadeMode ? 'SENSORY' : node?.type === 'SENSORY' ? 'SENSORY' : node?.type === 'LESSON' ? 'LESSON' : 'PRACTICE');
 
     const [isLessonOpen, setIsLessonOpen] = useState(false);
     const { completeNode } = useProgress();
@@ -103,6 +103,13 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
     useEffect(() => {
         setInternalMode(null);
     }, [node]);
+
+    // Open lesson modal when effective mode is LESSON (node-driven, not internal mode override)
+    useEffect(() => {
+        if (effectiveMode === 'LESSON' && internalMode === null) {
+            setIsLessonOpen(true);
+        }
+    }, [effectiveMode, internalMode]);
 
     const handleLessonComplete = (performance: { correct: number; attempts: number }) => {
         setIsLessonOpen(false);
