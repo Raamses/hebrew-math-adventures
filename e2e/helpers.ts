@@ -31,7 +31,7 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
   await page.waitForTimeout(5000);
 
   // Verify we're on the saga map — arcade button has title attr
-  const arcadeBtn = page.locator('button[title="Arcade Games"], button[title="משחקי ארקייד"]').first();
+  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
   await expect(arcadeBtn).toBeVisible({ timeout: 15000 });
   await page.waitForTimeout(500);
 }
@@ -110,13 +110,13 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
   await page.waitForTimeout(5000);
 
   // Verify we're on the saga map
-  const arcadeBtn = page.locator('button[title="Arcade Games"], button[title="משחקי ארקייד"]').first();
+  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
   await expect(arcadeBtn).toBeVisible({ timeout: 15000 });
   await page.waitForTimeout(500);
 }
 
 export async function gotoSagaMap(page: Page) {
-  const arcadeBtn = page.locator('button[title="Arcade Games"], button[title="משחקי ארקייד"]').first();
+  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
   if (await arcadeBtn.count() > 0) return;
   const mapBtn = page.locator('button').filter({ hasText: /map|home|מפה|בית|Back to Map|חזרה/i }).first();
   if (await mapBtn.count() > 0) {
@@ -131,18 +131,12 @@ export async function gotoSagaMap(page: Page) {
  * then clicks Zen/Classic/Blitz/Survival.
  */
 export async function selectArcadeMode(page: Page, mode: 'zen' | 'classic' | 'blitz' | 'survival') {
-  const arcadeBtn = page.locator('button[title="Arcade Games"], button[title="משחקי ארקייד"]').first();
+  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
   await expect(arcadeBtn).toBeVisible({ timeout: 5000 });
   await arcadeBtn.click();
   await page.waitForTimeout(800);
 
-  const modeLabels: Record<string, RegExp> = {
-    zen: /🧘|Zen/i,
-    classic: /🎯|Classic/i,
-    blitz: /⚡|Blitz/i,
-    survival: /🔥|Survival/i,
-  };
-  const btn = page.locator('button').filter({ hasText: modeLabels[mode] }).first();
+  const btn = page.locator(`[data-testid="arcade-mode-${mode}"]`).first();
   await expect(btn).toBeVisible({ timeout: 5000 });
   await btn.click();
   await page.waitForTimeout(3000);
@@ -184,7 +178,7 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
     }
 
     // Find a bubble containing the answer number via aria-label
-    const bubble = page.locator(`button[aria-label*="${answer}"]`).first();
+    const bubble = page.locator(`[data-testid="bubble-${answer}"]`).first();
     if (await bubble.count() > 0) {
       const box = await bubble.boundingBox();
       if (box) {
@@ -212,7 +206,7 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
   const popMatch = bodyText.match(/Pop\s+(\d+)/i);
   if (popMatch) {
     const target = popMatch[1];
-    const bubble = page.locator(`button[aria-label*="${target}"]`).first();
+    const bubble = page.locator(`[data-testid="bubble-${target}"]`).first();
     if (await bubble.count() > 0) {
       const box = await bubble.boundingBox();
       if (box) {
@@ -225,13 +219,40 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
   return false;
 }
 
+/**
+ * Click a saga map node by its flattened index (0-indexed across all units in order).
+ * Verifies the node is unlocked before clicking. Use with setupFreshProfileWithPracticeAccess
+ * (which unlocks n1_1, n1_2, n1_3, n3_1) to reach a specific node type directly.
+ */
+export async function enterSagaNode(page: Page, nodeIndex: number) {
+  const allNodes = page.locator('[data-testid^="saga-node-"]');
+  const totalNodes = await allNodes.count();
+
+  if (nodeIndex >= totalNodes) {
+    throw new Error(`Node index ${nodeIndex} out of range (found ${totalNodes} nodes)`);
+  }
+
+  const node = allNodes.nth(nodeIndex);
+  await node.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+
+  const innerDiv = node.locator('div.rounded-full').first();
+  const innerClass = await innerDiv.getAttribute('class') || '';
+  if (innerClass.includes('grayscale') || innerClass.includes('cursor-not-allowed')) {
+    throw new Error(`Node at index ${nodeIndex} is locked`);
+  }
+
+  await node.click();
+  await page.waitForTimeout(2000);
+}
+
 export async function selectPracticeMode(page: Page, mode: 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL' | 'MEMORY' | 'INVADERS') {
   // To reach the ModeSelectorOverlay, we need to click a LESSON-type node (n3_1).
   // LESSON nodes have no config, so PracticeMode opens with ModeSelectorOverlay.
   // n3_1 is the first node of unit 3 (index 20 among all nodes: 10 in unit1 + 10 in unit2).
   // setupFreshProfileWithPracticeAccess unlocks n3_1.
   
-  const allNodes = page.locator('div.cursor-pointer.group');
+  const allNodes = page.locator('[data-testid^="saga-node-"]');
   const totalNodes = await allNodes.count();
   
   if (totalNodes < 21) {
@@ -258,21 +279,13 @@ export async function selectPracticeMode(page: Page, mode: 'STANDARD' | 'TIME_AT
   await page.waitForTimeout(2500);
   
   // Check if mode selector appeared
-  const modeSelector = page.locator('button:has(svg.lucide-calculator)');
+  const modeSelector = page.locator('[data-testid="mode-selector"]');
   if (await modeSelector.count() === 0) {
     throw new Error('ModeSelectorOverlay did not appear after clicking n3_1');
   }
   
   // Click the desired mode card
-  const modeIcons: Record<string, string> = {
-    STANDARD: 'svg.lucide-calculator',
-    TIME_ATTACK: 'svg.lucide-clock',
-    SURVIVAL: 'svg.lucide-heart',
-    MEMORY: 'svg.lucide-layers',
-    INVADERS: 'svg.lucide-rocket',
-  };
-  await page.waitForSelector(`button:has(${modeIcons[mode]})`, { timeout: 8000 });
-  const modeCard = page.locator(`button:has(${modeIcons[mode]})`).first();
+  const modeCard = page.locator(`[data-testid="mode-card-${mode}"]`).first();
   await expect(modeCard).toBeVisible({ timeout: 5000 });
   await modeCard.click();
   await page.waitForTimeout(2000);
@@ -302,7 +315,7 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
     }
   }
 
-  const input = page.locator('input').first();
+  const input = page.locator('[data-testid="math-input"]').first();
   if (await input.count() > 0) {
     const eq1 = bodyText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=/);
     if (eq1) {
@@ -319,7 +332,7 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
       }
       await input.fill(String(answer));
       await page.waitForTimeout(200);
-      const checkBtn = page.locator('button[type="submit"], button:has-text("Check"), button:has-text("בדוק")').first();
+      const checkBtn = page.locator('[data-testid="math-submit"]').first();
       if (await checkBtn.count() > 0) await checkBtn.click();
       else await page.keyboard.press('Enter');
       return true;
@@ -361,7 +374,7 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
       }
       await input.fill(String(answer));
       await page.waitForTimeout(200);
-      const checkBtn = page.locator('button[type="submit"], button:has-text("Check"), button:has-text("בדוק")').first();
+      const checkBtn = page.locator('[data-testid="math-submit"]').first();
       if (await checkBtn.count() > 0) await checkBtn.click();
       else await page.keyboard.press('Enter');
       return true;
@@ -414,7 +427,7 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
         }
         await input.fill(String(answer));
         await page.waitForTimeout(200);
-        const checkBtn = page.locator('button[type="submit"], button:has-text("Check"), button:has-text("בדוק")').first();
+        const checkBtn = page.locator('[data-testid="math-submit"]').first();
         if (await checkBtn.count() > 0) await checkBtn.click();
         else await page.keyboard.press('Enter');
         return true;
@@ -445,7 +458,7 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
       }
       await input.fill(String(answer));
       await page.waitForTimeout(200);
-      const checkBtn = page.locator('button[type="submit"], button:has-text("Check"), button:has-text("בדוק")').first();
+      const checkBtn = page.locator('[data-testid="math-submit"]').first();
       if (await checkBtn.count() > 0) await checkBtn.click();
       else await page.keyboard.press('Enter');
       return true;

@@ -44,6 +44,7 @@ export const NumberInput = React.memo(function NumberInput({
     return (
         <input
             ref={inputRef}
+            data-testid="math-input"
             type="text"
             inputMode={inputMode}
             pattern="[0-9]*"

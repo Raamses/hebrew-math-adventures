@@ -32,6 +32,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
         <AnimatePresence>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
                 <motion.div
+                    data-testid="session-summary"
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -55,12 +56,12 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                     {/* Stats */}
                     <div className="p-6 space-y-6">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-yellow-50 p-4 rounded-2xl border-2 border-yellow-100 flex flex-col items-center">
+                            <div data-testid="summary-stars" className="bg-yellow-50 p-4 rounded-2xl border-2 border-yellow-100 flex flex-col items-center">
                                 <Star className="text-yellow-500 mb-2" size={32} fill="currentColor" />
                                 <span className="text-3xl font-bold text-slate-700">+{starsGained}</span>
                                 <span className="text-sm text-slate-500">Stars</span>
                             </div>
-                            <div className="bg-blue-50 p-4 rounded-2xl border-2 border-blue-100 flex flex-col items-center">
+                            <div data-testid="summary-accuracy" className="bg-blue-50 p-4 rounded-2xl border-2 border-blue-100 flex flex-col items-center">
                                 <div className="text-3xl mb-2">🎯</div>
                                 <span className="text-3xl font-bold text-slate-700">{accuracy}%</span>
                                 <span className="text-sm text-slate-500">{t('summary.accuracy')}</span>
@@ -87,6 +88,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                         {/* Actions */}
                         <div className="flex flex-col gap-3">
                             <motion.button
+                                data-testid="summary-play-again"
                                 onClick={onPlayAgain}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.95 }}
@@ -97,6 +99,7 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                             </motion.button>
 
                             <motion.button
+                                data-testid="summary-home"
                                 onClick={onExit}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.95 }}

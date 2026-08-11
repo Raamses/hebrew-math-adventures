@@ -43,7 +43,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md">
+        <div data-testid="lesson-modal" className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md">
             {/* Remove overflow-hidden to allow mascot pop-out */}
             <div className="w-full max-w-5xl aspect-video bg-white rounded-[3rem] shadow-2xl relative flex flex-col">
 
@@ -165,6 +165,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                     {/* Next Button */}
                     <div className="ml-auto">
                         <button
+                            data-testid="lesson-next"
                             onClick={handleNext}
                             disabled={!canAdvance}
                             className={`flex items-center gap-3 px-8 py-4 rounded-2xl text-2xl font-bold transition-all ${canAdvance

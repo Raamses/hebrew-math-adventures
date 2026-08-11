@@ -184,6 +184,7 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
                                 </AnimatePresence>
 
                                 <motion.button
+                                    data-testid="math-submit"
                                     type="submit"
                                     disabled={isProcessing}
                                     className={cn(

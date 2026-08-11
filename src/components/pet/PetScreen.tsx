@@ -47,7 +47,7 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 overflow-y-auto" dir="rtl">
+    <div data-testid="pet-screen" className="w-full min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 overflow-y-auto" dir="rtl">
       {/* Header */}
       <header className="sticky top-0 bg-white/90 backdrop-blur z-50 shadow-sm border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <button
@@ -146,6 +146,7 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
           {/* Feed button */}
           <div className="mt-3 flex justify-center">
             <button
+              data-testid="pet-feed"
               onClick={() => feedPet()}
               disabled={!canFeed}
               className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-colors ${

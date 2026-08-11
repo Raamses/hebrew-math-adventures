@@ -27,7 +27,7 @@ test.describe('Spawn Overhaul — smoke test', () => {
 
       for (let i = 0; i < 60; i++) {
         await new Promise(r => setTimeout(r, 500));
-        const bubbles = document.querySelectorAll('[aria-label*="bubble"]');
+        const bubbles = document.querySelectorAll('[data-testid^="bubble-"]');
         const xs: number[] = [];
         bubbles.forEach(b => {
           const rect = (b as HTMLElement).getBoundingClientRect();
@@ -83,7 +83,7 @@ test.describe('Spawn Overhaul — smoke test', () => {
         await new Promise(r => setTimeout(r, 2000));
         const time = performance.now() - start;
 
-        const allBubbles = document.querySelectorAll('[aria-label*="bubble"]');
+        const allBubbles = document.querySelectorAll('[data-testid^="bubble-"]');
         const visibleBubbles = Array.from(allBubbles).filter(b => {
           const rect = (b as HTMLElement).getBoundingClientRect();
           return rect.y > 0 && rect.y < window.innerHeight;
@@ -140,7 +140,7 @@ test.describe('Spawn Overhaul — smoke test', () => {
       const snapshots: number[] = [];
       for (let i = 0; i < 30; i++) {
         await new Promise(r => setTimeout(r, 1000));
-        const bubbles = document.querySelectorAll('[aria-label*="bubble"]');
+        const bubbles = document.querySelectorAll('[data-testid^="bubble-"]');
         let visible = 0;
         bubbles.forEach(b => {
           const rect = (b as HTMLElement).getBoundingClientRect();

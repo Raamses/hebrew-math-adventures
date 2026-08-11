@@ -48,6 +48,7 @@ const ModeCard: React.FC<Omit<ModeCardProps, 'delay'>> = ({ mode, title, descrip
     const { t } = useTranslation();
     return (
         <motion.button
+            data-testid={`mode-card-${mode}`}
             tabIndex={0}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -103,7 +104,7 @@ export const ModeSelectorOverlay: React.FC<ModeSelectorOverlayProps> = ({ onSele
             />
 
             {/* 2. Scroll Wrapper (Fixed + Overflow) */}
-            <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div data-testid="mode-selector" className="fixed inset-0 z-50 overflow-y-auto">
                 <div className="flex min-h-full items-center justify-center p-4 text-center">
 
                     <motion.div

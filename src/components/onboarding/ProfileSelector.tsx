@@ -53,6 +53,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                     <div className="md:hidden flex flex-col gap-4">
                         <div className="flex justify-between items-center">
                             <button
+                                data-testid="language-toggle"
                                 onClick={toggleLanguage}
                                 className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-bold"
                                 title="Switch Language"
@@ -78,6 +79,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                     {/* Desktop Layout: Single Row with Centered Title */}
                     <div className="hidden md:flex justify-between items-center relative">
                         <button
+                            data-testid="language-toggle"
                             onClick={toggleLanguage}
                             className="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-bold z-10"
                             title="Switch Language"

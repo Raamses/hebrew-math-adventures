@@ -96,6 +96,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
                         {/* Language Toggle */}
                         <button
                             role="menuitem"
+                            data-testid="language-toggle"
                             onClick={toggleLanguage}
                             aria-label={i18n.language === 'he' ? 'Switch to English' : 'עבור לעברית'}
                             className="w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors flex items-center gap-3 focus-visible:ring-2 focus-visible:ring-primary outline-none"
