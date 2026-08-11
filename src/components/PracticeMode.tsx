@@ -7,6 +7,7 @@ import { useAnswerFlow } from '../hooks/useAnswerFlow';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useQuest } from '../context/QuestContext';
 import { formatProblemEquation } from '../lib/gameLogic';
+import { UI_CONFIG } from '../lib/worldConfig';
 
 // Sub-components
 import { MathCard } from './MathCard';
@@ -25,7 +26,6 @@ import { PracticeFeedback } from './practice/PracticeFeedback';
 import type { BaseProblemConfig } from '../engines/ProblemFactory';
 import type { MascotEmotion } from './mascot/Mascot';
 
-const SESSION_LENGTH = 10;
 
 interface PracticeModeProps {
     targetLevel: number;
@@ -149,8 +149,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             // Check completion for Standard Mode (Fixed Length)
             // Arcade modes continue until Game Over
-            console.log('[DC DEBUG] onCorrectComplete', { mode: currentSession.mode, count: currentSession.count, correct: currentSession.correct, SESSION_LENGTH });
-            if (currentSession.mode === 'STANDARD' && currentSession.count >= SESSION_LENGTH) {
+            console.log('[DC DEBUG] onCorrectComplete', { mode: currentSession.mode, count: currentSession.count, correct: currentSession.correct, UI_CONFIG.SESSION_LENGTH });
+            if (currentSession.mode === 'STANDARD' && currentSession.count >= UI_CONFIG.SESSION_LENGTH) {
                 soundManager.playLevelUp();
                 soundManager.vibrate([100, 50, 100]);
                 recordSession({
@@ -214,7 +214,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             setShowSummary(true);
             if (onComplete) onComplete(false, session.correct, session.attempts); // Game Over isn't necessarily a "Win"
         }
-    }, [session, showSummary, onComplete, playLevelUp, isProcessing, updateArcadeBestScore]);
+    }, [session, showSummary, onComplete, isProcessing, updateArcadeBestScore]);
 
     // Initialization & Greeting
     useEffect(() => {
@@ -365,7 +365,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
                     {/* HUD Switcher */}
                     {session.mode === 'STANDARD' ? (
-                        <SessionProgressBar current={session.count} total={SESSION_LENGTH} />
+                        <SessionProgressBar current={session.count} total={UI_CONFIG.SESSION_LENGTH} />
                     ) : (
                         <ArcadeHUD
                             mode={session.mode}

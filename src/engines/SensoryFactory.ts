@@ -1,4 +1,5 @@
 import type { Problem, SensoryProblem } from '../lib/gameLogic';
+import { SENSORY_CONFIG } from '../lib/worldConfig';
 
 export interface SensoryLevelConfig {
     target?: number;
@@ -10,10 +11,6 @@ export interface SensoryLevelConfig {
 }
 
 export class SensoryFactory {
-    private static readonly DEFAULT_TARGET = 5;
-    private static readonly DEFAULT_COUNT = 15;
-    private static readonly DEFAULT_DENSITY = 0.3; // Ratio of targets (0.3 = 30%)
-    private static readonly PROBABILITY_CLOSE_DISTRACTOR = 0.3;
 
     /**
      * Adapts an existing (Math) problem into a Sensory problem container.
@@ -21,7 +18,7 @@ export class SensoryFactory {
     static generateFromProblem(problem: Problem): SensoryProblem {
         // "Math Bubble Blast" Adapter
         // MathStrategy generates bubbles dynamically, so we don't need to pre-generate items here.
-        const targetValue = typeof problem.answer === 'number' ? problem.answer : parseInt(problem.answer as string, 10) || SensoryFactory.DEFAULT_TARGET;
+        const targetValue = typeof problem.answer === 'number' ? problem.answer : parseInt(problem.answer as string, 10) || SENSORY_CONFIG.DEFAULT_TARGET;
 
         return {
             type: 'sensory',
@@ -37,9 +34,9 @@ export class SensoryFactory {
      */
     static generate(nodeId: string, config: SensoryLevelConfig): SensoryProblem {
         // Legacy/Standard Sensory Mode (Numbers only)
-        const target = config.target ?? SensoryFactory.DEFAULT_TARGET;
-        const itemCount = config.itemCount ?? SensoryFactory.DEFAULT_COUNT;
-        const density = config.density ?? SensoryFactory.DEFAULT_DENSITY;
+        const target = config.target ?? SENSORY_CONFIG.DEFAULT_TARGET;
+        const itemCount = config.itemCount ?? SENSORY_CONFIG.DEFAULT_COUNT;
+        const density = config.density ?? SENSORY_CONFIG.DEFAULT_DENSITY;
         const distractorMax = config.max ?? Math.max(20, target * 2);
 
         // Generate items (bubbles)
@@ -66,7 +63,7 @@ export class SensoryFactory {
 
         // Loop ensures we don't accidentally pick the target
         while (distractor === target) {
-            if (r < SensoryFactory.PROBABILITY_CLOSE_DISTRACTOR) {
+            if (r < SENSORY_CONFIG.PROBABILITY_CLOSE_DISTRACTOR) {
                 // Close call (Target +/- small offset)
                 const offset = (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 2) + 1);
                 distractor = target + offset;

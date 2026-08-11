@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { UI_CONFIG } from '../../lib/worldConfig';
 
 // --- Constants & Config ---
 
@@ -48,7 +49,6 @@ const BOSS_STYLE: React.CSSProperties = {
     borderRadius: '50%',
 };
 
-const BOSS_SIZE_MULTIPLIER = 1.5;
 
 interface BubbleProps {
     id: string;
@@ -114,7 +114,7 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
     const themeStyle = BUBBLE_THEMES[variant];
 
     // Boss bubbles get larger size and special style
-    const bossScale = isBoss ? BOSS_SIZE_MULTIPLIER : 1;
+    const bossScale = isBoss ? UI_CONFIG.BOSS_SIZE_MULTIPLIER : 1;
 
     // Power-up bubbles get a special golden style and sparkle animation
     const bubbleStyle = isPowerUp ? POWER_UP_STYLE : isBoss ? BOSS_STYLE : { ...COMMON_STYLE, ...themeStyle };
