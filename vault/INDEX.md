@@ -71,7 +71,8 @@ Everything about this project, one place. **Start here.**
 
 ## 🔍 Reviews
 - [[reviews/e2e-coverage-review]] — devil's advocate review of E2E coverage expansion (BLOCKED)
-- [[reviews/vault-completeness-audit]] — vault completeness audit: missing domain docs & consistency (2026-08-09)
+- [[reviews/vault-completeness-audit]] — vault completeness audit v1: missing domain docs & consistency (2026-08-09)
+- [[reviews/vault-completeness-audit-v2]] — vault completeness re-audit v2: 21 findings, 3 new since v1 (2026-08-11)
 
 ## 🧭 Conventions
 - Every significant decision → dated note in [[decisions/]]
