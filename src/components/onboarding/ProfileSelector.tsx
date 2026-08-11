@@ -63,6 +63,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                             </button>
 
                             <button
+                                data-testid="parent-access"
                                 onClick={onParentAccess}
                                 className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors"
                             >
@@ -93,6 +94,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({ onParentAccess
                         </h1>
 
                         <button
+                            data-testid="parent-access"
                             onClick={onParentAccess}
                             className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors z-10"
                         >

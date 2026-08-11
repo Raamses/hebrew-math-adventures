@@ -101,6 +101,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                     {profile?.pet && (
                         <button
                             onClick={onOpenPet}
+                            data-testid="pet-button"
                             className="p-1.5 bg-pink-100 hover:bg-pink-200 rounded-full transition-colors"
                             title={t('pet.title', 'החיה שלי')}
                             aria-label={t('pet.title', 'החיה שלי')}
