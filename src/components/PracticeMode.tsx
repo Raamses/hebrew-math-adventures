@@ -149,7 +149,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             // Check completion for Standard Mode (Fixed Length)
             // Arcade modes continue until Game Over
-            console.log('[DC DEBUG] onCorrectComplete', { mode: currentSession.mode, count: currentSession.count, correct: currentSession.correct, UI_CONFIG.SESSION_LENGTH });
+            console.log('[DC DEBUG] onCorrectComplete', { mode: currentSession.mode, count: currentSession.count, correct: currentSession.correct, sessionLength: UI_CONFIG.SESSION_LENGTH });
             if (currentSession.mode === 'STANDARD' && currentSession.count >= UI_CONFIG.SESSION_LENGTH) {
                 soundManager.playLevelUp();
                 soundManager.vibrate([100, 50, 100]);
