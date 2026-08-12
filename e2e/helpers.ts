@@ -580,3 +580,56 @@ export async function injectSagaProgress(
     localStorage.setItem(key, JSON.stringify(progress));
   }, { profileId, progress });
 }
+
+// ─── Phase 2c Helpers ────────────────────────────────────────────────
+
+/**
+ * Open the parent gate from the ProfileSelector screen.
+ * Clicks the parent-access button, waits for the gate modal, reads the math
+ * problem from the DOM, computes the sum, fills the input, and submits.
+ * After success, the ParentDashboard is rendered.
+ *
+ * Prerequisite: the page must be on the ProfileSelector screen (no profile selected).
+ * Use `logoutFromSagaMap()` first if currently on the saga map.
+ */
+export async function openParentGate(page: Page): Promise<void> {
+  // Click the parent-access button on ProfileSelector
+  const parentAccessBtn = page.locator('[data-testid="parent-access"]').first();
+  await expect(parentAccessBtn).toBeVisible({ timeout: 10000 });
+  await parentAccessBtn.click();
+  await page.waitForTimeout(800);
+
+  // Wait for parent gate modal to appear
+  const gate = page.locator('[data-testid="parent-gate"]').first();
+  await expect(gate).toBeVisible({ timeout: 5000 });
+  await page.waitForTimeout(300);
+
+  // Read the math problem from the DOM: "{n1} + {n2} = ?"
+  const gateText = await gate.textContent() || '';
+  const problemMatch = gateText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
+  if (!problemMatch) {
+    throw new Error(`Could not parse parent gate problem from text: "${gateText}"`);
+  }
+
+  const n1 = parseInt(problemMatch[1]);
+  const n2 = parseInt(problemMatch[2]);
+  const sum = n1 + n2;
+
+  console.log(`[ParentGate] Parsed problem: ${n1} + ${n2} = ${sum}`);
+
+  // Fill the input and submit
+  const input = page.locator('[data-testid="parent-gate-input"]').first();
+  await expect(input).toBeVisible({ timeout: 5000 });
+  await input.fill(String(sum));
+  await page.waitForTimeout(300);
+
+  // Submit via the submit button (inside the form)
+  const submitBtn = gate.locator('button[type="submit"]').first();
+  await expect(submitBtn).toBeVisible({ timeout: 5000 });
+  await submitBtn.click();
+  await page.waitForTimeout(1500);
+
+  // Verify parent dashboard is now visible
+  const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
+  await expect(dashboard).toBeVisible({ timeout: 10000 });
+}
