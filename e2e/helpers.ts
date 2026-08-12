@@ -471,3 +471,112 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
 export async function takeScreenshot(page: Page, name: string) {
   await page.screenshot({ path: `e2e/screenshots/${name}.png` });
 }
+// ─── Phase 1a Helpers ────────────────────────────────────────────────
+
+/**
+ * Enter a saga node by its ID (e.g. 'n1_1') using data-testid selector.
+ * Verifies the node is unlocked before clicking.
+ * Throws if the node is not found or is locked.
+ */
+export async function enterSagaNodeById(page: Page, nodeId: string): Promise<void> {
+  const selector = `[data-testid="saga-node-${nodeId}"]`;
+  const node = page.locator(selector).first();
+  await expect(node).toBeVisible({ timeout: 10000 });
+  await node.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+
+  // Check if locked — inner div has grayscale/cursor-not-allowed classes
+  const innerDiv = node.locator('div.rounded-full').first();
+  const innerClass = await innerDiv.getAttribute('class') || '';
+  if (innerClass.includes('grayscale') || innerClass.includes('cursor-not-allowed')) {
+    throw new Error(`Saga node ${nodeId} is locked`);
+  }
+
+  await node.click();
+  await page.waitForTimeout(2000);
+}
+
+/**
+ * Submit a wrong answer in PracticeMode.
+ * Fills math-input with '0' and submits. '0' is wrong for all problem types
+ * (arithmetic, series, comparison) in the curriculum.
+ */
+export async function submitWrongAnswer(page: Page): Promise<void> {
+  const input = page.locator('[data-testid="math-input"]').first();
+  await expect(input).toBeVisible({ timeout: 5000 });
+  await input.fill('0');
+  await page.waitForTimeout(200);
+
+  const submitBtn = page.locator('[data-testid="math-submit"]').first();
+  if (await submitBtn.count() > 0) {
+    await submitBtn.click();
+  } else {
+    await page.keyboard.press('Enter');
+  }
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Wait until the saga map is visible (arcade button present).
+ * Reusable assertion that we've returned to the saga map.
+ */
+export async function waitForSagaMap(page: Page): Promise<void> {
+  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
+  await expect(arcadeBtn).toBeVisible({ timeout: 15000 });
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Read saga progress for a specific node from localStorage.
+ * Returns { stars, isLocked, mistakes } or null if not found.
+ */
+export async function getSagaProgressForNode(
+  page: Page,
+  profileId: string,
+  nodeId: string
+): Promise<{ stars: number; isLocked: boolean; mistakes: number } | null> {
+  return await page.evaluate(({ profileId, nodeId }) => {
+    const raw = localStorage.getItem(`hebrew_game_saga_progress_v1_${profileId}`);
+    if (!raw) return null;
+    try {
+      const progress = JSON.parse(raw);
+      return progress[nodeId] ?? null;
+    } catch {
+      return null;
+    }
+  }, { profileId, nodeId });
+}
+
+/**
+ * Read hebrew-math-profiles from localStorage, find a profile by name, return its id.
+ * Returns null if profile not found.
+ */
+export async function getProfileId(page: Page, name: string): Promise<string | null> {
+  return await page.evaluate(({ name }) => {
+    const raw = localStorage.getItem('hebrew-math-profiles');
+    if (!raw) return null;
+    try {
+      const profiles = Object.values(JSON.parse(raw)) as Array<{ id: string; name: string }>;
+      const profile = profiles.find(p => p.name === name);
+      return profile ? profile.id : null;
+    } catch {
+      return null;
+    }
+  }, { name });
+}
+
+/**
+ * Inject saga progress into localStorage for a specific profile.
+ * Writes the progress map to `hebrew_game_saga_progress_v1_${profileId}`.
+ * Used for unit-progression test to set up specific unlock states.
+ */
+export async function injectSagaProgress(
+  page: Page,
+  profileId: string,
+  progress: Record<string, { stars: number; isLocked: boolean; mistakes: number }>
+): Promise<void> {
+  await page.evaluate(({ profileId, progress }) => {
+    const key = `hebrew_game_saga_progress_v1_${profileId}`;
+    localStorage.setItem(key, JSON.stringify(progress));
+  }, { profileId, progress });
+}
