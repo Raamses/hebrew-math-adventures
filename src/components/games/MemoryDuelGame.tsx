@@ -116,7 +116,8 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                 <button
                     onClick={onExit}
                     className="flex items-center gap-1.5 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full px-3 py-2 transition-all min-h-[48px]"
-                    aria-label={t('saga.back', 'Back')}
+                    data-testid="memory-exit-button"
+                    aria-label={t("saga.back", "Back")}
                 >
                     <ArrowLeft size={20} className="rotate-180" />
                     <span className="text-sm font-semibold">{t('saga.back', 'Back')}</span>
@@ -136,7 +137,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                     </div>
                     <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5">
                         <Sparkles size={18} className="text-yellow-300" />
-                        <span className="text-white font-bold text-sm sm:text-base">
+                        <span data-testid="memory-matched-count" className="text-white font-bold text-sm sm:text-base">
                             {matchedCount}/{totalPairs}
                         </span>
                     </div>
@@ -178,6 +179,9 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                             role="button"
                             tabIndex={clickable ? 0 : -1}
                             aria-label={isFlipped ? card.displayValue : 'Hidden card'}
+                            data-testid={`memory-card-${index}`}
+                            data-pair-id={card.pairId}
+                            data-display={card.displayValue}
                         >
                             <motion.div
                                 className="relative w-full h-full [transform-style:preserve-3d]"
@@ -240,6 +244,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        data-testid="memory-complete-overlay"
                         className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
                     >
                         <motion.div
@@ -295,6 +300,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                             {/* Buttons */}
                             <div className="flex flex-col gap-3">
                                 <button
+                                    data-testid="memory-play-again"
                                     onClick={handlePlayAgain}
                                     className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl py-3 px-6 transition-all min-h-[48px] shadow-lg"
                                 >
@@ -302,6 +308,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
                                     {t('memory.playAgain', 'Play Again')}
                                 </button>
                                 <button
+                                    data-testid="memory-back-to-map"
                                     onClick={onExit}
                                     className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl py-3 px-6 transition-all min-h-[48px]"
                                 >
