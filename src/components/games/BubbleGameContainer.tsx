@@ -61,10 +61,10 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     onOpenSettings = () => { },
     onPause = () => { }
 }) => {
+    const { profile, updateProfile, recordSession } = useProfile();
     const soundManager = useSoundManager({ soundGardenEnabled: profile?.settings?.soundGarden ?? false });
     const { playSound, play } = soundManager;
     const { logEvent } = useAnalytics();
-    const { profile, updateProfile, recordSession } = useProfile();
     const { recordQuestEvent } = useQuest();
     const { t } = useTranslation();
 

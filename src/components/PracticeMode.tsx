@@ -15,6 +15,7 @@ import { ScoreToast } from './ScoreToast';
 import { SessionProgressBar } from './SessionProgressBar';
 import { GameMenuModal } from './GameMenuModal';
 import { SessionSummary } from './SessionSummary';
+import { computeStarsByTier } from '../lib/stars';
 import { SettingsModal } from './SettingsModal';
 import { ModeSelectorOverlay } from './games/ModeSelectorOverlay';
 import { ArcadeHUD } from './games/ArcadeHUD';
@@ -400,7 +401,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             <SessionSummary
                 isOpen={showSummary}
-                starsGained={session.correct > 7 ? 3 : session.correct > 4 ? 2 : 1}
+                starsGained={computeStarsByTier(session.correct, session.attempts)}
                 correctCount={session.correct}
                 totalCount={session.attempts}
                 totalScore={session.score}
