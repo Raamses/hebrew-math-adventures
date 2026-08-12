@@ -676,3 +676,18 @@ export async function openPetScreen(page: Page): Promise<void> {
   await expect(petScreen).toBeVisible({ timeout: 10000 });
   await page.waitForTimeout(500);
 }
+
+// ─── Phase 2e Helpers ────────────────────────────────────────────────
+
+/**
+ * Toggle the UI language by clicking the language-toggle button.
+ * Waits 500ms after clicking for i18next to re-render.
+ * Prerequisite: the page must show a data-testid="language-toggle" button
+ * (saga map, settings menu, or profile selector).
+ */
+export async function toggleLanguage(page: Page): Promise<void> {
+  const toggleBtn = page.locator('[data-testid="language-toggle"]').first();
+  await expect(toggleBtn).toBeVisible({ timeout: 10000 });
+  await toggleBtn.click();
+  await page.waitForTimeout(500);
+}
