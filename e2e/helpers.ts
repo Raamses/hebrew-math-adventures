@@ -633,3 +633,46 @@ export async function openParentGate(page: Page): Promise<void> {
   const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
   await expect(dashboard).toBeVisible({ timeout: 10000 });
 }
+
+// ─── Phase 2a Helpers ────────────────────────────────────────────────
+
+/**
+ * Read the arcade best score for a given mode from localStorage.
+ * The score is stored inside `hebrew-math-profiles` → profile.arcadeStats[mode].
+ * Returns 0 if not set or not found.
+ */
+export async function getArcadeBestScore(page: Page, mode: string): Promise<number> {
+  return await page.evaluate((mode) => {
+    const raw = localStorage.getItem('hebrew-math-profiles');
+    if (!raw) return 0;
+    try {
+      const profiles = Object.values(JSON.parse(raw)) as Array<{ arcadeStats?: Record<string, number> }>;
+      for (const p of profiles) {
+        if (p.arcadeStats && typeof p.arcadeStats[mode] === 'number') {
+          return p.arcadeStats[mode];
+        }
+      }
+      return 0;
+    } catch {
+      return 0;
+    }
+  }, mode);
+}
+
+// ─── Phase 2f Helpers ────────────────────────────────────────────────
+
+/**
+ * Open the pet screen from the saga map.
+ * Clicks the pet button (data-testid="pet-button") and waits for the pet screen to appear.
+ * Prerequisite: the page must be on the saga map with a profile loaded.
+ */
+export async function openPetScreen(page: Page): Promise<void> {
+  const petBtn = page.locator('[data-testid="pet-button"]').first();
+  await expect(petBtn).toBeVisible({ timeout: 10000 });
+  await petBtn.click();
+  await page.waitForTimeout(1500);
+
+  const petScreen = page.locator('[data-testid="pet-screen"]').first();
+  await expect(petScreen).toBeVisible({ timeout: 10000 });
+  await page.waitForTimeout(500);
+}
