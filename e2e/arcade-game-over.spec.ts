@@ -19,6 +19,16 @@ import {
  * Test 1: Survival mode — 3 wrong answers → return to saga map → best score saved
  * Test 2: Blitz mode — play actively → timer expires → return to saga map → score saved
  * Test 3: Math Invaders — play → game over → return to saga map
+ *
+ * FIX (card a1b2c3d4-0002): Replaced poll-and-give-up pattern that used page.evaluate
+ * to traverse DOM and check computed styles. The old approach raced framer-motion's
+ * animation lifecycle: bubbles start at y:110vh, opacity:0 and animate upward.
+ * The DOM check could see a bubble element that exists but hasn't animated into
+ * the viewport yet, or miss one that just became clickable.
+ *
+ * New approach uses page.waitForFunction() to wait until a wrong bubble has
+ * actually animated into the viewport (bounding rect within screen bounds and
+ * opacity > 0.5), then clicks it via DOM dispatchEvent for reliability.
  */
 
 /**
@@ -92,54 +102,76 @@ function parseInstructionTarget(inst: string): number | null {
 }
 
 /**
- * Find and click a wrong bubble directly via DOM.
- * Returns true if a wrong bubble was found and clicked, false otherwise.
- * Excludes power-up bubbles and already-popped bubbles.
+ * Wait for a wrong bubble to be visible in the viewport, then click it.
+ *
+ * Uses page.waitForFunction() to detect when a bubble element:
+ * 1. Has a data-testid matching "bubble-<number>" where number !== targetValue
+ * 2. Has computed opacity > 0.5 (framer-motion has finished the fade-in)
+ * 3. Has a bounding rect within the viewport (y > 0 and y < window.innerHeight)
+ * 4. Is not popped (parent wrapper pointer-events !== 'none')
+ *
+ * Once found, clicks it via DOM dispatchEvent for reliability.
+ * Returns true if a wrong bubble was found and clicked, false on timeout.
  */
-async function findAndClickWrongBubble(page: Page, targetValue: number): Promise<boolean> {
-  // Find all bubble buttons, filter to clickable wrong ones, and click the first
-  const clicked = await page.evaluate((target) => {
-    const allBubbles = document.querySelectorAll('[data-testid^="bubble-"]');
-    for (const el of allBubbles) {
-      const testId = el.getAttribute('data-testid') || '';
-      const valueStr = testId.replace('bubble-', '');
-      const value = parseInt(valueStr);
-      if (isNaN(value)) continue; // skip power-ups
-      if (value === target) continue; // skip correct bubble
+async function findAndClickWrongBubble(page: Page, targetValue: number, timeoutMs = 8000): Promise<boolean> {
+  try {
+    // Wait until a wrong bubble is visible and clickable in the viewport
+    const found = await page.waitForFunction((target) => {
+      const allBubbles = document.querySelectorAll('[data-testid^="bubble-"]');
+      for (const el of allBubbles) {
+        const testId = el.getAttribute('data-testid') || '';
+        const valueStr = testId.replace('bubble-', '');
+        const value = parseInt(valueStr);
+        if (isNaN(value)) continue; // skip power-ups
+        if (value === target) continue; // skip correct bubble
 
-      // Check if the bubble is clickable (not popped)
-      const wrapper = el.parentElement;
-      if (wrapper && wrapper.style.pointerEvents === 'none') continue;
-      const style = window.getComputedStyle(el);
-      if (parseFloat(style.opacity) < 0.5) continue;
+        // Check if the bubble is popped (parent wrapper pointer-events: none)
+        const wrapper = el.parentElement;
+        if (wrapper && wrapper.style.pointerEvents === 'none') continue;
 
-      // Check if on screen
-      const rect = el.getBoundingClientRect();
-      if (rect.top <= 0 || rect.top >= window.innerHeight) continue;
+        // Check computed opacity (framer-motion animates from 0 to 1)
+        const style = window.getComputedStyle(el);
+        const opacity = parseFloat(style.opacity);
+        if (opacity < 0.5) continue;
 
-      // Click it directly via DOM
-      (el as HTMLElement).click();
-      return true;
-    }
+        // Check if on screen (framer-motion animates y from 110vh to -20vh)
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= 0 || rect.top >= window.innerHeight) continue;
+        if (rect.bottom <= 0 || rect.bottom >= window.innerHeight + rect.height) {
+          // Allow partially visible bubbles at the bottom of the screen
+          if (rect.top < window.innerHeight * 0.3) continue;
+        }
+
+        // Found a clickable wrong bubble — click it directly via DOM
+        (el as HTMLElement).click();
+        return true;
+      }
+      return false;
+    }, targetValue, { timeout: timeoutMs, polling: 200 });
+
+    return found !== null;
+  } catch {
     return false;
-  }, targetValue);
-
-  return clicked;
+  }
 }
 
 /**
- * Click a bubble by data-testid and index (among same-testid bubbles).
- * The bubble is a framer-motion motion.button that animates from bottom to top.
- * We use coordinate-based mouse.click() for reliability.
+ * Wait for any bubble to appear in the viewport (used for initial spawn wait).
+ * Uses page.waitForFunction to detect when at least one bubble has animated
+ * into the visible area with sufficient opacity.
  */
-async function clickBubbleByTestId(page: Page, testId: string, index: number = 0): Promise<void> {
-  const bubble = page.locator(`[data-testid="${testId}"]`).nth(index);
-  const box = await bubble.boundingBox();
-  if (!box) return;
-
-  // Use mouse.click at the center of the bubble.
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await page.waitForTimeout(50);
+async function waitForBubblesInViewport(page: Page, timeoutMs = 10000): Promise<void> {
+  await page.waitForFunction(() => {
+    const allBubbles = document.querySelectorAll('[data-testid^="bubble-"]');
+    for (const el of allBubbles) {
+      const style = window.getComputedStyle(el);
+      const opacity = parseFloat(style.opacity);
+      if (opacity < 0.5) continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.top > 0 && rect.top < window.innerHeight) return true;
+    }
+    return false;
+  }, { timeout: timeoutMs, polling: 200 });
 }
 
 /**
@@ -148,7 +180,7 @@ async function clickBubbleByTestId(page: Page, testId: string, index: number = 0
  */
 async function isOnSagaMap(page: Page): Promise<boolean> {
   const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
-  return await arcadeBtn.count() > 0 && await arcadeBtn.isVisible();
+  return await arcadeBtn.count() > 0 && await arcadeBtn.isVisible().catch(() => false);
 }
 
 test.describe('Arcade Game-Over flows', () => {
@@ -158,16 +190,18 @@ test.describe('Arcade Game-Over flows', () => {
   test('Survival mode — 3 wrong answers → return to saga map → best score saved', async ({ page }) => {
     await setupFreshProfile(page, 'SurvivalBot');
     await selectArcadeMode(page, 'survival');
-    await page.waitForTimeout(3000); // let bubbles spawn
+
+    // Wait for the first bubble to animate into the viewport
+    // Survival spawns every 800ms; bubbles animate from y:110vh with opacity:0
+    await waitForBubblesInViewport(page, 10000);
 
     // Pop wrong bubbles 3 times to trigger game-over (failCondition: 3 strikes)
     let wrongsCommitted = 0;
     let attempts = 0;
-    const maxAttempts = 80;
+    const maxAttempts = 30;
 
     while (wrongsCommitted < 3 && attempts < maxAttempts) {
       attempts++;
-      await page.waitForTimeout(1500);
 
       // Check if already on saga map (game over happened early)
       if (await isOnSagaMap(page)) {
@@ -177,18 +211,24 @@ test.describe('Arcade Game-Over flows', () => {
 
       // Read instruction and find target
       const inst = await getBubbleInstruction(page);
-      if (!inst) continue;
+      if (!inst) {
+        await page.waitForTimeout(500);
+        continue;
+      }
 
       const target = parseInstructionTarget(inst);
-      if (target === null) continue;
+      if (target === null) {
+        await page.waitForTimeout(500);
+        continue;
+      }
 
       // Check hearts before click
       const heartsBefore = await page.evaluate(() => {
         return document.querySelectorAll('.fill-rose-500').length;
       });
 
-      // Find and click a wrong bubble directly via DOM
-      const clicked = await findAndClickWrongBubble(page, target);
+      // Find and click a wrong bubble — waits for one to be visible in viewport
+      const clicked = await findAndClickWrongBubble(page, target, 8000);
       if (!clicked) {
         console.log('[Survival] Attempt ' + attempts + ': no wrong bubble found for target ' + target);
         continue;
@@ -206,7 +246,7 @@ test.describe('Arcade Game-Over flows', () => {
       console.log('[Survival] Wrong #' + wrongsCommitted + ' (target=' + target + ') hearts: ' + heartsBefore + '->' + heartsAfter + (strikeRegistered ? ' OK' : ' NO STRIKE'));
 
       // Wait for pop animation + answer lock + possible target rotation
-      await page.waitForTimeout(2500);
+      await page.waitForTimeout(1500);
     }
 
     console.log('[Survival] Done with wrongs: ' + wrongsCommitted + ', attempts: ' + attempts);
@@ -217,10 +257,6 @@ test.describe('Arcade Game-Over flows', () => {
     // Assert localStorage: arcade best score for SURVIVAL recorded
     const survivalScore = await getArcadeBestScore(page, 'survival');
     console.log(`[Survival] Arcade best score: ${survivalScore}`);
-    // Score should be >= 0 (could be 0 if no correct answers, but the key should exist)
-    // The updateArcadeBestScore function only saves if score > currentBest (which starts at 0)
-    // With 0 correct answers, score = 0, which is NOT > 0, so it won't save.
-    // But the game still records a session. We just verify we can read it.
     expect(survivalScore).toBeGreaterThanOrEqual(0);
 
     console.log('[Survival] Test PASSED!');
@@ -232,7 +268,9 @@ test.describe('Arcade Game-Over flows', () => {
 
     await setupFreshProfile(page, 'BlitzBot');
     await selectArcadeMode(page, 'blitz');
-    await page.waitForTimeout(3000); // let bubbles spawn
+
+    // Wait for the first bubble to animate into the viewport
+    await waitForBubblesInViewport(page, 10000);
 
     // Play actively — pop correct bubbles until timer expires
     let correctPops = 0;
@@ -240,8 +278,6 @@ test.describe('Arcade Game-Over flows', () => {
     const startTime = Date.now();
 
     while (Date.now() - startTime < maxWaitMs) {
-      await page.waitForTimeout(2000);
-
       // Check if game is over (saga map visible)
       if (await isOnSagaMap(page)) {
         console.log(`[Blitz] Game over detected after ${Math.round((Date.now() - startTime) / 1000)}s`);
@@ -251,26 +287,45 @@ test.describe('Arcade Game-Over flows', () => {
       // Read instruction and find target
       const inst = await getBubbleInstruction(page);
       if (!inst) {
-        // Instruction might be gone during game-over transition — wait and re-check
         console.log(`[Blitz] No instruction at ${Math.round((Date.now() - startTime) / 1000)}s, waiting...`);
+        await page.waitForTimeout(1000);
         continue;
       }
 
       const target = parseInstructionTarget(inst);
-      if (target === null) continue;
+      if (target === null) {
+        await page.waitForTimeout(500);
+        continue;
+      }
 
-      // Find the correct bubble
-      const correctSelector = `[data-testid="bubble-${target}"]`;
-      const correctBubble = page.locator(correctSelector).first();
+      // Find the correct bubble — wait for it to be visible in viewport
+      // Use page.waitForFunction for the same framer-motion-safe visibility check
+      try {
+        const found = await page.waitForFunction((target) => {
+          const el = document.querySelector(`[data-testid="bubble-${target}"]`);
+          if (!el) return false;
+          const wrapper = el.parentElement;
+          if (wrapper && wrapper.style.pointerEvents === 'none') return false;
+          const style = window.getComputedStyle(el);
+          const opacity = parseFloat(style.opacity);
+          if (opacity < 0.5) return false;
+          const rect = el.getBoundingClientRect();
+          return rect.top > 0 && rect.top < window.innerHeight;
+        }, target, { timeout: 5000, polling: 200 });
 
-      if (await correctBubble.count() > 0) {
-        const box = await correctBubble.boundingBox();
-        if (box && box.y > 0 && box.y < page.viewportSize()!.height) {
-          await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-          correctPops++;
-          console.log(`[Blitz] Popped correct #${correctPops} (target: ${target})`);
-          await page.waitForTimeout(1200); // wait for pop + next problem
+        if (found) {
+          // Get the bubble's coordinates and click via mouse
+          const box = await page.locator(`[data-testid="bubble-${target}"]`).first().boundingBox();
+          if (box) {
+            await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+            correctPops++;
+            console.log(`[Blitz] Popped correct #${correctPops} (target: ${target})`);
+            await page.waitForTimeout(1200); // wait for pop + next problem
+          }
         }
+      } catch {
+        // Correct bubble not visible in time — wait for next spawn
+        await page.waitForTimeout(500);
       }
     }
 
@@ -282,7 +337,6 @@ test.describe('Arcade Game-Over flows', () => {
     // Assert localStorage: arcade best score for BLITZ recorded
     const blitzScore = await getArcadeBestScore(page, 'blitz');
     console.log(`[Blitz] Arcade best score: ${blitzScore}`);
-    // With active play, score should be > 0 and saved
     expect(blitzScore).toBeGreaterThanOrEqual(0);
 
     console.log('[Blitz] Test PASSED!');
@@ -354,16 +408,13 @@ test.describe('Arcade Game-Over flows', () => {
     console.log('[Invaders] Switched to INVADERS mode:', JSON.stringify(switchResult));
     await page.waitForTimeout(2000);
 
-    // Verify MathInvadersGame is visible — look for the invaders title or answer buttons
-    // MathInvadersGame has no data-testid attributes, so we check for the title text
+    // Verify MathInvadersGame is visible
     const invadersTitle = page.locator('h2').filter({ hasText: /Math Invaders|פלישת המתמטיקה/i }).first();
     await expect(invadersTitle).toBeVisible({ timeout: 10000 });
 
     console.log('[Invaders] Game is visible. Playing until game over...');
 
     // Play the game — click answer buttons to shoot invaders
-    // The game has answer buttons (motion.button) that appear as green circles
-    // We need to play until game over (lose all 3 lives) or victory
     const maxPlayMs = 120000; // 2 minutes max
     const playStart = Date.now();
 
@@ -371,7 +422,6 @@ test.describe('Arcade Game-Over flows', () => {
       await page.waitForTimeout(1000);
 
       // Check if game over screen appeared
-      // The end screen has "Play Again" and "Back to Map" buttons
       const bodyText = await page.textContent('body') || '';
       if (bodyText.match(/Play Again|שחק שוב|Nice try|You did it|Game Over/i)) {
         console.log(`[Invaders] End screen detected after ${Math.round((Date.now() - playStart) / 1000)}s`);
@@ -384,16 +434,13 @@ test.describe('Arcade Game-Over flows', () => {
         break;
       }
 
-      // Click an answer button — try to find one and click it
-      // Answer buttons are motion.button with onClick handlers
-      // They have green gradient styling (from-emerald-500 to-green-600)
+      // Click an answer button
       const answerButtons = page.locator('button.absolute.rounded-full').filter({
         has: page.locator('span[dir="ltr"]'),
       });
 
       const btnCount = await answerButtons.count();
       if (btnCount > 0) {
-        // Click the first available answer button
         const btn = answerButtons.first();
         const box = await btn.boundingBox();
         if (box) {
@@ -404,15 +451,10 @@ test.describe('Arcade Game-Over flows', () => {
     }
 
     // If we see the end screen, click "Back to Map" to exit.
-    // The button text is t('saga.back') = "חזרה" in Hebrew or "Back to Map" in English.
-    // The end screen modal has two buttons: "Play Again" and "Back to Map" (second one).
-    // Use a more resilient approach: find the last button inside the end screen modal.
     const endScreenModal = page.locator('div.fixed.inset-0.z-50').last();
     if (await endScreenModal.count() > 0) {
-      // Try Hebrew / English text match first
       let backBtn = endScreenModal.locator('button').filter({ hasText: /חזרה|Back to Map/i }).first();
       if (await backBtn.count() === 0) {
-        // Fallback: the "Back to Map" button is the last button in the modal
         const allBtns = endScreenModal.locator('button');
         const btnCount = await allBtns.count();
         if (btnCount >= 2) {
@@ -425,7 +467,6 @@ test.describe('Arcade Game-Over flows', () => {
         await page.waitForTimeout(2000);
       } else {
         console.log('[Invaders] Could not find Back button, trying page-wide search');
-        // Last resort: find any button with "חזרה" text on the page
         const anyBackBtn = page.locator('button').filter({ hasText: /חזרה/i }).first();
         if (await anyBackBtn.count() > 0) {
           await anyBackBtn.click();
