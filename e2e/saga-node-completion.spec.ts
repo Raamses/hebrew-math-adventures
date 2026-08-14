@@ -200,7 +200,7 @@ test.describe('Saga node completion', () => {
     expect(n1_2Progress!.isLocked).toBe(false);
 
     // Reload → progress persists
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
     // After reload, click the profile to get back to the saga map

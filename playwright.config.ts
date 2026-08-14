@@ -19,6 +19,15 @@ export default defineConfig({
     viewport: { width: 390, height: 844 },
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
+    launchOptions: {
+      args: [
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-component-update',
+        '--mute-audio',
+        '--js-flags=--max-old-space-size=1024',
+      ],
+    },
   },
   // Auto-start vite dev server for local tests
   webServer: process.env.E2E_BASE_URL

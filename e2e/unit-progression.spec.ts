@@ -148,7 +148,7 @@ test.describe('Unit progression', () => {
     console.log('[Unit Progression] Injected progress: n1_1–n1_9 stars=3, n1_10 stars=0 unlocked');
 
     // Reload to pick up the injected progress
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
     // After reload, click the profile to get back to the saga map

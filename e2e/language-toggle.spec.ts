@@ -35,7 +35,7 @@ test.describe('Language Toggle', () => {
     });
 
     // --- Set up fresh profile (reload with Hebrew language) ---
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1500);
 
     // Click "New Player" / "שחקן חדש" — has Plus icon

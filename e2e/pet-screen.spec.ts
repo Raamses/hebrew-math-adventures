@@ -60,7 +60,7 @@ test.describe('Pet Screen', () => {
     });
 
     // Reload to pick up pet (PET_DEFAULT assigned on load from storage) and gems
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
     // After reload, we're at profile selection — click the profile button

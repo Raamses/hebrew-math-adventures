@@ -7,10 +7,10 @@ const APP_URL = process.env.E2E_BASE_URL || 'http://localhost:5173';
  * Uses icon/ID-based selectors since app defaults to Hebrew (lng: 'he').
  */
 export async function setupFreshProfile(page: Page, name = 'TestBot') {
-  await page.goto(APP_URL, { waitUntil: 'networkidle' });
+  await page.goto(APP_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
   await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: 'networkidle' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
 
   // Click "New Player" / "שחקן חדש" — has Plus icon
@@ -41,10 +41,10 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
  * This injects progress into localStorage so we can test PracticeMode (input-based questions).
  */
 export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'TestBot') {
-  await page.goto(APP_URL, { waitUntil: 'networkidle' });
+  await page.goto(APP_URL, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
   await page.evaluate(() => localStorage.clear());
-  await page.reload({ waitUntil: 'networkidle' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
 
   // Create profile
@@ -98,7 +98,7 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
   console.log('Progress injection:', progressInjected);
 
   // Reload to pick up the progress
-  await page.reload({ waitUntil: 'networkidle' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2000);
 
   // After reload, we're back at profile selection — click the profile button

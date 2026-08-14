@@ -38,6 +38,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     // Refs to avoid stale closures in flipCard
     const cardsRef = useRef<MemoryCard[]>([]);
     const flippedRef = useRef<number[]>([]);
+    const checkingRef = useRef(false);
     const statusRef = useRef<GameStatus>('idle');
     const wrongRef = useRef<number[]>([]);
     const movesRef = useRef(0);
@@ -128,6 +129,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
         setStatus('playing');
         cardsRef.current = newCards;
         flippedRef.current = [];
+        checkingRef.current = false;
         statusRef.current = 'playing';
         wrongRef.current = [];
         movesRef.current = 0;
@@ -160,6 +162,9 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
         // Can't flip during wrong-pair animation
         if (currentWrong.length > 0) return;
 
+        // Can't flip while a pair is being evaluated
+        if (checkingRef.current) return;
+
         // Flip the card
         const newCards = currentCards.map((card, i) =>
             i === index ? { ...card, isFlipped: true } : card
@@ -173,6 +178,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
 
         // When two cards are flipped, check for a match
         if (newFlipped.length === 2) {
+            checkingRef.current = true;
             const [idx1, idx2] = newFlipped;
             const card1 = currentCards[idx1];
             const card2 = currentCards[idx2];
@@ -203,6 +209,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
                     saveBestScore(elapsedTimeRef.current, newMoves);
                 }
                 setMatchedCount(newMatchedCount);
+                checkingRef.current = false;
             } else {
                 // No match — flip back after 1s
                 wrongRef.current = [idx1, idx2];
@@ -219,6 +226,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
                     setFlippedIndices([]);
                     wrongRef.current = [];
                     setWrongPair([]);
+                    checkingRef.current = false;
                 }, 1000);
             }
         }

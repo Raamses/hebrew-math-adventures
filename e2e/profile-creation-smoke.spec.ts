@@ -61,7 +61,7 @@ test.describe('Profile creation + saga map landing', () => {
     const idBefore = profilesBefore.find((p) => p.name === 'SmokeReload')?.id;
     expect(idBefore).toBeTruthy();
 
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
     // Should land straight back on the saga map (or a profile-select screen with our profile),
