@@ -63,7 +63,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 }) => {
     const { profile, updateProfile, recordSession } = useProfile();
     const soundManager = useSoundManager({ soundGardenEnabled: profile?.settings?.soundGarden ?? false });
-    const { playSound, play } = soundManager;
+    const { playFrenzy, playStreak, playLevelUp, playMilestone, playWrong: playWrongSound } = soundManager;
     const { logEvent } = useAnalytics();
     const { recordQuestEvent } = useQuest();
     const { t } = useTranslation();
@@ -136,21 +136,21 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 }
                 spawnBoss(sessionLevel);
                 setShowBossBanner(true);
-                play('frenzy'); // Use an exciting sound
+                playFrenzy(); // Use an exciting sound
                 setTimeout(() => setShowBossBanner(false), 3000);
             }, 500);
         }
-    }, [sessionLevel, spawnBoss, play, behavior, profile]);
+    }, [sessionLevel, spawnBoss, playFrenzy, behavior, profile]);
 
     const prevComboRef = useRef(gameState.combo);
     const prevPowerUpStateRef = useRef(gameState.powerUpState);
 
     useEffect(() => {
         if (gameState.combo === 5 && prevComboRef.current !== 5) {
-            play('streak');
+            playStreak();
         }
         prevComboRef.current = gameState.combo;
-    }, [gameState.combo, play]);
+    }, [gameState.combo, playStreak]);
 
     // --- Power-Up Toast Helper ---
     const showPowerUpToast = useCallback((type: PowerUpType) => {
@@ -232,7 +232,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     sessionLevelRef.current = newLevel;
                     setShowLevelUp(true);
                     setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on level change
-                    play('levelUp');
+                    playLevelUp();
                     soundManager.vibrate([100, 50, 100]);
                     setTimeout(() => setShowLevelUp(false), 2000);
                     // Regenerate problem at new level
@@ -271,7 +271,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 logEvent('session_level_down', { level: newLevel });
             }
         }
-    }, [behavior, config, logEvent, play, gameState.targetsPopped]);
+    }, [behavior, config, logEvent, playLevelUp, gameState.targetsPopped]);
 
     const onPopWrapper = useCallback((id: string, val: number | string, x: number, y: number) => {
         // ADR 2026-08-zen-answer-race (Fix 1): answer-lock to prevent the
@@ -294,7 +294,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             const bossResult = isCorrect as BossDefeatResult;
             // Show celebration
             setBossDefeatedCelebration(true);
-            play('levelUp');
+            playLevelUp();
             // Force level-up after boss defeat
             if (sessionLevelRef.current < 10) {
                 const newLevel = sessionLevelRef.current + 1;
@@ -329,7 +329,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         // --- Power-Up Bubble Handling ---
         if (isPowerUpBubble && entity?.powerUpType) {
             // Play special sound
-            play('frenzy');
+            playFrenzy();
 
             // Show toast for instant effects (timed effects handled by state-change useEffect)
             if (entity.powerUpType === 'pop_distractors' || entity.powerUpType === 'lightning_chain') {
@@ -367,7 +367,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     currentCapabilities,
                     isCorrect,
                     () => {
-                        play('milestone');
+                        playMilestone();
                     }
                 );
                 updateProfile(profile.id, { capabilities: updatedCapabilities });
@@ -389,12 +389,12 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             soundManager.playWrong();
             soundManager.vibrate([30, 50, 30]);
         }
-    }, [enginePop, playSound, play, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, soundManager, recordQuestEvent, gameState.combo, updateBossTarget, behavior]);
+    }, [enginePop, playFrenzy, playLevelUp, playMilestone, playWrongSound, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, soundManager, recordQuestEvent, gameState.combo, updateBossTarget, behavior]);
 
     // Monitor Game Over / Victory
     useEffect(() => {
         if (gameState.isVictory) {
-            playSound('levelUp');
+            playLevelUp();
             soundManager.vibrate([100, 50, 100]);
             recordSession({
                 date: new Date().toISOString().slice(0, 10),
@@ -408,7 +408,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         } else if (gameState.isGameOver) {
             // Handle Loss - Retry?
             // For now just exit false
-            playSound('wrong');
+            playWrongSound();
             soundManager.vibrate([100, 50, 100]);
             recordSession({
                 date: new Date().toISOString().slice(0, 10),

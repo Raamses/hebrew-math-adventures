@@ -42,18 +42,26 @@ vi.mock('../../../context/ProfileContext', () => ({
     }),
 }))
 
-vi.mock('../../../hooks/useSound', () => ({
-    useSound: () => ({ playSound: vi.fn(), isMuted: false }),
-}))
-
-vi.mock('../../../hooks/useMusicalSound', () => ({
-    useMusicalSound: () => ({
+vi.mock('../../../hooks/useSoundManager', () => ({
+    useSoundManager: () => ({
+        playCorrect: vi.fn(),
+        playWrong: vi.fn(),
+        playLevelUp: vi.fn(),
+        playGameOver: vi.fn(),
+        playClick: vi.fn(),
+        playStreak: vi.fn(),
+        playFrenzy: vi.fn(),
+        playMilestone: vi.fn(),
+        playSound: vi.fn(),
+        play: vi.fn(),
+        isMuted: false,
+        toggleMute: vi.fn(),
+        isSoundGarden: false,
+        melodyCombo: 0,
+        resetMelodyCombo: vi.fn(),
         playMelodyNote: vi.fn(),
         playWrongMelody: vi.fn(),
-        isSoundGarden: false,
-        toggleSoundGarden: vi.fn(),
-        melodyCombo: 0,
-        isMuted: false,
+        vibrate: vi.fn(),
     }),
 }))
 
