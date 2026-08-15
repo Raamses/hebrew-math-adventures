@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, ArrowRight, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Mascot } from '../mascot/Mascot';
 import { SpeechBubble } from '../mascot/SpeechBubble';
 import { LessonEngine } from '../../engines/LessonEngine';
+import { InteractiveStoryScene } from './InteractiveStoryScene';
+import { useAnalytics } from '../../hooks/useAnalytics';
 import type { LessonDefinition } from '../../types/lesson';
 
 interface LessonModalProps {
@@ -13,10 +15,13 @@ interface LessonModalProps {
     onClose: () => void;
     /** Called when the final step is completed. Receives the lesson's performance result for star-tiering. */
     onComplete: (performance: { correct: number; attempts: number }) => void;
+    /** Saga node that opened this lesson — carried into the GA4 events. */
+    nodeId?: string;
 }
 
-export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClose, onComplete }) => {
+export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClose, onComplete, nodeId }) => {
     const { t } = useTranslation();
+    const { logEvent } = useAnalytics();
     const [engine] = useState(() => new LessonEngine(lesson));
     const [state, setState] = useState(engine.getCurrentState());
 
@@ -28,122 +33,106 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
         return unsubscribe;
     }, [engine]);
 
+    // GA4: one lesson_start per opened lesson.
+    const startLoggedRef = useRef(false);
+    useEffect(() => {
+        if (!isOpen || startLoggedRef.current) return;
+        startLoggedRef.current = true;
+        logEvent('lesson_start', {
+            lesson_id: lesson.id,
+            node_id: nodeId,
+            operation: lesson.operation,
+            theme: lesson.theme,
+            step_count: lesson.steps.length,
+            mode: 'lesson',
+        });
+    }, [isOpen, lesson, nodeId, logEvent]);
+
     if (!isOpen) return null;
 
-    const { currentStep, items, targets, isLastStep } = state;
+    const { currentStep, items, targets, isLastStep, stepIndex, stepCount, theme } = state;
     const canAdvance = engine.isStepComplete();
 
-
     const handleNext = () => {
+        const performance = engine.getPerformance();
+
+        // GA4: every step the child clears, including the final one.
+        logEvent('lesson_step_complete', {
+            lesson_id: lesson.id,
+            node_id: nodeId,
+            step_id: currentStep.id,
+            step_index: stepIndex,
+            step_type: currentStep.type,
+            correct: performance.correct,
+            attempts: performance.attempts,
+            mode: 'lesson',
+        });
+
         if (isLastStep) {
-            onComplete(engine.getPerformance());
+            logEvent('lesson_complete', {
+                lesson_id: lesson.id,
+                node_id: nodeId,
+                operation: lesson.operation,
+                correct: performance.correct,
+                attempts: performance.attempts,
+                total_mistakes: performance.attempts - performance.correct,
+                mode: 'lesson',
+            });
+            onComplete(performance);
         } else {
             engine.nextStep();
         }
     };
 
     return (
-        <div data-testid="lesson-modal" className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md">
+        <div
+            data-testid="lesson-modal"
+            data-lesson-id={lesson.id}
+            dir="rtl"
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md"
+        >
             {/* Remove overflow-hidden to allow mascot pop-out */}
             <div className="w-full max-w-5xl aspect-video bg-white rounded-[3rem] shadow-2xl relative flex flex-col">
 
                 {/* Header / Close */}
-                <div className="absolute top-4 right-4 z-20">
-                    <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200">
+                <div className="absolute top-4 right-4 z-40">
+                    <button
+                        onClick={onClose}
+                        aria-label={t('lessons.controls.close')}
+                        className="p-2 bg-slate-100 rounded-full hover:bg-slate-200"
+                    >
                         <X size={24} className="text-slate-600" />
                     </button>
                 </div>
 
-                {/* Main Content Area */}
-                <div className="flex-1 relative bg-gradient-to-br from-indigo-50 to-blue-100 rounded-t-[3rem] overflow-hidden">
-                    {/* Note: We keep rounded corners via overflow-hidden on CONTENT, but not on the main wrapper so mascot can pop out at bottom if needed. 
-                        Actually, if mascot is absolute bottom-0 of the wrapper, and wrapper has NO overflow hidden, it should show. 
-                    */}
+                {/* Main Content Area — the themed story stage */}
+                <div className="flex-1 relative rounded-t-[3rem] overflow-hidden">
+                    <InteractiveStoryScene
+                        stepType={currentStep.type}
+                        items={items}
+                        targets={targets}
+                        theme={theme}
+                        onDrop={(itemId, targetId) => engine.onItemDropped(itemId, targetId)}
+                        onTap={(itemId) => engine.onItemTapped(itemId)}
+                    />
 
                     {/* Lesson Title - Only on first step */}
-                    {state.progress === 0 && (
+                    {stepIndex === 0 && (
                         <motion.div
                             initial={{ opacity: 0, scale: 0.8, y: -20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             transition={{ delay: 0.2, type: 'spring' }}
-                            className="absolute top-1/4 left-0 w-full text-center z-10 px-4"
+                            className="absolute top-6 left-0 w-full text-center z-30 px-4 pointer-events-none"
                         >
-                            <h1 className="text-5xl md:text-7xl font-black text-indigo-600 drop-shadow-sm tracking-tight">
+                            <h1 className="text-4xl md:text-6xl font-black text-indigo-700 drop-shadow-[0_2px_6px_rgba(255,255,255,0.9)] tracking-tight">
                                 {t(lesson.title)}
                             </h1>
-                            <div className="mt-4 w-24 h-2 bg-orange-400 mx-auto rounded-full opacity-80" />
+                            <div className="mt-3 w-24 h-2 bg-orange-400 mx-auto rounded-full opacity-80" />
                         </motion.div>
                     )}
-
-                    {/* Targets (Baskets) Layer */}
-                    {targets.map(target => (
-                        <div
-                            key={target.id}
-                            data-target-id={target.id} // ID for Hit Testing
-                            className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all"
-                            style={{
-                                left: `${target.position.x}%`,
-                                top: `${target.position.y}%`,
-                                width: '140px',
-                                height: '140px'
-                            }}
-                        >
-                            {/* ... content ... */}
-                            <div className="w-full h-full relative">
-                                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl overflow-visible">
-                                    <path d="M 10 30 Q 50 100 90 30" fill="#D97706" stroke="#92400E" strokeWidth="3" />
-                                    <ellipse cx="50" cy="30" rx="40" ry="10" fill="#F59E0B" stroke="#92400E" strokeWidth="3" />
-                                    <g transform="translate(50, 60)">
-                                        <circle r="20" fill="white" stroke="#F59E0B" strokeWidth="2" />
-                                        <text x="0" y="5" textAnchor="middle" fill="#92400E" fontSize="16" fontWeight="bold">
-                                            {target.currentCount} / {target.capacity}
-                                        </text>
-                                    </g>
-                                </svg>
-                            </div>
-                        </div>
-                    ))}
-
-                    {/* Draggables (Apples) Layer */}
-                    {items.map(item => (
-                        <motion.div
-                            key={item.id}
-                            drag={currentStep.type === 'interactive_drag'}
-                            dragMomentum={false}
-                            whileDrag={{ scale: 1.2, zIndex: 100, rotate: 10, pointerEvents: 'none' }}
-
-                            onDragEnd={(_e, info) => {
-
-                                const point = info.point;
-                                const element = document.elementFromPoint(point.x, point.y);
-                                const targetEl = element?.closest('[data-target-id]');
-
-                                if (targetEl) {
-                                    const targetId = targetEl.getAttribute('data-target-id');
-                                    if (targetId) engine.onItemDropped(item.id, targetId);
-                                } else {
-                                    // Dropped into empty space (no valid target) → mistake.
-                                    engine.recordMistake();
-                                }
-                            }}
-                            className="absolute w-20 h-20 flex items-center justify-center cursor-grab active:cursor-grabbing -ml-10 -mt-10 touch-none"
-                            style={{
-                                left: `${item.position.x}%`,
-                                top: `${item.position.y}%`,
-                            }}
-                        >
-                            {/* ... apple svg ... */}
-                            <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
-                                <path d="M 50 90 Q 20 90 20 60 Q 20 30 50 40 Q 80 30 80 60 Q 80 90 50 90" fill="#EF4444" stroke="#991B1B" strokeWidth="2" />
-                                <path d="M 50 40 Q 40 10 70 10 Q 60 40 50 40" fill="#4ADE80" stroke="#166534" strokeWidth="2" />
-                                <circle cx="35" cy="55" r="3" fill="white" opacity="0.4" />
-                            </svg>
-                        </motion.div>
-                    ))}
                 </div>
 
                 {/* Equation Overlay */}
-                {/* ... same ... */}
                 {currentStep.showEquation && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.5, y: 50 }}
@@ -152,16 +141,29 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                         className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
                     >
                         <div className="bg-white/90 backdrop-blur-sm px-12 py-8 rounded-[3rem] shadow-2xl border-8 border-orange-300 transform -translate-y-12">
-                            <span className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-sm" dir="ltr">
+                            <span
+                                data-testid="lesson-equation"
+                                className="text-7xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 drop-shadow-sm"
+                                dir="ltr"
+                            >
                                 {currentStep.showEquation}
                             </span>
                         </div>
                     </motion.div>
                 )}
 
-
                 {/* Footer / Controls */}
                 <div className="h-32 bg-white border-t border-slate-100 flex items-center px-8 relative z-20 rounded-b-[3rem]">
+                    {/* Step progress + optional hint, kept clear of the mascot on the right-hand (RTL start) side */}
+                    <div className="mr-auto ml-8 text-right hidden md:block">
+                        <div data-testid="lesson-step-progress" className="text-lg font-bold text-slate-500">
+                            {t('lessons.controls.stepProgress', { current: stepIndex + 1, total: stepCount })}
+                        </div>
+                        {currentStep.hint && !canAdvance && (
+                            <div className="text-base text-slate-400">{t(currentStep.hint)}</div>
+                        )}
+                    </div>
+
                     {/* Next Button */}
                     <div className="ml-auto">
                         <button
@@ -174,7 +176,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                                 }`}
                         >
                             <span>
-                                {isLastStep ? t('lessons.controls.finish') : state.progress === 0 ? t('lessons.controls.start') : t('lessons.controls.next')}
+                                {isLastStep ? t('lessons.controls.finish') : stepIndex === 0 ? t('lessons.controls.start') : t('lessons.controls.next')}
                             </span>
                             {isLastStep ? <Check size={28} /> : <ArrowRight size={28} />}
                         </button>
@@ -182,12 +184,12 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                 </div>
 
                 {/* Mascot & Speech - OUTSIDE the clipped areas */}
-                <div className="absolute bottom-0 left-8 z-50 flex items-end pb-4 filter drop-shadow-xl">
-                    <div className="w-48 h-48 relative">
+                <div className="absolute bottom-0 left-8 z-50 flex items-end pb-4 filter drop-shadow-xl pointer-events-none">
+                    <div className="w-40 h-40 relative">
                         <Mascot character="owl" emotion={currentStep.mascotEmotion} />
                     </div>
                     {/* Speech Bubble Container */}
-                    <div className="absolute left-32 bottom-32 w-80">
+                    <div className="absolute left-28 bottom-28 w-80">
                         <SpeechBubble
                             text={t(currentStep.mascotText)}
                             isVisible={true}
