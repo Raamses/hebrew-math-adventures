@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PracticeMode } from './PracticeMode';
 import { LessonModal } from './lessons/LessonModal';
-import { MultiplicationLesson } from '../lessons/lesson1_multiplication';
+import { getLessonForNode } from '../lessons';
 import { BubbleGame } from './sensory/BubbleGame';
 import { SensoryFactory } from '../engines/SensoryFactory';
 import type { SensoryProblem, ArithmeticProblem } from '../lib/gameLogic';
@@ -212,10 +212,18 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
     }
 
     if (effectiveMode === 'LESSON') {
+        // Each LESSON node opens its own micro-lesson (addition/subtraction/
+        // multiplication/division). Unregistered nodes fall back to the default
+        // lesson rather than rendering nothing. The `key` forces a fresh
+        // LessonEngine when the child moves between lesson nodes.
+        const lesson = getLessonForNode(node?.id);
+
         return (
             <LessonModal
+                key={lesson.id}
                 isOpen={isLessonOpen}
-                lesson={MultiplicationLesson}
+                lesson={lesson}
+                nodeId={node?.id}
                 onClose={onExit}
                 onComplete={handleLessonComplete}
             />
