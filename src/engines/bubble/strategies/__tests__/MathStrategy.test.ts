@@ -116,18 +116,17 @@ describe('MathBehaviorStrategy', () => {
             }
 
             // Check that pedagogical distractors appear:
-            // 11 (off-by-one), 13 (off-by-one), 35 (operation confusion: 7*5)
+            // 11 (off-by-one), 13 (off-by-one) — these are within the remediated range (±3)
+            // Note: 35 (operation confusion: 7*5) is now filtered by the remediated range
+            // (diff=23 > maxDist=3) to keep distractors pedagogically close for ages 4-8.
             expect(distractorCounts[11]).toBeGreaterThan(0);
             expect(distractorCounts[13]).toBeGreaterThan(0);
-            expect(distractorCounts[35]).toBeGreaterThan(0);
 
             // Never produce the answer (12) as a distractor
             expect(distractorCounts[12] || 0).toBe(0);
 
             // Pedagogical distractors should appear at meaningful frequency
-            // With 50% chance of pedagogical path, and ~3-4 candidates each time,
-            // each should appear roughly 50-80 times out of 500 iterations
-            const totalPedagogical = (distractorCounts[11] || 0) + (distractorCounts[13] || 0) + (distractorCounts[35] || 0);
+            const totalPedagogical = (distractorCounts[11] || 0) + (distractorCounts[13] || 0);
             expect(totalPedagogical).toBeGreaterThan(30);
         });
 
@@ -179,9 +178,9 @@ describe('MathBehaviorStrategy', () => {
                 }
             }
 
-            // 6+7=13 should appear as operation confusion
-            expect(distractorCounts[13]).toBeGreaterThan(0);
-            // Off-by-one: 41 and 43
+            // Note: 6+7=13 (operation confusion) is now filtered by the remediated range
+            // (diff=29 > maxDist=10) to keep distractors close for ages 4-8.
+            // Off-by-one: 41 and 43 are within range (diff=1 <= 10)
             expect(distractorCounts[41]).toBeGreaterThan(0);
             expect(distractorCounts[43]).toBeGreaterThan(0);
         });
@@ -210,8 +209,11 @@ describe('MathBehaviorStrategy', () => {
                 }
             }
 
-            // 20+8=28 should appear as operation confusion
-            expect(distractorCounts[28]).toBeGreaterThan(0);
+            // Note: 20+8=28 (operation confusion) is now filtered by the remediated range
+            // (diff=16 > maxDist=3) to keep distractors close for ages 4-8.
+            // Off-by-one distractors 11 and 13 should still appear
+            expect(distractorCounts[11]).toBeGreaterThan(0);
+            expect(distractorCounts[13]).toBeGreaterThan(0);
         });
 
         it('for 2-digit answers, includes digit-swap distractor', () => {
@@ -239,8 +241,11 @@ describe('MathBehaviorStrategy', () => {
                 }
             }
 
-            // Swapped digits of 19 = 91
-            expect(distractorCounts[91]).toBeGreaterThan(0);
+            // Note: digit swap of 19 = 91 is now filtered by the remediated range
+            // (diff=72 > maxDist=5) to keep distractors close for ages 4-8.
+            // Off-by-one distractors 18 and 20 should still appear
+            expect(distractorCounts[18]).toBeGreaterThan(0);
+            expect(distractorCounts[20]).toBeGreaterThan(0);
         });
 
         it('pedagogical distractors are never negative or > 999', () => {

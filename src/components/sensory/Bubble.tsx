@@ -31,12 +31,12 @@ const COMMON_STYLE: React.CSSProperties = {
     borderRadius: '50%'
 };
 
-// --- Power-Up Visual Style ---
-
+// --- Power-Up Visual Style (Frenzy Star) ---
+// Distinct golden "star" look: larger, brighter gold glow + pulsing ring.
 const POWER_UP_STYLE: React.CSSProperties = {
-    border: '3px solid rgba(255, 215, 0, 0.8)',
-    boxShadow: '0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 180, 0, 0.3), inset 0 0 20px rgba(255, 255, 200, 0.5)',
-    background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.7) 0%, rgba(255, 165, 0, 0.85) 50%, rgba(255, 140, 0, 0.9) 100%)',
+    border: '3px solid rgba(255, 215, 0, 0.95)',
+    boxShadow: '0 0 24px rgba(255, 215, 0, 0.8), 0 0 48px rgba(255, 180, 0, 0.5), 0 0 80px rgba(255, 140, 0, 0.3), inset 0 0 24px rgba(255, 255, 200, 0.6)',
+    background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 165, 0, 0.9) 50%, rgba(255, 140, 0, 0.95) 100%)',
     borderRadius: '50%',
 };
 
@@ -47,6 +47,30 @@ const BOSS_STYLE: React.CSSProperties = {
     boxShadow: '0 0 25px rgba(147, 51, 234, 0.7), 0 0 50px rgba(220, 38, 38, 0.4), inset 0 0 25px rgba(255, 255, 255, 0.3)',
     background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.8) 0%, rgba(220, 38, 38, 0.85) 50%, rgba(190, 24, 93, 0.9) 100%)',
     borderRadius: '50%',
+};
+
+// --- Fusion Bubble Style (Combo Fusion mode) ---
+// Cyan/violet gradient with a pulsing aura to signal a mergeable bubble.
+const FUSION_STYLE: React.CSSProperties = {
+    border: '3px solid rgba(34, 211, 238, 0.9)',
+    boxShadow: '0 0 20px rgba(34, 211, 238, 0.7), 0 0 40px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.4)',
+    background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.75) 0%, rgba(139, 92, 246, 0.85) 50%, rgba(217, 70, 239, 0.9) 100%)',
+    borderRadius: '50%',
+};
+
+// Multiplier badge colors per tier (1=1.5×, 2=2×, 3=3×, 4=5×)
+const FUSION_TIER_COLORS: Record<number, string> = {
+    1: 'bg-cyan-500',
+    2: 'bg-violet-500',
+    3: 'bg-fuchsia-500',
+    4: 'bg-amber-500',
+};
+
+const FUSION_TIER_LABELS: Record<number, string> = {
+    1: '1.5×',
+    2: '2×',
+    3: '3×',
+    4: '5×',
 };
 
 
@@ -64,10 +88,12 @@ interface BubbleProps {
     isBoss?: boolean;
     bossHealth?: number;
     bossMaxHealth?: number;
+    isFusion?: boolean;
+    fusionTier?: 0 | 1 | 2 | 3 | 4;
 }
 
 // Memoized Bubble for stability and performance
-export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, onOffScreen, x, delay, isPopped, variant = 'medium', speedMultiplier = 1.0, isPowerUp = false, isBoss = false, bossHealth, bossMaxHealth }) => {
+export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, onOffScreen, x, delay, isPopped, variant = 'medium', speedMultiplier = 1.0, isPowerUp = false, isBoss = false, bossHealth, bossMaxHealth, isFusion = false, fusionTier = 0 }) => {
     const bubbleRef = useRef<HTMLButtonElement>(null);
 
     // Stable random duration based on variant
@@ -117,7 +143,7 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
     const bossScale = isBoss ? UI_CONFIG.BOSS_SIZE_MULTIPLIER : 1;
 
     // Power-up bubbles get a special golden style and sparkle animation
-    const bubbleStyle = isPowerUp ? POWER_UP_STYLE : isBoss ? BOSS_STYLE : { ...COMMON_STYLE, ...themeStyle };
+    const bubbleStyle = isPowerUp ? POWER_UP_STYLE : isBoss ? BOSS_STYLE : isFusion ? FUSION_STYLE : { ...COMMON_STYLE, ...themeStyle };
 
     return (
         <div
@@ -152,7 +178,7 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
                             scale: { duration: 0.5, delay: delay }
                         }
                 }
-                className={`flex items-center justify-center cursor-pointer hover:brightness-110 hover:shadow-lg transition-colors outline-none focus-visible:ring-4 focus-visible:ring-white/50 ${isPowerUp ? 'animate-pulse' : ''} ${isBoss ? 'cursor-crosshair' : ''}`}
+                className={`flex items-center justify-center cursor-pointer hover:brightness-110 hover:shadow-lg transition-colors outline-none focus-visible:ring-4 focus-visible:ring-white/50 ${isPowerUp ? 'animate-pulse' : ''} ${isBoss ? 'cursor-crosshair' : ''} ${isFusion ? 'animate-pulse' : ''}`}
                 style={{
                     ...bubbleStyle,
                     width: isBoss ? `calc(${config.size} * ${bossScale})` : config.size,
@@ -207,7 +233,7 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
                         <motion.div
                             className="absolute inset-0 rounded-full pointer-events-none"
                             style={{
-                                border: '2px dashed rgba(255, 255, 255, 0.6)',
+                                border: '2px dashed rgba(255, 255, 255, 0.7)',
                             }}
                             animate={{ rotate: 360 }}
                             transition={{
@@ -216,29 +242,94 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
                                 ease: "linear",
                             }}
                         />
-                        {/* Golden glow ring */}
+                        {/* Golden glow pulse ring (Frenzy Star) */}
                         <motion.div
                             className="absolute rounded-full pointer-events-none"
                             style={{
-                                inset: '-4px',
-                                border: '2px solid rgba(255, 215, 0, 0.4)',
+                                inset: '-6px',
+                                border: '3px solid rgba(255, 215, 0, 0.7)',
                                 borderRadius: '50%',
                             }}
                             animate={{
-                                scale: [1, 1.15, 1],
-                                opacity: [0.4, 0.8, 0.4],
+                                scale: [1, 1.25, 1],
+                                opacity: [0.5, 1, 0.5],
                             }}
                             transition={{
-                                duration: 1.5,
+                                duration: 1.1,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                            }}
+                        />
+                        {/* Outer golden halo */}
+                        <motion.div
+                            className="absolute rounded-full pointer-events-none"
+                            style={{
+                                inset: '-14px',
+                                border: '2px solid rgba(255, 180, 0, 0.4)',
+                                borderRadius: '50%',
+                            }}
+                            animate={{
+                                scale: [1, 1.35, 1],
+                                opacity: [0.3, 0.7, 0.3],
+                            }}
+                            transition={{
+                                duration: 1.8,
                                 repeat: Infinity,
                                 ease: "easeInOut",
                             }}
                         />
                     </>
                 )}
-                <span className={`font-bold drop-shadow-sm font-fredoka ${config.fontSize} ${isPowerUp ? 'text-white' : isBoss ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-slate-800'}`} style={isBoss ? { fontSize: 'clamp(1.5rem, 8vw, 2.5rem)' } : undefined}>
+                {isFusion && (
+                    <>
+                        {/* Pulsing aura ring for fusion bubbles */}
+                        <motion.div
+                            className="absolute rounded-full pointer-events-none"
+                            style={{
+                                inset: '-10px',
+                                border: '3px solid rgba(34, 211, 238, 0.6)',
+                                borderRadius: '50%',
+                            }}
+                            animate={{
+                                scale: [1, 1.25, 1],
+                                opacity: [0.5, 1, 0.5],
+                            }}
+                            transition={{
+                                duration: 1,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                            }}
+                        />
+                        {/* Outer violet glow */}
+                        <motion.div
+                            className="absolute rounded-full pointer-events-none"
+                            style={{
+                                inset: '-18px',
+                                border: '2px solid rgba(139, 92, 246, 0.4)',
+                                borderRadius: '50%',
+                            }}
+                            animate={{
+                                scale: [1, 1.3, 1],
+                                opacity: [0.3, 0.6, 0.3],
+                            }}
+                            transition={{
+                                duration: 1.4,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                            }}
+                        />
+                    </>
+                )}
+                <span className={`font-bold drop-shadow-sm font-fredoka ${config.fontSize} ${isPowerUp ? 'text-white' : isBoss ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : isFusion ? 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : 'text-slate-800'}`} style={isBoss ? { fontSize: 'clamp(1.5rem, 8vw, 2.5rem)' } : undefined}>
                     {value}
                 </span>
+                {isFusion && fusionTier && fusionTier > 0 && !isPopped && (
+                    <div className="absolute -top-3 -right-3 z-20">
+                        <span className={`${FUSION_TIER_COLORS[fusionTier]} text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md border border-white/60`}>
+                            {FUSION_TIER_LABELS[fusionTier]}
+                        </span>
+                    </div>
+                )}
                 {isBoss && bossHealth !== undefined && bossMaxHealth !== undefined && !isPopped && (
                     <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-1 z-10">
                         {Array.from({ length: bossMaxHealth }).map((_, i) => (
@@ -261,5 +352,5 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
         </div>
     );
 }, (prev, next) => {
-    return prev.isPopped === next.isPopped && prev.id === next.id && prev.value === next.value && prev.bossHealth === next.bossHealth;
+    return prev.isPopped === next.isPopped && prev.id === next.id && prev.value === next.value && prev.bossHealth === next.bossHealth && prev.isFusion === next.isFusion && prev.fusionTier === next.fusionTier;
 });

@@ -23,7 +23,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { MathBehaviorStrategy } from '../strategies/MathStrategy';
 import type { GameConfig, BubbleEntity, IGameBehavior } from '../types';
-import { SESSION_CONFIG, POWER_UP_CONFIG, SPAWN_CONFIG } from '../../../lib/worldConfig';
+import { SESSION_CONFIG, POWER_UP_CONFIG, SPAWN_CONFIG, FRENZY_STAR_CONFIG, FRENZY_CONFIG } from '../../../lib/worldConfig';
 
 // --- Helpers ---
 
@@ -677,37 +677,40 @@ describe('Boss on screen reduces effective maxOnScreen', () => {
     });
 });
 
-// --- Power-up spawn interval ---
+// --- Frenzy Star (combo-triggered power-up) ---
+// Timer-based power-up spawning was REMOVED. Power-ups are now earned as a
+// combo reward: crossing FRENZY_THRESHOLD spawns a one-shot bonus bubble.
 
-describe('Power-up spawn interval', () => {
-    it('default power-up spawn interval is 8s (was 15s)', () => {
+describe('Frenzy Star combo-triggered power-up', () => {
+    it('triggers at FRENZY_THRESHOLD (combo >= 5)', () => {
+        expect(FRENZY_STAR_CONFIG.TRIGGER_COMBO).toBe(FRENZY_CONFIG.FRENZY_THRESHOLD);
+        expect(FRENZY_STAR_CONFIG.TRIGGER_COMBO).toBe(5);
+    });
+
+    it('spawns a larger bubble (variant large) for visibility', () => {
+        expect(FRENZY_STAR_CONFIG.VARIANT).toBe('large');
+    });
+
+    it('drifts slower than normal bubbles so kids can reach it', () => {
+        expect(FRENZY_STAR_CONFIG.VELOCITY_MULTIPLIER).toBeLessThan(1);
+        expect(FRENZY_STAR_CONFIG.VELOCITY_MULTIPLIER).toBeGreaterThan(0);
+    });
+
+    it('caps at 1 star on screen to prevent stacking', () => {
+        expect(FRENZY_STAR_CONFIG.MAX_ON_SCREEN).toBe(1);
+    });
+
+    it('power-up types are trimmed to the 3 kept types', () => {
+        expect(POWER_UP_CONFIG.TYPES).toHaveLength(3);
+        expect([...POWER_UP_CONFIG.TYPES].sort()).toEqual(
+            ['double_points', 'lightning_chain', 'rainbow_magnet'].sort()
+        );
+    });
+
+    it('timer-based spawn interval is no longer the spawn driver', () => {
+        // SPAWN_INTERVAL_MS is retained only for backward-compat references;
+        // the spawn loop no longer uses it to schedule power-ups.
         expect(POWER_UP_CONFIG.SPAWN_INTERVAL_MS).toBe(8000);
-    });
-
-    it('power-up spawn only fires after interval elapses', () => {
-        const powerUpInterval = 8000;
-        const lastPowerUpSpawnTime = 1000;
-        const currentTime = 7000; // 6s later (< 8s)
-        const timeSince = currentTime - lastPowerUpSpawnTime;
-
-        expect(timeSince).toBeLessThan(powerUpInterval);
-    });
-
-    it('power-up spawn fires when interval has elapsed', () => {
-        const powerUpInterval = 8000;
-        const lastPowerUpSpawnTime = 1000;
-        const currentTime = 10000; // 9s later (> 8s)
-        const timeSince = currentTime - lastPowerUpSpawnTime;
-
-        expect(timeSince).toBeGreaterThanOrEqual(powerUpInterval);
-    });
-
-    it('power-up spawn respects maxOnScreen (does not exceed)', () => {
-        const activeCount = 8;
-        const maxOnScreen = 8;
-        const shouldSpawnPowerUp = activeCount < maxOnScreen;
-
-        expect(shouldSpawnPowerUp).toBe(false); // screen full, no power-up
     });
 });
 

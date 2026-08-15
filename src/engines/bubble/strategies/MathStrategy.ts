@@ -351,22 +351,41 @@ export class MathBehaviorStrategy implements IGameBehavior {
                 candidates.push(swapped);
             }
 
-            // Filter: remove answer, negatives, > 999
-            const valid = candidates.filter(c => c !== answer && c >= 0 && c <= 999);
+            // Filter: remove answer, negatives, > 999, and distractors outside the
+            // remediated range (Bubble Spawn Remediation: tight pedagogically-close distractors).
+            // For target < 20: range = max(3, floor(target * 0.3))
+            // For target >= 20: range = max(10, floor(target * 0.2))
+            // Never more than 2x the answer away.
+            const remediatedRange = safeTarget < 20
+                ? Math.max(3, Math.floor(safeTarget * 0.3))
+                : Math.max(10, Math.floor(safeTarget * 0.2));
+            const maxDist = Math.min(remediatedRange, safeTarget * 2);
+            const valid = candidates.filter(c =>
+                c !== answer && c >= 0 && c <= 999 && Math.abs(c - answer) <= maxDist
+            );
 
             if (valid.length > 0) {
                 return valid[Math.floor(Math.random() * valid.length)];
             }
         }
 
-        // P1-12: Scale distractor range to target magnitude (min 5 instead of 10)
-        const range = Math.max(5, Math.floor(safeTarget * 0.4));
-        const offset = Math.floor(range / 2);
+        // Bubble Spawn Remediation: tighter distractor range based on target magnitude
+        // For target < 20: range = max(3, floor(target * 0.3)) — close, plausible distractors
+        // For target >= 20: range = max(10, floor(target * 0.2)) — tighter proportional range
+        // Never generate distractors more than 2x the answer away
+        const range = safeTarget < 20
+            ? Math.max(3, Math.floor(safeTarget * 0.3))
+            : Math.max(10, Math.floor(safeTarget * 0.2));
+        // Clamp range to 2x target (never more than 2x the answer away)
+        const maxRange = safeTarget * 2;
+        const effectiveRange = Math.min(range, maxRange);
+        const offset = Math.floor(effectiveRange / 2);
         let value: number;
         do {
-            value = safeTarget + Math.floor(Math.random() * range) - offset;
-            value = Math.min(value, 999);
-        } while (value === this.targetValue || value < 0);
+            value = safeTarget + Math.floor(Math.random() * effectiveRange) - offset;
+            // Clamp to >= 0 (no negative numbers for ages 4-8) and <= 999
+            value = Math.max(0, Math.min(value, 999));
+        } while (value === this.targetValue);
         return value;
     }
 

@@ -15,7 +15,7 @@ export type FailConditionType = 'timer_zero' | 'screen_full' | 'missed_target_li
 
 // --- Arcade Mode ---
 
-export type ArcadeMode = 'zen' | 'classic' | 'blitz' | 'survival';
+export type ArcadeMode = 'zen' | 'classic' | 'blitz' | 'survival' | 'fusion';
 
 // --- Difficulty / Theme (used by GameConfig) ---
 

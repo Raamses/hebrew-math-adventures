@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { GameConfig, GameState, BubbleEntity, IGameBehavior, PowerUpType, PowerUpState } from './types';
-import { POWER_UP_CONFIG, FRENZY_CONFIG, SCORING_CONFIG, BUBBLE_ENGINE_CONFIG } from '../../lib/worldConfig';
+import type { GameConfig, GameState, BubbleEntity, IGameBehavior, PowerUpType, PowerUpState, FusionState, MergeEvent } from './types';
+import { POWER_UP_CONFIG, FRENZY_CONFIG, SCORING_CONFIG, BUBBLE_ENGINE_CONFIG, FUSION_CONFIG, FRENZY_STAR_CONFIG } from '../../lib/worldConfig';
+import { ComboFusionStrategy } from './strategies/ComboFusionStrategy';
 
 // --- Power-Up Constants ---
 
@@ -40,12 +41,30 @@ export const useGameEngine = (
 
     const [entities, setEntities] = useState<BubbleEntity[]>([]);
 
+    // --- Combo Fusion State ---
+    const isFusionMode = behavior instanceof ComboFusionStrategy;
+    const [fusionState, setFusionState] = useState<FusionState>({
+        fusionStreak: 0,
+        maxFusionStreak: 0,
+        fusionBubblesSpawned: 0,
+        totalMerges: 0,
+        totalMergePoints: 0,
+        fusionBubbleActive: false,
+    });
+    const [mergeEvents, setMergeEvents] = useState<MergeEvent[]>([]);
+    const fusionStateRef = useRef(fusionState);
+    useEffect(() => { fusionStateRef.current = fusionState; }, [fusionState]);
+
     // --- Refs (Mutable state for Game Loop) ---
     const requestRef = useRef<number | undefined>(undefined);
     const lastFrameTime = useRef<number>(0);
     const lastSpawnTime = useRef<number>(0);
-    const lastPowerUpSpawnTime = useRef<number>(0);
     const spawnCredits = useRef<number>(0);
+    // Tracks the highest frenzy threshold already rewarded with a Frenzy Star.
+    // Reset to 0 when combo drops below the threshold so the next crossing
+    // fires again. Ensures the star spawns once per threshold crossing, not
+    // every frame.
+    const frenzyStarRewardedRef = useRef<number>(0);
     const lastTargetSeenTime = useRef<number>(0);
     const gameStateRef = useRef(gameState);
     const entitiesRef = useRef<BubbleEntity[]>([]);
@@ -73,10 +92,8 @@ export const useGameEngine = (
     // --- Power-Up Helpers ---
 
     const getEffectiveSpeedMultiplier = useCallback((): number => {
-        const ps = gameStateRef.current.powerUpState;
-        if (!ps || !ps.active) return 1;
-        if (ps.type === 'slow_motion') return BUBBLE_ENGINE_CONFIG.POWER_UP_SLOW_SPEED;
-        if (ps.type === 'freeze') return 0; // frozen
+        // freeze / slow_motion were removed from the power-up set. No speed
+        // modifiers remain, so the effective multiplier is always 1.
         return 1;
     }, []);
 
@@ -99,10 +116,10 @@ export const useGameEngine = (
             y: BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET,
             content: bossProps.content ?? '🛡️',
             internalValue: bossProps.internalValue,
-            velocity: currentConfig.baseVelocity * 0.3, // Slow
+            velocity: currentConfig.baseVelocity * BUBBLE_ENGINE_CONFIG.BOSS_VELOCITY_MULTIPLIER, // Slow
             isPopped: false,
             createdAt: Date.now(),
-            speedMultiplier: 0.3,
+            speedMultiplier: BUBBLE_ENGINE_CONFIG.BOSS_VELOCITY_MULTIPLIER,
             variant: 'large',
             isBoss: true,
             bossHealth: 3,
@@ -163,6 +180,46 @@ export const useGameEngine = (
         return freeLanes[Math.floor(Math.random() * freeLanes.length)];
     }, [recomputeLaneOccupancy]);
 
+    // --- Frenzy Star Spawn (combo-triggered power-up) ---
+    // Spawns a single bonus power-up bubble when the player's combo crosses
+    // FRENZY_THRESHOLD. This is a one-shot reward OUTSIDE the normal credit
+    // loop — it does not consume spawn credits and does not depend on a timer.
+    // The caller (handlePop) guards against firing more than once per crossing.
+    const spawnFrenzyStar = useCallback((): void => {
+        const currentConfig = configRef.current;
+
+        // Pick a random power-up type from the trimmed 3-type set.
+        const powerUpType = POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)];
+
+        // Lane-based spawn placement (replaces random X + collision avoidance)
+        laneCount.current = computeLaneCount(currentConfig);
+        const starLane = assignFreeLane(laneCount.current);
+        const jitter = (Math.random() - 0.5) * 4; // ±2vw organic jitter
+        const spawnX = Math.max(8, Math.min(92, getLaneCenter(starLane, laneCount.current) + jitter));
+
+        const starBubble: BubbleEntity = {
+            id: `frenzystar-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            x: spawnX,
+            y: BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET,
+            content: POWER_UP_EMOJI[powerUpType],
+            internalValue: powerUpType,
+            velocity: currentConfig.baseVelocity * FRENZY_STAR_CONFIG.VELOCITY_MULTIPLIER,
+            isPopped: false,
+            createdAt: Date.now(),
+            speedMultiplier: FRENZY_STAR_CONFIG.VELOCITY_MULTIPLIER,
+            variant: FRENZY_STAR_CONFIG.VARIANT, // 'large' — bigger, easier to spot
+            isPowerUp: true,
+            powerUpType,
+            lane: starLane,
+        };
+
+        setEntities(prev => {
+            const next = [...prev, starBubble];
+            entitiesRef.current = next;
+            return next;
+        });
+    }, [computeLaneCount, assignFreeLane]);
+
     const spawnSystem = useCallback((time: number) => {
         // Seed frame timing on first callback so we don't accumulate dt from 0
         if (lastFrameTime.current === 0) {
@@ -171,7 +228,7 @@ export const useGameEngine = (
             lastTargetSeenTime.current = time; // Seed safety net so it doesn't fire on cold start
             // M1 Fix: Initial bubble burst — seed 3 credits so the screen
             // populates in the first 1-2 frames instead of waiting 4-8s.
-            spawnCredits.current = 3;
+            spawnCredits.current = BUBBLE_ENGINE_CONFIG.INITIAL_SPAWN_CREDITS;
         }
 
         // Per-frame delta
@@ -192,6 +249,11 @@ export const useGameEngine = (
         let currentInterval = gameStateRef.current.isFrenzy
             ? currentConfig.spawnIntervalMs * 0.6
             : currentConfig.spawnIntervalMs;
+
+        // Boss mode: reduce spawn interval by 30% so answer bubbles appear faster
+        if (bossOnScreenRef.current) {
+            currentInterval = currentInterval * BUBBLE_ENGINE_CONFIG.BOSS_SPAWN_INTERVAL_FACTOR;
+        }
 
         let activeCount = 0;
         let activeTargetCount = 0;
@@ -222,64 +284,48 @@ export const useGameEngine = (
 
         // When boss is on screen, reduce normal bubble spawns (just distractors for ambiance)
         const effectiveMaxOnScreen = bossOnScreenRef.current
-            ? Math.max(2, Math.floor(currentConfig.maxOnScreen * 0.4))
+            ? Math.max(BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_FLOOR, Math.floor(currentConfig.maxOnScreen * BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_RATIO))
             : currentConfig.maxOnScreen;
 
         if (activeCount >= effectiveMaxOnScreen) return;
         if (spawnCredits.current < 1) return;
 
-        // --- Power-Up Spawn Check ---
-        const powerUpInterval = currentConfig.powerUpSpawnIntervalMs ?? POWER_UP_CONFIG.SPAWN_INTERVAL_MS;
-        const timeSinceLastPowerUp = time - lastPowerUpSpawnTime.current;
-        const shouldSpawnPowerUp = timeSinceLastPowerUp >= powerUpInterval && activeCount < currentConfig.maxOnScreen;
-
-        if (shouldSpawnPowerUp) {
-            spawnCredits.current -= 1;
-            // Spawn a power-up bubble instead of a normal one
-            const powerUpType = POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)];
-
-            // Lane-based spawn placement (replaces random X + collision avoidance)
-            laneCount.current = computeLaneCount(currentConfig);
-            const powerUpLane = assignFreeLane(laneCount.current);
-            const jitter = (Math.random() - 0.5) * 4; // ±2vw organic jitter
-            const spawnX = Math.max(8, Math.min(92, getLaneCenter(powerUpLane, laneCount.current) + jitter));
-
-            const newPowerUpBubble: BubbleEntity = {
-                id: `powerup-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-                x: spawnX,
-                y: BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET,
-                content: POWER_UP_EMOJI[powerUpType],
-                internalValue: powerUpType,
-                velocity: currentConfig.baseVelocity,
-                isPopped: false,
-                createdAt: Date.now(),
-                speedMultiplier,
-                variant: 'medium',
-                isPowerUp: true,
-                powerUpType,
-                lane: powerUpLane,
-            };
-
-            setEntities(prev => {
-                const next = [...prev, newPowerUpBubble];
-                entitiesRef.current = next;
-                return next;
-            });
-            lastSpawnTime.current = time;
-            lastPowerUpSpawnTime.current = time;
-            return;
-        }
+        // NOTE: Timer-based power-up spawning has been REMOVED entirely.
+        // Power-ups are now earned as a combo reward — crossing
+        // FRENZY_THRESHOLD spawns a one-shot "Frenzy Star" bonus bubble
+        // outside the credit loop (see spawnFrenzyStar / handlePop). This
+        // makes power-ups legible and satisfying instead of invisible.
 
         // --- Normal Bubble Spawn (multi-credit loop) ---
         let spawnIndex = 0;
         while (spawnCredits.current >= 1 && activeCount < effectiveMaxOnScreen) {
-            // Target safety net: if no active targets for > 6s, force the next spawn to be a target
+            // Target safety net: if no active targets for > 3s, force the next spawn to be a target
             let forceTarget = false;
-            if (activeTargetCount === 0 && lastTargetSeenTime.current !== 0 && time - lastTargetSeenTime.current > 6000) {
+            if (activeTargetCount === 0 && lastTargetSeenTime.current !== 0 && time - lastTargetSeenTime.current > BUBBLE_ENGINE_CONFIG.TARGET_DROUGHT_THRESHOLD_MS) {
+                forceTarget = true;
+            }
+            // Low-target net: if target count < 1 for > 2s, also force target (catches edge case
+            // where a target exists but is about to expire and none are queued)
+            if (!forceTarget && activeTargetCount < 1 && lastTargetSeenTime.current !== 0 && time - lastTargetSeenTime.current > BUBBLE_ENGINE_CONFIG.LOW_TARGET_THRESHOLD_MS) {
                 forceTarget = true;
             }
 
             const newBubbleProps = behavior.generateNext(currentConfig, forceTarget ? { forceTarget: true } : undefined);
+
+            // Combo Fusion: keep the strategy's fusion streak in sync so spawned
+            // target bubbles get isFusion=true once the streak reaches the threshold.
+            if (isFusionMode && behavior instanceof ComboFusionStrategy) {
+                behavior.setFusionStreak(fusionStateRef.current.fusionStreak);
+            }
+
+            // Track fusion bubble spawns for session stats
+            if (newBubbleProps.isFusion) {
+                setFusionState(prev => ({
+                    ...prev,
+                    fusionBubblesSpawned: prev.fusionBubblesSpawned + 1,
+                    fusionBubbleActive: true,
+                }));
+            }
 
             // Clear force after exactly one forced target and record we saw a target
             if (forceTarget) {
@@ -396,34 +442,12 @@ export const useGameEngine = (
         const duration = POWER_UP_DURATIONS[type];
         const now = Date.now();
 
-        if (type === 'pop_distractors') {
-            // Instant effect: pop all non-target bubbles (they just disappear, no score)
-            setEntities(prev => {
-                const next: BubbleEntity[] = [];
-                for (const e of prev) {
-                    // Keep target bubbles and already-popped ones; remove distractors
-                    const isTarget = behavior.validate(e);
-                    if (isTarget || e.isPopped || e.isPowerUp) {
-                        next.push(e);
-                    } else {
-                        // Mark as popped so they visually disappear
-                        next.push({ ...e, isPopped: true, poppedAt: now });
-                    }
-                }
-                entitiesRef.current = next;
-                return next;
-            });
-            // No ongoing state needed for instant effect
-            setGameState(prev => {
-                const next = { ...prev, powerUpState: null };
-                gameStateRef.current = next;
-                return next;
-            });
-            return;
-        }
+        // NOTE: pop_distractors / freeze / slow_motion were removed from the
+        // power-up set (they contradicted the faster/more-bubbles direction).
+        // Only lightning_chain, double_points, and rainbow_magnet remain.
 
         // --- Lightning Chain (instant effect) ---
-        // Pops the 3 nearest distractor bubbles to center and awards bonus points
+        // Pops the N nearest distractor bubbles to center and awards bonus points
         if (type === 'lightning_chain') {
             setEntities(prev => {
                 const next = [...prev];
@@ -440,7 +464,7 @@ export const useGameEngine = (
                 }
                 // Sort by distance to center (x=50) and pop the 3 closest
                 distractors.sort((a, b) => Math.abs(a.x - 50) - Math.abs(b.x - 50));
-                const toPop = distractors.slice(0, 3);
+                const toPop = distractors.slice(0, POWER_UP_CONFIG.LIGHTNING_CHAIN_POP_COUNT);
                 for (const d of toPop) {
                     next[d.index] = { ...next[d.index], isPopped: true, poppedAt: now };
                 }
@@ -449,7 +473,7 @@ export const useGameEngine = (
             });
             // Award small score bonus for lightning chain
             setGameState(prev => {
-                const next = { ...prev, score: prev.score + 30 };
+                const next = { ...prev, score: prev.score + POWER_UP_CONFIG.LIGHTNING_CHAIN_BONUS };
                 gameStateRef.current = next;
                 return next;
             });
@@ -472,7 +496,7 @@ export const useGameEngine = (
             return;
         }
 
-        // For timed effects (freeze, double_points, slow_motion)
+        // For timed effects (double_points)
         const newPowerUpState: PowerUpState = {
             type,
             active: true,
@@ -638,6 +662,110 @@ export const useGameEngine = (
             }
         }
 
+        // --- Fusion Bubble Handling (Combo Fusion mode) ---
+        // Popping a fusion bubble triggers the chain-merge mechanic: nearby
+        // target bubbles are absorbed and converted into bonus points scaled by
+        // the current multiplier tier. The fusion streak resets to 0.
+        if (target.isFusion && isFusionMode) {
+            const multiplier = target.fusionMultiplier ?? 1;
+            const tier = (target.fusionTier ?? 0) as 1 | 2 | 3 | 4;
+
+            // Visual pop of the fusion bubble itself
+            setEntities(prev => {
+                const index = prev.findIndex(e => e.id === id);
+                if (index === -1) return prev;
+                const next = [...prev];
+                next[index] = { ...next[index], isPopped: true, poppedAt: Date.now() };
+                entitiesRef.current = next;
+                return next;
+            });
+
+            // Find nearby unpopped target bubbles to merge (within radius)
+            const radius = FUSION_CONFIG.MERGE_RADIUS_PERCENT;
+            const maxTargets = FUSION_CONFIG.MAX_MERGE_TARGETS;
+            const now = Date.now();
+            const consumedIds: string[] = [];
+            let mergePoints = 0;
+
+            setEntities(prev => {
+                const next = [...prev];
+                // Collect candidate targets (unpopped, not fusion, not power-up, not boss)
+                const candidates: { index: number; e: BubbleEntity }[] = [];
+                for (let i = 0; i < next.length; i++) {
+                    const e = next[i];
+                    if (e.id === id || e.isPopped || e.isFusion || e.isPowerUp || e.isBoss) continue;
+                    const isTarget = behavior.validate(e);
+                    if (!isTarget) continue;
+                    const dx = Math.abs(e.x - (target.x ?? 50));
+                    const dy = Math.abs(e.y - (target.y ?? 0));
+                    if (dx <= radius && dy <= radius) {
+                        candidates.push({ index: i, e });
+                    }
+                }
+                // Sort by distance (closest first) and cap count
+                candidates.sort((a, b) => {
+                    const da = Math.abs(a.e.x - (target.x ?? 50)) + Math.abs(a.e.y - (target.y ?? 0));
+                    const db = Math.abs(b.e.x - (target.x ?? 50)) + Math.abs(b.e.y - (target.y ?? 0));
+                    return da - db;
+                });
+                const toMerge = candidates.slice(0, maxTargets);
+
+                for (const c of toMerge) {
+                    consumedIds.push(c.e.id);
+                    next[c.index] = { ...next[c.index], isMerged: true, isPopped: true, poppedAt: now };
+                    mergePoints += SCORING_CONFIG.BASE_SCORE_CORRECT;
+                }
+
+                entitiesRef.current = next;
+                return next;
+            });
+
+            // Award merge points (scaled by multiplier) and reset fusion streak
+            const totalMergePoints = Math.round(mergePoints * multiplier);
+            setGameState(prev => {
+                const nextGameState: GameState = {
+                    ...prev,
+                    score: prev.score + totalMergePoints,
+                    combo: prev.combo + 1,
+                    targetsPopped: prev.targetsPopped + 1 + consumedIds.length,
+                    isFrenzy: prev.combo + 1 >= FRENZY_CONFIG.FRENZY_THRESHOLD,
+                };
+                gameStateRef.current = nextGameState;
+                return nextGameState;
+            });
+
+            // Update fusion state: reset streak, record merge
+            setFusionState(prev => ({
+                ...prev,
+                fusionStreak: 0,
+                totalMerges: prev.totalMerges + 1,
+                totalMergePoints: prev.totalMergePoints + totalMergePoints,
+                fusionBubbleActive: false,
+            }));
+
+            // Emit a merge event for UI animation
+            if (consumedIds.length > 0) {
+                const event: MergeEvent = {
+                    id: `merge-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+                    centerId: id,
+                    consumedIds,
+                    centerX: target.x ?? 50,
+                    centerY: target.y ?? 0,
+                    points: totalMergePoints,
+                    multiplier,
+                    tier,
+                    timestamp: now,
+                };
+                setMergeEvents(prev => [...prev, event]);
+                // Auto-cleanup merge events after animation
+                setTimeout(() => {
+                    setMergeEvents(prev => prev.filter(ev => ev.id !== event.id));
+                }, 1200);
+            }
+
+            return true;
+        }
+
         // --- Normal Bubble Handling ---
         // ADR 2026-08-zen-answer-race (Fix 2): Snapshot the target value BEFORE
         // validation. After a correct answer, handleSessionLeveling calls
@@ -690,6 +818,21 @@ export const useGameEngine = (
             return next;
         });
 
+        // --- Frenzy Star trigger (combo-earned power-up) ---
+        // Compute the post-pop combo so we can detect a FRENZY_THRESHOLD
+        // crossing and spawn a one-shot bonus power-up bubble. Fires only
+        // once per crossing (guarded by frenzyStarRewardedRef), and resets
+        // when the combo drops below the threshold so the next crossing
+        // rewards again.
+        const newCombo = isCorrect ? gameStateRef.current.combo + 1 : 0;
+        if (isCorrect && newCombo >= FRENZY_CONFIG.FRENZY_THRESHOLD && frenzyStarRewardedRef.current < FRENZY_CONFIG.FRENZY_THRESHOLD) {
+            frenzyStarRewardedRef.current = FRENZY_CONFIG.FRENZY_THRESHOLD;
+            spawnFrenzyStar();
+        } else if (!isCorrect) {
+            // Combo broken — allow the next crossing to reward again.
+            frenzyStarRewardedRef.current = 0;
+        }
+
         // 3. Game State Update
         setGameState(prev => {
             const newCombo = isCorrect ? prev.combo + 1 : 0;
@@ -726,16 +869,38 @@ export const useGameEngine = (
             return nextGameState;
         });
 
+        // Combo Fusion: track fusion streak separately from normal combo.
+        // Increment on correct, reset on wrong. The strategy reads this to
+        // decide whether to spawn fusion bubbles.
+        if (isFusionMode) {
+            setFusionState(prev => {
+                const nextStreak = isCorrect ? prev.fusionStreak + 1 : 0;
+                return {
+                    ...prev,
+                    fusionStreak: nextStreak,
+                    maxFusionStreak: Math.max(prev.maxFusionStreak, nextStreak),
+                };
+            });
+        }
+
         return isCorrect;
-    }, [config, behavior, activatePowerUp, sessionLevelRefForBoss]);
+    }, [config, behavior, activatePowerUp, sessionLevelRefForBoss, isFusionMode, spawnFrenzyStar]);
 
     const handleOffScreen = useCallback((id: string) => {
+        // Combo Fusion: check if the off-screen bubble was a fusion bubble BEFORE
+        // removing it from the list, so we can clear the active flag.
+        if (isFusionMode) {
+            const wasFusion = entitiesRef.current.some(e => e.id === id && e.isFusion);
+            if (wasFusion) {
+                setFusionState(prev => ({ ...prev, fusionBubbleActive: false }));
+            }
+        }
         setEntities(prev => {
             const next = prev.filter(e => e.id !== id);
             entitiesRef.current = next; // Synchronize immediately
             return next;
         });
-    }, []);
+    }, [isFusionMode]);
 
     // --- Boss Target Update ---
     const updateBossTarget = useCallback((newValue: number): void => {
@@ -761,5 +926,8 @@ export const useGameEngine = (
         bossOnScreen,
         sessionLevelRefForBoss,
         updateBossTarget,
+        // Combo Fusion
+        fusionState,
+        mergeEvents,
     };
 };

@@ -27,12 +27,9 @@ import { generateBossGate } from '../../lib/bossGate';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
 import { SESSION_CONFIG, SESSION_THEMES, BOSS_LEVELS, MAX_LEVEL } from '../../lib/worldConfig';
 
-// --- Power-Up Toast Labels ---
+// --- Power-Up Toast Labels (Frenzy Star) ---
 const POWER_UP_LABELS: Record<PowerUpType, string> = {
-    freeze: '❄️ Freeze! Bubbles stopped!',
     double_points: '✨ Double Points!',
-    pop_distractors: '💥 Distractors Popped!',
-    slow_motion: '🐌 Slow Motion!',
     lightning_chain: '⚡ Lightning Chain! Distractors zapped!',
     rainbow_magnet: '🌈 Rainbow Magnet! Super target boost!',
 };
@@ -108,7 +105,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     // B1 Fix: Merge adaptive config into base config so configRef in useGameEngine
     // picks up changes to spawnIntervalMs, maxOnScreen, and distractorRatio.
     const effectiveConfig = adaptiveConfig ?? config;
-    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget } = useGameEngine(effectiveConfig, behavior);
+    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget, fusionState, mergeEvents } = useGameEngine(effectiveConfig, behavior);
 
     // --- Boss Bubble State ---
     // BOSS_LEVELS now imported from worldConfig
@@ -328,11 +325,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
         // --- Power-Up Bubble Handling ---
         if (isPowerUpBubble && entity?.powerUpType) {
-            // Play special sound
+            // Play special sound (unique power-up chime)
             playFrenzy();
 
             // Show toast for instant effects (timed effects handled by state-change useEffect)
-            if (entity.powerUpType === 'pop_distractors' || entity.powerUpType === 'lightning_chain') {
+            if (entity.powerUpType === 'lightning_chain') {
                 showPowerUpToast(entity.powerUpType);
             }
 
@@ -424,7 +421,8 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
     const instruction = behavior.getInstruction ? behavior.getInstruction() : undefined;
 
-    // Compute effective speed multiplier for bubbles (applies slow_motion / freeze)
+    // Compute effective speed multiplier for bubbles (always 1 — freeze /
+    // slow_motion were removed from the power-up set).
     const effectiveSpeedMultiplier = getEffectiveSpeedMultiplier();
 
     return (
@@ -497,6 +495,18 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                             <Zap size={14} className="text-orange-500 fill-orange-500" />
                             <span className="font-bold text-slate-700 text-xs">{gameState.combo}</span>
                         </div>
+                        {/* Fusion streak badge (Combo Fusion mode) */}
+                        {fusionState && (
+                            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
+                                <span className="text-xs">🌀</span>
+                                <span className={`font-bold text-xs ${fusionState.fusionStreak >= 3 ? 'text-cyan-700' : 'text-slate-700'}`}>{fusionState.fusionStreak}</span>
+                                {fusionState.fusionStreak >= 3 && (
+                                    <span className="text-[10px] font-bold text-violet-600">
+                                        {fusionState.fusionStreak >= 10 ? '5×' : fusionState.fusionStreak >= 7 ? '3×' : fusionState.fusionStreak >= 5 ? '2×' : '1.5×'}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                         {/* Level badge */}
                         <div className="flex items-center gap-0.5 bg-purple-100/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-purple-200">
                             <Star size={12} className="text-purple-500 fill-purple-500" />
@@ -597,6 +607,8 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         isBoss={e.isBoss}
                         bossHealth={e.bossHealth}
                         bossMaxHealth={e.bossMaxHealth}
+                        isFusion={e.isFusion}
+                        fusionTier={e.fusionTier}
                     />
                 ))}
             </div>
@@ -609,6 +621,24 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     y={exp.y}
                     onComplete={() => setExplosions(prev => prev.filter(e => e.id !== exp.id))}
                 />
+            ))}
+
+            {/* Combo Fusion Merge Animation Layer */}
+            {mergeEvents && mergeEvents.map(ev => (
+                <motion.div
+                    key={ev.id}
+                    className="absolute z-40 pointer-events-none"
+                    style={{ left: `${ev.centerX}vw`, top: `${ev.centerY}px`, transform: 'translate(-50%, -50%)' }}
+                    initial={{ scale: 0.3, opacity: 0 }}
+                    animate={{ scale: 1.6, opacity: [0, 1, 0] }}
+                    transition={{ duration: 0.9, ease: 'easeOut' }}
+                >
+                    <div className="flex flex-col items-center">
+                        <span className="text-3xl">🌀</span>
+                        <span className="text-xl font-bold text-cyan-600 drop-shadow-md">+{ev.points}</span>
+                        <span className="text-xs font-bold text-violet-600">×{ev.multiplier} · {ev.consumedIds.length} merged</span>
+                    </div>
+                </motion.div>
             ))}
             <FrenzyOverlay isActive={gameState.isFrenzy} combo={gameState.combo} variant="bubble" />
         </div>

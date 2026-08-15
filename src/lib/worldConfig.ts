@@ -303,30 +303,51 @@ export const SESSION_THEMES = [
 // ================================================================
 
 export const POWER_UP_CONFIG = {
-    SPAWN_INTERVAL_MS: 8000,  // was 15000 — too rare, most sessions never saw a power-up
+    // NOTE: Timer-based power-up spawning has been REMOVED entirely (see
+    // useGameEngine). Power-ups are now earned as a combo reward: crossing
+    // FRENZY_THRESHOLD spawns a one-shot "Frenzy Star" bonus bubble outside
+    // the normal credit loop. SPAWN_INTERVAL_MS is retained only for
+    // backward-compat references and is no longer used by the spawn loop.
+    SPAWN_INTERVAL_MS: 8000,  // legacy — no longer drives spawning
     MAX_BANKED_CREDITS: 5,     // was 3 — higher cap lets the accumulator bank more credits during droughts
-    TYPES: ['freeze', 'double_points', 'pop_distractors', 'slow_motion', 'lightning_chain', 'rainbow_magnet'] as const,
+    // Cut from 6 to 3 types. freeze / slow_motion / pop_distractors were
+    // dropped because they contradict the faster/more-bubbles playability
+    // direction (44 activations / 2 users in 28 days = invisible).
+    TYPES: ['lightning_chain', 'double_points', 'rainbow_magnet'] as const,
     DURATIONS: {
-        freeze: 5000,           // was 3000 — too short to notice
         double_points: 8000,    // was 5000 — too short to stack combos
-        pop_distractors: 0,     // instant
-        slow_motion: 4000,
         lightning_chain: 0,     // instant
         rainbow_magnet: 6000,   // was 3000 — too short to boost targets meaningfully
     } as const,
     EMOJI: {
-        freeze: '❄️',
         double_points: '✨',
-        pop_distractors: '💥',
-        slow_motion: '🐌',
         lightning_chain: '⚡',
         rainbow_magnet: '🌈',
     } as const,
     // Lightning Chain: pop N nearest distractors, award bonus points
     LIGHTNING_CHAIN_POP_COUNT: 5,     // was 3 (hardcoded in useGameEngine)
     LIGHTNING_CHAIN_BONUS: 50,        // was 30 (hardcoded in useGameEngine)
-    // Pop Distractors: keep this ratio of distractors on screen (was removes ALL)
-    POP_DISTRACTORS_KEEP_RATIO: 0.4,
+} as const;
+
+// ================================================================
+//  Frenzy Star Config (combo-triggered power-up)
+// ================================================================
+
+/**
+ * FRENZY_STAR_CONFIG drives the combo-earned power-up spawn.
+ * When the player's combo crosses FRENZY_THRESHOLD, a single bonus
+ * "Frenzy Star" bubble is spawned (one-shot, outside the credit loop).
+ * It only fires once per threshold crossing, not every frame.
+ */
+export const FRENZY_STAR_CONFIG = {
+    /** Combo threshold that triggers the bonus power-up spawn. */
+    TRIGGER_COMBO: 5,
+    /** Visual size variant for the star bubble (larger than normal). */
+    VARIANT: 'large' as const,
+    /** Velocity multiplier — star drifts slower so kids can reach it. */
+    VELOCITY_MULTIPLIER: 0.7,
+    /** Max Frenzy Stars allowed on screen at once (prevents stacking). */
+    MAX_ON_SCREEN: 1,
 } as const;
 
 // ================================================================
