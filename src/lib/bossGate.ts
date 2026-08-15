@@ -1,6 +1,7 @@
 import type { ArithmeticProblem, Problem } from './gameLogic';
 import { MathModule } from '../engines/MathModule';
 import type { UserCapabilityProfile } from '../types/progress';
+import { BOSS_GATE_PROBLEM_COUNT } from './worldConfig';
 
 export type BossGateType = 'rapid_fire' | 'missing_operand' | 'reverse_chain';
 
@@ -11,7 +12,6 @@ export interface BossGate {
   icon: string;
 }
 
-const GATE_PROBLEM_COUNT = 3;
 
 export function generateBossGate(
   level: number,
@@ -34,7 +34,7 @@ export function generateBossGate(
     reverse_chain: '🔁',
   };
 
-  for (let i = 0; i < GATE_PROBLEM_COUNT; i++) {
+  for (let i = 0; i < BOSS_GATE_PROBLEM_COUNT; i++) {
     // Generate an arithmetic problem, retrying if we get a different type
     let attempts = 0;
     let problem: Problem | null = null;

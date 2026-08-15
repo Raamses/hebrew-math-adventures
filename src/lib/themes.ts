@@ -1,4 +1,5 @@
 import type { ThemeId } from '../types/user';
+import { THEME_UNLOCKS } from './worldConfig';
 
 export interface Theme {
     id: ThemeId;
@@ -81,6 +82,21 @@ export const THEMES: Theme[] = [
         backgroundPattern: 'data:image/svg+xml,%3Csvg width="40" height="40" xmlns="http://www.w3.org/2000/svg"%3E%3Ccircle cx="10" cy="10" r="3" fill="%23db2777" fill-opacity="0.1"/%3E%3Ccircle cx="30" cy="30" r="2" fill="%23db2777" fill-opacity="0.1"/%3E%3Ccircle cx="30" cy="10" r="2" fill="%23f59e0b" fill-opacity="0.2"/%3E%3C/svg%3E'
     }
 ];
+
+// Dev-time invariant: THEME_UNLOCKS (worldConfig) must match the unlockStars
+// values embedded in THEMES. This catches drift during development.
+if (import.meta.env.DEV) {
+    for (const unlock of THEME_UNLOCKS) {
+        const theme = THEMES.find(t => t.id === unlock.id);
+        if (theme && theme.unlockStars !== unlock.unlockStars) {
+            console.warn(
+                `[worldConfig] Theme "${unlock.id}" unlockStars mismatch: ` +
+                `THEMES=${theme.unlockStars}, THEME_UNLOCKS=${unlock.unlockStars}`
+            );
+        }
+    }
+}
+
 
 export const getThemeById = (id: string): Theme | undefined => {
     return THEMES.find(theme => theme.id === id);

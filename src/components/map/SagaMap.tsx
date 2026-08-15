@@ -71,6 +71,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
         <div className="w-full min-h-screen bg-slate-100 pb-[calc(5rem+env(safe-area-inset-bottom))] overflow-y-auto" dir={isRtl ? 'rtl' : 'ltr'}>
             <header className="sticky top-0 bg-white/90 backdrop-blur z-50 shadow-sm border-b border-slate-200 px-2 py-3 flex items-center justify-between">
                 <button
+                    data-testid="language-toggle"
                     onClick={toggleLanguage}
                     className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
                     title={i18n.language.toUpperCase()}
@@ -100,6 +101,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                     {profile?.pet && (
                         <button
                             onClick={onOpenPet}
+                            data-testid="pet-button"
                             className="p-1.5 bg-pink-100 hover:bg-pink-200 rounded-full transition-colors"
                             title={t('pet.title', 'החיה שלי')}
                             aria-label={t('pet.title', 'החיה שלי')}
@@ -130,6 +132,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
 
                     {/* Arcade button */}
                     <button
+                        data-testid="arcade-button"
                         onClick={() => setShowModeSelector(true)}
                         className="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-sm transition-colors"
                         title={t('app.arcade')}
@@ -172,11 +175,12 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                             <h2 className="text-2xl font-bold text-center text-slate-700 mb-1">{t('app.arcade')}</h2>
                             <p className="text-center text-slate-400 text-sm mb-6">Pick your challenge! 🎮</p>
                             <div className="grid grid-cols-2 gap-3">
-                                {(['zen', 'classic', 'blitz', 'survival'] as ArcadeMode[]).map(mode => {
+                                {(['zen', 'classic', 'blitz', 'survival', 'fusion'] as ArcadeMode[]).map(mode => {
                                     const info = ARCADE_MODE_LABELS[mode];
                                     return (
                                         <button
                                             key={mode}
+                                            data-testid={`arcade-mode-${mode}`}
                                             onClick={() => {
                                                 logEvent('arcade_mode_select', { arcade_mode: mode });
                                                 setShowModeSelector(false);
@@ -252,6 +256,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                                 return (
                                     <motion.div
                                         key={node.id}
+                                        data-testid={`saga-node-${node.id}`}
                                         className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer"
                                         style={{ left: `${node.position.x}%`, top: `${150 * (index + 0.5)}px` }}
                                         onClick={() => {

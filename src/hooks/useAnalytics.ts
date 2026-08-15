@@ -15,6 +15,10 @@ export type AnalyticsEvent =
     | 'node_start'
     | 'node_complete'
     | 'streak_milestone'
+    // Story micro-lessons
+    | 'lesson_start'
+    | 'lesson_step_complete'
+    | 'lesson_complete'
     // Performance
     | 'question_answered'
     // Legacy/Generic
@@ -48,6 +52,17 @@ export interface AnalyticsParams {
     total_mistakes?: number;
     success?: boolean;
     duration_seconds?: number;
+
+    // Lessons
+    lesson_id?: string;
+    step_id?: string;
+    step_index?: number;
+    step_count?: number;
+    step_type?: string;
+    operation?: string;
+    theme?: string;
+    correct?: number;
+    attempts?: number;
 
     // Question Performance
     equation?: string;

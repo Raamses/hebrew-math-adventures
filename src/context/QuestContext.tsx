@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { getDailyChallenge, getStreakMultiplier, type DailyChallenge } from '../data/dailyChallenges';
 import { getDailyQuests, type DailyQuest, type QuestMetric } from '../data/dailyQuests';
 import { useProfile } from './ProfileContext';
+import { STORAGE_KEYS } from '../lib/worldConfig';
 
 interface DailyProgress {
   dailyStamps: string[]; // dates completed (YYYY-MM-DD)
@@ -30,7 +31,6 @@ interface QuestContextType {
   claimQuest: (questId: string) => void;
 }
 
-const STORAGE_KEY = 'hebrew-math-daily-progress';
 
 const QuestContext = createContext<QuestContextType | undefined>(undefined);
 
@@ -38,7 +38,7 @@ const EMPTY_PROGRESS: DailyProgress = { dailyStamps: [], totalCoinsEarned: 0, da
 
 function loadProgress(profileId: string): DailyProgress {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEYS.DAILY_PROGRESS);
     if (!raw) return { ...EMPTY_PROGRESS };
     const all = JSON.parse(raw);
     const entry = all[profileId];
@@ -61,10 +61,10 @@ function loadProgress(profileId: string): DailyProgress {
 
 function saveProgress(profileId: string, progress: DailyProgress) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEYS.DAILY_PROGRESS);
     const all = raw ? JSON.parse(raw) : {};
     all[profileId] = progress;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    localStorage.setItem(STORAGE_KEYS.DAILY_PROGRESS, JSON.stringify(all));
   } catch {
     // localStorage might be unavailable
   }

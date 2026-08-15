@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Mascot, type MascotEmotion } from './Mascot';
 import { getMascotGreeting, type MascotLine } from '../../data/mascotDialogue';
+import { UI_CONFIG } from '../../lib/worldConfig';
 
 interface MascotGreetingProps {
     mascotId: string; // 'owl' | 'bear' | 'ant' | 'lion'
@@ -10,7 +11,6 @@ interface MascotGreetingProps {
     onDismiss: () => void;
 }
 
-const GREETING_DURATION_MS = 4000;
 
 // Map dialogue emotions to MascotEmotion (MascotEmotion includes 'idle' | 'happy' | 'sad' | 'thinking' | 'excited' | 'encourage')
 const EMOTION_MAP: Record<string, MascotEmotion> = {
@@ -31,7 +31,7 @@ export const MascotGreeting: React.FC<MascotGreetingProps> = ({ mascotId, streak
 
         const timer = setTimeout(() => {
             handleDismiss();
-        }, GREETING_DURATION_MS);
+        }, UI_CONFIG.GREETING_DURATION_MS);
 
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps

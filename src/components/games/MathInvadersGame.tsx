@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Trophy, Heart, Zap, Star } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useInvaderEngine } from '../../engines/invader/useInvaderEngine';
-import { useSound } from '../../hooks/useSound';
-import { useMusicalSound } from '../../hooks/useMusicalSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
 import { useProfile } from '../../context/ProfileContext';
 import { FrenzyOverlay } from './FrenzyOverlay';
 import type { UserCapabilityProfile } from '../../types/progress';
@@ -24,9 +23,8 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
     profile: _profile,
 }) => {
     const { t } = useTranslation();
-    const { playSound } = useSound();
     const { profile: contextProfile, updateArcadeBestScore, recordSession } = useProfile();
-    const { playMelodyNote, playWrongMelody } = useMusicalSound(contextProfile?.settings?.soundGarden ?? false);
+    const soundManager = useSoundManager({ soundGardenEnabled: contextProfile?.settings?.soundGarden ?? false });
     const sessionStartTimeRef = useRef(Date.now());
     const sessionCorrectRef = useRef(0);
     const sessionAttemptsRef = useRef(0);
@@ -89,21 +87,13 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
         sessionAttemptsRef.current++;
         if (result) {
             sessionCorrectRef.current++;
-            if (contextProfile?.settings?.soundGarden) {
-                playMelodyNote();
-            } else {
-                playSound('correct');
-            }
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
+            soundManager.playCorrect();
+            soundManager.vibrate(50);
         } else {
-            if (contextProfile?.settings?.soundGarden) {
-                playWrongMelody();
-            } else {
-                playSound('wrong');
-            }
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            soundManager.playWrong();
+            soundManager.vibrate([30, 50, 30]);
         }
-    }, [handleAnswerTap, playSound, contextProfile, playMelodyNote, playWrongMelody]);
+    }, [handleAnswerTap, soundManager]);
 
     const handlePlayAgain = useCallback(() => {
         gameOverFiredRef.current = false;

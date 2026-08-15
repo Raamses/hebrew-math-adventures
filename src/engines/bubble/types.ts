@@ -1,17 +1,27 @@
 
 // --- Enums & Unions ---
+// Re-exported from types/game.ts for backward compatibility.
+// Canonical definitions live in src/types/game.ts to avoid a lib→engines
+// layer violation when worldConfig.ts (lib/) needs these types.
 
-export type WinConditionType = 'target_count' | 'time_limit' | 'endless';
-export type FailConditionType = 'timer_zero' | 'screen_full' | 'missed_target_limit' | 'strikes';
-export type DifficultyCurve = 'linear' | 'exponential' | 'static';
-export type GameTheme = 'space' | 'underwater' | 'standard';
+import type {
+    WinConditionType,
+    FailConditionType,
+    DifficultyCurve,
+    GameTheme,
+} from '../../types/game';
 
-/** Arcade game mode selector */
-export type ArcadeMode = 'zen' | 'classic' | 'blitz' | 'survival';
+export type {
+    WinConditionType,
+    FailConditionType,
+    DifficultyCurve,
+    GameTheme,
+    ArcadeMode,
+} from '../../types/game';
 
 // --- Power-Ups ---
 
-export type PowerUpType = 'freeze' | 'double_points' | 'pop_distractors' | 'slow_motion' | 'lightning_chain' | 'rainbow_magnet';
+export type PowerUpType = 'double_points' | 'lightning_chain' | 'rainbow_magnet';
 
 export interface PowerUpState {
     type: PowerUpType;
@@ -99,6 +109,18 @@ export interface BubbleEntity<T = any> {
     bossHealth?: number;
     /** Maximum health of a boss bubble (for rendering the health bar) */
     bossMaxHealth?: number;
+
+    // --- Combo Fusion Properties ---
+    /** Marks this bubble as a Fusion Bubble (special visual, triggers merge on pop) */
+    isFusion?: boolean;
+    /** The multiplier tier applied when this fusion bubble is popped */
+    fusionMultiplier?: number;
+    /** Marks this bubble as consumed by a merge (for animation before removal) */
+    isMerged?: boolean;
+    /** The calculated point value of a merged bubble (displayed in floating text) */
+    mergeValue?: number;
+    /** Tier index (0=none, 1=1.5×, 2=2×, 3=3×, 4=5×) for visual styling */
+    fusionTier?: 0 | 1 | 2 | 3 | 4;
 }
 
 // --- Interfaces ---
@@ -122,6 +144,21 @@ export interface IGameBehavior {
 
     /** Force-regenerate the current problem (for mid-session level changes). */
     regenerateProblem(level: number, config: GameConfig, correctCount?: number): void;
+
+    /**
+     * Returns the current target value. Used by the engine to snapshot
+     * the target at the moment of a pop, so stale bubbles can be detected.
+     * Optional — only MathBehaviorStrategy implements this.
+     */
+    getTargetValue?(): number;
+
+    /**
+     * Validate an entity against a SNAPSHOT target value.
+     * Returns 'correct' (matches current), 'stale' (matches previous target),
+     * or 'wrong' (doesn't match any known target).
+     * Optional — only MathBehaviorStrategy implements this.
+     */
+    validateAgainst?(entity: BubbleEntity, snapshotTarget: number): 'correct' | 'stale' | 'wrong';
 }
 
 export interface GameState {
@@ -135,4 +172,42 @@ export interface GameState {
     isFrenzy: boolean;
     /** Active power-up state (null when none active) */
     powerUpState: PowerUpState | null;
+}
+
+// --- Combo Fusion ---
+
+/** Fusion-specific game state, tracked alongside GameState */
+export interface FusionState {
+    /** Current fusion streak (correct answers in a row, separate from normal combo) */
+    fusionStreak: number;
+    /** Maximum fusion streak achieved this session */
+    maxFusionStreak: number;
+    /** Total number of fusion bubbles spawned this session */
+    fusionBubblesSpawned: number;
+    /** Total number of merges completed this session */
+    totalMerges: number;
+    /** Total points earned from merges */
+    totalMergePoints: number;
+    /** Whether a fusion bubble is currently on screen */
+    fusionBubbleActive: boolean;
+}
+
+/** A merge event for UI animation */
+export interface MergeEvent {
+    id: string;
+    /** The fusion bubble that was popped (center of merge) */
+    centerId: string;
+    /** IDs of bubbles consumed in the merge */
+    consumedIds: string[];
+    /** Center position for animation origin */
+    centerX: number;
+    centerY: number;
+    /** Points earned from the merge */
+    points: number;
+    /** Multiplier applied */
+    multiplier: number;
+    /** Tier for visual styling */
+    tier: 1 | 2 | 3 | 4;
+    /** Timestamp for cleanup */
+    timestamp: number;
 }

@@ -11,18 +11,13 @@ import { Zap, Star, Clock, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
-// Session-level theme mapping (visual progression as kids advance)
-const SESSION_THEMES = [
-  { bg: 'bg-blue-50', accent: 'text-blue-600' },     // Lv 1-2: Beach
-  { bg: 'bg-emerald-50', accent: 'text-emerald-600' }, // Lv 3-4: Forest
-  { bg: 'bg-amber-50', accent: 'text-amber-600' },    // Lv 5-6: Mountain
-  { bg: 'bg-indigo-50', accent: 'text-indigo-600' },  // Lv 7-8: Space
-  { bg: 'bg-rose-50', accent: 'text-rose-600' },      // Lv 9-10: Volcano
-];
+// SESSION_THEMES now imported from worldConfig
+// ADR 2026-08-zen-answer-race (Fix 1): lock window to drop cross-entity
+// rapid pops that could validate a second pop against a rotated targetValue.
+// SESSION_CONFIG.ANSWER_LOCK_MS now from SESSION_CONFIG in worldConfig
 const getThemeForLevel = (level: number) => SESSION_THEMES[Math.min(Math.floor((level - 1) / 2), SESSION_THEMES.length - 1)];
 import { SettingsMenu } from '../SettingsMenu';
-import { useSound } from '../../hooks/useSound';
-import { useMusicalSound } from '../../hooks/useMusicalSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { useProfile } from '../../context/ProfileContext';
 import { useQuest } from '../../context/QuestContext';
@@ -30,13 +25,11 @@ import { Director } from '../../engines/GameDirector';
 import { INITIAL_CAPABILITY_PROFILE } from '../../types/progress';
 import { generateBossGate } from '../../lib/bossGate';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
+import { SESSION_CONFIG, SESSION_THEMES, BOSS_LEVELS, MAX_LEVEL } from '../../lib/worldConfig';
 
-// --- Power-Up Toast Labels ---
+// --- Power-Up Toast Labels (Frenzy Star) ---
 const POWER_UP_LABELS: Record<PowerUpType, string> = {
-    freeze: '❄️ Freeze! Bubbles stopped!',
     double_points: '✨ Double Points!',
-    pop_distractors: '💥 Distractors Popped!',
-    slow_motion: '🐌 Slow Motion!',
     lightning_chain: '⚡ Lightning Chain! Distractors zapped!',
     rainbow_magnet: '🌈 Rainbow Magnet! Super target boost!',
 };
@@ -53,10 +46,7 @@ interface BubbleGameContainerProps {
     onPause?: () => void;
 }
 
-// Session-internal leveling thresholds (accelerating: 5,5,4,4,3,3...)
-const LEVEL_UP_THRESHOLDS = [5, 5, 4, 4, 3, 3, 3, 3, 3];
-const LEVEL_DOWN_THRESHOLD = 3; // consecutive wrong before down-level
-const PROBLEM_ROTATION_EVERY = 3; // rotate problem every N correct pops within a level
+// Session leveling thresholds now from SESSION_CONFIG in worldConfig
 
 export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     config,
@@ -68,25 +58,31 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     onOpenSettings = () => { },
     onPause = () => { }
 }) => {
-    const { playSound, play } = useSound();
-    const { logEvent } = useAnalytics();
     const { profile, updateProfile, recordSession } = useProfile();
+    const soundManager = useSoundManager({ soundGardenEnabled: profile?.settings?.soundGarden ?? false });
+    const { playFrenzy, playStreak, playLevelUp, playMilestone, playWrong: playWrongSound } = soundManager;
+    const { logEvent } = useAnalytics();
     const { recordQuestEvent } = useQuest();
-    const { playMelodyNote, playWrongMelody } = useMusicalSound(profile?.settings?.soundGarden ?? false);
     const { t } = useTranslation();
 
     // --- Session-Internal Leveling State ---
     const [sessionLevel, setSessionLevel] = useState(() => {
         // Seed from profile.estimatedLevel (capped at 10, warmup floor at 1)
         const profileLevel = profile?.capabilities?.estimatedLevel ?? 1;
-        return Math.max(1, Math.min(Math.round(profileLevel), 10));
+        return Math.max(1, Math.min(Math.round(profileLevel), MAX_LEVEL));
     });
     const [showLevelUp, setShowLevelUp] = useState(false);
+    // B1 Fix: Adaptive config state that feeds into useGameEngine's configRef.
+    // When harderConfig/simplerConfig are created, we also update this state
+    // so the spawn loop picks up changes to spawnIntervalMs and maxOnScreen.
+    const [adaptiveConfig, setAdaptiveConfig] = useState<GameConfig | null>(null);
     const theme = getThemeForLevel(sessionLevel);
     const consecutiveCorrectRef = useRef(0);
     const consecutiveWrongRef = useRef(0);
     const correctSinceRotationRef = useRef(0);
     const sessionLevelRef = useRef(1);
+    // ADR 2026-08-zen-answer-race (Fix 1): cross-entity pop lock
+    const answerLockRef = useRef(false);
 
     // --- Session Accuracy Tracking ---
     const sessionCorrectRef = useRef(0);
@@ -106,10 +102,13 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     }, [behavior, config]);
 
     // Hook into Engine
-    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget } = useGameEngine(config, behavior);
+    // B1 Fix: Merge adaptive config into base config so configRef in useGameEngine
+    // picks up changes to spawnIntervalMs, maxOnScreen, and distractorRatio.
+    const effectiveConfig = adaptiveConfig ?? config;
+    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget, fusionState, mergeEvents } = useGameEngine(effectiveConfig, behavior);
 
     // --- Boss Bubble State ---
-    const BOSS_LEVELS = [3, 6, 9]; // Boss appears at these session levels
+    // BOSS_LEVELS now imported from worldConfig
     const [showBossBanner, setShowBossBanner] = useState(false);
     const [bossDefeatedCelebration, setBossDefeatedCelebration] = useState(false);
     const bossSpawnedForLevelRef = useRef<Set<number>>(new Set());
@@ -121,7 +120,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
     // Trigger boss spawn when reaching boss levels
     useEffect(() => {
-        if (BOSS_LEVELS.includes(sessionLevel) && !bossSpawnedForLevelRef.current.has(sessionLevel)) {
+        if ((BOSS_LEVELS as readonly number[]).includes(sessionLevel) && !bossSpawnedForLevelRef.current.has(sessionLevel)) {
             bossSpawnedForLevelRef.current.add(sessionLevel);
             // Small delay so level-up animation finishes first
             setTimeout(() => {
@@ -134,21 +133,21 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 }
                 spawnBoss(sessionLevel);
                 setShowBossBanner(true);
-                play('frenzy'); // Use an exciting sound
+                playFrenzy(); // Use an exciting sound
                 setTimeout(() => setShowBossBanner(false), 3000);
             }, 500);
         }
-    }, [sessionLevel, spawnBoss, play, behavior, profile]);
+    }, [sessionLevel, spawnBoss, playFrenzy, behavior, profile]);
 
     const prevComboRef = useRef(gameState.combo);
     const prevPowerUpStateRef = useRef(gameState.powerUpState);
 
     useEffect(() => {
         if (gameState.combo === 5 && prevComboRef.current !== 5) {
-            play('streak');
+            playStreak();
         }
         prevComboRef.current = gameState.combo;
-    }, [gameState.combo, play]);
+    }, [gameState.combo, playStreak]);
 
     // --- Power-Up Toast Helper ---
     const showPowerUpToast = useCallback((type: PowerUpType) => {
@@ -204,19 +203,24 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 const harderConfig: GameConfig = {
                     ...config,
                     distractorRatio: Math.round(config.distractorRatio * 1.3),
+                    // B1 Fix: Also adapt spawn rate (faster) and max on screen (more)
+                    spawnIntervalMs: Math.max(400, Math.round(config.spawnIntervalMs * 0.85)),
+                    maxOnScreen: Math.min(12, config.maxOnScreen + 1),
                 };
+                setAdaptiveConfig(harderConfig);
                 behavior.regenerateProblem(sessionLevelRef.current, harderConfig, correctCount);
             }
 
             // Problem rotation within a level (every N correct)
-            if (correctSinceRotationRef.current >= PROBLEM_ROTATION_EVERY) {
+            if (correctSinceRotationRef.current >= SESSION_CONFIG.PROBLEM_ROTATION_EVERY) {
                 correctSinceRotationRef.current = 0;
+                setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on rotation
                 behavior.regenerateProblem(sessionLevelRef.current, config, correctCount);
             }
 
             // Level up check (accelerating thresholds)
-            const thresholdIndex = Math.min(sessionLevelRef.current - 1, LEVEL_UP_THRESHOLDS.length - 1);
-            const needed = LEVEL_UP_THRESHOLDS[thresholdIndex];
+            const thresholdIndex = Math.min(sessionLevelRef.current - 1, SESSION_CONFIG.LEVEL_UP_THRESHOLDS.length - 1);
+            const needed = SESSION_CONFIG.LEVEL_UP_THRESHOLDS[thresholdIndex];
             if (consecutiveCorrectRef.current >= needed) {
                 consecutiveCorrectRef.current = 0;
                 if (sessionLevelRef.current < 10) {
@@ -224,8 +228,9 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     setSessionLevel(newLevel);
                     sessionLevelRef.current = newLevel;
                     setShowLevelUp(true);
-                    play('levelUp');
-                    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on level change
+                    playLevelUp();
+                    soundManager.vibrate([100, 50, 100]);
                     setTimeout(() => setShowLevelUp(false), 2000);
                     // Regenerate problem at new level
                     behavior.regenerateProblem(newLevel, config, correctCount);
@@ -240,27 +245,41 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
             // Adaptive difficulty: struggling (>= 2 wrong, before level-down threshold of 3)
             // Reduce distractorRatio by 0.5x for a simpler problem, keep level same
-            if (consecutiveWrongRef.current >= 2 && consecutiveWrongRef.current < LEVEL_DOWN_THRESHOLD) {
+            if (consecutiveWrongRef.current >= 2 && consecutiveWrongRef.current < SESSION_CONFIG.LEVEL_DOWN_THRESHOLD) {
                 const simplerConfig: GameConfig = {
                     ...config,
                     distractorRatio: Math.max(1, Math.round(config.distractorRatio * 0.5)),
+                    // B1 Fix: Also adapt spawn rate (slower) and max on screen (fewer)
+                    spawnIntervalMs: Math.round(config.spawnIntervalMs * 1.15),
+                    maxOnScreen: Math.max(3, config.maxOnScreen - 1),
                 };
+                setAdaptiveConfig(simplerConfig);
                 behavior.regenerateProblem(sessionLevelRef.current, simplerConfig, correctCount);
             }
 
             // Level down after too many consecutive wrong (floor at 1)
-            if (consecutiveWrongRef.current >= LEVEL_DOWN_THRESHOLD && sessionLevelRef.current > 1) {
+            if (consecutiveWrongRef.current >= SESSION_CONFIG.LEVEL_DOWN_THRESHOLD && sessionLevelRef.current > 1) {
                 consecutiveWrongRef.current = 0;
                 const newLevel = sessionLevelRef.current - 1;
                 setSessionLevel(newLevel);
                 sessionLevelRef.current = newLevel;
+                setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on level change
                 behavior.regenerateProblem(newLevel, config, correctCount);
                 logEvent('session_level_down', { level: newLevel });
             }
         }
-    }, [behavior, config, logEvent, play, gameState.targetsPopped]);
+    }, [behavior, config, logEvent, playLevelUp, gameState.targetsPopped]);
 
     const onPopWrapper = useCallback((id: string, val: number | string, x: number, y: number) => {
+        // ADR 2026-08-zen-answer-race (Fix 1): answer-lock to prevent the
+        // cross-entity race. A target + distractor popped near-simultaneously
+        // would both be processed, letting the second validate against a stale/
+        // rotated targetValue (breaking score + resetting answer state in zen).
+        // While a pop is being processed, drop further pops for a short window.
+        if (answerLockRef.current) return;
+        answerLockRef.current = true;
+        window.setTimeout(() => { answerLockRef.current = false; }, SESSION_CONFIG.ANSWER_LOCK_MS);
+
         // Find entity to check if it's a power-up BEFORE popping
         const entity = entities.find(e => e.id === id);
         const isPowerUpBubble = entity?.isPowerUp === true;
@@ -272,7 +291,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             const bossResult = isCorrect as BossDefeatResult;
             // Show celebration
             setBossDefeatedCelebration(true);
-            play('levelUp');
+            playLevelUp();
             // Force level-up after boss defeat
             if (sessionLevelRef.current < 10) {
                 const newLevel = sessionLevelRef.current + 1;
@@ -306,11 +325,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
 
         // --- Power-Up Bubble Handling ---
         if (isPowerUpBubble && entity?.powerUpType) {
-            // Play special sound
-            play('frenzy');
+            // Play special sound (unique power-up chime)
+            playFrenzy();
 
             // Show toast for instant effects (timed effects handled by state-change useEffect)
-            if (entity.powerUpType === 'pop_distractors' || entity.powerUpType === 'lightning_chain') {
+            if (entity.powerUpType === 'lightning_chain') {
                 showPowerUpToast(entity.powerUpType);
             }
 
@@ -345,7 +364,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     currentCapabilities,
                     isCorrect,
                     () => {
-                        play('milestone');
+                        playMilestone();
                     }
                 );
                 updateProfile(profile.id, { capabilities: updatedCapabilities });
@@ -361,27 +380,19 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         setExplosions(prev => [...prev, { id: `${id}-exp`, x, y }]);
 
         if (isCorrect) {
-            if (profile?.settings?.soundGarden) {
-                playMelodyNote();
-            } else {
-                playSound('correct');
-            }
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(50);
+            soundManager.playCorrect();
+            soundManager.vibrate(50);
         } else if (isCorrect === false) { // distinct from undefined
-            if (profile?.settings?.soundGarden) {
-                playWrongMelody();
-            } else {
-                playSound('wrong');
-            }
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            soundManager.playWrong();
+            soundManager.vibrate([30, 50, 30]);
         }
-    }, [enginePop, playSound, play, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, playMelodyNote, playWrongMelody, recordQuestEvent, gameState.combo, updateBossTarget, behavior]);
+    }, [enginePop, playFrenzy, playLevelUp, playMilestone, playWrongSound, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, soundManager, recordQuestEvent, gameState.combo, updateBossTarget, behavior]);
 
     // Monitor Game Over / Victory
     useEffect(() => {
         if (gameState.isVictory) {
-            playSound('levelUp');
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            playLevelUp();
+            soundManager.vibrate([100, 50, 100]);
             recordSession({
                 date: new Date().toISOString().slice(0, 10),
                 durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
@@ -394,8 +405,8 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         } else if (gameState.isGameOver) {
             // Handle Loss - Retry?
             // For now just exit false
-            playSound('wrong');
-            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            playWrongSound();
+            soundManager.vibrate([100, 50, 100]);
             recordSession({
                 date: new Date().toISOString().slice(0, 10),
                 durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
@@ -406,11 +417,12 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             });
             setTimeout(() => onComplete(false, sessionCorrectRef.current, sessionAttemptsRef.current), 1500);
         }
-    }, [gameState.isVictory, gameState.isGameOver, onComplete, playSound, recordSession, recordQuestEvent]);
+    }, [gameState.isVictory, gameState.isGameOver, onComplete, soundManager, recordSession, recordQuestEvent]);
 
     const instruction = behavior.getInstruction ? behavior.getInstruction() : undefined;
 
-    // Compute effective speed multiplier for bubbles (applies slow_motion / freeze)
+    // Compute effective speed multiplier for bubbles (always 1 — freeze /
+    // slow_motion were removed from the power-up set).
     const effectiveSpeedMultiplier = getEffectiveSpeedMultiplier();
 
     return (
@@ -483,6 +495,18 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                             <Zap size={14} className="text-orange-500 fill-orange-500" />
                             <span className="font-bold text-slate-700 text-xs">{gameState.combo}</span>
                         </div>
+                        {/* Fusion streak badge (Combo Fusion mode) */}
+                        {fusionState && (
+                            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
+                                <span className="text-xs">🌀</span>
+                                <span className={`font-bold text-xs ${fusionState.fusionStreak >= 3 ? 'text-cyan-700' : 'text-slate-700'}`}>{fusionState.fusionStreak}</span>
+                                {fusionState.fusionStreak >= 3 && (
+                                    <span className="text-[10px] font-bold text-violet-600">
+                                        {fusionState.fusionStreak >= 10 ? '5×' : fusionState.fusionStreak >= 7 ? '3×' : fusionState.fusionStreak >= 5 ? '2×' : '1.5×'}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                         {/* Level badge */}
                         <div className="flex items-center gap-0.5 bg-purple-100/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-purple-200">
                             <Star size={12} className="text-purple-500 fill-purple-500" />
@@ -583,6 +607,8 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         isBoss={e.isBoss}
                         bossHealth={e.bossHealth}
                         bossMaxHealth={e.bossMaxHealth}
+                        isFusion={e.isFusion}
+                        fusionTier={e.fusionTier}
                     />
                 ))}
             </div>
@@ -595,6 +621,24 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     y={exp.y}
                     onComplete={() => setExplosions(prev => prev.filter(e => e.id !== exp.id))}
                 />
+            ))}
+
+            {/* Combo Fusion Merge Animation Layer */}
+            {mergeEvents && mergeEvents.map(ev => (
+                <motion.div
+                    key={ev.id}
+                    className="absolute z-40 pointer-events-none"
+                    style={{ left: `${ev.centerX}vw`, top: `${ev.centerY}px`, transform: 'translate(-50%, -50%)' }}
+                    initial={{ scale: 0.3, opacity: 0 }}
+                    animate={{ scale: 1.6, opacity: [0, 1, 0] }}
+                    transition={{ duration: 0.9, ease: 'easeOut' }}
+                >
+                    <div className="flex flex-col items-center">
+                        <span className="text-3xl">🌀</span>
+                        <span className="text-xl font-bold text-cyan-600 drop-shadow-md">+{ev.points}</span>
+                        <span className="text-xs font-bold text-violet-600">×{ev.multiplier} · {ev.consumedIds.length} merged</span>
+                    </div>
+                </motion.div>
             ))}
             <FrenzyOverlay isActive={gameState.isFrenzy} combo={gameState.combo} variant="bubble" />
         </div>

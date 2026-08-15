@@ -1,5 +1,6 @@
 import { RandomUtils } from '../utils/ProblemUtils';
 import type { UserCapabilityProfile } from '../../types/progress';
+import { MEMORY_LEVEL_OPS } from '../../lib/worldConfig';
 
 export interface MemoryCard {
     id: string;
@@ -17,21 +18,7 @@ export interface MemoryGameConfig {
     problemTypes: string[]; // which problem types to generate
 }
 
-// Level → appropriate operation pool
-// We generate equations DIRECTLY (not via MathModule) to guarantee
-// every equation has a clean, findable answer that maps 1:1 to a card.
-const LEVEL_OPS: Record<number, ('+' | '-' | '×' | '÷')[]> = {
-    1: ['+', '-'],
-    2: ['+', '-'],
-    3: ['+', '-'],
-    4: ['+', '-', '×'],
-    5: ['+', '-', '×', '÷'],
-    6: ['+', '-', '×', '÷'],
-    7: ['+', '-', '×', '÷'],
-    8: ['+', '-', '×', '÷'],
-    9: ['+', '-', '×', '÷'],
-    10: ['+', '-', '×', '÷'],
-};
+// MEMORY_LEVEL_OPS now imported from worldConfig (MEMORY_LEVEL_OPS)
 
 export class MemoryFactory {
     /**
@@ -49,7 +36,7 @@ export class MemoryFactory {
         const usedAnswers = new Set<number>();
         const usedEquations = new Set<string>();
 
-        const ops = LEVEL_OPS[config.level] || LEVEL_OPS[5];
+        const ops = [...(MEMORY_LEVEL_OPS[config.level] || MEMORY_LEVEL_OPS[5])];
         const maxAnswer = 20 + config.level * 5; // Scale answer range with level
 
         let attempts = 0;

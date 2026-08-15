@@ -4,6 +4,7 @@ import type { SessionRecord } from '../types/analytics';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { isValidProfileName } from '../lib/validation';
+import { STORAGE_KEYS } from '../lib/worldConfig';
 
 const PET_DEFAULT: PetState = { species: 'owl', name: 'Buddy', happiness: 60, unlockedTricks: [], lastFedDate: null };
 
@@ -35,7 +36,6 @@ interface ProfileContextType {
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
-const PROFILES_STORAGE_KEY = 'hebrew-math-profiles';
 
 const VALID_MASCOT_IDS: UserProfile['mascotId'][] = ['owl', 'bear', 'ant', 'lion'];
 
@@ -226,7 +226,7 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [allProfiles, setAllProfiles] = useState<UserProfile[]>(() => {
-        const savedProfiles = localStorage.getItem(PROFILES_STORAGE_KEY);
+        const savedProfiles = localStorage.getItem(STORAGE_KEYS.PROFILES);
         let profiles: UserProfile[] = [];
 
         if (savedProfiles) {
@@ -265,7 +265,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Persist profiles whenever they change
     useEffect(() => {
         if (allProfiles.length > 0) {
-            localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(allProfiles));
+            localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(allProfiles));
         }
     }, [allProfiles]);
 

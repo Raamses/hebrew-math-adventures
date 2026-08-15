@@ -67,4 +67,39 @@ describe('LessonEngine', () => {
 
         unsubscribe();
     });
+
+    describe('performance tracking (star tiers)', () => {
+        it('starts at zero performance', () => {
+            const engine = new LessonEngine(mockLesson);
+            expect(engine.getPerformance()).toEqual({ correct: 0, attempts: 0 });
+        });
+
+        it('counts a successful fill as a correct answer', () => {
+            const engine = new LessonEngine(mockLesson);
+            engine.onItemDropped('item-1', 'target-1');
+            expect(engine.getPerformance()).toEqual({ correct: 1, attempts: 1 });
+        });
+
+        it('counts a drop into empty space (null target) as a mistake', () => {
+            const engine = new LessonEngine(mockLesson);
+            engine.onItemDropped('item-1', null);
+            expect(engine.getPerformance()).toEqual({ correct: 0, attempts: 1 });
+        });
+
+        it('counts a drop into a full target as a mistake', () => {
+            const engine = new LessonEngine(mockLesson);
+            // target-1 capacity is 1 → first fill is correct, second is a mistake
+            engine.onItemDropped('item-1', 'target-1');
+            engine.onItemDropped('item-2', 'target-1');
+            expect(engine.getPerformance()).toEqual({ correct: 1, attempts: 2 });
+        });
+
+        it('recordMistake() adds an attempt without a correct answer', () => {
+            const engine = new LessonEngine(mockLesson);
+            engine.recordMistake();
+            engine.recordMistake();
+            engine.onItemDropped('item-1', 'target-1');
+            expect(engine.getPerformance()).toEqual({ correct: 1, attempts: 3 });
+        });
+    });
 });

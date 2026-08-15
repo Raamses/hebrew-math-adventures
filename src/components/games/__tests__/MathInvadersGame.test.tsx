@@ -15,17 +15,26 @@ vi.mock('../../../context/ProfileContext', () => ({
         toggleSoundGarden: vi.fn(),
     }),
 }));
-vi.mock('../../../hooks/useSound', () => ({
-    useSound: () => ({ playSound: vi.fn(), isMuted: false }),
-}));
-vi.mock('../../../hooks/useMusicalSound', () => ({
-    useMusicalSound: () => ({
+vi.mock('../../../hooks/useSoundManager', () => ({
+    useSoundManager: () => ({
+        playCorrect: vi.fn(),
+        playWrong: vi.fn(),
+        playLevelUp: vi.fn(),
+        playGameOver: vi.fn(),
+        playClick: vi.fn(),
+        playStreak: vi.fn(),
+        playFrenzy: vi.fn(),
+        playMilestone: vi.fn(),
+        playSound: vi.fn(),
+        play: vi.fn(),
+        isMuted: false,
+        toggleMute: vi.fn(),
+        isSoundGarden: false,
+        melodyCombo: 0,
+        resetMelodyCombo: vi.fn(),
         playMelodyNote: vi.fn(),
         playWrongMelody: vi.fn(),
-        isSoundGarden: false,
-        toggleSoundGarden: vi.fn(),
-        melodyCombo: 0,
-        isMuted: false,
+        vibrate: vi.fn(),
     }),
 }));
 vi.mock('../../../engines/invader/useInvaderEngine', () => ({
@@ -36,9 +45,9 @@ vi.mock('../../../engines/invader/useInvaderEngine', () => ({
                 { id: 'e2', equation: '7 - 2', x: 30, y: 40, isBoss: false },
             ],
             answers: [
-                { id: 'a1', value: 8, x: 25, y: 70, isPopped: false },
-                { id: 'a2', value: 5, x: 75, y: 70, isPopped: false },
-                { id: 'a3', value: 3, x: 50, y: 85, isPopped: false },
+                { id: 'a1', value: 8, x: 25, y: 70, isPopped: false, equationId: 'e1' },
+                { id: 'a2', value: 5, x: 75, y: 70, isPopped: false, equationId: 'e2' },
+                { id: 'a3', value: 3, x: 50, y: 85, isPopped: false, equationId: 'e1' },
             ],
             score: 0,
             lives: 3,

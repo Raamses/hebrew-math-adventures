@@ -10,6 +10,7 @@
     ],
     "module": "ESNext",
     "types": [
+      "node",
       "vite/client"
     ],
     "skipLibCheck": true,
@@ -37,5 +38,11 @@
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/**/__tests__/**",
+    "src/**/__mocks__/**",
+    "src/**/*.test.*",
+    "src/**/*.spec.*"
   ]
 }

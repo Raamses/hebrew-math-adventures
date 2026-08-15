@@ -3,6 +3,7 @@ import { MathModule } from '../../MathModule';
 import { INITIAL_CAPABILITY_PROFILE } from '../../../types/progress';
 import type { ArithmeticProblem, Problem, SensoryProblem } from '../../../lib/gameLogic';
 import type { BossGate } from '../../../lib/bossGate';
+import { SPAWN_CONFIG } from '../../../lib/worldConfig';
 
 // Helper: compute the result of an arithmetic operation
 function computeResult(num1: number, num2: number, operator: string): number {
@@ -22,8 +23,8 @@ export class MathBehaviorStrategy implements IGameBehavior {
 
     // Anti-repeat: track recent problem signatures to avoid duplicates
     private recentSignatures: string[] = [];
-    private static readonly MAX_RECENT_SIGNATURES = 12;
-    private static readonly MAX_REGEN_ATTEMPTS = 8;
+    // Now from SPAWN_CONFIG in worldConfig
+    // Now from SPAWN_CONFIG in worldConfig
 
     // Spawn bag: guarantees target/distractor ratio over short windows
     private spawnBag: boolean[] = [];
@@ -40,10 +41,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
     private bossGateIndex = 0;
 
     // Config Constants
-    private static readonly CONFIG = {
-        CHANCE_LARGE: 0.8,
-        CHANCE_MEDIUM: 0.5,
-    } as const;
+    // CHANCE_LARGE and CHANCE_MEDIUM now from SPAWN_CONFIG in worldConfig
 
     private FALLBACK_PROBLEM: ArithmeticProblem = {
         type: 'arithmetic',
@@ -75,7 +73,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
     }
 
 
-    private generateAndSetProblem(level: number, config: GameConfig, correctCount = 0): void {
+    private generateAndSetProblem(level: number, config: GameConfig, _correctCount?: number): void {
         // Store config override so generateNext can use the adaptive ratio
         this.configOverride = config;
         const profile = { ...INITIAL_CAPABILITY_PROFILE, estimatedLevel: level };
@@ -84,9 +82,9 @@ export class MathBehaviorStrategy implements IGameBehavior {
         let attempts = 0;
         let signature = '';
 
-        const trivialSignatures = correctCount >= 3
-            ? this.collectTrivialSignatures()
-            : [];
+        // Anti-repeat: always exclude trivial signatures (0+0, 1-1, 0*N),
+        // not just after correctCount >= 3, to prevent back-to-back duplicates.
+        const trivialSignatures = this.collectTrivialSignatures();
 
         // Try up to MAX_REGEN_ATTEMPTS to get a non-repeating problem
         do {
@@ -96,7 +94,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
             });
             signature = this.problemSignature(problem);
             attempts++;
-        } while (this.recentSignatures.includes(signature) && attempts < MathBehaviorStrategy.MAX_REGEN_ATTEMPTS);
+        } while (this.recentSignatures.includes(signature) && attempts < SPAWN_CONFIG.MAX_REGEN_ATTEMPTS);
 
         // P0-4: Progressive anti-repeat relaxation (before level fallback)
         if (this.recentSignatures.includes(signature)) {
@@ -133,6 +131,28 @@ export class MathBehaviorStrategy implements IGameBehavior {
                 });
                 signature = this.problemSignature(problem);
                 if (!this.recentSignatures.includes(signature)) break;
+            }
+        }
+
+        // ADR 2026-08-zen-answer-race (Fix 2): final anti-repeat re-check.
+        // If every fallback level still collided, force a perturbation so a
+        // duplicate is never admitted to setProblem (the previous path could
+        // pass the colliding problem through with no final check -> 0+0 repeats).
+        if (this.recentSignatures.includes(signature) && problem.type === 'arithmetic') {
+            const ap = problem as ArithmeticProblem;
+            // Perturb: swap operator to its inverse-ish pair, or bump num2 by +1,
+            // then re-validate against recent signatures before accepting.
+            const candidates: ArithmeticProblem[] = [
+                { ...ap, num2: ap.num2 + 1 },
+                { ...ap, num2: Math.max(0, ap.num2 - 1) },
+            ];
+            for (const cand of candidates) {
+                const candSig = this.problemSignature(cand);
+                if (!this.recentSignatures.includes(candSig)) {
+                    problem = cand;
+                    signature = candSig;
+                    break;
+                }
             }
         }
 
@@ -208,7 +228,7 @@ export class MathBehaviorStrategy implements IGameBehavior {
 
     private pushSignature(sig: string): void {
         this.recentSignatures.push(sig);
-        if (this.recentSignatures.length > MathBehaviorStrategy.MAX_RECENT_SIGNATURES) {
+        if (this.recentSignatures.length > SPAWN_CONFIG.MAX_RECENT_SIGNATURES) {
             this.recentSignatures.shift();
         }
     }
@@ -246,9 +266,9 @@ export class MathBehaviorStrategy implements IGameBehavior {
             this.lastRatio = effectiveConfig.distractorRatio;
         }
 
-        // Refill empty bag
+        // Refill empty bag — use effectiveConfig ratio (m4 fix: was using base config.distractorRatio)
         if (this.spawnBag.length === 0) {
-            this.spawnBag = this.buildSpawnBag(config.distractorRatio);
+            this.spawnBag = this.buildSpawnBag(effectiveConfig.distractorRatio);
         }
 
         // Pop next target/distractor decision from shuffled bag
@@ -331,34 +351,81 @@ export class MathBehaviorStrategy implements IGameBehavior {
                 candidates.push(swapped);
             }
 
-            // Filter: remove answer, negatives, > 999
-            const valid = candidates.filter(c => c !== answer && c >= 0 && c <= 999);
+            // Filter: remove answer, negatives, > 999, and distractors outside the
+            // remediated range (Bubble Spawn Remediation: tight pedagogically-close distractors).
+            // For target < 20: range = max(3, floor(target * 0.3))
+            // For target >= 20: range = max(10, floor(target * 0.2))
+            // Never more than 2x the answer away.
+            const remediatedRange = safeTarget < 20
+                ? Math.max(3, Math.floor(safeTarget * 0.3))
+                : Math.max(10, Math.floor(safeTarget * 0.2));
+            const maxDist = Math.min(remediatedRange, safeTarget * 2);
+            const valid = candidates.filter(c =>
+                c !== answer && c >= 0 && c <= 999 && Math.abs(c - answer) <= maxDist
+            );
 
             if (valid.length > 0) {
                 return valid[Math.floor(Math.random() * valid.length)];
             }
         }
 
-        // P1-12: Scale distractor range to target magnitude (min 5 instead of 10)
-        const range = Math.max(5, Math.floor(safeTarget * 0.4));
-        const offset = Math.floor(range / 2);
+        // Bubble Spawn Remediation: tighter distractor range based on target magnitude
+        // For target < 20: range = max(3, floor(target * 0.3)) — close, plausible distractors
+        // For target >= 20: range = max(10, floor(target * 0.2)) — tighter proportional range
+        // Never generate distractors more than 2x the answer away
+        const range = safeTarget < 20
+            ? Math.max(3, Math.floor(safeTarget * 0.3))
+            : Math.max(10, Math.floor(safeTarget * 0.2));
+        // Clamp range to 2x target (never more than 2x the answer away)
+        const maxRange = safeTarget * 2;
+        const effectiveRange = Math.min(range, maxRange);
+        const offset = Math.floor(effectiveRange / 2);
         let value: number;
         do {
-            value = safeTarget + Math.floor(Math.random() * range) - offset;
-            value = Math.min(value, 999);
-        } while (value === this.targetValue || value < 0);
+            value = safeTarget + Math.floor(Math.random() * effectiveRange) - offset;
+            // Clamp to >= 0 (no negative numbers for ages 4-8) and <= 999
+            value = Math.max(0, Math.min(value, 999));
+        } while (value === this.targetValue);
         return value;
     }
 
     private determineVariant(): 'small' | 'medium' | 'large' {
         const rand = Math.random();
-        if (rand > MathBehaviorStrategy.CONFIG.CHANCE_LARGE) return 'large';
-        if (rand > MathBehaviorStrategy.CONFIG.CHANCE_MEDIUM) return 'medium';
+        if (rand > SPAWN_CONFIG.CHANCE_LARGE) return 'large';
+        if (rand > SPAWN_CONFIG.CHANCE_MEDIUM) return 'medium';
         return 'small';
     }
 
+    /**
+     * Returns the current target value. Used by the engine to snapshot
+     * the target at the moment of a pop, so bubbles spawned before a
+     * target rotation can be detected as stale and ignored.
+     */
+    getTargetValue(): number {
+        return this.targetValue;
+    }
+
+    /**
+     * Validate an entity against the CURRENT target (normal path).
+     */
     validate(entity: BubbleEntity): boolean {
         return entity.internalValue === this.targetValue;
+    }
+
+    /**
+     * Validate an entity against a SNAPSHOT target value.
+     *
+     * After a correct answer rotates the problem via regenerateProblem(),
+     * already-spawned target bubbles still carry the OLD internalValue.
+     * Using this method with a snapshot taken BEFORE the rotation lets the
+     * engine distinguish:
+     *   - bubble matches snapshot → stale (was correct before rotation) → ignore
+     *   - bubble doesn't match snapshot → genuinely wrong → count as wrong
+     */
+    validateAgainst(entity: BubbleEntity, snapshotTarget: number): 'correct' | 'stale' | 'wrong' {
+        if (entity.internalValue === this.targetValue) return 'correct';
+        if (entity.internalValue === snapshotTarget) return 'stale';
+        return 'wrong';
     }
 
     // --- Boss Gate Methods ---

@@ -12,13 +12,17 @@ vi.mock('framer-motion', () => ({
     AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
 }))
 
-vi.mock('lucide-react', () => ({
-    Clock: () => React.createElement('span', { 'data-testid': 'icon-clock' }),
-    RotateCcw: () => React.createElement('span', { 'data-testid': 'icon-rotate' }),
-    ArrowLeft: () => React.createElement('span', { 'data-testid': 'icon-arrow' }),
-    Check: () => React.createElement('span', { 'data-testid': 'icon-check' }),
-    Sparkles: () => React.createElement('span', { 'data-testid': 'icon-sparkles' }),
-}))
+vi.mock('lucide-react', async (importOriginal) => {
+    const actual = await importOriginal() as typeof import('lucide-react')
+    return {
+        ...actual,
+        Clock: () => React.createElement('span', { 'data-testid': 'icon-clock' }),
+        RotateCcw: () => React.createElement('span', { 'data-testid': 'icon-rotate' }),
+        ArrowLeft: () => React.createElement('span', { 'data-testid': 'icon-arrow' }),
+        Check: () => React.createElement('span', { 'data-testid': 'icon-check' }),
+        Sparkles: () => React.createElement('span', { 'data-testid': 'icon-sparkles' }),
+    }
+})
 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (_k: string, f: string) => f }),
@@ -38,18 +42,26 @@ vi.mock('../../../context/ProfileContext', () => ({
     }),
 }))
 
-vi.mock('../../../hooks/useSound', () => ({
-    useSound: () => ({ playSound: vi.fn(), isMuted: false }),
-}))
-
-vi.mock('../../../hooks/useMusicalSound', () => ({
-    useMusicalSound: () => ({
+vi.mock('../../../hooks/useSoundManager', () => ({
+    useSoundManager: () => ({
+        playCorrect: vi.fn(),
+        playWrong: vi.fn(),
+        playLevelUp: vi.fn(),
+        playGameOver: vi.fn(),
+        playClick: vi.fn(),
+        playStreak: vi.fn(),
+        playFrenzy: vi.fn(),
+        playMilestone: vi.fn(),
+        playSound: vi.fn(),
+        play: vi.fn(),
+        isMuted: false,
+        toggleMute: vi.fn(),
+        isSoundGarden: false,
+        melodyCombo: 0,
+        resetMelodyCombo: vi.fn(),
         playMelodyNote: vi.fn(),
         playWrongMelody: vi.fn(),
-        isSoundGarden: false,
-        toggleSoundGarden: vi.fn(),
-        melodyCombo: 0,
-        isMuted: false,
+        vibrate: vi.fn(),
     }),
 }))
 

@@ -1,0 +1,80 @@
+---
+type: moc
+purpose: "Map of Content — single entry point to the whole project"
+project: hebrew-math-adventures
+updated: 2026-08-09
+tags: [index, moc]
+---
+
+# 🗺 INDEX — Hebrew Math Adventures
+
+Everything about this project, one place. **Start here.**
+
+## ⚙️ Project at a glance
+- **Project:** [[projects/hebrew-math-adventures]]
+- **Repo:** `github.com/Raamses/hebrew-math-adventures` (local: `~/.openclaw/workspace/hebrew-math-adventures`)
+- **Live demo:** https://hebrew-math-adventures-2025.web.app
+- **Stack:** React 19 + TS + Vite 7 (Rolldown) + Tailwind v4 + Framer Motion 12 + Firebase
+- **Audience:** Israeli kids, ages 5–11, grades 1–6
+- **Current branch:** `sdlc/loop-v0`
+- **Owner:** Ram
+
+## ⚖️ Rules (non-negotiable — I load these at startup)
+- [[rules/rtl-hebrew]] — RTL & Hebrew compliance (CRITICAL)
+- [[rules/tech-stack]] — React 19 / Vite 7 / Tailwind v4 / Framer Motion
+- [[rules/styling-motion]] — Tailwind v4 + animation standards
+- [[rules/architecture]] — directory, typing, i18n, component patterns
+- [[rules/math-curriculum]] — level math standards & generation rules
+- [[rules/game-flow]] — game flow control & restart logic
+- [[rules/quality-gates]] — verification, lint, build, testing gates
+
+## 🏛 Architecture
+- [[architecture/system-overview]] — data flow, director-module pattern
+- [[architecture/feature-inventory]] — every feature, status, location
+- [[architecture/component-map]] — source tree & responsibilities
+
+## 🧭 Decisions (ADRs — dated)
+- [[decisions/2026-07-spawn-overhaul]] — bubble spawn engine rework (P0+P1)
+- [[decisions/2026-08-dynamic-star-tiers]] — dynamic star rewards by performance tier
+- [[decisions/2026-08-zen-answer-race]] — zen answer race + anti-repeat fix
+- [[decisions/2026-08-centralize-sound]] — centralize sound handling in `useSound`
+- [[decisions/2026-08-world-config-consolidation]] — consolidate world config into `worldConfig.ts`
+- *(add new decisions here as they're made)*
+
+## 📚 Domain / Curriculum
+- [[domain/curriculum-levels]] — level-by-level math standards (ages 5–11)
+- [[domain/math-generation]] — Bag Deck algorithm, 3-digit rules, repetition guard
+- [[domain/bubble-spawn-design]] — playability design intent (anti-stale-gameplay)
+- [[domain/analytics]] — GA4 analytics: event taxonomy, real data, playability metrics
+- [[domain/engagement-trend-2026-08-09]] — engagement time trend by date (28-day window, queried 2026-08-09)
+- [[domain/daily-quests]] — daily challenge, quests, streak bonuses, stamp album
+- [[domain/powerups]] — power-up system: types, config, spawn, activation
+
+
+## 📊 GA4 Snapshots (automated daily)
+- `vault/snapshots/` — daily GA4 analytics snapshots (cron at 09:00 GMT+3)
+- Latest: [[snapshots/ga4-2026-08-09]]
+- Script: `scripts/ga4-snapshot.sh` — queries GA4 Data API via `gog` CLI
+- Config: `PROPERTY_ID=519138010`, 1-day window + 28-day funnel context
+
+## 🗺 Roadmap & Backlog
+- [[roadmap/current-work]] — what's in flight right now
+- [[roadmap/backlog]] — technical debt & future work
+- [[roadmap/known-issues]] — open problems (e.g. bubble spawn playability)
+
+## 📄 References (source docs in repo)
+- [[references/git-sync]] — how to keep the vault in sync (laptop Obsidian ↔ Pi repo)
+- `docs/plans/PRODUCT_OVERVIEW.md` — the canonical feature/architecture audit
+- `docs/plans/roadmap.md`, `docs/plans/backlog.md`
+- `ANTIGRAVITY_RULES.md`, `.agent/rules/*.md`
+- `SPAWN_OVERHAUL_PLAN.md`, `CHALLENGE_CLUTTER_PLAN.md`
+
+## 🔍 Reviews
+- [[reviews/e2e-coverage-review]] — devil's advocate review of E2E coverage expansion (BLOCKED)
+- [[reviews/vault-completeness-audit]] — vault completeness audit v1: missing domain docs & consistency (2026-08-09)
+- [[reviews/vault-completeness-audit-v2]] — vault completeness re-audit v2: 21 findings, 3 new since v1 (2026-08-11)
+
+## 🧭 Conventions
+- Every significant decision → dated note in [[decisions/]]
+- Every rule → note in [[rules/]] with frontmatter
+- If a rule conflicts with code → **vault wins**, fix the code

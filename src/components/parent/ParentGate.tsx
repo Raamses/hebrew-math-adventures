@@ -59,7 +59,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div data-testid="parent-gate" className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
             <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm relative" dir={i18n.dir()}>
                 <button
                     onClick={onCancel}
@@ -77,6 +77,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
 
                 <form onSubmit={handleSubmit}>
                     <input
+                        data-testid="parent-gate-input"
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"

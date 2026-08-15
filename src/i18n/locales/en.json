@@ -512,7 +512,11 @@
       "title": "Survival",
       "desc": "3 Lives. Don't make a mistake!"
     },
-    "bestScore": "Best: {{score}}"
+    "bestScore": "Best: {{score}}",
+    "checkpoint": {
+      "3": "A third of the way! Awesome! 🌟",
+      "6": "Almost there! Well done! 🎯"
+    }
   },
   "memory": {
     "title": "Memory Duel",

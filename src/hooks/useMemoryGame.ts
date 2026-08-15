@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { MemoryFactory, type MemoryCard, type MemoryGameConfig } from '../engines/memory/MemoryFactory';
 import type { UserCapabilityProfile } from '../types/progress';
+import { STORAGE_KEYS } from '../lib/worldConfig';
 
 export interface MemoryGameStats {
     time: number;
@@ -15,7 +16,6 @@ export interface MemoryBestScore {
     bestMoves: number | null;
 }
 
-const BEST_SCORE_KEY = 'hebrew-math-memory-best';
 
 type GameStatus = 'idle' | 'playing' | 'complete';
 
@@ -38,6 +38,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     // Refs to avoid stale closures in flipCard
     const cardsRef = useRef<MemoryCard[]>([]);
     const flippedRef = useRef<number[]>([]);
+    const checkingRef = useRef(false);
     const statusRef = useRef<GameStatus>('idle');
     const wrongRef = useRef<number[]>([]);
     const movesRef = useRef(0);
@@ -62,7 +63,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     const [bestScore, setBestScore] = useState<MemoryBestScore>({ bestTime: null, bestMoves: null });
     const loadBestScore = useCallback(() => {
         try {
-            const raw = localStorage.getItem(BEST_SCORE_KEY);
+            const raw = localStorage.getItem(STORAGE_KEYS.MEMORY_BEST_SCORE);
             if (raw) {
                 const parsed = JSON.parse(raw);
                 setBestScore({
@@ -78,13 +79,13 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
     // Save best score to localStorage
     const saveBestScore = useCallback((time: number, movesCount: number) => {
         try {
-            const raw = localStorage.getItem(BEST_SCORE_KEY);
+            const raw = localStorage.getItem(STORAGE_KEYS.MEMORY_BEST_SCORE);
             const current = raw ? JSON.parse(raw) : { bestTime: null, bestMoves: null };
             const newBest = {
                 bestTime: current.bestTime === null || time < current.bestTime ? time : current.bestTime,
                 bestMoves: current.bestMoves === null || movesCount < current.bestMoves ? movesCount : current.bestMoves,
             };
-            localStorage.setItem(BEST_SCORE_KEY, JSON.stringify(newBest));
+            localStorage.setItem(STORAGE_KEYS.MEMORY_BEST_SCORE, JSON.stringify(newBest));
             setBestScore(newBest);
         } catch {
             // ignore storage errors
@@ -128,6 +129,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
         setStatus('playing');
         cardsRef.current = newCards;
         flippedRef.current = [];
+        checkingRef.current = false;
         statusRef.current = 'playing';
         wrongRef.current = [];
         movesRef.current = 0;
@@ -160,6 +162,9 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
         // Can't flip during wrong-pair animation
         if (currentWrong.length > 0) return;
 
+        // Can't flip while a pair is being evaluated
+        if (checkingRef.current) return;
+
         // Flip the card
         const newCards = currentCards.map((card, i) =>
             i === index ? { ...card, isFlipped: true } : card
@@ -173,6 +178,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
 
         // When two cards are flipped, check for a match
         if (newFlipped.length === 2) {
+            checkingRef.current = true;
             const [idx1, idx2] = newFlipped;
             const card1 = currentCards[idx1];
             const card2 = currentCards[idx2];
@@ -203,6 +209,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
                     saveBestScore(elapsedTimeRef.current, newMoves);
                 }
                 setMatchedCount(newMatchedCount);
+                checkingRef.current = false;
             } else {
                 // No match — flip back after 1s
                 wrongRef.current = [idx1, idx2];
@@ -219,6 +226,7 @@ export function useMemoryGame({ config, profile }: UseMemoryGameOptions) {
                     setFlippedIndices([]);
                     wrongRef.current = [];
                     setWrongPair([]);
+                    checkingRef.current = false;
                 }, 1000);
             }
         }

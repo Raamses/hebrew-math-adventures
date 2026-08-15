@@ -5,6 +5,7 @@ import { useProfile } from '../context/ProfileContext';
 import { INITIAL_CAPABILITY_PROFILE, SKILL_KEY_MAP } from '../types/progress';
 import type { Problem } from '../lib/gameLogic';
 import type { BaseProblemConfig } from '../engines/ProblemFactory';
+import { PRACTICE_CONFIG } from '../lib/worldConfig';
 
 export type GameMode = 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL' | 'MEMORY' | 'INVADERS';
 
@@ -26,17 +27,14 @@ type SessionAction =
     | { type: 'TICK' }
     | { type: 'GAME_OVER' };
 
-const INITIAL_LIVES = 3;
-const INITIAL_TIME = 60;
-const TIME_BONUS = 2;
 
 const getInitialState = (mode: GameMode): SessionState => ({
     count: 0,
     correct: 0,
     attempts: 0,
     score: 0,
-    lives: mode === 'SURVIVAL' ? INITIAL_LIVES : 0,
-    timeLeft: mode === 'TIME_ATTACK' ? INITIAL_TIME : 0,
+    lives: mode === 'SURVIVAL' ? PRACTICE_CONFIG.INITIAL_LIVES : 0,
+    timeLeft: mode === 'TIME_ATTACK' ? PRACTICE_CONFIG.INITIAL_TIME : 0,
     combo: 1,
     mode,
     isGameOver: false
@@ -65,7 +63,7 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 
                 // Time Attack Bonus
                 if (state.mode === 'TIME_ATTACK') {
-                    newTime += TIME_BONUS;
+                    newTime += PRACTICE_CONFIG.TIME_BONUS;
                 }
             } else {
                 // Wrong Answer Pensalties

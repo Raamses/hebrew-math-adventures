@@ -1,13 +1,10 @@
 import type { PetSpecies, PetState } from '../types/user';
+import { PET_STAGES as CONFIG_PET_STAGES } from './worldConfig';
 
-export interface PetStage { index: 0|1|2|3|4; key: 'egg'|'baby'|'child'|'teen'|'adult'; minLevel: number; }
-export const PET_STAGES: PetStage[] = [
-  { index:0, key:'egg',   minLevel:1 },
-  { index:1, key:'baby',  minLevel:2 },
-  { index:2, key:'child', minLevel:4 },
-  { index:3, key:'teen',  minLevel:6 },
-  { index:4, key:'adult', minLevel:8 },
-];
+// PET_STAGES now defined in worldConfig.ts (single source of truth).
+// Re-exported here for backward compatibility.
+export type PetStage = typeof CONFIG_PET_STAGES[number];
+export const PET_STAGES: PetStage[] = [...CONFIG_PET_STAGES];
 
 export function getPetStage(level: number): PetStage {
   const lvl = Number.isFinite(level) ? level : 1;

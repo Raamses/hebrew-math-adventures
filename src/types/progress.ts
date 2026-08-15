@@ -52,7 +52,11 @@ export interface MemoryBestScore {
     bestMoves: number | null;
 }
 
-export const MEMORY_BEST_SCORE_KEY = 'hebrew-math-memory-best';
 
 // --- Math Invaders Best Score Tracking ---
-export const INVADERS_BEST_SCORE_KEY = 'hebrew-math-invaders-best';
+
+// Re-exported from worldConfig for backward compatibility.
+// New code should import STORAGE_KEYS directly from '../lib/worldConfig'.
+import { STORAGE_KEYS } from '../lib/worldConfig';
+export const MEMORY_BEST_SCORE_KEY = STORAGE_KEYS.MEMORY_BEST_SCORE;
+export const INVADERS_BEST_SCORE_KEY = STORAGE_KEYS.INVADERS_BEST_SCORE;

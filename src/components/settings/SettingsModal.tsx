@@ -85,6 +85,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                 </div>
                                 <button
                                     onClick={handleMuteToggle}
+                                    data-testid="mute-toggle"
                                     className={`relative w-14 h-8 rounded-full transition-colors min-h-[48px] ${
                                         settings.isMuted ? 'bg-slate-300' : 'bg-indigo-500'
                                     }`}

@@ -1,5 +1,10 @@
 # Claude Brief — Fix 3 Bugs in Hebrew Math Adventures
 
+## ⚠️ READ THIS FIRST — Vault is the source of truth
+- Load `vault/.vault-loader.md` then `vault/INDEX.md` and ALL `vault/rules/*.md` before doing anything.
+- If a vault rule conflicts with code → **the vault wins**, fix the code.
+- CRITICAL: `vault/rules/rtl-hebrew.md` — breaking RTL/Hebrew compliance is a release blocker.
+
 ## Project
 - Path: `/home/ramamos/.openclaw/workspace/hebrew-math-adventures`
 - React + TypeScript + Vite + Tailwind CSS

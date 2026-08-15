@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { CURRICULUM } from '../../data/learningPath';
-import { useSound } from '../../hooks/useSound';
+import { useSoundManager } from '../../hooks/useSoundManager';
+import { STORAGE_KEYS } from '../../lib/worldConfig';
 
 // --- Mascot emoji mapping ---
 const MASCOT_EMOJI: Record<string, string> = {
@@ -34,11 +35,10 @@ interface UnitCompleteCinematicProps {
 }
 
 // localStorage key to track which units have had their cinematic shown
-const CINEMATIC_SEEN_KEY = 'cinematic_seen_units';
 
 function getCinematicSeenUnits(): Set<string> {
     try {
-        const stored = localStorage.getItem(CINEMATIC_SEEN_KEY);
+        const stored = localStorage.getItem(STORAGE_KEYS.CINEMATIC_SEEN);
         return new Set(stored ? JSON.parse(stored) : []);
     } catch {
         return new Set();
@@ -49,7 +49,7 @@ function markCinematicSeen(unitId: string) {
     try {
         const seen = getCinematicSeenUnits();
         seen.add(unitId);
-        localStorage.setItem(CINEMATIC_SEEN_KEY, JSON.stringify([...seen]));
+        localStorage.setItem(STORAGE_KEYS.CINEMATIC_SEEN, JSON.stringify([...seen]));
     } catch {
         // ignore
     }
@@ -96,7 +96,7 @@ export const UnitCompleteCinematic: React.FC<UnitCompleteCinematicProps> = ({
     onComplete,
 }) => {
     const { t } = useTranslation();
-    const { playSound } = useSound();
+    const { playSound } = useSoundManager();
     const [phase, setPhase] = useState<CinematicPhase>('charge');
     const stars = useMemo(() => generateStarParticles(10), []);
 

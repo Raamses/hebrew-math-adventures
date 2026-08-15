@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { STORAGE_KEYS } from '../lib/worldConfig';
 
 // Placeholder sounds (using short, pleasant beeps/chimes from online sources or data URIs could be better, 
 // but for now we'll use simple reliable URLs or just empty strings if we want to simulate)
@@ -22,7 +23,7 @@ const getAudioContext = () => {
 export const useSound = () => {
     const [isMuted, setIsMuted] = useState<boolean>(() => {
         try {
-            const saved = localStorage.getItem('isMuted');
+            const saved = localStorage.getItem(STORAGE_KEYS.IS_MUTED);
             return saved ? JSON.parse(saved) : false;
         } catch {
             return false;
@@ -30,7 +31,7 @@ export const useSound = () => {
     });
 
     useEffect(() => {
-        localStorage.setItem('isMuted', JSON.stringify(isMuted));
+        localStorage.setItem(STORAGE_KEYS.IS_MUTED, JSON.stringify(isMuted));
     }, [isMuted]);
 
     const playSound = useCallback((type: SoundType) => {
@@ -155,5 +156,43 @@ export const useSound = () => {
 
     const toggleMute = () => setIsMuted(prev => !prev);
 
-    return { playSound, play: playSound, isMuted, toggleMute };
+    // ── Centralized semantic sound API ─────────────────────────────────────
+    // Components should prefer these over raw playSound(type) calls so that
+    // sound-choice logic (e.g. Sound Garden vs. classic beeps, level-up cues)
+    // lives in ONE place instead of being re-implemented per component.
+
+    /**
+     * Play the correct-answer sound, honoring Sound Garden mode.
+     * @param soundGardenEnabled Whether the profile has Sound Garden enabled.
+     * @param playMelodyNote     Musical hook to use when Sound Garden is on.
+     */
+    const playAnswerCorrect = useCallback((soundGardenEnabled: boolean, playMelodyNote?: () => void) => {
+        if (isMuted) return;
+        if (soundGardenEnabled && playMelodyNote) {
+            playMelodyNote();
+        } else {
+            playSound('correct');
+        }
+    }, [isMuted, playSound]);
+
+    /**
+     * Play the wrong-answer sound, honoring Sound Garden mode.
+     */
+    const playAnswerWrong = useCallback((soundGardenEnabled: boolean, playWrongMelody?: () => void) => {
+        if (isMuted) return;
+        if (soundGardenEnabled && playWrongMelody) {
+            playWrongMelody();
+        } else {
+            playSound('wrong');
+        }
+    }, [isMuted, playSound]);
+
+    /**
+     * Play the level-up / session-complete / game-over cue in one place.
+     */
+    const playLevelUp = useCallback(() => {
+        playSound('levelUp');
+    }, [playSound]);
+
+    return { playSound, play: playSound, isMuted, toggleMute, playAnswerCorrect, playAnswerWrong, playLevelUp };
 };
