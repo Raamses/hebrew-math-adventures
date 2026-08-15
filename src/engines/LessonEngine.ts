@@ -1,6 +1,12 @@
 import type { LessonDefinition, LessonItem, LessonTarget } from '../types/lesson';
 
-
+/**
+ * Horizontal/vertical spacing (in scene percentage units) between the slots an
+ * item snaps into once dropped. Tuned so a 64px sprite sits inside its slot on
+ * the 16:9 scene without overlapping its neighbours.
+ */
+export const SLOT_SPACING_X = 7;
+export const SLOT_SPACING_Y = 14;
 
 export class LessonEngine {
     private lesson: LessonDefinition;
@@ -60,14 +66,7 @@ export class LessonEngine {
     }
 
     private notify() {
-        const state = {
-            currentStep: this.lesson.steps[this.currentStepIndex],
-            items: this.items,
-            targets: this.targets,
-            progress: (this.currentStepIndex / this.lesson.steps.length) * 100,
-            isLastStep: this.currentStepIndex === this.lesson.steps.length - 1
-        };
-        this.listeners.forEach(l => l(state));
+        this.listeners.forEach(l => l(this.getCurrentState()));
     }
 
     public nextStep() {
@@ -78,21 +77,41 @@ export class LessonEngine {
         }
     }
 
+    /**
+     * Where the `slot`-th (0-based) item dropped into `target` should land, laid
+     * out as a grid so a ten-frame / crystal row fills cell by cell instead of
+     * stacking every sprite on the target's centre point.
+     */
+    private slotPosition(target: LessonTarget, slot: number) {
+        const columns = target.columns ?? Math.min(target.capacity, 5);
+        const rows = Math.ceil(target.capacity / columns);
+        const col = slot % columns;
+        const row = Math.floor(slot / columns);
+
+        return {
+            x: target.position.x + (col - (columns - 1) / 2) * SLOT_SPACING_X,
+            y: target.position.y + (row - (rows - 1) / 2) * SLOT_SPACING_Y,
+        };
+    }
+
     public onItemDropped(itemId: string, targetId: string | null) {
         // Find item
         const item = this.items.find(i => i.id === itemId);
         if (!item) return;
 
-        // Reset previous target calculation (simple version)
-        // In a full physics engine we'd calc overlap. 
-        // Here we assume the UI calls this when a valid drop happens.
+        // Already placed or scenery — a no-op rather than a mistake.
+        if (item.placedIn || item.interactive === false) return;
 
         if (targetId) {
             const target = this.targets.find(t => t.id === targetId);
-            if (target && target.currentCount < target.capacity) {
+            const accepted = !!target && (target.accepts.length === 0 || target.accepts.includes(item.type));
+
+            if (target && accepted && target.currentCount < target.capacity) {
                 target.currentCount++;
-                // Update item pos to target center (visual snap)
-                item.position = { ...target.position }; // Snap to center
+                // Snap into the next free slot of the target.
+                item.position = this.slotPosition(target, target.currentCount - 1);
+                item.placedIn = target.id;
+                item.selected = false;
 
                 // A successful fill counts toward the performance tier.
                 this.correctCount++;
@@ -100,7 +119,7 @@ export class LessonEngine {
                 // Trigger Validation Check
                 this.checkValidation();
             } else {
-                // Target is full (capacity reached) or target missing → mistake.
+                // Target is full, missing, or refuses this item type → mistake.
                 this.recordMistake();
             }
         } else {
@@ -111,12 +130,54 @@ export class LessonEngine {
         this.notify();
     }
 
+    /**
+     * Handles a tap on an item during an `interactive_tap` step.
+     *
+     * 'remove' items are consumed (the bunny eats the apple); 'select' items
+     * toggle a highlight. Taps on scenery, on already-consumed items, or past
+     * the step's `tapGoal` are recorded as mistakes but never change state, so
+     * a child cannot tap the step into an unsolvable position.
+     */
+    public onItemTapped(itemId: string) {
+        const step = this.lesson.steps[this.currentStepIndex];
+        if (step.type !== 'interactive_tap') return;
+
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return;
+
+        const action = item.tapAction ?? 'remove';
+
+        if (item.interactive === false || action === 'none' || item.removed) {
+            this.recordMistake();
+            this.notify();
+            return;
+        }
+
+        if (action === 'select') {
+            item.selected = !item.selected;
+            this.correctCount++;
+        } else {
+            const consumed = this.items.filter(i => i.removed).length;
+            if (step.tapGoal !== undefined && consumed >= step.tapGoal) {
+                // Goal already met — refuse further removals.
+                this.recordMistake();
+                this.notify();
+                return;
+            }
+            item.removed = true;
+            this.correctCount++;
+        }
+
+        this.checkValidation();
+        this.notify();
+    }
+
     private checkValidation() {
         const step = this.lesson.steps[this.currentStepIndex];
         if (step.validationCriteria) {
             const isValid = step.validationCriteria(this.items, this.targets);
             if (isValid) {
-                // Auto-advance or enable "Next" button? 
+                // Auto-advance or enable "Next" button?
                 // For MVP, if it's an interactive step, let's wait for user to click Next or auto-advance behavior.
                 // Let's emit a "StepComplete" event or just state.
             }
@@ -129,7 +190,11 @@ export class LessonEngine {
             items: this.items,
             targets: this.targets,
             progress: (this.currentStepIndex / this.lesson.steps.length) * 100,
-            isLastStep: this.currentStepIndex === this.lesson.steps.length - 1
+            isLastStep: this.currentStepIndex === this.lesson.steps.length - 1,
+            stepIndex: this.currentStepIndex,
+            stepCount: this.lesson.steps.length,
+            /** Scene theme for this step (step override wins over the lesson default). */
+            theme: this.lesson.steps[this.currentStepIndex].theme ?? this.lesson.theme ?? 'mountain',
         };
     }
 

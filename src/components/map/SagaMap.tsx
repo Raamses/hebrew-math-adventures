@@ -175,7 +175,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                             <h2 className="text-2xl font-bold text-center text-slate-700 mb-1">{t('app.arcade')}</h2>
                             <p className="text-center text-slate-400 text-sm mb-6">Pick your challenge! 🎮</p>
                             <div className="grid grid-cols-2 gap-3">
-                                {(['zen', 'classic', 'blitz', 'survival'] as ArcadeMode[]).map(mode => {
+                                {(['zen', 'classic', 'blitz', 'survival', 'fusion'] as ArcadeMode[]).map(mode => {
                                     const info = ARCADE_MODE_LABELS[mode];
                                     return (
                                         <button

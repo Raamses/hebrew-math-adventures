@@ -10,6 +10,8 @@ export const CURRICULUM: LearningUnit[] = [
         nodes: [
             { id: 'n1_1', unitId: 'unit_1', title: 'Blast Off', description: 'Countdown 10-0', type: 'SENSORY', position: { x: 50, y: 0 }, config: { isMathSensory: true, target: 10 } },
             { id: 'n1_2', unitId: 'unit_1', title: 'Count to 5', description: 'Sequence 1, 2, 3...', type: 'PRACTICE', position: { x: 40, y: 120 }, targetLevel: 1, config: { type: 'series_simple', max: 5 } },
+            // Story micro-lesson: teaches "putting together" before the first addition drill.
+            { id: 'n1_3a', unitId: 'unit_1', title: 'Shell Sums', description: 'Lesson: 3 + 4', type: 'LESSON', position: { x: 25, y: 180 }, targetLevel: 1 },
             { id: 'n1_3', unitId: 'unit_1', title: 'First Steps', description: '1 + 1 = ?', type: 'PRACTICE', position: { x: 60, y: 240 }, targetLevel: 1, config: { type: 'addition_simple', max: 5 } },
             { id: 'n1_4', unitId: 'unit_1', title: 'Pop the 7s', description: 'Find number 7', type: 'SENSORY', position: { x: 50, y: 360 }, config: { target: 7, itemCount: 10 } },
             { id: 'n1_5', unitId: 'unit_1', title: 'Big & Small', description: 'Which is bigger?', type: 'PRACTICE', position: { x: 30, y: 480 }, targetLevel: 1, config: { type: 'comparison_simple', max: 10 } },
@@ -30,6 +32,8 @@ export const CURRICULUM: LearningUnit[] = [
             { id: 'n2_1', unitId: 'unit_2', title: 'Pop the 12s', description: 'Find number 12', type: 'SENSORY', position: { x: 50, y: 0 }, config: { target: 12, itemCount: 15 } },
             { id: 'n2_2', unitId: 'unit_2', title: 'Teen Numbers', description: '10, 11, 12...', type: 'PRACTICE', position: { x: 30, y: 150 }, targetLevel: 3, config: { type: 'series_simple', max: 20 } },
             { id: 'n2_3', unitId: 'unit_2', title: 'Addition 20', description: 'Sums up to 20', type: 'PRACTICE', position: { x: 70, y: 300 }, targetLevel: 3, config: { type: 'addition_simple', max: 20 } },
+            // Story micro-lesson: teaches "taking away" before the first subtraction drill.
+            { id: 'n2_3a', unitId: 'unit_2', title: 'Hungry Bunny', description: 'Lesson: 8 - 3', type: 'LESSON', position: { x: 78, y: 375 }, targetLevel: 2 },
             { id: 'n2_4', unitId: 'unit_2', title: 'Take Away', description: 'Simple Subtraction', type: 'PRACTICE', position: { x: 50, y: 450 }, targetLevel: 2, config: { type: 'sub_simple', max: 10 } },
             { id: 'n2_5', unitId: 'unit_2', title: 'Story Time', description: 'Word Problems', type: 'PRACTICE', position: { x: 20, y: 600 }, targetLevel: 3, config: { type: 'word_simple', max: 10 } },
             { id: 'n2_6', unitId: 'unit_2', title: 'Missing Number', description: '3 + ? = 5', type: 'PRACTICE', position: { x: 80, y: 750 }, targetLevel: 3, config: { type: 'addition_missing', max: 10 } },
