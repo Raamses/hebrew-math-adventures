@@ -237,27 +237,34 @@ export const ARCADE_CONFIGS: Record<ArcadeMode, ArcadeModeConfigEntry> = {
     zen: {
         winCondition: { type: 'endless', value: 0 },
         failCondition: { type: 'strikes', value: 0 },
-        spawnIntervalMs: 2000,
+        spawnIntervalMs: 950,
         distractorRatio: 0.8,
     },
     blitz: {
         winCondition: { type: 'time_limit', value: 60 },
         failCondition: { type: 'strikes', value: 0 },
-        spawnIntervalMs: 1200,
+        spawnIntervalMs: 650,
         distractorRatio: 1.2,
     },
     survival: {
         winCondition: { type: 'endless', value: 0 },
         failCondition: { type: 'strikes', value: 3 },
-        spawnIntervalMs: 800,
+        spawnIntervalMs: 650,
         levelMultiplier: 1.5,
         distractorRatio: 1.5,
     },
     classic: {
         winCondition: { type: 'target_count', value: 20 },
         failCondition: { type: 'strikes', value: 3 },
-        spawnIntervalMs: 800,
+        spawnIntervalMs: 650,
         levelMultiplier: 1.0,
+        distractorRatio: 1.5,
+    },
+    fusion: {
+        winCondition: { type: 'time_limit', value: 120 },
+        failCondition: { type: 'strikes', value: 3 },
+        spawnIntervalMs: 650,
+        levelMultiplier: 1.2,
         distractorRatio: 1.5,
     },
 } as const;
@@ -269,6 +276,7 @@ export const ARCADE_MODE_LABELS: Record<string, { emoji: string; name: string; d
     survival: { emoji: '🔥', name: 'Survival', desc: 'Endless mode — 3 strikes and you\'re out' },
     memory:   { emoji: '🎴', name: 'Memory Duel', desc: 'Match equations with their answers!' },
     invaders: { emoji: '🚀', name: 'Math Invaders', desc: 'Defend your ship from math aliens!' },
+    fusion:   { emoji: '🌀', name: 'Combo Fusion', desc: 'Chain correct answers → spawn Fusion Bubbles → pop them to merge nearby bubbles!' },
 };
 
 // ================================================================
@@ -295,16 +303,16 @@ export const SESSION_THEMES = [
 // ================================================================
 
 export const POWER_UP_CONFIG = {
-    SPAWN_INTERVAL_MS: 15000,
-    MAX_BANKED_CREDITS: 3,
+    SPAWN_INTERVAL_MS: 8000,  // was 15000 — too rare, most sessions never saw a power-up
+    MAX_BANKED_CREDITS: 5,     // was 3 — higher cap lets the accumulator bank more credits during droughts
     TYPES: ['freeze', 'double_points', 'pop_distractors', 'slow_motion', 'lightning_chain', 'rainbow_magnet'] as const,
     DURATIONS: {
-        freeze: 3000,
-        double_points: 5000,
+        freeze: 5000,           // was 3000 — too short to notice
+        double_points: 8000,    // was 5000 — too short to stack combos
         pop_distractors: 0,     // instant
         slow_motion: 4000,
         lightning_chain: 0,     // instant
-        rainbow_magnet: 3000,
+        rainbow_magnet: 6000,   // was 3000 — too short to boost targets meaningfully
     } as const,
     EMOJI: {
         freeze: '❄️',
@@ -314,6 +322,11 @@ export const POWER_UP_CONFIG = {
         lightning_chain: '⚡',
         rainbow_magnet: '🌈',
     } as const,
+    // Lightning Chain: pop N nearest distractors, award bonus points
+    LIGHTNING_CHAIN_POP_COUNT: 5,     // was 3 (hardcoded in useGameEngine)
+    LIGHTNING_CHAIN_BONUS: 50,        // was 30 (hardcoded in useGameEngine)
+    // Pop Distractors: keep this ratio of distractors on screen (was removes ALL)
+    POP_DISTRACTORS_KEEP_RATIO: 0.4,
 } as const;
 
 // ================================================================
@@ -365,6 +378,34 @@ export const FRENZY_CONFIG = {
     MEGA_MULTIPLIER: 5,
 } as const;
 
+// ================================================================
+//  Combo Fusion Config
+// ================================================================
+
+/**
+ * FUSION_CONFIG holds the constants for the Combo Fusion arcade mode.
+ * Streak thresholds map to score multipliers: 3-streak=1.5×, 5-streak=2×,
+ * 7-streak=3×, 10-streak=5×. A Fusion Bubble spawns once the fusion streak
+ * reaches MIN_FUSION_STREAK, and popping it merges nearby bubbles.
+ */
+export interface FusionConfig {
+    /** Streak thresholds → multiplier mapping */
+    STREAK_TIERS: Readonly<Record<number, number>>;
+    /** Pixel radius for merge absorption (relative to bubble x%,y coordinates) */
+    MERGE_RADIUS_PERCENT: number;
+    /** Maximum bubbles that can be consumed in a single merge */
+    MAX_MERGE_TARGETS: number;
+    /** Minimum streak to spawn a fusion bubble */
+    MIN_FUSION_STREAK: number;
+}
+
+export const FUSION_CONFIG: FusionConfig = {
+    STREAK_TIERS: { 3: 1.5, 5: 2.0, 7: 3.0, 10: 5.0 },
+    MERGE_RADIUS_PERCENT: 25,  // 25% of screen width/height
+    MAX_MERGE_TARGETS: 8,
+    MIN_FUSION_STREAK: 3,
+} as const;
+
 
 // ================================================================
 //  Storage Keys (localStorage)
@@ -382,6 +423,7 @@ export const STORAGE_KEYS = {
     THEME: 'hebrew-math-theme',
     MEMORY_BEST_SCORE: 'hebrew-math-memory-best',
     INVADERS_BEST_SCORE: 'hebrew-math-invaders-best',
+    COMBO_FUSION_BEST_SCORE: 'hebrew-math-combo-fusion-best',
     CINEMATIC_SEEN: 'cinematic_seen_units',
     IS_MUTED: 'isMuted',
 } as const;
@@ -458,8 +500,21 @@ export const BUBBLE_ENGINE_CONFIG = {
     SPEED_MULTIPLIER_CAP: 1.6,
     POWER_UP_SLOW_SPEED: 0.3,
     STALE_FRAME_THRESHOLD_MS: 2000,
-    TARGET_LIFESPAN_MS: 35000,
-    DISTRACTOR_LIFESPAN_MS: 22000,
+    TARGET_LIFESPAN_MS: 20000,   // was 35000 — bubbles sat too long, lanes stayed occupied
+    DISTRACTOR_LIFESPAN_MS: 13000, // was 22000 — faster turnover frees lanes for targets
+    // --- Bubble Spawn Remediation (card 56d68ec3) ---
+    // Initial spawn credits: seed 5 so screen populates in first 1-2 frames (was 3)
+    INITIAL_SPAWN_CREDITS: 5,
+    // Target drought: fire safety net after 3s with NO targets (was 6s hardcoded)
+    TARGET_DROUGHT_THRESHOLD_MS: 3000,
+    // Low-target net: if target count < 1 for >2s, force next spawn to be target
+    LOW_TARGET_THRESHOLD_MS: 2000,
+    // Boss bubble tuning: keep screen populated during boss fights
+    BOSS_MAX_ON_SCREEN_FLOOR: 5,       // was effectively 2 (Math.max(2, floor(max*0.4)))
+    BOSS_MAX_ON_SCREEN_RATIO: 0.6,     // was 0.4
+    BOSS_VELOCITY_MULTIPLIER: 0.5,     // was 0.3 (very slow)
+    // Boss mode: reduce spawn interval by this factor (faster answer bubbles)
+    BOSS_SPAWN_INTERVAL_FACTOR: 0.7,   // 0.7 = 30% faster
 } as const;
 
 // ================================================================

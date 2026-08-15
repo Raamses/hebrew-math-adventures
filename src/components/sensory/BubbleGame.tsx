@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BubbleGameContainer } from '../games/BubbleGameContainer';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
+import { ComboFusionStrategy } from '../../engines/bubble/strategies/ComboFusionStrategy';
 import type { GameConfig, ArcadeMode } from '../../engines/bubble/types';
 import type { SensoryProblem } from '../../lib/gameLogic';
 import { getArcadeModeConfig } from '../../lib/arcadeModes';
@@ -30,7 +31,7 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     const baseConfig: GameConfig = {
         modeName: arcadeMode ? `${arcadeMode.charAt(0).toUpperCase() + arcadeMode.slice(1)} Mode` : "Blast Off",
         spawnIntervalMs: 1200, // Balanced spawn rate
-        maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 5 : typeof window !== 'undefined' && window.innerWidth < 600 ? 6 : 8,
+        maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 6 : typeof window !== 'undefined' && window.innerWidth < 600 ? 8 : 12,
         distractorRatio: 2, // ~33% Targets
         baseVelocity: 0.5,
         winCondition: {
@@ -62,7 +63,11 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     }, [problem, profile, arcadeMode]);
 
     // 2. Define Behavior — stable instance via useState, update problem in effect
-    const [behavior] = useState(() => new MathBehaviorStrategy());
+    // Combo Fusion mode uses ComboFusionStrategy (extends MathBehaviorStrategy)
+    // to inject fusion bubbles on 3+ streaks.
+    const [behavior] = useState(() =>
+        arcadeMode === 'fusion' ? new ComboFusionStrategy() : new MathBehaviorStrategy()
+    );
     // Only set the problem directly for Saga/learning-path nodes (type==='sensory').
     // For arcade mode, let the strategy own problem generation via initializeLevel/regenerateProblem.
     useEffect(() => {

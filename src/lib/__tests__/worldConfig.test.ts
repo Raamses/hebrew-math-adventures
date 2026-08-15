@@ -552,10 +552,10 @@ describe('edge cases and invariants', () => {
 /* ---------- 7. STORAGE_KEYS ---------- */
 
 describe('STORAGE_KEYS', () => {
-    it('exports an object with all 8 keys', () => {
+    it('exports an object with all 9 keys', () => {
         expect(STORAGE_KEYS).toBeDefined();
         expect(typeof STORAGE_KEYS).toBe('object');
-        expect(Object.keys(STORAGE_KEYS)).toHaveLength(8);
+        expect(Object.keys(STORAGE_KEYS)).toHaveLength(9);
     });
 
     it('has all expected key names', () => {
@@ -565,6 +565,7 @@ describe('STORAGE_KEYS', () => {
         expect(STORAGE_KEYS).toHaveProperty('THEME');
         expect(STORAGE_KEYS).toHaveProperty('MEMORY_BEST_SCORE');
         expect(STORAGE_KEYS).toHaveProperty('INVADERS_BEST_SCORE');
+        expect(STORAGE_KEYS).toHaveProperty('COMBO_FUSION_BEST_SCORE');
         expect(STORAGE_KEYS).toHaveProperty('CINEMATIC_SEEN');
         expect(STORAGE_KEYS).toHaveProperty('IS_MUTED');
     });
@@ -795,7 +796,7 @@ describe('BUBBLE_ENGINE_CONFIG', () => {
     it('exports an object with all 10 fields', () => {
         expect(BUBBLE_ENGINE_CONFIG).toBeDefined();
         expect(typeof BUBBLE_ENGINE_CONFIG).toBe('object');
-        expect(Object.keys(BUBBLE_ENGINE_CONFIG)).toHaveLength(10);
+        expect(Object.keys(BUBBLE_ENGINE_CONFIG)).toHaveLength(17);
     });
 
     it('has all expected field names', () => {
@@ -809,6 +810,14 @@ describe('BUBBLE_ENGINE_CONFIG', () => {
         expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('STALE_FRAME_THRESHOLD_MS');
         expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('TARGET_LIFESPAN_MS');
         expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('DISTRACTOR_LIFESPAN_MS');
+        // Bubble Spawn Remediation additions
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('INITIAL_SPAWN_CREDITS');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('TARGET_DROUGHT_THRESHOLD_MS');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('LOW_TARGET_THRESHOLD_MS');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('BOSS_MAX_ON_SCREEN_FLOOR');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('BOSS_MAX_ON_SCREEN_RATIO');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('BOSS_VELOCITY_MULTIPLIER');
+        expect(BUBBLE_ENGINE_CONFIG).toHaveProperty('BOSS_SPAWN_INTERVAL_FACTOR');
     });
 
     it('every field is a number', () => {
@@ -822,6 +831,14 @@ describe('BUBBLE_ENGINE_CONFIG', () => {
         expect(typeof BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS).toBe('number');
         expect(typeof BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS).toBe('number');
         expect(typeof BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBe('number');
+        // Bubble Spawn Remediation additions
+        expect(typeof BUBBLE_ENGINE_CONFIG.INITIAL_SPAWN_CREDITS).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.TARGET_DROUGHT_THRESHOLD_MS).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.LOW_TARGET_THRESHOLD_MS).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_FLOOR).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_RATIO).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.BOSS_VELOCITY_MULTIPLIER).toBe('number');
+        expect(typeof BUBBLE_ENGINE_CONFIG.BOSS_SPAWN_INTERVAL_FACTOR).toBe('number');
     });
 
     it('LANE_COUNT is a positive integer', () => {
@@ -887,7 +904,7 @@ describe('BUBBLE_ENGINE_CONFIG', () => {
         expect(BUBBLE_ENGINE_CONFIG.SPEED_MULTIPLIER_CAP).toBe(1.6);
         expect(BUBBLE_ENGINE_CONFIG.POWER_UP_SLOW_SPEED).toBe(0.3);
         expect(BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS).toBe(2000);
-        expect(BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS).toBe(35000);
-        expect(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBe(22000);
+        expect(BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS).toBe(20000);
+        expect(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBe(13000);
     });
 });
