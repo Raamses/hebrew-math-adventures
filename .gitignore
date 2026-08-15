@@ -28,3 +28,6 @@ dist-ssr
 .firebase/
 .jules/
 .worktrees/
+.claude/
+IMPLEMENTATION_TASKS/
+e2e/screenshots/
