@@ -4,10 +4,12 @@ import { useProfile } from '../context/ProfileContext';
 import { useSoundManager } from '../hooks/useSoundManager';
 import { usePracticeSession } from '../hooks/usePracticeSession';
 import { useAnswerFlow } from '../hooks/useAnswerFlow';
+import { useFeedbackEffects } from '../hooks/useFeedbackEffects';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useQuest } from '../context/QuestContext';
 import { formatProblemEquation } from '../lib/gameLogic';
 import { UI_CONFIG } from '../lib/worldConfig';
+import { isCheckpoint } from '../lib/checkpoints';
 
 // Sub-components
 import { MathCard } from './MathCard';
@@ -22,10 +24,10 @@ import { ArcadeHUD } from './games/ArcadeHUD';
 import type { GameMode } from '../hooks/usePracticeSession';
 import { PracticeHeader } from './practice/PracticeHeader';
 import { PracticeFeedback } from './practice/PracticeFeedback';
+import { CheckpointBanner } from './practice/CheckpointBanner';
 
 // Types
 import type { BaseProblemConfig } from '../engines/ProblemFactory';
-import type { MascotEmotion } from './mascot/Mascot';
 
 
 interface PracticeModeProps {
@@ -74,24 +76,28 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         evaluateAnswer
     } = usePracticeSession({ targetLevel, problemConfig });
 
-    // UI Feedback State
-    const [showStars, setShowStars] = useState(false);
-    const [showConfetti, setShowConfetti] = useState(false);
+    // Feedback Effects Hook (owns mascot/confetti/stars lifecycle, decoupled from answer lock)
+    const feedbackEffects = useFeedbackEffects();
+    const {
+        mascotEmotion, mascotMessage, showBubble, showStars, showConfetti, burstId,
+        celebrate, encourage, clearStars, clearAll,
+    } = feedbackEffects;
+
+    // UI State
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [scoreToast, setScoreToast] = useState<{ message: string } | null>(null);
     const [feedback, setFeedback] = useState<string | null>(null);
+    const [checkpointMessage, setCheckpointMessage] = useState<string | null>(null);
+
+    // Track last checkpoint question to avoid double-firing
+    const lastCheckpointRef = useRef<number | null>(null);
 
     // Mode Selection State
     // If problemConfig is present, we are in a Lesson/Saga context -> Auto Standard Mode
     // If absent, we are in Free Play -> Show Mode Selector
     const [isModeSelectorOpen, setIsModeSelectorOpen] = useState(!problemConfig);
     const hasInitializedRef = useRef(!!problemConfig);
-
-    // Mascot State
-    const [mascotEmotion, setMascotEmotion] = useState<MascotEmotion>('idle');
-    const [mascotMessage, setMascotMessage] = useState<string>('');
-    const [showBubble, setShowBubble] = useState(false);
 
     // Summary State
     const [showSummary, setShowSummary] = useState(false);
@@ -134,15 +140,13 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         }
     };
 
-    // Answer Flow Hook (Timing & Transitions)
+    // Answer Flow Hook (Timing & Transitions) — Snappy Flow: 400ms correct, 600ms wrong
     const { isProcessing, submitAnswer } = useAnswerFlow({
-        correctDelay: 2000,
-        wrongDelay: 1000,
+        correctDelay: UI_CONFIG.ANSWER_LOCK_CORRECT_MS,
+        wrongDelay: UI_CONFIG.ANSWER_LOCK_WRONG_MS,
         onCorrectComplete: () => {
-            setShowBubble(false);
-            setShowConfetti(false);
-            setMascotEmotion('idle');
-            setShowStars(false);
+            // Visual effects are owned by useFeedbackEffects — do NOT clear them here.
+            // They self-dismiss on their own timers (see useFeedbackEffects.ts).
 
             // Use ref to get the freshest session state after the delay
             const currentSession = sessionRef.current;
@@ -152,6 +156,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             // Arcade modes continue until Game Over
             console.log('[DC DEBUG] onCorrectComplete', { mode: currentSession.mode, count: currentSession.count, correct: currentSession.correct, sessionLength: UI_CONFIG.SESSION_LENGTH });
             if (currentSession.mode === 'STANDARD' && currentSession.count >= UI_CONFIG.SESSION_LENGTH) {
+                clearAll(); // Clean up effects before showing summary
                 soundManager.playLevelUp();
                 soundManager.vibrate([100, 50, 100]);
                 recordSession({
@@ -175,8 +180,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             }
         },
         onWrongComplete: () => {
-            setShowBubble(false);
-            setMascotEmotion('idle');
+            // Mascot bubble is owned by useFeedbackEffects — do NOT clear here.
             setFeedback(null);
 
             // Check for Game Over immediately after wrong answer animation in Survival
@@ -200,6 +204,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 updateArcadeBestScore(session.mode, session.score);
             }
 
+            clearAll(); // Clean up effects before showing summary
             soundManager.playLevelUp(); // Or 'gameOver' sound if we had one
             soundManager.vibrate([100, 50, 100]);
             recordSession({
@@ -216,6 +221,16 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             if (onComplete) onComplete(false, session.correct, session.attempts); // Game Over isn't necessarily a "Win"
         }
     }, [session, showSummary, onComplete, isProcessing, updateArcadeBestScore]);
+
+    // Micro-checkpoint banner trigger — fires at Q3 and Q6 in STANDARD mode
+    useEffect(() => {
+        if (isCheckpoint(session.count, session.mode) && lastCheckpointRef.current !== session.count) {
+            lastCheckpointRef.current = session.count;
+            const key = String(session.count) as '3' | '6';
+            const msg = t(`practice.checkpoint.${key}`, { defaultValue: '' });
+            if (msg) setCheckpointMessage(msg);
+        }
+    }, [session.count, session.mode, t]);
 
     // Initialization & Greeting
     useEffect(() => {
@@ -246,6 +261,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         hasInitializedRef.current = true;
         sessionStartTime.current = Date.now();
         sessionAddedCorrectRef.current = 0; // reset for new session
+        lastCheckpointRef.current = null; // reset checkpoints for new session
         initSession(mode);
     };
 
@@ -269,20 +285,17 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             soundManager.playCorrect();
             soundManager.vibrate(50);
             // Toast mainly for Standard/Zen. Arcade has the HUD.
-            if (session.mode === 'STANDARD') {
+            // Suppress toast on checkpoint questions — the banner is the reward.
+            if (session.mode === 'STANDARD' && !isCheckpoint(session.count, session.mode)) {
                 setScoreToast({ message: t('feedback.correct') });
             }
             setFeedback(null);
 
-            // Dynamic Mascot Reactions
+            // Dynamic Mascot Reactions via useFeedbackEffects
             const phrases = t('feedback.phrases', { returnObjects: true }) as string[];
             const phrase = Array.isArray(phrases) ? phrases[Math.floor(Math.random() * phrases.length)] : "Great!";
 
-            setMascotEmotion('excited');
-            setMascotMessage(phrase);
-            setShowBubble(true);
-            setShowStars(true);
-            setShowConfetti(true);
+            celebrate(phrase);
 
             if (incrementStreak) incrementStreak();
         } else {
@@ -296,9 +309,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             const phrases = t('feedback.gentle', { returnObjects: true }) as string[];
             const phrase = Array.isArray(phrases) ? phrases[Math.floor(Math.random() * phrases.length)] : "Try again";
 
-            setMascotEmotion('encourage');
-            setMascotMessage(phrase);
-            setShowBubble(true);
+            encourage(phrase);
         }
     };
 
@@ -306,6 +317,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         setIsMenuOpen(false);
         sessionStartTime.current = Date.now();
         sessionAddedCorrectRef.current = 0; // reset daily challenge tracking for new session
+        lastCheckpointRef.current = null; // reset checkpoints for new session
         // If it was Free Play, show selector again. If Saga, just restart Standard.
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
@@ -318,6 +330,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         setShowSummary(false);
         sessionStartTime.current = Date.now();
         sessionAddedCorrectRef.current = 0; // reset daily challenge tracking for new session
+        lastCheckpointRef.current = null; // reset checkpoints for new session
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
         } else {
@@ -337,6 +350,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 onClose={onExit}
             />
 
+            {/* Micro-Checkpoint Banner */}
+            <CheckpointBanner
+                message={checkpointMessage}
+                onComplete={() => setCheckpointMessage(null)}
+            />
+
             {/* Game Content - Only render if initialized (to prevent flash of empty state behind selector) */}
             {hasInitializedRef.current && problem && (
                 <>
@@ -346,10 +365,12 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                         showBubble={showBubble}
                         showStars={showStars}
                         showConfetti={showConfetti}
-                        onStarsComplete={() => setShowStars(false)}
+                        burstId={burstId}
+                        onStarsComplete={clearStars}
                     />
 
                     <ScoreToast
+                        key={burstId}
                         message={scoreToast ? scoreToast.message : ''}
                         isVisible={!!scoreToast}
                         onComplete={() => setScoreToast(null)}

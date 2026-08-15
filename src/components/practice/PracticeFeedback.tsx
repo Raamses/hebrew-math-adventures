@@ -12,6 +12,7 @@ interface PracticeFeedbackProps {
     showBubble: boolean;
     showStars: boolean;
     showConfetti: boolean;
+    burstId: number;
     onStarsComplete: () => void;
 }
 
@@ -36,6 +37,7 @@ export const PracticeFeedback: React.FC<PracticeFeedbackProps> = ({
     showBubble,
     showStars,
     showConfetti,
+    burstId,
     onStarsComplete
 }) => {
     const { profile } = useProfile();
@@ -43,8 +45,8 @@ export const PracticeFeedback: React.FC<PracticeFeedbackProps> = ({
     return (
         <>
             <FrenzyOverlay isActive={(profile?.streak || 0) >= 5} combo={profile?.streak || 0} variant="practice" />
-            {showStars && <FlyingStars onComplete={onStarsComplete} />}
-            {showConfetti && <Confetti />}
+            {showStars && <FlyingStars key={`stars-${burstId}`} onComplete={onStarsComplete} />}
+            {showConfetti && <Confetti key={`confetti-${burstId}`} />}
 
             {/* Peeking Mascot — fixed bottom-right, doesn't affect layout */}
             <div className="fixed bottom-2 right-0 z-40 pointer-events-none">

@@ -1,5 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const ANIM_S = 0.9;
+const DISMISS_MS = ANIM_S * 1000;
 
 interface ScoreToastProps {
     message: string;
@@ -8,12 +11,16 @@ interface ScoreToastProps {
 }
 
 export const ScoreToast: React.FC<ScoreToastProps> = ({ message, isVisible, onComplete }) => {
+    // Held in a ref so a new inline-arrow `onComplete` from the parent does not
+    // restart the dismiss timer on every parent render.
+    const onCompleteRef = useRef(onComplete);
+    useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+
     useEffect(() => {
-        if (isVisible) {
-            const timer = setTimeout(onComplete, 2000); // Allow animation to play out
-            return () => clearTimeout(timer);
-        }
-    }, [isVisible, onComplete]);
+        if (!isVisible) return;
+        const timer = window.setTimeout(() => onCompleteRef.current(), DISMISS_MS);
+        return () => clearTimeout(timer);
+    }, [isVisible]); // `onComplete` removed from deps: that was the leak
 
     return (
         <AnimatePresence>
@@ -26,7 +33,7 @@ export const ScoreToast: React.FC<ScoreToastProps> = ({ message, isVisible, onCo
                         y: [20, -100, -120, -150]
                     }}
                     transition={{
-                        duration: 1.5,
+                        duration: ANIM_S,
                         times: [0, 0.2, 0.8, 1],
                         ease: "easeOut"
                     }}
@@ -36,7 +43,7 @@ export const ScoreToast: React.FC<ScoreToastProps> = ({ message, isVisible, onCo
                 >
                     <div className="relative" dir="auto">
                         {/* Shadow/Stroke effect using layered text */}
-                        <span className="absolute inset-0 text-white stroke-white stroke-[8px] blur-sm select-none font-black text-4xl md:text-6xl tracking-wider show-nowrap">
+                        <span className="absolute inset-0 text-white stroke-white stroke-[8px] blur-sm select-none font-black text-4xl md:text-6xl tracking-wider whitespace-nowrap">
                             {message}
                         </span>
                         <span className="absolute inset-0 text-white stroke-white stroke-[4px] select-none font-black text-4xl md:text-6xl tracking-wider whitespace-nowrap">

@@ -668,10 +668,13 @@ describe('SENSORY_CONFIG', () => {
 /* ---------- 9. UI_CONFIG ---------- */
 
 describe('UI_CONFIG', () => {
-    it('exports an object with all 3 fields', () => {
+    it('exports an object with all expected fields', () => {
         expect(UI_CONFIG).toBeDefined();
         expect(typeof UI_CONFIG).toBe('object');
-        expect(Object.keys(UI_CONFIG)).toHaveLength(3);
+        expect(Object.keys(UI_CONFIG)).toEqual(
+            expect.arrayContaining(['SESSION_LENGTH', 'BOSS_SIZE_MULTIPLIER', 'GREETING_DURATION_MS', 'ANSWER_LOCK_CORRECT_MS', 'ANSWER_LOCK_WRONG_MS'])
+        );
+        expect(Object.keys(UI_CONFIG)).toHaveLength(5);
     });
 
     it('has all expected field names', () => {

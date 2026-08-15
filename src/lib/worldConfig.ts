@@ -416,6 +416,11 @@ export const UI_CONFIG = {
     SESSION_LENGTH: 10,
     BOSS_SIZE_MULTIPLIER: 1.5,
     GREETING_DURATION_MS: 4000,
+    /** Answer lock (ms) — how long input stays disabled after an answer.
+     *  Kept short for ages 4–8; visual/audio rewards outlive the lock and are
+     *  cleaned up independently (see useFeedbackEffects). */
+    ANSWER_LOCK_CORRECT_MS: 400,
+    ANSWER_LOCK_WRONG_MS: 600,
 } as const;
 
 // ================================================================
