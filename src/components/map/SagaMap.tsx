@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CURRICULUM } from '../../data/learningPath';
 import { useProgress } from '../../context/ProgressContext';
 import type { LearningNode } from '../../types/learningPath';
-import { Star, Lock, LogOut, Globe, Award, ShoppingBag } from 'lucide-react';
+import { Star, Lock, LogOut, Globe, Award, ShoppingBag, Menu, X, Gamepad2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, type Variants, AnimatePresence } from 'framer-motion';
 import type { ArcadeMode } from '../../engines/bubble/types';
@@ -55,6 +55,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
     const [showModeSelector, setShowModeSelector] = useState(false);
     const [showBadges, setShowBadges] = useState(false);
     const [showShop, setShowShop] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const isRtl = i18n.language === 'he';
 
@@ -69,87 +70,221 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
 
     return (
         <div className="w-full min-h-screen bg-slate-100 pb-[calc(5rem+env(safe-area-inset-bottom))] overflow-y-auto" dir={isRtl ? 'rtl' : 'ltr'}>
-            <header className="sticky top-0 bg-white/90 backdrop-blur z-50 shadow-sm border-b border-slate-200 px-2 py-3 flex items-center justify-between">
-                <button
-                    data-testid="language-toggle"
-                    onClick={toggleLanguage}
-                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
-                    title={i18n.language.toUpperCase()}
-                    aria-label={t('app.switchLanguage')}
-                >
-                    <Globe size={20} aria-hidden="true" />
-                </button>
-
-                <h1 className="text-lg md:text-2xl font-bold text-slate-700">
-                    {t('app.journey')}
-                </h1>
-
-                <div className="flex gap-1 items-center">
-                    {/* Coin balance */}
-                    <div className="flex items-center gap-1 bg-yellow-100 px-1.5 py-0.5 rounded-full">
-                        <span className="text-xs">🪙</span>
-                        <span className="text-xs font-bold text-yellow-700">{profile?.coins || 0}</span>
+            <header className="sticky top-0 bg-white/95 backdrop-blur-md z-40 shadow-xs border-b border-slate-200/80 px-3 py-2.5">
+                <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+                    {/* Title / Brand */}
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-base shadow-xs shrink-0 select-none">
+                            🗺️
+                        </div>
+                        <h1 className="text-base sm:text-lg font-black text-slate-800 tracking-tight truncate">
+                            {t('app.journey')}
+                        </h1>
                     </div>
 
-                    {/* Gem balance */}
-                    <div className="flex items-center gap-1 bg-purple-100 px-1.5 py-0.5 rounded-full">
-                        <span className="text-xs">💎</span>
-                        <span className="text-xs font-bold text-purple-700">{profile?.gems || 0}</span>
-                    </div>
-
-                    {/* Pet button */}
-                    {profile?.pet && (
-                        <button
-                            onClick={onOpenPet}
-                            data-testid="pet-button"
-                            className="p-1.5 bg-pink-100 hover:bg-pink-200 rounded-full transition-colors"
-                            title={t('pet.title', 'החיה שלי')}
-                            aria-label={t('pet.title', 'החיה שלי')}
+                    {/* Right side (End in RTL): Balances, Pet & Menu Toggle */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Coin balance */}
+                        <div
+                            className="flex items-center gap-1 bg-amber-50 border border-amber-200/80 px-2 py-1 rounded-full shadow-xs text-xs font-black text-amber-900"
+                            title={t('shop.coins', 'מטבעות')}
+                            aria-label={`${profile?.coins || 0} ${t('shop.coins', 'מטבעות')}`}
                         >
-                            <PetAvatar pet={profile.pet} level={profile.capabilities?.estimatedLevel ?? 1} variant="badge" className="!text-xl" />
+                            <span className="text-xs select-none">🪙</span>
+                            <span>{profile?.coins || 0}</span>
+                        </div>
+
+                        {/* Gem balance */}
+                        <div
+                            className="flex items-center gap-1 bg-purple-50 border border-purple-200/80 px-2 py-1 rounded-full shadow-xs text-xs font-black text-purple-900"
+                            title="יהלומים"
+                            aria-label={`${profile?.gems || 0} יהלומים`}
+                        >
+                            <span className="text-xs select-none">💎</span>
+                            <span>{profile?.gems || 0}</span>
+                        </div>
+
+                        {/* Pet button (compact in header if pet active) */}
+                        {profile?.pet && (
+                            <button
+                                onClick={onOpenPet}
+                                data-testid="pet-button"
+                                className="p-1 bg-pink-50 hover:bg-pink-100 border border-pink-200/80 rounded-full transition-all active:scale-95 shadow-xs flex items-center justify-center cursor-pointer"
+                                title={t('pet.title', 'החיה שלי')}
+                                aria-label={t('pet.title', 'החיה שלי')}
+                            >
+                                <PetAvatar
+                                    pet={profile.pet}
+                                    level={profile.capabilities?.estimatedLevel ?? 1}
+                                    variant="badge"
+                                    className="!text-lg"
+                                />
+                            </button>
+                        )}
+
+                        {/* Collapsible Menu Toggle Button */}
+                        <button
+                            data-testid="menu-toggle"
+                            onClick={() => setIsMenuOpen(prev => !prev)}
+                            className={`p-2 rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center ${
+                                isMenuOpen
+                                    ? 'bg-indigo-600 text-white shadow-sm'
+                                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                            }`}
+                            aria-expanded={isMenuOpen}
+                            aria-label={isMenuOpen ? t('app.common.close', 'סגור') : 'Menu'}
+                        >
+                            {isMenuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
                         </button>
-                    )}
-
-                    {/* Badge collection button */}
-                    <button
-                        onClick={() => setShowBadges(true)}
-                        className="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-full transition-colors"
-                        title={t('badges.collection')}
-                        aria-label={t('badges.collection')}
-                    >
-                        <Award size={20} aria-hidden="true" />
-                    </button>
-
-                    {/* Shop button */}
-                    <button
-                        onClick={() => setShowShop(true)}
-                        className="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-full transition-colors"
-                        title={t('shop.title')}
-                        aria-label={t('shop.title')}
-                    >
-                        <ShoppingBag size={20} aria-hidden="true" />
-                    </button>
-
-                    {/* Arcade button */}
-                    <button
-                        data-testid="arcade-button"
-                        onClick={() => setShowModeSelector(true)}
-                        className="p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-sm transition-colors"
-                        title={t('app.arcade')}
-                        aria-label={t('app.arcade')}
-                    >
-                        <Globe size={18} aria-hidden="true" />
-                    </button>
-
-                    <button
-                        onClick={onLogout}
-                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                        title={t('menu.logout')}
-                        aria-label={t('menu.logout')}
-                    >
-                        <LogOut size={20} aria-hidden="true" />
-                    </button>
+                    </div>
                 </div>
+
+                {/* Collapsible Menu Popover Drawer */}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <>
+                            {/* Backdrop overlay */}
+                            <motion.div
+                                key="menu-backdrop"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsMenuOpen(false)}
+                                className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs"
+                                aria-hidden="true"
+                            />
+
+                            {/* Dropdown Menu */}
+                            <motion.div
+                                key="menu-content"
+                                initial={{ opacity: 0, y: -12, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -12, scale: 0.95 }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                                className={`fixed top-14 ${
+                                    isRtl ? 'left-3' : 'right-3'
+                                } z-50 w-[calc(100vw-24px)] max-w-xs bg-white rounded-3xl p-3.5 shadow-2xl border border-slate-100 text-slate-800`}
+                            >
+                                <div className="flex flex-col gap-2">
+                                    {/* Menu Header */}
+                                    <div className="flex items-center justify-between pb-2 border-b border-slate-100 px-1">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                                            {t('menu.gameMenu', 'תפריט')}
+                                        </span>
+                                        {profile?.name && (
+                                            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                                {profile.name}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* 1. Arcade Mode */}
+                                    <button
+                                        data-testid="arcade-button"
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            setShowModeSelector(true);
+                                        }}
+                                        className="flex items-center gap-3 p-2.5 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 border border-orange-200/60 text-slate-800 transition-all active:scale-[0.98] cursor-pointer text-start w-full min-h-[48px]"
+                                        title={t('app.arcade')}
+                                        aria-label={t('app.arcade')}
+                                    >
+                                        <div className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-xs shrink-0">
+                                            <Gamepad2 size={19} aria-hidden="true" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-black text-orange-950">{t('app.arcade')}</div>
+                                            <div className="text-[11px] text-orange-700/80 truncate">
+                                                {isRtl ? 'משחקי מהירות ואתגרים' : 'Mini-games & challenges'}
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    {/* 2. Shop */}
+                                    <button
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            setShowShop(true);
+                                        }}
+                                        className="flex items-center gap-3 p-2.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border border-emerald-200/60 text-slate-800 transition-all active:scale-[0.98] cursor-pointer text-start w-full min-h-[48px]"
+                                        title={t('shop.title')}
+                                        aria-label={t('shop.title')}
+                                    >
+                                        <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-xs shrink-0">
+                                            <ShoppingBag size={19} aria-hidden="true" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-black text-emerald-950">{t('shop.title')}</div>
+                                            <div className="text-[11px] text-emerald-700/80 truncate">
+                                                {isRtl ? 'שדרוגים, פריטים והפתעות' : 'Items & upgrades'}
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    {/* 3. Badges */}
+                                    <button
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            setShowBadges(true);
+                                        }}
+                                        className="flex items-center gap-3 p-2.5 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border border-purple-200/60 text-slate-800 transition-all active:scale-[0.98] cursor-pointer text-start w-full min-h-[48px]"
+                                        title={t('badges.collection')}
+                                        aria-label={t('badges.collection')}
+                                    >
+                                        <div className="w-9 h-9 rounded-xl bg-purple-500 text-white flex items-center justify-center shadow-xs shrink-0">
+                                            <Award size={19} aria-hidden="true" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-black text-purple-950">{t('badges.collection')}</div>
+                                            <div className="text-[11px] text-purple-700/80 truncate">
+                                                {isRtl ? 'הישגים ומדליות' : 'Achievements & medals'}
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <div className="my-0.5 border-t border-slate-100" />
+
+                                    {/* 4. Language Selector */}
+                                    <button
+                                        data-testid="language-toggle"
+                                        onClick={() => {
+                                            toggleLanguage();
+                                        }}
+                                        className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-blue-50 border border-slate-200/70 text-slate-700 transition-all active:scale-[0.98] cursor-pointer w-full min-h-[48px]"
+                                        title={i18n.language.toUpperCase()}
+                                        aria-label={t('app.switchLanguage')}
+                                    >
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                                                <Globe size={18} aria-hidden="true" />
+                                            </div>
+                                            <span className="text-sm font-bold">{t('app.switchLanguage')}</span>
+                                        </div>
+                                        <span className="text-xs font-black bg-white px-2.5 py-1 rounded-full border border-slate-200 text-slate-600">
+                                            {i18n.language === 'en' ? '🇬🇧 EN' : '🇮🇱 עב'}
+                                        </span>
+                                    </button>
+
+                                    {/* 5. Logout Button */}
+                                    <button
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            onLogout();
+                                        }}
+                                        className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-rose-50/70 hover:bg-rose-100/80 border border-rose-200/50 text-rose-700 transition-all active:scale-[0.98] cursor-pointer w-full min-h-[48px]"
+                                        title={t('menu.logout')}
+                                        aria-label={t('menu.logout')}
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                                            <LogOut size={18} aria-hidden="true" />
+                                        </div>
+                                        <span className="text-sm font-bold">{t('menu.logout')}</span>
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
             </header>
 
             {/* Quest Panel banner */}
