@@ -87,6 +87,7 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
                 behavior={behavior}
                 onComplete={onComplete}
                 title={title}
+                arcadeMode={arcadeMode}
 
                 // Settings Bindings
                 isMuted={isMuted}

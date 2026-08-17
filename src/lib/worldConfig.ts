@@ -530,8 +530,11 @@ export const BUBBLE_ENGINE_CONFIG = {
     TARGET_DROUGHT_THRESHOLD_MS: 3000,
     // Low-target net: if target count < 1 for >2s, force next spawn to be target
     LOW_TARGET_THRESHOLD_MS: 2000,
-    // Boss bubble tuning: keep screen populated during boss fights
-    BOSS_MAX_ON_SCREEN_FLOOR: 5,       // was effectively 2 (Math.max(2, floor(max*0.4)))
+    // Boss bubble tuning: keep screen populated during boss fights.
+    // FLOOR raised 5→7 to match the base game's maxOnScreen bump (8→12):
+    // floor(12 * 0.6) = 7, so boss mode now scales with the denser base game
+    // instead of falling back to the old, sparser floor.
+    BOSS_MAX_ON_SCREEN_FLOOR: 7,        // was 5
     BOSS_MAX_ON_SCREEN_RATIO: 0.6,     // was 0.4
     BOSS_VELOCITY_MULTIPLIER: 0.5,     // was 0.3 (very slow)
     // Boss mode: reduce spawn interval by this factor (faster answer bubbles)

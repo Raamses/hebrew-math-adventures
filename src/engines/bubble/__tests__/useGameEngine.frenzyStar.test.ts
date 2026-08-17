@@ -169,3 +169,45 @@ describe('useGameEngine — Frenzy Star combo-triggered power-up', () => {
         expect(FRENZY_CONFIG.FRENZY_THRESHOLD).toBe(5);
     });
 });
+
+describe('useGameEngine — onPowerUpSpawn callback (powerup_spawned telemetry)', () => {
+    it('fires onPowerUpSpawn with the power-up type and combo count when a Frenzy Star spawns', () => {
+        const behavior = makeCorrectBehavior();
+        const onPowerUpSpawn = vi.fn();
+        const { result } = renderHook(() => useGameEngine(makeConfig(), behavior, { onPowerUpSpawn }));
+
+        act(() => { for (let i = 0; i < 10; i++) tick(1000); });
+        for (let i = 0; i < FRENZY_CONFIG.FRENZY_THRESHOLD; i++) {
+            const target = result.current.entities.find(e => !e.isPopped && !e.isPowerUp && !e.isBoss);
+            if (target) popBubble(result, target.id);
+        }
+
+        expect(onPowerUpSpawn).toHaveBeenCalledTimes(1);
+        const [type, comboAtSpawn] = onPowerUpSpawn.mock.calls[0];
+        expect(['double_points', 'lightning_chain', 'rainbow_magnet']).toContain(type);
+        expect(comboAtSpawn).toBe(FRENZY_CONFIG.FRENZY_THRESHOLD);
+    });
+
+    it('does not fire onPowerUpSpawn when no power-up spawns (no combo crossing)', () => {
+        const behavior = makeCorrectBehavior();
+        const onPowerUpSpawn = vi.fn();
+        renderHook(() => useGameEngine(makeConfig(), behavior, { onPowerUpSpawn }));
+
+        act(() => { for (let i = 0; i < 10; i++) tick(1000); });
+
+        expect(onPowerUpSpawn).not.toHaveBeenCalled();
+    });
+
+    it('is safe to omit callbacks entirely (backward compatible)', () => {
+        const behavior = makeCorrectBehavior();
+        const { result } = renderHook(() => useGameEngine(makeConfig(), behavior));
+
+        act(() => { for (let i = 0; i < 10; i++) tick(1000); });
+        expect(() => {
+            for (let i = 0; i < FRENZY_CONFIG.FRENZY_THRESHOLD; i++) {
+                const target = result.current.entities.find(e => !e.isPopped && !e.isPowerUp && !e.isBoss);
+                if (target) popBubble(result, target.id);
+            }
+        }).not.toThrow();
+    });
+});

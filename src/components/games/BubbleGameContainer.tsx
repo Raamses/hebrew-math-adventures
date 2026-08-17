@@ -26,6 +26,7 @@ import { INITIAL_CAPABILITY_PROFILE } from '../../types/progress';
 import { generateBossGate } from '../../lib/bossGate';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
 import { SESSION_CONFIG, SESSION_THEMES, BOSS_LEVELS, MAX_LEVEL } from '../../lib/worldConfig';
+import { RollingWindow, ROLLING_WINDOW_CONFIG } from '../../lib/rollingWindow';
 
 // --- Power-Up Toast Labels (Frenzy Star) ---
 const POWER_UP_LABELS: Record<PowerUpType, string> = {
@@ -39,6 +40,8 @@ interface BubbleGameContainerProps {
     behavior: IGameBehavior;
     onComplete: (success: boolean, correct: number, attempts: number) => void;
     title?: string;
+    /** Arcade sub-mode (zen/blitz/survival/classic/fusion), if launched from arcade. Used for telemetry. */
+    arcadeMode?: string;
     // Settings Props
     isMuted?: boolean;
     onToggleMute?: () => void;
@@ -53,6 +56,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     behavior,
     onComplete,
     title,
+    arcadeMode,
     isMuted = false,
     onToggleMute = () => { },
     onOpenSettings = () => { },
@@ -81,6 +85,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const consecutiveWrongRef = useRef(0);
     const correctSinceRotationRef = useRef(0);
     const sessionLevelRef = useRef(1);
+    // Phase 6: rolling-window adaptive difficulty — tracks the last N (10)
+    // answers independently of the fast consecutive-correct/wrong heuristics
+    // above, so a broader accuracy trend (very easy/very hard session) can
+    // still nudge difficulty even when short streaks don't cross threshold.
+    const rollingWindowRef = useRef(new RollingWindow(ROLLING_WINDOW_CONFIG.WINDOW_SIZE));
     // ADR 2026-08-zen-answer-race (Fix 1): cross-entity pop lock
     const answerLockRef = useRef(false);
 
@@ -105,7 +114,14 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     // B1 Fix: Merge adaptive config into base config so configRef in useGameEngine
     // picks up changes to spawnIntervalMs, maxOnScreen, and distractorRatio.
     const effectiveConfig = adaptiveConfig ?? config;
-    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget, fusionState, mergeEvents } = useGameEngine(effectiveConfig, behavior);
+    const onPowerUpSpawn = useCallback((type: PowerUpType, comboAtSpawn: number) => {
+        logEvent('powerup_spawned', {
+            powerup_type: type,
+            arcade_mode: arcadeMode ?? 'sensory',
+            combo_count_at_spawn: comboAtSpawn,
+        });
+    }, [logEvent, arcadeMode]);
+    const { entities, gameState, handlePop: enginePop, handleOffScreen, getEffectiveSpeedMultiplier, spawnBoss, bossOnScreen, sessionLevelRefForBoss, updateBossTarget, fusionState, mergeEvents } = useGameEngine(effectiveConfig, behavior, { onPowerUpSpawn });
 
     // --- Boss Bubble State ---
     // BOSS_LEVELS now imported from worldConfig
@@ -333,10 +349,13 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 showPowerUpToast(entity.powerUpType);
             }
 
-            // Log analytics
+            // Log analytics. powerup_type/arcade_mode mirror the fields on
+            // powerup_spawned so spawn-vs-activation rate can be computed directly.
             logEvent('powerup_activated', {
                 type: entity.powerUpType,
                 mode: 'sensory',
+                powerup_type: entity.powerUpType,
+                arcade_mode: arcadeMode ?? 'sensory',
             });
 
             // Add explosion at click coordinates
@@ -369,6 +388,25 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 );
                 updateProfile(profile.id, { capabilities: updatedCapabilities });
             }
+
+            // Phase 6: rolling-window adaptive difficulty. Record the answer,
+            // then — if the last-10 window is confidently too easy/too hard —
+            // nudge distractorRatio/spawnIntervalMs/baseVelocity, preserving
+            // any other adaptive fields already set by handleSessionLeveling.
+            rollingWindowRef.current.push({ correct: isCorrect, timestamp: Date.now() });
+            const rwSignal = rollingWindowRef.current.signal(
+                ROLLING_WINDOW_CONFIG.EASE_THRESHOLD,
+                ROLLING_WINDOW_CONFIG.CHALLENGE_THRESHOLD
+            );
+            if (rwSignal.direction !== 'steady') {
+                const rwAdjusted = Director.applyRollingWindowSignal(config, rwSignal);
+                setAdaptiveConfig(prev => ({
+                    ...(prev ?? config),
+                    distractorRatio: rwAdjusted.distractorRatio,
+                    spawnIntervalMs: rwAdjusted.spawnIntervalMs,
+                    baseVelocity: rwAdjusted.baseVelocity,
+                }));
+            }
         }
 
         // Session-internal leveling (only when answer was validated)
@@ -386,7 +424,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             soundManager.playWrong();
             soundManager.vibrate([30, 50, 30]);
         }
-    }, [enginePop, playFrenzy, playLevelUp, playMilestone, playWrongSound, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, soundManager, recordQuestEvent, gameState.combo, updateBossTarget, behavior]);
+    }, [enginePop, playFrenzy, playLevelUp, playMilestone, playWrongSound, logEvent, profile, updateProfile, handleSessionLeveling, entities, showPowerUpToast, soundManager, recordQuestEvent, gameState.combo, updateBossTarget, behavior, arcadeMode]);
 
     // Monitor Game Over / Victory
     useEffect(() => {

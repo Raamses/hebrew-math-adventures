@@ -168,6 +168,29 @@ describe('Boss bubble tuning: screen should stay populated', () => {
         const effective = Math.max(floor, Math.floor(8 * ratio));
         expect(effective).toBeGreaterThanOrEqual(5);
     });
+
+    // --- Boss density parity (base game maxOnScreen bumped 8→12) ---
+    it('BOSS_MAX_ON_SCREEN_FLOOR is 7 — matches floor(12 * ratio)', () => {
+        expect(BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_FLOOR).toBe(7);
+        expect(BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_FLOOR)
+            .toBe(Math.floor(12 * BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_RATIO));
+    });
+
+    it('boss effective maxOnScreen at the new base (12) no longer falls back to the floor', () => {
+        const floor = BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_FLOOR;
+        const ratio = BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_RATIO;
+        const effective = Math.max(floor, Math.floor(12 * ratio));
+        // ratio-derived value (7) equals the floor exactly — boss mode now feels
+        // as dense, proportionally, as the base game's new 12-bubble ceiling.
+        expect(effective).toBe(7);
+    });
+
+    it('boss density no longer regresses to the pre-parity floor of 5 at base 12', () => {
+        const floor = BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_FLOOR;
+        const ratio = BUBBLE_ENGINE_CONFIG.BOSS_MAX_ON_SCREEN_RATIO;
+        const effective = Math.max(floor, Math.floor(12 * ratio));
+        expect(effective).toBeGreaterThan(5);
+    });
 });
 
 // ================================================================

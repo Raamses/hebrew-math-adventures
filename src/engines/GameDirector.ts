@@ -1,6 +1,7 @@
 import type { IGameDirector, BaseGameConfig } from './interfaces';
 import type { UserCapabilityProfile } from '../types/progress';
 import { DIRECTOR_CONFIG, MAX_LEVEL } from '../lib/worldConfig';
+import { ROLLING_WINDOW_CONFIG, type AdaptationSignal } from '../lib/rollingWindow';
 
 // The Smart Director's Logic
 // Decision Tree:
@@ -93,6 +94,45 @@ export class GameDirector implements IGameDirector {
             if (typeof (tuned as any).baseVelocity === 'number') {
                 (tuned as any).baseVelocity = (tuned as any).baseVelocity * 1.3;
             }
+        }
+
+        return tuned;
+    }
+
+    /**
+     * Phase 6: Rolling-window adaptive difficulty.
+     *
+     * Layers a finer-grained ease/harder nudge on top of the coarse
+     * rescue/challenge heuristics in tuneConfig(). The window itself
+     * (last N answers, default 10 — see lib/rollingWindow.ts) is a
+     * standalone module owned by the caller (not GameDirector, and not
+     * the game engine); GameDirector only consumes the AdaptationSignal
+     * it produces and translates it into config deltas.
+     *
+     * - 'easier'  (window accuracy < EASE_THRESHOLD, e.g. <40%)     → reduce distractorRatio, slow spawns/bubbles
+     * - 'harder'  (window accuracy > CHALLENGE_THRESHOLD, e.g. >90%) → increase distractorRatio, speed up spawns/bubbles
+     * - 'steady'                                                    → config unchanged
+     */
+    applyRollingWindowSignal<T extends BaseGameConfig>(baseConfig: T, signal: AdaptationSignal): T {
+        if (signal.direction === 'steady') return baseConfig;
+
+        const tuned = { ...baseConfig };
+        const multipliers = signal.direction === 'easier'
+            ? ROLLING_WINDOW_CONFIG.EASE_MULTIPLIERS
+            : ROLLING_WINDOW_CONFIG.CHALLENGE_MULTIPLIERS;
+
+        const dRatio = (tuned as any).distractorRatio;
+        if (typeof dRatio === 'number') {
+            const next = dRatio * multipliers.distractorRatio;
+            (tuned as any).distractorRatio = signal.direction === 'easier' ? Math.max(1, next) : next;
+        }
+
+        if (typeof (tuned as any).spawnIntervalMs === 'number') {
+            (tuned as any).spawnIntervalMs = Math.round((tuned as any).spawnIntervalMs * multipliers.spawnInterval);
+        }
+
+        if (typeof (tuned as any).baseVelocity === 'number') {
+            (tuned as any).baseVelocity = (tuned as any).baseVelocity * multipliers.baseVelocity;
         }
 
         return tuned;

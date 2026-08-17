@@ -22,9 +22,15 @@ export interface BossDefeatResult {
     level: number;
 }
 
+export interface GameEngineCallbacks {
+    /** Fires when a power-up bubble spawns (Frenzy Star), before it's popped/activated. */
+    onPowerUpSpawn?: (type: PowerUpType, comboAtSpawn: number) => void;
+}
+
 export const useGameEngine = (
     config: GameConfig,
-    behavior: IGameBehavior
+    behavior: IGameBehavior,
+    callbacks?: GameEngineCallbacks
 ) => {
     // --- State ---
     const [gameState, setGameState] = useState<GameState>({
@@ -74,11 +80,15 @@ export const useGameEngine = (
     // Keep a ref of the latest config so the game loop picks up adaptive changes
     // to spawnIntervalMs and baseVelocity without recreating the loop callback.
     const configRef = useRef(config);
+    // Ref for the latest callbacks so spawnFrenzyStar/etc. don't need `callbacks`
+    // in their useCallback deps (the caller typically passes a fresh object each render).
+    const callbacksRef = useRef(callbacks);
 
     // Sync Refs
     useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
     useEffect(() => { entitiesRef.current = entities; }, [entities]);
     useEffect(() => { configRef.current = config; }, [config]);
+    useEffect(() => { callbacksRef.current = callbacks; }, [callbacks]);
 
     // --- Boss Bubble State ---
     const [bossOnScreen, setBossOnScreen] = useState(false);
@@ -185,7 +195,7 @@ export const useGameEngine = (
     // FRENZY_THRESHOLD. This is a one-shot reward OUTSIDE the normal credit
     // loop — it does not consume spawn credits and does not depend on a timer.
     // The caller (handlePop) guards against firing more than once per crossing.
-    const spawnFrenzyStar = useCallback((): void => {
+    const spawnFrenzyStar = useCallback((comboAtSpawn: number): void => {
         const currentConfig = configRef.current;
 
         // Pick a random power-up type from the trimmed 3-type set.
@@ -218,6 +228,8 @@ export const useGameEngine = (
             entitiesRef.current = next;
             return next;
         });
+
+        callbacksRef.current?.onPowerUpSpawn?.(powerUpType, comboAtSpawn);
     }, [computeLaneCount, assignFreeLane]);
 
     const spawnSystem = useCallback((time: number) => {
@@ -827,7 +839,7 @@ export const useGameEngine = (
         const newCombo = isCorrect ? gameStateRef.current.combo + 1 : 0;
         if (isCorrect && newCombo >= FRENZY_CONFIG.FRENZY_THRESHOLD && frenzyStarRewardedRef.current < FRENZY_CONFIG.FRENZY_THRESHOLD) {
             frenzyStarRewardedRef.current = FRENZY_CONFIG.FRENZY_THRESHOLD;
-            spawnFrenzyStar();
+            spawnFrenzyStar(newCombo);
         } else if (!isCorrect) {
             // Combo broken — allow the next crossing to reward again.
             frenzyStarRewardedRef.current = 0;

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { GameDirector, Director } from '../GameDirector';
+import { RollingWindow, ROLLING_WINDOW_CONFIG } from '../../lib/rollingWindow';
 import type { UserCapabilityProfile } from '../../types/progress';
 import type { BaseGameConfig } from '../interfaces';
 
@@ -273,5 +274,106 @@ describe('GameDirector.recordResult', () => {
 describe('Director singleton', () => {
     it('is an instance of GameDirector', () => {
         expect(Director).toBeInstanceOf(GameDirector);
+    });
+});
+
+// ================================================================
+//  Phase 6: Rolling-window adaptive difficulty (GameDirector.applyRollingWindowSignal)
+// ================================================================
+//
+// GameDirector.applyRollingWindowSignal is the "GameDirector uses it" side
+// of the standalone RollingWindow module (src/lib/rollingWindow.ts, tested
+// independently in lib/__tests__/rollingWindow.test.ts). These tests cover
+// the translation from an AdaptationSignal into config deltas.
+
+describe('GameDirector.applyRollingWindowSignal', () => {
+    const director = new GameDirector();
+
+    const bubbleConfig = (overrides: Partial<BaseGameConfig> = {}): BaseGameConfig => ({
+        distractorRatio: 2,
+        spawnIntervalMs: 1000,
+        baseVelocity: 0.5,
+        ...overrides,
+    });
+
+    it('returns the config unchanged for a steady signal', () => {
+        const config = bubbleConfig();
+        const tuned = director.applyRollingWindowSignal(config, { direction: 'steady', accuracy: 0.6, confidence: 1 });
+        expect(tuned).toEqual(config);
+    });
+
+    it('eases difficulty for an "easier" signal: reduces distractorRatio, slows spawn and velocity', () => {
+        const config = bubbleConfig({ distractorRatio: 2, spawnIntervalMs: 1000, baseVelocity: 0.5 });
+        const tuned = director.applyRollingWindowSignal(config, { direction: 'easier', accuracy: 0.3, confidence: 1 });
+
+        expect(tuned.distractorRatio).toBeCloseTo(2 * ROLLING_WINDOW_CONFIG.EASE_MULTIPLIERS.distractorRatio);
+        expect(tuned.spawnIntervalMs).toBe(Math.round(1000 * ROLLING_WINDOW_CONFIG.EASE_MULTIPLIERS.spawnInterval));
+        expect(tuned.baseVelocity).toBeCloseTo(0.5 * ROLLING_WINDOW_CONFIG.EASE_MULTIPLIERS.baseVelocity);
+    });
+
+    it('floors distractorRatio at 1 when easing', () => {
+        const config = bubbleConfig({ distractorRatio: 1 });
+        const tuned = director.applyRollingWindowSignal(config, { direction: 'easier', accuracy: 0.2, confidence: 1 });
+        expect(tuned.distractorRatio).toBe(1);
+    });
+
+    it('increases difficulty for a "harder" signal: raises distractorRatio, speeds up spawn and velocity', () => {
+        const config = bubbleConfig({ distractorRatio: 2, spawnIntervalMs: 1000, baseVelocity: 0.5 });
+        const tuned = director.applyRollingWindowSignal(config, { direction: 'harder', accuracy: 0.95, confidence: 1 });
+
+        expect(tuned.distractorRatio).toBeCloseTo(2 * ROLLING_WINDOW_CONFIG.CHALLENGE_MULTIPLIERS.distractorRatio);
+        expect(tuned.spawnIntervalMs).toBe(Math.round(1000 * ROLLING_WINDOW_CONFIG.CHALLENGE_MULTIPLIERS.spawnInterval));
+        expect(tuned.baseVelocity).toBeCloseTo(0.5 * ROLLING_WINDOW_CONFIG.CHALLENGE_MULTIPLIERS.baseVelocity);
+    });
+
+    it('leaves non-numeric fields untouched', () => {
+        const config = bubbleConfig({ type: 'addition_simple' });
+        const tuned = director.applyRollingWindowSignal(config, { direction: 'harder', accuracy: 0.95, confidence: 1 });
+        expect(tuned.type).toBe('addition_simple');
+    });
+
+    it('does not mutate the original config object', () => {
+        const config = bubbleConfig();
+        const original = JSON.stringify(config);
+        director.applyRollingWindowSignal(config, { direction: 'harder', accuracy: 0.95, confidence: 1 });
+        expect(JSON.stringify(config)).toBe(original);
+    });
+
+    // --- End-to-end: RollingWindow → signal() → GameDirector.applyRollingWindowSignal ---
+
+    it('integrates with a real RollingWindow: 10 wrong answers eases difficulty', () => {
+        const rw = new RollingWindow(ROLLING_WINDOW_CONFIG.WINDOW_SIZE);
+        for (let i = 0; i < 10; i++) rw.push({ correct: false, timestamp: i });
+
+        const signal = rw.signal(ROLLING_WINDOW_CONFIG.EASE_THRESHOLD, ROLLING_WINDOW_CONFIG.CHALLENGE_THRESHOLD);
+        expect(signal.direction).toBe('easier');
+
+        const config = bubbleConfig({ distractorRatio: 3 });
+        const tuned = director.applyRollingWindowSignal(config, signal);
+        expect(tuned.distractorRatio).toBeLessThan(3);
+    });
+
+    it('integrates with a real RollingWindow: 10 correct answers increases difficulty', () => {
+        const rw = new RollingWindow(ROLLING_WINDOW_CONFIG.WINDOW_SIZE);
+        for (let i = 0; i < 10; i++) rw.push({ correct: true, timestamp: i });
+
+        const signal = rw.signal(ROLLING_WINDOW_CONFIG.EASE_THRESHOLD, ROLLING_WINDOW_CONFIG.CHALLENGE_THRESHOLD);
+        expect(signal.direction).toBe('harder');
+
+        const config = bubbleConfig({ distractorRatio: 2 });
+        const tuned = director.applyRollingWindowSignal(config, signal);
+        expect(tuned.distractorRatio).toBeGreaterThan(2);
+    });
+
+    it('integrates with a real RollingWindow: mixed 50% accuracy stays steady', () => {
+        const rw = new RollingWindow(ROLLING_WINDOW_CONFIG.WINDOW_SIZE);
+        for (let i = 0; i < 10; i++) rw.push({ correct: i % 2 === 0, timestamp: i });
+
+        const signal = rw.signal(ROLLING_WINDOW_CONFIG.EASE_THRESHOLD, ROLLING_WINDOW_CONFIG.CHALLENGE_THRESHOLD);
+        expect(signal.direction).toBe('steady');
+
+        const config = bubbleConfig({ distractorRatio: 2 });
+        const tuned = director.applyRollingWindowSignal(config, signal);
+        expect(tuned.distractorRatio).toBe(2);
     });
 });
