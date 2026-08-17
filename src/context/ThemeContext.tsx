@@ -20,12 +20,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // Default to first theme or valid localStorage fallback (only for guests)
     const [guestTheme, setGuestTheme] = useState<Theme>(() => {
-        let saved: string | null = null;
-        try {
-            saved = localStorage.getItem(THEME_STORAGE_KEY);
-        } catch (error) {
-            console.error('Failed to access local storage for theme:', error);
-        }
+        const saved = localStorage.getItem(THEME_STORAGE_KEY);
         return (saved && getThemeById(saved)) || THEMES[0];
     });
 
@@ -53,11 +48,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
         // If NO profile is logged in, persist to localStorage for next guest visit
         if (!profile) {
-            try {
-                localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
-            } catch (error) {
-                console.error('Failed to save theme to local storage:', error);
-            }
+            localStorage.setItem(THEME_STORAGE_KEY, currentTheme.id);
         }
     }, [currentTheme, profile]);
 
