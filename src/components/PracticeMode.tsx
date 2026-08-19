@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProfile } from '../context/ProfileContext';
 import { useSoundManager } from '../hooks/useSoundManager';
@@ -265,7 +265,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         initSession(mode);
     };
 
-    const handleAnswer = (isCorrect: boolean) => {
+    const handleAnswer = useCallback((isCorrect: boolean) => {
         if (!profile || !problem || isProcessing) return;
 
         // Log analytics
@@ -311,7 +311,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
             encourage(phrase);
         }
-    };
+    }, [profile, problem, isProcessing, session.mode, targetLevel, submitAnswer, submitResult, soundManager, incrementStreak, resetStreak, t, celebrate, encourage]);
 
     const handleRestart = () => {
         setIsMenuOpen(false);
