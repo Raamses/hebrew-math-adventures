@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Lightbulb, Flame } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -26,19 +26,29 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
     const [isEmptySubmitted, setIsEmptySubmitted] = useState(false);
     const [isShaking, setIsShaking] = useState(false);
 
+    // Ref mirror of `answer` so keydown/submit handlers can read the latest value
+    // without depending on `answer` in their useCallback deps. This keeps the
+    // callback identity stable across keystrokes, so React.memo on
+    // ArithmeticView / SeriesView / WordProblemView / NumberInput actually holds.
+    const answerRef = useRef('');
+
     const handleAnswerChange = useCallback((newAnswer: string | ((prev: string) => string)) => {
         setIsEmptySubmitted(false);
-        setAnswer(newAnswer);
+        setAnswer(prev => {
+            const next = typeof newAnswer === 'function' ? newAnswer(prev) : newAnswer;
+            answerRef.current = next;
+            return next;
+        });
     }, []);
 
     // The state is now reset by the wrapper component remounting MathCardInner with a new key.
     // No need for useEffect here.
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
         if (isProcessing) return;
 
-        const val = parseInt(answer, 10);
+        const val = parseInt(answerRef.current, 10);
         if (isNaN(val)) {
             setIsShaking(true);
             setIsEmptySubmitted(true);
@@ -63,13 +73,13 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
             setWrongAttempts(prev => prev + 1);
         }
         onAnswer(isCorrect);
-    };
+    }, [isProcessing, problem, onAnswer]);
 
-    const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             handleSubmit(e);
         }
-    };
+    }, [handleSubmit]);
 
     const handleCompare = useCallback((symbol: string) => {
         if (isProcessing) return;
