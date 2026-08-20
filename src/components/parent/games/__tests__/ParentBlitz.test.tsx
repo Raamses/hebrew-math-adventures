@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Mock react-i18next before importing the component.
@@ -662,9 +662,15 @@ describe('ParentBlitz component', () => {
     onExit.mockClear();
   });
 
+  // Always restore real timers so a fake-timer test can never leak into the
+  // next one (a leaked fake clock makes every `await user.*` / `waitFor` hang).
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('renders the game container in idle state', () => {
     render(<ParentBlitz onExit={onExit} />);
-    expect(screen.getByTestId('parent-blitz-root')).toBeInTheDocument();
+    expect(screen.getByTestId('game-parent-blitz')).toBeInTheDocument();
     expect(screen.getByTestId('parent-blitz-start')).toBeInTheDocument();
   });
 
@@ -768,49 +774,70 @@ describe('ParentBlitz component', () => {
     expect(screen.getByTestId('parent-blitz-question')).toBeInTheDocument();
   });
 
-  it('shows results when timer expires', async () => {
+  /*
+   * The tests below need a fake clock to jump the 60s round timer.
+   *
+   * They deliberately use `fireEvent` + synchronous `act` instead of
+   * `userEvent`: every async testing-library API (`user.*`, `findBy*`,
+   * `waitFor`) is routed through RTL's `asyncWrapper`, which drains the
+   * microtask queue via a real `setTimeout(…, 0)` and only pumps the clock when
+   * `jestFakeTimersAreEnabled()` is true. That helper is gated on a global
+   * `jest` object, which Vitest does not define, so under `vi.useFakeTimers()`
+   * it reports "real timers", never advances the fake clock, and the awaited
+   * promise can never settle — the call hangs until the test timeout.
+   * `fireEvent` uses the *synchronous* `eventWrapper`, so it is unaffected.
+   */
+
+  /** Click a node through RTL's sync act wrapper (fake-timer safe). */
+  function click(testId: string) {
+    fireEvent.click(screen.getByTestId(testId));
+  }
+
+  /** Run the 60s round to completion on the fake clock. */
+  function runOutTheClock() {
+    act(() => {
+      vi.advanceTimersByTime(BLITZ_DURATION_MS + 200);
+    });
+  }
+
+  it('shows results when timer expires', () => {
     vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<ParentBlitz onExit={onExit} />);
-    await user.click(screen.getByTestId('parent-blitz-start'));
+    click('parent-blitz-start');
 
     // Advance past 60 seconds
-    vi.advanceTimersByTime(BLITZ_DURATION_MS + 200);
+    runOutTheClock();
 
     expect(screen.getByTestId('parent-blitz-results')).toBeInTheDocument();
     expect(screen.getByTestId('parent-blitz-final-score')).toBeInTheDocument();
     expect(screen.getByTestId('parent-blitz-accuracy')).toBeInTheDocument();
     expect(screen.getByTestId('parent-blitz-replay')).toBeInTheDocument();
-    vi.useRealTimers();
   });
 
-  it('replay button restarts the game', async () => {
+  it('replay button restarts the game', () => {
     vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<ParentBlitz onExit={onExit} />);
-    await user.click(screen.getByTestId('parent-blitz-start'));
-    vi.advanceTimersByTime(BLITZ_DURATION_MS + 200);
-    await user.click(screen.getByTestId('parent-blitz-replay'));
+    click('parent-blitz-start');
+    runOutTheClock();
+    click('parent-blitz-replay');
     expect(screen.getByTestId('parent-blitz-question')).toBeInTheDocument();
     expect(screen.queryByTestId('parent-blitz-results')).not.toBeInTheDocument();
-    vi.useRealTimers();
   });
 
-  it('exit button calls onExit', async () => {
+  it('exit button calls onExit', () => {
     vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(<ParentBlitz onExit={onExit} />);
-    await user.click(screen.getByTestId('parent-blitz-start'));
-    vi.advanceTimersByTime(BLITZ_DURATION_MS + 200);
-    await user.click(screen.getByTestId('parent-blitz-exit'));
+    click('parent-blitz-start');
+    runOutTheClock();
+    click('parent-blitz-exit');
     expect(onExit).toHaveBeenCalledTimes(1);
-    vi.useRealTimers();
   });
 
   it('question and input have dir=ltr', async () => {
     const user = userEvent.setup();
     render(<ParentBlitz onExit={onExit} />);
     await user.click(screen.getByTestId('parent-blitz-start'));
+    expect(screen.getByTestId('parent-blitz-question')).toBeInTheDocument();
     expect(screen.getByTestId('parent-blitz-question')).toHaveAttribute('dir', 'ltr');
     expect(screen.getByTestId('parent-blitz-input')).toHaveAttribute('dir', 'ltr');
     expect(screen.getByTestId('parent-blitz-keypad')).toHaveAttribute('dir', 'ltr');
