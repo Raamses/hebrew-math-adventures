@@ -72,8 +72,9 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
   await page.locator('button[type="submit"]').click();
   await page.waitForTimeout(1500);
 
-  // Wait for mascot greeting
-  await page.waitForTimeout(5000);
+  // Wait for saga map to fully render before injecting progress
+  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1).toBeVisible({ timeout: 30000 });
 
   // Now inject progress to unlock n1_1 (SENSORY - already unlocked) and n1_2 (PRACTICE)
   const progressInjected = await page.evaluate((profileName) => {
@@ -118,9 +119,10 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
   const profileBtn = page.locator('button', { hasText: name }).first();
   await expect(profileBtn).toBeVisible({ timeout: 10000 });
   await profileBtn.click();
-  
-  // Wait for mascot greeting to auto-dismiss
-  await page.waitForTimeout(5000);
+
+  // Wait for saga map to fully render (mascot greeting auto-dismisses)
+  const n1_1AfterReload = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1AfterReload).toBeVisible({ timeout: 30000 });
 
   // Verify we're on the saga map — saga nodes are always visible
   const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
