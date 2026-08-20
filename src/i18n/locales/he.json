@@ -232,7 +232,36 @@
         },
         "numberMerge": {
           "title": "מיזוג מספרים",
-          "description": "חברו מספרים זהים עד שתגיעו לסכום המטרה."
+          "description": "חברו מספרים זהים עד שתגיעו לסכום המטרה.",
+          "howToPlay": "איך משחקים",
+          "start": "התחלה",
+          "replay": "שחקו שוב",
+          "done": "סיום",
+          "continue": "המשיכו לשחק",
+          "scoreLabel": "ניקוד",
+          "bestLabel": "שיא",
+          "bestScore": "שיא: {{score}}",
+          "swipeHint": "הזיזו אצבע כדי להזיז אריחים",
+          "coinsEarned": "מטבעות התקבלו!",
+          "rules": {
+            "swipe": "החליקו לכיוון כדי להזיז את כל האריחים",
+            "merge": "אריחים זהים שמתנגשים מתמזגים לאחד",
+            "target": "הגיעו לאריח 2048 כדי לנצח!"
+          },
+          "win": {
+            "title": "פנטסטי! 🎉",
+            "subtitle": "הגעתם לאריח {{tile}}!"
+          },
+          "over": {
+            "title": "נגמר המשחק",
+            "newRecord": "שיא חדש! 🏆",
+            "finalScore": "ניקוד סופי"
+          },
+          "share": {
+            "whatsapp": "שיתוף בווטסאפ",
+            "copy": "העתקה",
+            "copied": "הועתק!"
+          }
         },
         "mathCrossword": {
           "title": "תשבץ חשבון",
@@ -270,6 +299,76 @@
             "copy": "העתקה"
           }
         }
+      }
+    },
+    "economy": {
+      "coins": "מטבעות הורים",
+      "giftToChild": "תרום לילד",
+      "streak": "רצף יומי",
+      "days": "ימים",
+      "best": "שיא",
+      "freeze": "הקפאת רצף",
+      "badges": "אותות",
+      "locked": "נעול",
+      "balance": "יתרה",
+      "dailyRemaining": "נותרו להיום",
+      "selectChild": "בחרו ילד",
+      "chooseChild": "— בחרו פרופיל —",
+      "amount": "סכום",
+      "maxPerChild": "מקסימום לילד ליום",
+      "cancel": "ביטול",
+      "sendGift": "שלחו מתנה",
+      "weeklyLeaderboard": "טבלת שיאים שבועית",
+      "resetsSunday": "תתאפס ביום ראשון",
+      "noScoresYet": "אין עדיין תוצאות השבוע",
+      "you": "אתם",
+      "errors": {
+        "invalid_amount": "סכום לא תקין",
+        "insufficient_coins": "אין מספיק מטבעות",
+        "daily_limit_exceeded": "חרגתם מהמכסה היומית",
+        "child_daily_limit_exceeded": "חרגתם מהמכסה לילד זה"
+      }
+    },
+    "badges": {
+      "firstGame": {
+        "title": "המשחק הראשון",
+        "desc": "שיחקתם משחק ראשון"
+      },
+      "streak7": {
+        "title": "שבוע רצוף",
+        "desc": "רצף של 7 ימים"
+      },
+      "streak30": {
+        "title": "חודש רצוף",
+        "desc": "רצף של 30 ימים"
+      },
+      "humanCalculator": {
+        "title": "מחשב אנושי",
+        "desc": "צברתם 500+ מטבעות"
+      },
+      "blitzMaster": {
+        "title": "אלוף הבליץ",
+        "desc": "ניקוד 100+ בבליץ"
+      },
+      "eodExpert": {
+        "title": "מומחה תרגיל היום",
+        "desc": "ניצחתם 10+ פעמים"
+      },
+      "generousParent": {
+        "title": "הורה נדיב",
+        "desc": "תרמתם 100+ מטבעות"
+      },
+      "mergeMaster": {
+        "title": "אלוף המיזוג",
+        "desc": "הגעתם לאריח 2048"
+      },
+      "sudokuSolver": {
+        "title": "פותר סודוקו",
+        "desc": "ניצחתם 5+ משחקי סודוקו"
+      },
+      "streakSaver": {
+        "title": "שומר רצף",
+        "desc": "השתמשתם בהקפאת רצף"
       }
     }
   },

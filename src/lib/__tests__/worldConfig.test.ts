@@ -555,7 +555,7 @@ describe('STORAGE_KEYS', () => {
     it('exports an object with all 9 keys', () => {
         expect(STORAGE_KEYS).toBeDefined();
         expect(typeof STORAGE_KEYS).toBe('object');
-        expect(Object.keys(STORAGE_KEYS)).toHaveLength(9);
+        expect(Object.keys(STORAGE_KEYS)).toHaveLength(11);
     });
 
     it('has all expected key names', () => {
