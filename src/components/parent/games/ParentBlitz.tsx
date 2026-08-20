@@ -137,7 +137,7 @@ export function ParentBlitz({ onExit }: GameComponentProps) {
   if (state.phase === 'idle') {
     return (
       <div
-        data-testid="parent-blitz-root"
+        data-testid="game-parent-blitz"
         className="flex flex-col gap-4 rounded-2xl bg-white p-4"
       >
         <header className="flex items-center justify-between gap-2">
@@ -193,7 +193,7 @@ export function ParentBlitz({ onExit }: GameComponentProps) {
   if (state.phase === 'playing') {
     return (
       <div
-        data-testid="parent-blitz-root"
+        data-testid="game-parent-blitz"
         className="flex flex-col gap-3 rounded-2xl bg-white p-4"
       >
         {/* Timer bar */}
@@ -334,7 +334,7 @@ export function ParentBlitz({ onExit }: GameComponentProps) {
 
   return (
     <div
-      data-testid="parent-blitz-root"
+      data-testid="game-parent-blitz"
       className="flex flex-col gap-4 rounded-2xl bg-white p-4"
     >
       <section
