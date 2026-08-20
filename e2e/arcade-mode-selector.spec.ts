@@ -21,7 +21,6 @@ import { setupFreshProfile } from './helpers';
 
 /** All 5 arcade modes the selector should show. */
 const ALL_MODES = ['zen', 'classic', 'blitz', 'survival', 'fusion'] as const;
-type ArcadeModeId = (typeof ALL_MODES)[number];
 
 /**
  * Open the hamburger menu on the saga map and click the arcade button.
