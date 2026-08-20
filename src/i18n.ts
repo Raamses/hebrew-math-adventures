@@ -30,3 +30,18 @@ i18n
     });
 
 export default i18n;
+
+// Set document direction based on language — ensures portals (document.body children)
+// also inherit RTL/LTR correctly without needing dir on every component root.
+i18n.on('languageChanged', (lng) => {
+    if (typeof document !== 'undefined') {
+        document.documentElement.dir = i18n.dir(lng);
+        document.documentElement.lang = lng;
+    }
+});
+
+// Set initial direction
+if (typeof document !== 'undefined') {
+    document.documentElement.dir = i18n.dir(i18n.language);
+    document.documentElement.lang = i18n.language;
+}

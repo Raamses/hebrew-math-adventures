@@ -13,7 +13,7 @@ interface EditProfileModalProps {
 }
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isOpen, onClose, onSave }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [formData, setFormData] = useState({
         name: profile.name,
         age: profile.age,
@@ -61,7 +61,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ profile, isO
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-                        dir="rtl"
+                        dir={i18n.dir()}
                     >
                         {/* Header */}
                         <div className="flex justify-between items-center p-6 border-b border-slate-100">

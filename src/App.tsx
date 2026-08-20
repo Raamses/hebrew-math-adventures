@@ -28,6 +28,8 @@ const AppContent = () => {
   const { profile, logout } = useProfile();
   const [view, setView] = useState<'select' | 'map' | 'game' | 'parent' | 'pet'>('select');
   const [showParentGate, setShowParentGate] = useState(false);
+  // Track which screen opened the parent gate so we can return there on exit
+  const [parentGateOrigin, setParentGateOrigin] = useState<'select' | 'map'>('select');
   const [selectedNode, setSelectedNode] = useState<LearningNode | null>(null);
   const [arcadeMode, setArcadeMode] = useState<ArcadeMode | undefined>(undefined);
   const [dailyChallengeMode, setDailyChallengeMode] = useState<string | undefined>(undefined);
@@ -78,8 +80,35 @@ const AppContent = () => {
     setShowGreeting(false);
   };
 
+  // Parent gate access from ProfileSelector (onboarding)
+  const handleParentAccessFromSelector = () => {
+    setParentGateOrigin('select');
+    setShowParentGate(true);
+  };
+
+  // Parent gate access from SagaMap (in-game)
+  const handleParentAccessFromMap = () => {
+    setParentGateOrigin('map');
+    setShowParentGate(true);
+  };
+
+  // Parent gate success — enter the dashboard
+  const handleParentGateSuccess = () => {
+    setShowParentGate(false);
+    setView('parent');
+  };
+
+  // Exit parent dashboard — return to the screen that opened the gate
+  const handleParentExit = () => {
+    if (parentGateOrigin === 'map' && profile) {
+      setView('map');
+    } else {
+      setView('select');
+    }
+  };
+
   if (effectiveView === 'parent') {
-    return <ParentDashboard onExit={() => setView('select')} />;
+    return <ParentDashboard onExit={handleParentExit} />;
   }
 
   if (effectiveView === 'pet') {
@@ -89,13 +118,10 @@ const AppContent = () => {
   if (!profile) {
     return (
       <>
-        <ProfileSelector onParentAccess={() => setShowParentGate(true)} />
+        <ProfileSelector onParentAccess={handleParentAccessFromSelector} />
         {showParentGate && (
           <ParentGate
-            onSuccess={() => {
-              setShowParentGate(false);
-              setView('parent');
-            }}
+            onSuccess={handleParentGateSuccess}
             onCancel={() => setShowParentGate(false)}
           />
         )}
@@ -113,7 +139,19 @@ const AppContent = () => {
             onDismiss={() => setShowGreeting(false)}
           />
         )}
-        <SagaMap onNodeSelect={handleNodeSelect} onLogout={handleLogout} onArcadeMode={handleArcadeMode} onOpenPet={() => setView('pet')} />
+        <SagaMap
+          onNodeSelect={handleNodeSelect}
+          onLogout={handleLogout}
+          onArcadeMode={handleArcadeMode}
+          onOpenPet={() => setView('pet')}
+          onParentAccess={handleParentAccessFromMap}
+        />
+        {showParentGate && (
+          <ParentGate
+            onSuccess={handleParentGateSuccess}
+            onCancel={() => setShowParentGate(false)}
+          />
+        )}
       </>
     );
   }

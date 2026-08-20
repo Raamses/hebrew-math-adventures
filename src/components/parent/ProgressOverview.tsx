@@ -60,7 +60,7 @@ export const ProgressOverview: React.FC = () => {
                 <select
                     value={selectedProfileId}
                     onChange={(e) => setSelectedProfileId(e.target.value)}
-                    className="flex-1 max-w-xs bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-400"
+                    className="flex-1 max-w-xs bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-400 min-h-[44px]"
                 >
                     {allProfiles.map(p => (
                         <option key={p.id} value={p.id}>
@@ -70,8 +70,8 @@ export const ProgressOverview: React.FC = () => {
                 </select>
             </div>
 
-            {/* Stat Cards Row */}
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            {/* Stat Cards — 2-col grid on mobile, expanding to 5-col on larger screens */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <StatCard
                     icon="⭐"
                     label={t('analytics.stars')}
@@ -96,11 +96,13 @@ export const ProgressOverview: React.FC = () => {
                     value={streakCount}
                     color="text-orange-500"
                 />
+                {/* Time card spans full width on mobile (2 cols) */}
                 <StatCard
                     icon="⏱️"
                     label={t('analytics.timePlayed')}
                     value={`${timePlayedMin} ${t('analytics.minutes')}`}
                     color="text-blue-500"
+                    className="col-span-2 sm:col-span-1"
                 />
             </div>
 

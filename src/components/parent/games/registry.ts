@@ -1,15 +1,17 @@
 import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { CalendarDays, Zap, Layers, Puzzle } from 'lucide-react';
+import { CalendarDays, Zap, Layers, Puzzle, Grid3x3 } from 'lucide-react';
 
 import { EquationOfTheDay } from './EquationOfTheDay';
 import { ParentBlitz } from './ParentBlitz';
+import { Sudoku } from './Sudoku';
 
 /** Stable, URL-safe identifiers. Never localise or reuse these. */
 export type GameId =
   | 'equation-of-the-day'
   | 'parent-blitz'
   | 'number-merge'
+  | 'sudoku'
   | 'math-crossword';
 
 export type GameStatus = 'available' | 'coming_soon';
@@ -64,6 +66,14 @@ export const GAMES: readonly GameDefinition[] = [
     icon: Zap,
     accentClass: 'bg-amber-100 text-amber-600',
     component: ParentBlitz,
+  },
+  {
+    id: 'sudoku',
+    i18nKey: 'sudoku',
+    status: 'available',
+    icon: Grid3x3,
+    accentClass: 'bg-teal-100 text-teal-600',
+    component: Sudoku,
   },
   {
     id: 'number-merge',
