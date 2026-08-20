@@ -1,164 +1,130 @@
-# PR Review Batch 6: Sentinel Hardening + Bolt Memoization
+# PR Review Batch 6: Other + Sentinel security (PRs #26, #55, #130)
 
-**Date:** 2026-08-19
-**Reviewer:** reviewer-opus (OpenClaw)
-**Model:** claude-opus-5
-**PRs:** #26 (Sentinel: input lengths + Crypto API), #55 (Bolt: SeriesView memoization + FrenzyOverlay), #130 (Bolt: inline closure React.memo fix)
+**Date:** 2026-08-20  
+**Reviewer:** reviewer-opus  
+**Model:** claude-opus-5 (via ask-claude --escalate)  
+**Base:** origin/main @ c4bf758  
 
-> ## ⚠️ INCOMPLETE REVIEW — TOOLING BLOCKED
->
-> The requested procedure could **not** be executed. In this session `gh`, `git`, and `npm`
-> were all denied by the permission layer (`"This command requires approval"`), including
-> under an explicit sandbox override:
->
-> | Step | Command | Result |
-> |---|---|---|
-> | 1 | `gh pr view <num> --json ...` | **DENIED** (also `gh --version`) |
-> | 2 | `gh pr diff <num>` | **DENIED** (not attempted past step 1) |
-> | 4 | `npm test` | **DENIED** |
-> | — | `git status` / `git log` | **DENIED** |
->
-> Only read-only `ls`/`cat`/`grep`/`find` inside the workspace succeeded.
->
-> **Therefore: I have not read a single line of any PR diff, and no tests were run.**
-> Every verdict below is *provisional*, derived entirely from static analysis of the
-> current `main` working tree (`.git/HEAD` → `refs/heads/main`) checked against the
-> PR descriptions supplied in the task prompt. Do not merge or close on this basis
-> alone — see [Required Follow-Up](#required-follow-up).
+## Summary
 
-## What Was Actually Verified
-
-All findings below are from reading files on `main`. This is genuinely informative about
-whether each PR is *still needed*, but says nothing about whether each PR's *implementation*
-is correct, or how stale its branch is.
-
-### PR #26 — Input lengths + Crypto API → likely REDUNDANT
-
-Both claimed hardening measures are **already present on `main`**.
-
-Crypto API is already feature-guarded at every call site:
-
-- `src/engines/utils/ProblemUtils.ts:41` — `typeof crypto !== 'undefined' && crypto.randomUUID`
-- `src/components/parent/ParentGate.tsx:14,31` — `crypto.getRandomValues` guarded
-- `src/context/ProfileContext.tsx:283` — guarded, with a `Date.now()`/`Math.random()` fallback
-
-Input length caps are already applied on every free-text input:
-
-- `src/components/math-card/NumberInput.tsx:28,54` — `maxLength = 10`, enforced in `onChange` via `val.slice(0, maxLength)`
-- `src/components/parent/ParentGate.tsx:94` — `maxLength={3}`
-- `src/components/ProfileSetup.tsx:95`, `src/components/parent/EditProfileModal.tsx:93` — `maxLength={30}`
-- `src/components/pet/PetScreen.tsx:79` — `maxLength={20}`
-
-Note `NumberInput` enforces the cap in the change handler, not just the DOM `maxLength`
-attribute — that is the stronger form, and closes the paste/IME bypass that a bare
-attribute leaves open. **Provisional verdict: CLOSE as redundant.** The prompt's prior-attempt
-context said the same; this is now independently corroborated against `main`.
-
-### PR #130 — Inline closure defeating React.memo → REAL, STILL UNFIXED
-
-This is the highest-value PR in the batch, and the finding is concrete.
-
-`src/components/MathCard.tsx:68` defines the keydown handler as a **plain arrow function**,
-recreated on every render:
-
-```
-68:    const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-```
-
-It is passed as `onKeyDown` to three memoized children — `ArithmeticView` (`:157`),
-`SeriesView` (`:166`), `WordProblemView` (`:175`). Its sibling `handleAnswerChange`
-(`:29`) *is* `useCallback`-wrapped, as is `handleCompare` (`:74`), so `handleInputKeyDown`
-is the odd one out and it single-handedly defeats `React.memo` on all three views —
-the memo boundary never holds, because one prop always changes identity.
-
-`SeriesView` is confirmed `React.memo`'d on `main` (`src/components/math-card/SeriesView.tsx:14`,
-named `function SeriesView` — good, preserves the DevTools name). So the memo exists and
-is currently inert. The fix is worth making.
-
-**⚠️ Correctness trap the reviewer must check in the diff.** `handleInputKeyDown` calls
-`handleSubmit` (`:70`), and `handleSubmit` (`:37`) is **also not memoized** — it closes over
-`answer`, `problem`, and `isProcessing`. This makes a naive fix actively dangerous:
-
-- `useCallback(..., [])` → freezes a stale `handleSubmit`, capturing `answer` at its initial
-  `''`. Enter-key submission would then always `parseInt('')` → `NaN` → shake + "empty input"
-  regardless of what the child typed. **Silent breakage of Enter-to-submit**, and there is
-  no test asserting Enter submits a *correct* answer, so CI would stay green.
-- `useCallback(..., [handleSubmit])` → dep changes every render; identity churns anyway and
-  the memo stays inert. Cosmetic no-op.
-
-The only correct fix memoizes `handleSubmit` first (or hoists the submit logic into a ref /
-`useEvent`-style stable callback), *then* memoizes `handleInputKeyDown`. **Provisional verdict:
-REQUEST CHANGES unless the diff memoizes `handleSubmit` too** — and if it does, verify Enter-key
-submit behavior manually, because the test suite does not cover it.
-
-### PR #55 — SeriesView memoization + FrenzyOverlay → PARTIALLY redundant
-
-Split verdict; the two halves differ.
-
-- **SeriesView half: redundant.** Already `React.memo`'d on `main` (`SeriesView.tsx:14`).
-- **FrenzyOverlay half: still valid.** `src/components/games/FrenzyOverlay.tsx:86` is a
-  bare `React.FC`, **not** memoized.
-
-The FrenzyOverlay memoization would be effective, which is worth stating precisely because
-memoization PRs so often aren't. All three call sites pass **only primitives**, so a
-`React.memo` boundary will actually hold:
-
-- `BubbleGameContainer.tsx:681` — `isActive={gameState.isFrenzy} combo={gameState.combo} variant="bubble"`
-- `PracticeFeedback.tsx:47` — `isActive={(profile?.streak || 0) >= 5} combo={profile?.streak || 0} variant="practice"`
-- `MathInvadersGame.tsx:206` — `isActive={state.frenzy} combo={state.combo} variant="invaders"`
-
-No object/array/function props, so no identity churn to defeat it. `BubbleGameContainer`
-re-renders per game tick while `isFrenzy`/`combo` sit unchanged for long stretches, and
-`FrenzyOverlay` is not cheap — it renders 5–15 `framer-motion` particles plus infinite-repeat
-border and badge animations. Skipping those re-renders is a real win on the low-end tablets
-this project targets.
-
-Incidental benefit worth noting: `FrenzyOverlay.tsx:217,220` call `Math.random()` **inside
-render** (particle `x` drift and `duration`). Today every parent tick re-randomizes those
-animation targets mid-flight; memoizing stops the re-roll and will make particle motion
-visibly smoother. Conversely this means **any snapshot test asserting particle style would be
-flaky-by-construction** — check whether `FrenzyOverlay.test.tsx` does.
-
-**#55 and #130 are complementary, not duplicates** — confirmed. Different files
-(`FrenzyOverlay.tsx` vs `MathCard.tsx`), different mechanisms (adding a memo boundary vs
-stabilizing a prop so an existing boundary works). The prompt's prior-attempt context was
-correct on this point. They do overlap on the now-redundant `SeriesView` change.
-
-## Provisional Verdicts
-
-Every row is **unconfirmed** — no diff was read, no test was run.
-
-| PR | Provisional verdict | Basis | Confidence |
+| PR | Title | Verdict | Merged |
 |---|---|---|---|
-| #26 | **CLOSE** — redundant | Both measures verified present on `main` at 8 call sites | High — claim is about `main`, which I *could* read |
-| #55 | **SPLIT** — take FrenzyOverlay, drop SeriesView | FrenzyOverlay unmemoized on `main`; all 3 call sites primitive-only | Medium — need diff to confirm scope/staleness |
-| #130 | **REQUEST CHANGES** — valid bug, fix likely incomplete | `MathCard.tsx:68` unmemoized; its `handleSubmit` dep also unmemoized | Medium — the trap is real; whether the PR hits it is unknown |
+| #26 | 🛡️ Sentinel: [MEDIUM] Enhance input lengths and Crypto API usage | CLOSE | No |
+| #55 | ⚡ Bolt: Optimize SeriesView memoization and fix unstable FrenzyOverlay renders | CLOSE | No |
+| #130 | ⚡ Bolt: Fix inline closure invalidating React.memo on Explosion components | Already CLOSED | No |
 
-Given this batch's history — batch 5 closed 7/7 PRs, mostly for branch staleness at 97–142
-commits behind `main` — **staleness is the single most likely disqualifier here and is exactly
-what I could not check.** #26 and #55 are low-numbered PRs in a repo whose open PRs already
-exceed #130, so both are plausibly very old. Treat the two "take this" recommendations above
-as conditional on a staleness check.
+**Result: 0 merged, 2 closed, 1 already closed.**
 
-## Required Follow-Up
+---
 
-This review cannot be closed out as-is. To complete it, re-run in a session where `gh`,
-`git`, and `npm` are permitted:
+## PR #26 — 🛡️ Sentinel: [MEDIUM] Enhance input lengths and Crypto API usage
 
-1. `gh pr view 26 --json title,body,files,additions,deletions,state` (and `55`, `130`)
-2. `gh pr diff 26` (and `55`, `130`) — **the actual review input, still unread**
-3. Per PR, check branch staleness: `git rev-list --count origin/main..<branch>` and the
-   reverse. Batch 5's dominant close reason.
-4. `npm test` (`vitest run`) on `main` for a baseline, then per PR.
-5. For #130 specifically: confirm the diff memoizes `handleSubmit`, then manually verify
-   Enter-key submission of a **correct** answer still registers. Automated tests will not
-   catch the stale-closure regression.
+**State:** OPEN → CLOSED  
+**Branch:** `sentinel-security-fixes-7200162024506589186` → main  
+**Files:** `.jules/sentinel.md` (+5, -0)
 
-### Suggested test gap to close regardless of verdict
+### Claims
+- Added `.substring(0, 10)` slicing on `NumberInput` to prevent DoS from unbounded number parsing
+- Implemented `Date.now() + Math.random()` fallback for `crypto.randomUUID()` in `ProblemUtils` and `ProfileContext`
 
-No test asserts Enter-to-submit on `MathCard`. That gap is what makes the #130 stale-closure
-failure mode silent, and it will keep making future handler-memoization PRs unreviewable.
-Worth adding before touching those callbacks:
+### Findings
+All four code changes described in the PR body are **already on main**, landed via sibling Sentinel PRs:
 
-- type a correct answer → `keyDown{Enter}` → asserts `onAnswer(true)`
-- type a wrong answer → `keyDown{Enter}` → asserts `onAnswer(false)` and increments `wrongAttempts`
+1. **NumberInput.tsx:54** — `onChange(val.slice(0, maxLength))` with `maxLength = 10` default (line 28). Landed via `9a1fe27` (PR #57).
+2. **ProfileContext.tsx:283** — `typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : \`profile-${Date.now()}-${Math.random()...}\``. Landed via `e9f2051`.
+3. **ProblemUtils.ts:41-42** — Same guard pattern with full UUID v4 fallback generator.
+
+The only remaining diff in the PR is a 5-line addition to `.jules/sentinel.md` that **duplicates** an existing entry ("2025-02-14 - Type Number Input DoS Risk" already documents the same vulnerability and prevention guidance).
+
+The branch is catastrophically stale — 237+ files diverge from main due to branching ~May 14 with massive subsequent main changes.
+
+### Verdict: CLOSE
+Changes already applied to main via sibling PRs. Only remaining diff is a duplicate documentation entry. Branch is unrebasable.
+
+---
+
+## PR #55 — ⚡ Bolt: Optimize SeriesView memoization and fix unstable FrenzyOverlay renders
+
+**State:** OPEN → CLOSED  
+**Branch:** `bolt-optimize-seriesview-frenzy-7380029332711715553` → main  
+**Files:** `.jules/bolt.md` (+4), `FrenzyOverlay.tsx` (+28, -21), `SeriesView.tsx` (+2, -2), `validation.ts` (+1, -0)
+
+### Claims
+1. Wrap `SeriesView` in `React.memo()`
+2. Replace `Math.random()` in `FrenzyOverlay` render with deterministic `Math.sin`/`Math.cos` based on particle index
+3. Add `.trim()` check to `isValidProfileName` to reject whitespace-only profiles
+
+### Findings
+
+**Change 1 (SeriesView memo):** Already on main. `SeriesView.tsx:14` reads:
+```ts
+export const SeriesView = React.memo(function SeriesView({ ...
+```
+
+**Change 2 (FrenzyOverlay Math.random fix):** Targets a **stale predecessor** of `FrenzyOverlay.tsx`. Main now has a completely different, more advanced implementation (242 lines) with:
+- Tier system (`frenzy`/`super`/`mega` based on combo thresholds)
+- `TIER_CONFIG` and `VARIANT_LAYOUT` configuration maps
+- Variant support (`bubble`/`practice`/`invaders`)
+- Burst announcements and persistent badges
+- `PARTICLE_COUNT = 5` with tier-based scaling
+
+The PR's version of FrenzyOverlay is a simpler 88-line component that no longer exists on main.
+
+**Change 3 (validation.ts trim):** Already on main. `validation.ts:4-5` reads:
+```ts
+const trimmed = name.trim();
+if (!trimmed) return false;
+```
+
+**However:** The `Math.random()` anti-pattern is **still present** in the current `FrenzyOverlay.tsx` (lines ~217, 220):
+```ts
+animate={{ ..., x: Math.random() * 50 - 25 }}
+transition={{ duration: 1 + Math.random(), ... }}
+```
+These calls execute during render, causing unstable framer-motion animations on re-render. Notably, `left` on line 211 already uses a deterministic `10 + (i * 7) % 80` — the author was moving toward determinism and left these two behind. A new PR should be filed to address this against current main.
+
+### Verdict: CLOSE
+2/3 changes already on main. 1/3 targets a stale file version. The `Math.random()` issue is real but this PR cannot fix it for the current codebase.
+
+---
+
+## PR #130 — ⚡ Bolt: Fix inline closure invalidating React.memo on Explosion components
+
+**State:** Already CLOSED (2026-08-19)  
+**Branch:** `bolt/fix-explosion-memo-callback-12670700230136673482` → main  
+**Files:** `.jules/bolt.md` (+4), `BubbleGameContainer.tsx` (+8, -1), `Explosion.tsx` (+6, -4)
+
+### Claims
+1. Wrap `Explosion` in `React.memo`
+2. Add `id: string` prop to `ExplosionProps`, change `onComplete` to accept `id`
+3. Extract `handleExplosionComplete` as `useCallback` in `BubbleGameContainer`
+4. Pass `exp.id` to `onComplete` instead of inline closure
+
+### Findings
+The changes are **NOT on main**:
+- `Explosion.tsx:11` is still a plain `React.FC`, `onComplete` is `() => void` (no id parameter)
+- `BubbleGameContainer.tsx:660` still uses inline closure: `onComplete={() => setExplosions(prev => prev.filter(e => e.id !== exp.id))}`
+
+The PR was closed as part of Batch 5's blanket closure of duplicate Explosion memoization PRs (#85, #98, #114, #130). While the optimization is legitimate (inline closures inside `.map()` create new function references per render, defeating `React.memo`), the branch is too stale to rebase — `BubbleGameContainer` is 167 lines on the branch vs 683 on main, and references APIs that no longer exist.
+
+### Verdict: Already CLOSED — no action needed
+
+**Note:** The underlying defect (inline closure defeating memoization) is real and has zero PR coverage after Batch 5's closure of all four duplicate PRs. A new PR should be filed against current main. The fix is self-contained: `BubbleGameContainer` is the only caller of `Explosion`, and there is no `Explosion` test file, so the prop-signature change is safe.
+
+---
+
+## Outstanding Issues (no PR coverage)
+
+Two real defects identified during this review have no open PR addressing them against current main:
+
+### 1. FrenzyOverlay Math.random() in render path
+**File:** `src/components/games/FrenzyOverlay.tsx` ~line 217, 220  
+**Problem:** `Math.random()` called during render causes unstable framer-motion animations on re-render  
+**Fix:** Replace with index-derived deterministic values (e.g., `Math.sin(i)`-based), matching the existing `left` idiom on line 211
+
+### 2. Explosion not memoized + inline closure in BubbleGameContainer
+**File:** `src/components/sensory/Explosion.tsx`, `src/components/games/BubbleGameContainer.tsx`  
+**Problem:** Inline arrow function `onComplete={() => setExplosions(...)}` passed to `Explosion` inside `.map()` creates a new function reference per render  
+**Fix:** Wrap `Explosion` in `React.memo`, add `id: string` to `ExplosionProps`, change `onComplete` to `(id: string) => void`, extract `handleExplosionComplete` as `useCallback` in `BubbleGameContainer`
+
+Both fixes are small and self-contained. New PRs should be filed against current main.
