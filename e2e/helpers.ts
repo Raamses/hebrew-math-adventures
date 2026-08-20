@@ -27,8 +27,9 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
   await page.locator('button[type="submit"]').click();
   await page.waitForTimeout(1500);
 
-  // Wait for mascot greeting to auto-dismiss (4s + 300ms exit animation)
-  await page.waitForTimeout(5000);
+  // Wait for saga map to fully render (mascot greeting auto-dismisses)
+  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1).toBeVisible({ timeout: 30000 });
 
   // Verify we're on the saga map — saga nodes are always visible (arcade-button is in hamburger menu)
   const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
