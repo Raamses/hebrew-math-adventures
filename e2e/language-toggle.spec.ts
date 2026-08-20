@@ -68,6 +68,8 @@ test.describe('Language Toggle', () => {
     await openMenu(page);
     const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
     await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
+    const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
+    await expect(sagaNode).toBeVisible({ timeout: 30000 });
     const arcadeTitleBefore = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title before toggle:', arcadeTitleBefore);
     expect(arcadeTitleBefore).toBe('משחקי ארקייד');

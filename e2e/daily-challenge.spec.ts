@@ -202,6 +202,7 @@ test.describe('Daily Challenge — arcade modes', () => {
         // If game ended, we need to go back and re-enter the mode
         // Check if we're back on the saga map
         const arcadeBtn = page.locator('[data-testid="saga-node-n1_1"]').first();
+        const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
         if (await arcadeBtn.count() > 0) {
           await selectArcadeMode(page, todayMode);
           await page.waitForTimeout(2000);

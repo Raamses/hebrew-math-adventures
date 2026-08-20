@@ -175,7 +175,7 @@ async function waitForBubblesInViewport(page: Page, timeoutMs = 10000): Promise<
 }
 
 /**
- * Check if the saga map is visible (arcade-button present).
+ * Check if the saga map is visible (saga node present).
  * Reusable assertion that we've returned to the saga map.
  */
 async function isOnSagaMap(page: Page): Promise<boolean> {

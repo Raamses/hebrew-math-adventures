@@ -40,6 +40,11 @@ test.describe('Profile creation + saga map landing', () => {
     const created = profiles.find((p) => p.name === 'SmokeProfile');
     expect(created).toBeTruthy();
     expect(created!.id).toBeTruthy();
+    expect(created.id).toBeTruthy();
+
+    // Saga map landing: arcade button + at least one map node visible.
+    const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
+    await expect(sagaNode).toBeVisible();
 
     // Saga map landing: at least one map node visible.
     const mapNodes = page.locator('[data-testid^="saga-node-"]');

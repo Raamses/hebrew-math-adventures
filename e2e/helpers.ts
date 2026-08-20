@@ -34,6 +34,8 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
   // Verify we're on the saga map — saga nodes are always visible (arcade-button is in hamburger menu)
   const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
   await expect(firstNode).toBeVisible({ timeout: 15000 });
+  // Verify we're on the saga map — check saga node is visible
+  // (arcade-button is inside a hamburger menu, not directly visible)
   await page.waitForTimeout(500);
 }
 
@@ -127,7 +129,40 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
   // Verify we're on the saga map — saga nodes are always visible
   const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
   await expect(firstNode).toBeVisible({ timeout: 15000 });
+  // Verify we're on the saga map
+  // (arcade-button is inside a hamburger menu, not directly visible)
   await page.waitForTimeout(500);
+}
+
+/**
+ * Open the hamburger menu on the saga map.
+ * The arcade-button and parent-zone-button live inside this menu.
+ */
+export async function openMenu(page: Page) {
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  await expect(menuToggle).toBeVisible({ timeout: 10000 });
+  // Only click if menu isn't already open
+  const isExpanded = await menuToggle.getAttribute('aria-expanded');
+  if (isExpanded !== 'true') {
+    await menuToggle.click();
+    await page.waitForTimeout(500);
+  }
+}
+
+/**
+ * Wait for the saga map to be visible by checking for saga nodes.
+ */
+export async function waitForSagaMap(page: Page) {
+  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1).toBeVisible({ timeout: 30000 });
+}
+
+/**
+ * Check if we're on the saga map.
+ */
+export async function isOnSagaMap(page: Page): Promise<boolean> {
+  const node = page.locator('[data-testid="saga-node-n1_1"]').first();
+  return await node.isVisible().catch(() => false);
 }
 
 export async function gotoSagaMap(page: Page) {
@@ -146,6 +181,13 @@ export async function gotoSagaMap(page: Page) {
  */
 export async function selectArcadeMode(page: Page, mode: 'zen' | 'classic' | 'blitz' | 'survival' | 'fusion') {
   await openMenu(page);
+export async function selectArcadeMode(page: Page, mode: 'zen' | 'classic' | 'blitz' | 'survival') {
+  // Open the hamburger menu first, then click arcade button
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  await expect(menuToggle).toBeVisible({ timeout: 10000 });
+  await menuToggle.click();
+  await page.waitForTimeout(500);
+
   const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
   await expect(arcadeBtn).toBeVisible({ timeout: 5000 });
   await arcadeBtn.click();
