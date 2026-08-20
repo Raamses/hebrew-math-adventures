@@ -92,7 +92,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                 <select
                     value={selectedProfileId}
                     onChange={(e) => setSelectedProfileId(e.target.value)}
-                    className="flex-1 max-w-xs bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-400"
+                    className="flex-1 max-w-xs bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-400 min-h-[44px]"
                 >
                     {allProfiles.map(p => (
                         <option key={p.id} value={p.id}>
@@ -102,9 +102,9 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                 </select>
             </div>
 
-            {/* Strongest & Weakest highlight cards */}
+            {/* Strongest & Weakest highlight cards — stacked on mobile */}
             {(analysis.strongest || analysis.weakest) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {analysis.strongest && (
                         <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border border-amber-200 p-4 flex items-center gap-3">
                             <div className="text-3xl">🏆</div>
@@ -136,7 +136,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                             {onPracticeSkill && (
                                 <button
                                     onClick={() => onPracticeSkill(SKILL_CONFIGS[weakest.skillKey]?.config || { type: 'addition_simple' })}
-                                    className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white font-bold text-sm px-3 py-2 rounded-xl transition-all min-h-[48px] whitespace-nowrap"
+                                    className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white font-bold text-sm px-3 py-2 rounded-xl transition-all min-h-[44px] whitespace-nowrap"
                                 >
                                     {t('analytics.practiceThis')}
                                 </button>
@@ -189,7 +189,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                                         {isWeakest && onPracticeSkill && (
                                             <button
                                                 onClick={() => onPracticeSkill(config?.config || { type: 'addition_simple' })}
-                                                className="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs px-3 py-2 rounded-lg transition-all min-h-[40px] whitespace-nowrap"
+                                                className="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs px-3 py-2 rounded-lg transition-all min-h-[44px] whitespace-nowrap"
                                             >
                                                 {t('analytics.practiceThis')}
                                             </button>

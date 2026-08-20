@@ -224,11 +224,91 @@
       "items": {
         "equationOfTheDay": {
           "title": "Equation of the Day",
-          "description": "One equation a day — solve it together and keep your streak."
+          "description": "One equation a day — solve it together and keep your streak.",
+          "instructions": "Guess today's equation in 6 tries. Each character gets a color:",
+          "puzzleNumber": "Puzzle #{{number}}",
+          "submit": "Check",
+          "backspace": "Delete",
+          "guessesLeft": "{{count}} guesses left",
+          "nextPuzzle": "New puzzle tomorrow!",
+          "done": "Done",
+          "streak": {
+            "label": "Day streak",
+            "best": "Best streak"
+          },
+          "cellState": {
+            "correct": "Correct spot: {{char}}",
+            "present": "Wrong spot: {{char}}",
+            "absent": "Not in equation: {{char}}"
+          },
+          "invalid": {
+            "wrongLength": "Wrong length — equation must be the correct length",
+            "noEquals": "Must contain an equals sign (=)",
+            "invalidRight": "Right side must be a number",
+            "invalidLeft": "Left side is not valid",
+            "wrongResult": "Equation is mathematically incorrect"
+          },
+          "win": {
+            "title": "Well done! 🎉",
+            "subtitle": "Solved in {{count}} guesses"
+          },
+          "lose": {
+            "title": "Maybe tomorrow 🙃",
+            "subtitle": "Not this time — try again tomorrow!"
+          },
+          "stats": {
+            "played": "Played",
+            "winRate": "Win rate"
+          },
+          "share": {
+            "whatsapp": "Share on WhatsApp",
+            "copy": "Copy"
+          }
         },
         "parentBlitz": {
           "title": "Parent Blitz",
-          "description": "One minute of rapid-fire questions. How many can you solve?"
+          "description": "One minute of rapid-fire questions. How many can you solve?",
+          "howToPlay": "How to play",
+          "start": "Start",
+          "replay": "Play again",
+          "done": "Done",
+          "skip": "Skip",
+          "rules": {
+            "time": "60 seconds — answer as many questions as you can",
+            "scoring": "Each correct answer earns points, fast answers get a bonus",
+            "streak": "Consecutive correct answers multiply your score"
+          },
+          "hud": {
+            "score": "Score",
+            "streak": "Streak",
+            "timeRemaining": "{{seconds}} seconds",
+            "timerLabel": "{{seconds}} seconds remaining"
+          },
+          "keypad": {
+            "submit": "Submit",
+            "backspace": "Delete",
+            "digit": "Digit {{digit}}"
+          },
+          "feedback": {
+            "correct": "Correct! ✓",
+            "wrong": "The answer is {{answer}}"
+          },
+          "results": {
+            "heading": "Time's up!",
+            "finalScore": "Final score",
+            "accuracy": "Accuracy",
+            "bestStreak": "Best streak",
+            "newRecord": "New record! 🏆",
+            "previousBest": "Previous best: {{score}}",
+            "noHighScore": "No high score yet"
+          },
+          "types": {
+            "percentage": "Percentages",
+            "orderOfOperations": "Order of operations",
+            "fraction": "Fractions",
+            "doubleDigitMultiply": "Double-digit multiply",
+            "mixedArithmetic": "Mixed arithmetic"
+          }
         },
         "numberMerge": {
           "title": "Number Merge",
@@ -237,6 +317,38 @@
         "mathCrossword": {
           "title": "Math Crossword",
           "description": "Fill in the missing equations across the grid."
+        },
+        "sudoku": {
+          "title": "Sudoku",
+          "description": "Daily Sudoku puzzle — fill the grid with logic, no timer pressure.",
+          "selectDifficulty": "Choose difficulty",
+          "puzzleNumber": "Puzzle #{{number}}",
+          "difficulty": {
+            "easy": "Easy",
+            "easyDesc": "More clues, fewer gaps — great for relaxing.",
+            "medium": "Medium",
+            "mediumDesc": "Balanced challenge for a coffee break.",
+            "hard": "Hard",
+            "hardDesc": "Minimal clues — for the sharp-minded."
+          },
+          "erase": "Erase cell",
+          "coinsEarned": "coins earned!",
+          "newGame": "New Game",
+          "done": "Done",
+          "win": {
+            "title": "Solved! 🎉",
+            "subtitle": "Time: {{time}} · {{mistakes}} mistakes"
+          },
+          "stats": {
+            "time": "Time",
+            "mistakes": "Mistakes",
+            "coins": "Coins"
+          },
+          "bestTime": "Best time: {{time}}",
+          "share": {
+            "whatsapp": "Share on WhatsApp",
+            "copy": "Copy"
+          }
         }
       }
     }

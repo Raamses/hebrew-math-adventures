@@ -237,6 +237,38 @@
         "mathCrossword": {
           "title": "תשבץ חשבון",
           "description": "השלימו את התרגילים החסרים בלוח המשובץ."
+        },
+        "sudoku": {
+          "title": "סודוקו",
+          "description": "סודוקו יומי — מלאו את הלוח בהיגיון, בלי לחץ זמן.",
+          "selectDifficulty": "בחרו רמת קושי",
+          "puzzleNumber": "חידת מספר {{number}}",
+          "difficulty": {
+            "easy": "קל",
+            "easyDesc": "יותר רמזים, פחות רווחים — מושלם להירגע.",
+            "medium": "בינוני",
+            "mediumDesc": "אתגר מאוזן להפסקת קפה.",
+            "hard": "קשה",
+            "hardDesc": "מעט רמזים — לחדי המוח."
+          },
+          "erase": "מחיקת תא",
+          "coinsEarned": "מטבעות התקבלו!",
+          "newGame": "משחק חדש",
+          "done": "סיום",
+          "win": {
+            "title": "פתרת! 🎉",
+            "subtitle": "זמן: {{time}} · {{mistakes}} טעויות"
+          },
+          "stats": {
+            "time": "זמן",
+            "mistakes": "טעויות",
+            "coins": "מטבעות"
+          },
+          "bestTime": "זמן שיא: {{time}}",
+          "share": {
+            "whatsapp": "שיתוף בווטסאפ",
+            "copy": "העתקה"
+          }
         }
       }
     }
@@ -527,15 +559,15 @@
     "keyboardHint": "מעדיף/ה הקלדה? נסה/י מצב תרגול",
     "noRecord": "אין שיא",
     "zen": {
-      "title": "Zen Math",
+      "title": "חשבון זן",
       "desc": "קחו את הזמן. בלי טיימרים, רק למידה."
     },
     "time": {
-      "title": "Time Attack",
+      "title": "נגד השעון",
       "desc": "נגד השעון! +2 שניות לכל תשובה נכונה."
     },
     "survival": {
-      "title": "Survival",
+      "title": "הישרדות",
       "desc": "3 פסילות. אסור לטעות!"
     },
     "bestScore": "שיא: {{score}}",
