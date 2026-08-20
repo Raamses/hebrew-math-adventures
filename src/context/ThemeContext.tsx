@@ -20,8 +20,13 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // Default to first theme or valid localStorage fallback (only for guests)
     const [guestTheme, setGuestTheme] = useState<Theme>(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.THEME);
-        return (saved && getThemeById(saved)) || THEMES[0];
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.THEME);
+            return (saved && getThemeById(saved)) || THEMES[0];
+        } catch (error) {
+            console.error('Failed to parse theme from local storage:', error);
+            return THEMES[0];
+        }
     });
 
     // ⚡ Bolt: Derived state instead of useEffect syncing to prevent cascading renders

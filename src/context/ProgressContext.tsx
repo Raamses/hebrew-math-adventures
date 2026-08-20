@@ -20,35 +20,41 @@ const loadProgressForProfile = (profile: any) => { // eslint-disable-line @types
     if (!profile) return {};
 
     const userKey = `${STORAGE_KEYS.SAGA_PROGRESS}_${profile.id}`;
-    const saved = localStorage.getItem(userKey);
 
-    if (saved) {
-        try {
-            return JSON.parse(saved);
-        } catch (e) {
-            console.error("Failed to load progress for user", profile.id, e);
-            // Fallback to age-based init on corruption
-            return getInitialProgress(profile.age || 5);
-        }
-    } else {
-        // New User or Migration
-        // Check for legacy global progress to migrate
-        const legacyGlobal = localStorage.getItem(STORAGE_KEYS.SAGA_PROGRESS);
-        if (legacyGlobal) {
+    try {
+        const saved = localStorage.getItem(userKey);
+
+        if (saved) {
             try {
-                const legacyProgress = JSON.parse(legacyGlobal);
-                // Only migrate if it looks valid
-                if (legacyProgress && typeof legacyProgress === 'object' && Object.keys(legacyProgress).length > 0) {
-                    localStorage.setItem(userKey, JSON.stringify(legacyProgress));
-                    localStorage.removeItem(STORAGE_KEYS.SAGA_PROGRESS);
-                    return legacyProgress;
-                }
-            } catch {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to load progress for user", profile.id, e);
+                // Fallback to age-based init on corruption
                 return getInitialProgress(profile.age || 5);
             }
-        }
+        } else {
+            // New User or Migration
+            // Check for legacy global progress to migrate
+            const legacyGlobal = localStorage.getItem(STORAGE_KEYS.SAGA_PROGRESS);
+            if (legacyGlobal) {
+                try {
+                    const legacyProgress = JSON.parse(legacyGlobal);
+                    // Only migrate if it looks valid
+                    if (legacyProgress && typeof legacyProgress === 'object' && Object.keys(legacyProgress).length > 0) {
+                        localStorage.setItem(userKey, JSON.stringify(legacyProgress));
+                        localStorage.removeItem(STORAGE_KEYS.SAGA_PROGRESS);
+                        return legacyProgress;
+                    }
+                } catch {
+                    return getInitialProgress(profile.age || 5);
+                }
+            }
 
-        // Brand new user, no legacy
+            // Brand new user, no legacy
+            return getInitialProgress(profile.age || 5);
+        }
+    } catch (e) {
+        console.error("Failed to access local storage for progress:", e);
         return getInitialProgress(profile.age || 5);
     }
 };
