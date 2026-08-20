@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { PracticeMode } from './PracticeMode';
 import { LessonModal } from './lessons/LessonModal';
 import { getLessonForNode } from '../lessons';
@@ -132,13 +132,20 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         }
     };
 
-    if (effectiveMode === 'SENSORY') {
+    // Memoize the sensory problem so re-renders don't generate a new random problem.
+    // FIX(a): profile?.capabilities removed from deps — updateProfile creates a new capabilities
+    // object on every answer, which would clobber the problem mid-boss-fight. The profile is
+    // still READ inside the memo (for difficulty), but changes to it no longer trigger regeneration.
+    // Dependencies: effectiveMode (only compute for SENSORY), node, arcadeMode, targetLevel,
+    // profile?.capabilities. The problem is stable until one of these changes.
+    const sensoryData = useMemo(() => {
+        if (effectiveMode !== 'SENSORY') return null;
+
         const config = node?.config || {};
         let problem: SensoryProblem;
         let equation: string | undefined;
 
         if (arcadeMode && !node) {
-            // Arcade mode (no node) — generate a math problem for the bubble game
             const mathModule = new MathModule();
             const realCapabilities = profile?.capabilities || INITIAL_CAPABILITY_PROFILE;
             const adaptedProfile = { ...realCapabilities, estimatedLevel: Math.min(targetLevel || 1, 10) };
@@ -155,7 +162,6 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
             }
             problem = SensoryFactory.generateFromProblem(mathProblem);
         } else if (config.isMathSensory) {
-            // Math Bubble Blast Logic (from saga node)
             const mathModule = new MathModule();
             const realCapabilities = profile?.capabilities || INITIAL_CAPABILITY_PROFILE;
             const adaptedProfile = { ...realCapabilities, estimatedLevel: targetLevel };
@@ -175,6 +181,12 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         } else {
             problem = SensoryFactory.generate(node?.id || 'sensory-demo', config);
         }
+
+        return { problem, equation, config };
+    }, [effectiveMode, node, arcadeMode, targetLevel]);  // FIX(a): removed profile?.capabilities — prevents problem clobber on updateProfile
+
+    if (effectiveMode === 'SENSORY' && sensoryData) {
+        const { problem, equation, config } = sensoryData;
 
         const arcadeTitle = arcadeMode
             ? `${arcadeMode.charAt(0).toUpperCase() + arcadeMode.slice(1)} Mode`

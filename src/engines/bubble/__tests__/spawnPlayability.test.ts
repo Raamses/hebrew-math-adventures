@@ -297,7 +297,7 @@ describe('M2: computeLaneCount SSR guard', () => {
     it('uses window.innerWidth in browser (jsdom) environment', () => {
         const width = typeof window !== 'undefined' ? window.innerWidth : 480;
         const maxOnScreen = 8;
-        const laneCount = Math.min(maxOnScreen, Math.max(3, Math.floor(width / 80)));
+        const laneCount = Math.min(maxOnScreen, Math.max(3, Math.floor(width / 65)));
         expect(laneCount).toBeGreaterThanOrEqual(3);
         expect(laneCount).toBeLessThanOrEqual(maxOnScreen);
     });
@@ -305,22 +305,22 @@ describe('M2: computeLaneCount SSR guard', () => {
     it('falls back to 480px width in SSR (window undefined)', () => {
         // Simulate SSR: no window
         const width = typeof undefined !== 'undefined' ? (undefined as any).innerWidth : 480;
-        const laneCount = Math.min(8, Math.max(3, Math.floor(width / 80)));
-        expect(laneCount).toBe(6); // 480/80 = 6
+        const laneCount = Math.min(8, Math.max(3, Math.floor(width / 65)));
+        expect(laneCount).toBe(7); // 480/65 = 7.38 → floor = 7
     });
 
     it('clamps to maxOnScreen when screen is very wide', () => {
         const maxOnScreen = 5;
         const veryWideWidth = 4000;
-        const laneCount = Math.min(maxOnScreen, Math.max(3, Math.floor(veryWideWidth / 80)));
-        expect(laneCount).toBe(maxOnScreen); // 50 lanes → clamped to 5
+        const laneCount = Math.min(maxOnScreen, Math.max(3, Math.floor(veryWideWidth / 65)));
+        expect(laneCount).toBe(maxOnScreen); // 61 lanes → clamped to 5
     });
 
     it('clamps to minimum 3 when screen is very narrow', () => {
         const maxOnScreen = 8;
         const veryNarrowWidth = 100;
-        const laneCount = Math.min(maxOnScreen, Math.max(3, Math.floor(veryNarrowWidth / 80)));
-        expect(laneCount).toBe(3); // 100/80 = 1.25 → floor = 1 → max(3,1) = 3
+        const laneCount = Math.min(maxOnScreen, Math.max(3, Math.floor(veryNarrowWidth / 65)));
+        expect(laneCount).toBe(3); // 100/65 = 1.54 → floor = 1 → max(3,1) = 3
     });
 });
 

@@ -155,7 +155,7 @@ describe('MathBehaviorStrategy — Boss Gate', () => {
         });
     });
 
-    describe('getInstruction — missing operand rendering', () => {
+    describe('getInstructionKey — missing operand rendering', () => {
         it('renders ? + 5 = 12 format when missing is num1', () => {
             const strategy = new MathBehaviorStrategy();
             const problem: ArithmeticProblem = {
@@ -170,10 +170,11 @@ describe('MathBehaviorStrategy — Boss Gate', () => {
             const gate = makeGate('missing_operand', [problem]);
 
             strategy.prepareBossGate(gate);
-            const instruction = strategy.getInstruction();
+            const instructionKey = strategy.getInstructionKey();
 
-            // Should show: ? + 5 = 12 (7 + 5 = 12)
-            expect(instruction).toBe('? + 5 = 12');
+            // Should show: {key: 'bubble.solveEquation', params: {equation: '? + 5 = 12'}}
+            expect(instructionKey.key).toBe('bubble.solveEquation');
+            expect(instructionKey.params?.equation).toBe('? + 5 = 12');
         });
 
         it('renders 7 + ? = 12 format when missing is num2', () => {
@@ -190,10 +191,11 @@ describe('MathBehaviorStrategy — Boss Gate', () => {
             const gate = makeGate('missing_operand', [problem]);
 
             strategy.prepareBossGate(gate);
-            const instruction = strategy.getInstruction();
+            const instructionKey = strategy.getInstructionKey();
 
-            // Should show: 7 + ? = 12 (7 + 5 = 12)
-            expect(instruction).toBe('7 + ? = 12');
+            // Should show: {key: 'bubble.solveEquation', params: {equation: '7 + ? = 12'}}
+            expect(instructionKey.key).toBe('bubble.solveEquation');
+            expect(instructionKey.params?.equation).toBe('7 + ? = 12');
         });
 
         it('renders normal format when missing is answer (rapid_fire)', () => {
@@ -210,9 +212,10 @@ describe('MathBehaviorStrategy — Boss Gate', () => {
             const gate = makeGate('rapid_fire', [problem]);
 
             strategy.prepareBossGate(gate);
-            const instruction = strategy.getInstruction();
+            const instructionKey = strategy.getInstructionKey();
 
-            expect(instruction).toBe('7 + 5 = ?');
+            expect(instructionKey.key).toBe('bubble.solveEquation');
+            expect(instructionKey.params?.equation).toBe('7 + 5 = ?');
         });
 
         it('renders subtraction missing operand correctly', () => {
@@ -230,10 +233,11 @@ describe('MathBehaviorStrategy — Boss Gate', () => {
             const gate = makeGate('missing_operand', [problem]);
 
             strategy.prepareBossGate(gate);
-            const instruction = strategy.getInstruction();
+            const instructionKey = strategy.getInstructionKey();
 
-            // Should show: 12 - ? = 7
-            expect(instruction).toBe('12 - ? = 7');
+            // Should show: {key: 'bubble.solveEquation', params: {equation: '12 - ? = 7'}}
+            expect(instructionKey.key).toBe('bubble.solveEquation');
+            expect(instructionKey.params?.equation).toBe('12 - ? = 7');
         });
     });
 

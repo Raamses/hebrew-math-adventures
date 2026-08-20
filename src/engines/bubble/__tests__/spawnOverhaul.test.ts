@@ -381,15 +381,15 @@ describe('M2 fix — computeLaneCount SSR guard', () => {
   it('computeLaneCount uses window.innerWidth when available', () => {
     // jsdom provides window, so this should work
     const width = typeof window !== 'undefined' ? window.innerWidth : 480;
-    const laneCount = Math.min(8, Math.max(3, Math.floor(width / 80)));
+    const laneCount = Math.min(8, Math.max(3, Math.floor(width / 65)));
     expect(laneCount).toBeGreaterThanOrEqual(3);
   });
 
   it('computeLaneCount falls back to 480 when window is undefined (SSR)', () => {
     // Simulate SSR: typeof window === 'undefined'
     const width = typeof undefined !== 'undefined' ? (undefined as any).innerWidth : 480;
-    const laneCount = Math.min(8, Math.max(3, Math.floor(width / 80)));
-    expect(laneCount).toBe(6); // 480/80 = 6
+    const laneCount = Math.min(8, Math.max(3, Math.floor(width / 65)));
+    expect(laneCount).toBe(7); // 480/65 = 7.38 → floor = 7
   });
 });
 

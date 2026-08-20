@@ -20,6 +20,7 @@ export function getArcadeModeConfig(mode: ArcadeMode): Partial<GameConfig> {
         spawnIntervalMs: config.spawnIntervalMs,
         distractorRatio: config.distractorRatio,
         ...(config.levelMultiplier !== undefined ? { levelMultiplier: config.levelMultiplier } : {}),
+        ...(config.maxOnScreen !== undefined ? { maxOnScreen: config.maxOnScreen } : {}),
     };
 }
 

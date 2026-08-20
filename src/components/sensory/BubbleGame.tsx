@@ -30,10 +30,10 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     // 1. Configure the Game Rule
     const baseConfig: GameConfig = {
         modeName: arcadeMode ? `${arcadeMode.charAt(0).toUpperCase() + arcadeMode.slice(1)} Mode` : "Blast Off",
-        spawnIntervalMs: 1200, // Balanced spawn rate
-        maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 6 : typeof window !== 'undefined' && window.innerWidth < 600 ? 8 : 12,
+        spawnIntervalMs: 700, // Faster spawn rate for better pacing
+        maxOnScreen: typeof window !== 'undefined' && window.innerWidth < 400 ? 8 : typeof window !== 'undefined' && window.innerWidth < 600 ? 10 : 14,
         distractorRatio: 2, // ~33% Targets
-        baseVelocity: 0.5,
+        baseVelocity: 0.7,
         winCondition: {
             type: 'target_count',
             value: problem.items.filter(i => i.value === problem.target).length || 10
@@ -70,8 +70,15 @@ export const BubbleGame: React.FC<BubbleGameProps> = ({ problem, onComplete, onE
     );
     // Only set the problem directly for Saga/learning-path nodes (type==='sensory').
     // For arcade mode, let the strategy own problem generation via initializeLevel/regenerateProblem.
+    // FIX(a): Guard against clobbering the problem during a boss fight. When the boss gate is
+    // active, the strategy owns the problem (set via prepareBossGate). A new `problem` prop
+    // from a parent re-render (e.g. updateProfile) must not overwrite it.
     useEffect(() => {
         if (problem.type === 'sensory') {
+            // Skip if boss gate is active — strategy owns the problem during boss fights
+            if (behavior instanceof MathBehaviorStrategy && behavior.isBossGateActive()) {
+                return;
+            }
             behavior.setProblem(problem);
         }
     }, [problem, behavior]);
