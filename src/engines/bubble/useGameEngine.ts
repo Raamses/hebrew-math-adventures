@@ -157,7 +157,7 @@ export const useGameEngine = (
 
     const computeLaneCount = useCallback((currentCfg: GameConfig) =>
         // M2 Fix: Guard against SSR/non-browser environments where window is undefined.
-        Math.min(currentCfg.maxOnScreen, Math.max(3, Math.floor((typeof window !== 'undefined' ? window.innerWidth : 480) / 80)))
+        Math.min(currentCfg.maxOnScreen, Math.max(3, Math.floor((typeof window !== 'undefined' ? window.innerWidth : 480) / 65)))
     , []);
 
     const getLaneCenter = (laneIndex: number, count: number): number => {
@@ -396,10 +396,15 @@ export const useGameEngine = (
     const cleanupSystem = useCallback(() => {
         const now = Date.now();
 
-        // Asymmetric despawn TTL: targets live longer, distractors shorter
+        // Asymmetric despawn TTL: targets live longer, distractors shorter.
+        // FIX(c): Boss bubbles never expire via TTL — they can only be defeated by the player.
+        // The previous 30s TTL was shorter than the boss fall animation (32-40s at 0.5x velocity),
+        // causing the boss to vanish mid-screen before the player could kill it.
+        // Infinity is safe here: the only consumer is `(now - createdAt) > ttl`, which is
+        // always false when ttl is Infinity. No division or serialization of TTL occurs.
         const getTtlForEntity = (e: BubbleEntity): number => {
-            if (e.isPopped || e.isPowerUp || e.isBoss) return 30000;
-            // M3 Fix: Plan specifies 22s for distractors (was 25s — undocumented deviation)
+            if (e.isBoss) return Infinity; // Boss never despawns via TTL — must be defeated
+            if (e.isPopped || e.isPowerUp) return 30000;
             return isTargetEntity(e) ? BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS : BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS;
         };
 

@@ -819,6 +819,9 @@
     "candy": "Candy"
   },
   "bubble": {
-    "targets": "Targets"
+    "targets": "Targets",
+    "popNumber": "Pop the bubble with {{number}}",
+    "solveEquation": "Solve the equation and pop the bubble with the answer",
+    "popReady": "Pop the bubbles!"
   }
 }

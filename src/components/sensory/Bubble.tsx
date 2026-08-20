@@ -98,8 +98,8 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
 
     // Stable random duration based on variant
     const randomDuration = useMemo(() => {
-        const base = (variant === 'small' ? 8 : variant === 'large' ? 16 : 12) / (speedMultiplier || 1);
-        const range = variant === 'small' ? 6 : variant === 'large' ? 8 : 8;
+        const base = (variant === 'small' ? 7 : variant === 'large' ? 13 : 10) / (speedMultiplier || 1);
+        const range = variant === 'small' ? 4 : variant === 'large' ? 4 : 4;
         return base + Math.random() * range;
     }, [variant, speedMultiplier]);
 

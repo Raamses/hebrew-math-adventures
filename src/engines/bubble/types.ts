@@ -125,6 +125,14 @@ export interface BubbleEntity<T = any> {
 
 // --- Interfaces ---
 
+/** i18n instruction descriptor returned by getInstructionKey() */
+export interface InstructionKey {
+    /** i18n key, e.g. 'bubble.popNumber' */
+    key: string;
+    /** Interpolation params for t() */
+    params?: Record<string, string | number>;
+}
+
 export interface IGameBehavior {
     /** Generate the next bubble's content based on the current config */
     generateNext(config: GameConfig, opts?: { forceTarget?: boolean }): Partial<BubbleEntity>;
@@ -139,8 +147,8 @@ export interface IGameBehavior {
      */
     initializeLevel(level: number, config: GameConfig): void;
 
-    /** Optional: Get current objective instruction (e.g. "2 + 2 = ?") */
-    getInstruction?(): string;
+    /** Optional: Get current objective instruction as an i18n key + params */
+    getInstructionKey?(): InstructionKey;
 
     /** Force-regenerate the current problem (for mid-session level changes). */
     regenerateProblem(level: number, config: GameConfig, correctCount?: number): void;
