@@ -9,7 +9,7 @@ test.describe('Practice Mode', () => {
   });
 
   test('Clicking a practice saga node opens practice mode with a question', async ({ page }) => {
-    test.setTimeout(90000);
+  // Global timeout is 180s — no need for local override
 
     // The first node (n1_1) is SENSORY (Bubbles). The second node (n1_2) is PRACTICE.
     // We unlocked n1_1, n1_2, n1_3 in setupFreshProfileWithPracticeAccess.
@@ -52,7 +52,7 @@ test.describe('Practice Mode', () => {
   });
 
   test('Solving a problem works and advances to next question', async ({ page }) => {
-    test.setTimeout(90000);
+  // Global timeout is 180s — no need for local override
 
     // Click the second unlocked node (PRACTICE type)
     const nodes = page.locator('div.cursor-pointer.group');
@@ -92,7 +92,7 @@ test.describe('Practice Mode', () => {
   });
 
   test('Session progress bar is visible during practice', async ({ page }) => {
-    test.setTimeout(90000);
+  // Global timeout is 180s — no need for local override
 
     const nodes = page.locator('div.cursor-pointer.group');
     let unlockedIndex = 0;
@@ -128,7 +128,7 @@ test.describe('Practice Mode', () => {
   });
 
   test('Solve multiple problems in a session', async ({ page }) => {
-    test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
     const nodes = page.locator('div.cursor-pointer.group');
     let unlockedIndex = 0;

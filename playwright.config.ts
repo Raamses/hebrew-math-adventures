@@ -12,7 +12,7 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: 'list',
-  timeout: 60000,
+  timeout: 180000,
   use: {
     baseURL,
     headless: true,

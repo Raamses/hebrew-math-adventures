@@ -32,3 +32,12 @@ tags: [roadmap, current, work]
 
 ## Source plans (repo)
 - `SPAWN_OVERHAUL_PLAN.md`, `CHALLENGE_CLUTTER_PLAN.md`, `COUNSEL_FRENZY*.md`, `DESIGN_REVIEW_PRACTICEMODE.md`, `CLAUDE_BRIEF.md`.
+
+## E2E Suite + Coverage Analysis (2026-08-20)
+
+- Full e2e suite run completed: 53/99 passed, 40 failed, 5 did not run, 1 skipped (58.4m)
+- Gemini coverage analysis identified 8 blind spots — all have workboard cards
+- 6 fix cards created for failing specs grouped by root cause
+- Fix priority: timeout increase (30 tests), waitForSagaMap helper fix (3 tests), GameOrchestrator mode switch (2 tests), node unlock (2 tests), localhost URL fix (1 test), star tier assertion (1 test)
+- Learning-hints.spec.ts already written and passing against deployed site
+- Next: dispatch Claude to fix timeout-prone specs, then implement coverage gap cards

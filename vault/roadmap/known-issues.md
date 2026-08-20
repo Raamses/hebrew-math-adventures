@@ -21,3 +21,18 @@ tags: [roadmap, issues, known]
 
 ## How to log new issues
 Create a dated note in `roadmap/known-issues.md` or link from [[INDEX]]. Keep entries factual with a "status" field.
+
+## E2E Suite Results (2026-08-20)
+
+- **Full run**: 99 tests, 58.4 minutes, against deployed Firebase site
+- **Results**: 53 passed, 40 failed, 1 skipped, 5 did not run
+- **Root causes**:
+  1. **Generic timeout (30 tests)** — 120s Playwright timeout too short for deployed site latency
+  2. **waitForSagaMap timeout (3 tests)** — local helpers in specs still reference arcade-button without opening hamburger menu first
+  3. **GameOrchestrator not found (2 tests)** — mode switch via GameOrchestrator fails on deployed site
+  4. **Node locked (2 tests)** — setupFreshProfileWithPracticeAccess doesn't unlock target nodes
+  5. **ERR_CONNECTION_REFUSED (1 test)** — invaders spec targets localhost:5173 instead of deployed site
+  6. **Star tier assertion (1 test)** — perfect-run star calculation mismatch
+- **Clean specs** (zero failures): arcade-mode-selector, bubble-bugfixes, bubble-game, learning-hints, new-lessons-star-space, pet-screen, play-again-loop, profile-creation-smoke, unit-progression, wrong-answer-feedback
+- **Fix cards created**: 6 cards on workboard for each root cause
+- **Coverage gap cards**: 8 cards for untested features (hints, shop, badges, quests, story scenes, dashboard viz, powerups, fusion mode)

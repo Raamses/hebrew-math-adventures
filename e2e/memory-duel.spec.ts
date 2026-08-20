@@ -1,5 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfileWithPracticeAccess, waitForSagaMap } from './helpers';
+import { test, expect } from '@playwright/test';
+import { setupFreshProfileWithPracticeAccess, selectPracticeMode, waitForSagaMap } from './helpers';
 
 /**
  * Memory Duel Game — match all pairs → game complete → return to saga map.
@@ -18,77 +18,13 @@ import { setupFreshProfileWithPracticeAccess, waitForSagaMap } from './helpers';
  */
 
 test.describe('Memory Duel game', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('Memory Duel — match all pairs → game complete → return to saga map', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'MemoryTest');
 
-    // --- Enter n3_1 (LESSON node) to get into GameOrchestrator context ---
-    const lessonNode = page.locator('[data-testid="saga-node-n3_1"]').first();
-    await lessonNode.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
-
-    // Verify it's unlocked
-    const innerDiv = lessonNode.locator('div.rounded-full').first();
-    const innerClass = await innerDiv.getAttribute('class') || '';
-    if (innerClass.includes('grayscale') || innerClass.includes('cursor-not-allowed')) {
-      throw new Error('n3_1 node is locked. Ensure setupFreshProfileWithPracticeAccess is called.');
-    }
-
-    await lessonNode.click();
-    await page.waitForTimeout(2000);
-
-    // --- Switch GameOrchestrator from LESSON mode to MEMORY mode via React fiber ---
-    // n3_1 is a LESSON node, so effectiveMode='LESSON' and LessonModal opens.
-    // We find the GameOrchestrator's setInternalMode function and call it with 'MEMORY'.
-    // This makes effectiveMode='MEMORY', which renders MemoryDuelGame instead.
-    const switchResult = await page.evaluate(() => {
-      const lessonModal = document.querySelector('[data-testid="lesson-modal"]');
-      const rootEl = lessonModal || document.querySelector('.min-h-screen');
-      if (!rootEl) return { error: 'no root element found' };
-
-      const fiberKey = Object.keys(rootEl).find(k =>
-        k.startsWith('__reactFiber$') || k.startsWith('__reactInternalInstance$')
-      );
-      if (!fiberKey) return { error: 'no fiber key' };
-
-      let fiber = (rootEl as any)[fiberKey];
-      let depth = 0;
-      while (fiber && depth < 30) {
-        const fiberType = fiber.type;
-        const componentName = typeof fiberType === 'function'
-          ? (fiberType.name || fiberType.displayName)
-          : String(fiberType);
-
-        if (componentName === 'GameOrchestrator') {
-          // Found GameOrchestrator. Find the internalMode useState hook (value is null).
-          let hookIdx = 0;
-          let h = fiber.memoizedState;
-          while (h) {
-            const v = h.memoizedState;
-            // internalMode initial value is null, and it has a dispatch function
-            if (v === null && h.queue && typeof h.queue.dispatch === 'function') {
-              // Call the dispatch to set internalMode to 'MEMORY'
-              h.queue.dispatch('MEMORY');
-              return { found: true, hookIdx, component: componentName };
-            }
-            h = h.next;
-            hookIdx++;
-          }
-          return { error: 'internalMode hook not found', component: componentName };
-        }
-        fiber = fiber.return;
-        depth++;
-      }
-      return { error: 'GameOrchestrator not found', depth };
-    });
-
-    if (switchResult.error) {
-      console.error('Switch result:', JSON.stringify(switchResult, null, 2));
-      throw new Error(`Failed to switch to MEMORY mode: ${switchResult.error}`);
-    }
-
-    console.log('[Memory Duel] Switched to MEMORY mode:', JSON.stringify(switchResult));
+    // Use selectPracticeMode to enter MEMORY mode via the mode selector UI
+    await selectPracticeMode(page, 'MEMORY');
     await page.waitForTimeout(2000);
 
     // --- Verify MemoryDuelGame is visible ---

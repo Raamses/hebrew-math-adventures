@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupFreshProfile, openParentGate, openMenu } from './helpers';
 
 test.describe('Parent Zone Redesign', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('Parent gate from saga map', async ({ page }) => {
     // 1. Parent gate from saga map: setupFreshProfile → click [data-testid=parent-zone-button] → parent gate opens → solve → dashboard visible

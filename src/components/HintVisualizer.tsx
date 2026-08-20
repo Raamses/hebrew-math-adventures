@@ -80,11 +80,13 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
                         initial={{ opacity: 0, scale: 0.8, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                        data-testid="hint-visualizer"
                         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl shadow-2xl z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
                         dir={i18n.dir()}
                     >
                         {/* Close Button */}
                         <button
+                            data-testid="hint-close-x"
                             onClick={onClose}
                             className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md text-slate-600 hover:text-slate-800 transition-colors z-10"
                         >
@@ -103,6 +105,7 @@ export const HintVisualizer: React.FC<HintVisualizerProps> = ({ isOpen, problem,
                         {/* Footer */}
                         <div className="p-6">
                             <button
+                                data-testid="hint-close-footer"
                                 onClick={onClose}
                                 className="w-full py-3 bg-primary hover:bg-orange-600 text-white text-xl font-bold rounded-2xl shadow-lg transition-all active:scale-95"
                             >

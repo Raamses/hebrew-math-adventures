@@ -70,7 +70,7 @@ async function closeArcadeSelector(page: import('@playwright/test').Page) {
 }
 
 test.describe('Arcade Mode Selector', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   // ─── Scenario 1: Arcade button opens mode selector ───────────────
 

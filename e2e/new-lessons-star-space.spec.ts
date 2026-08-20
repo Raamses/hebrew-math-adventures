@@ -34,7 +34,7 @@ import {
  */
 
 test.describe('New Lessons — Star & Space Theme', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   // ─── Shared helpers ────────────────────────────────────────────────────
 

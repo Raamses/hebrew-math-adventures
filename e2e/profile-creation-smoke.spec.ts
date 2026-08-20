@@ -28,7 +28,7 @@ async function getProfiles(page: Page): Promise<StoredProfile[]> {
 }
 
 test.describe('Profile creation + saga map landing', () => {
-  test.setTimeout(60000);
+  // Global timeout is 180s — no need for local override
 
   test('creating a new profile persists it and lands on the saga map', async ({ page }) => {
     await setupFreshProfile(page, 'SmokeProfile');

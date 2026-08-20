@@ -229,7 +229,7 @@ const MathCardInner: React.FC<MathCardProps> = ({ problem, onAnswer, feedback, i
                 {canShowHintButton && (
                     <motion.button
                         type="button"
-                        onClick={() => setShowHintModal(true)}
+                        onClick={() => setShowHintModal(true)} data-testid="hint-button"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-800 text-xl font-bold rounded-2xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"

@@ -95,7 +95,7 @@ async function playBubbleSession(page: Page, maxAttempts = 20): Promise<number> 
 }
 
 test.describe('Daily Challenge — arcade modes', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('zen mode: correct bubbles accumulate daily challenge progress', async ({ page }) => {
     await setupFreshProfile(page, 'DCZen');

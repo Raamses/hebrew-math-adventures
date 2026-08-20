@@ -126,7 +126,7 @@ async function solveProblem(page: Page): Promise<boolean> {
 }
 
 test.describe('Unit progression', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('Complete n1_10 (PracticeMode session) → n2_1 unlocks', async ({ page }) => {
     // --- Setup: create profile + get profileId for progress injection ---

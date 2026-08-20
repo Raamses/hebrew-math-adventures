@@ -135,7 +135,7 @@ async function isSensoryGameActive(page: Page): Promise<boolean> {
 }
 
 test.describe('Saga node completion', () => {
-  test.setTimeout(180000);
+  // Global timeout is 180s — no need for local override
 
   // ─── Test 1: SENSORY node (n1_1) completion ─────────────────────────
 

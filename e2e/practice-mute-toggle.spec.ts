@@ -18,7 +18,7 @@ async function getIsMuted(page: Page): Promise<boolean | null> {
 }
 
 test.describe('Practice Mode — mute toggle', () => {
-  test.setTimeout(60000);
+  // Global timeout is 180s — no need for local override
 
   test('toggling mute from the settings menu persists and flips the icon', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'MuteToggle');

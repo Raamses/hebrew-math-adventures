@@ -179,12 +179,12 @@ async function waitForBubblesInViewport(page: Page, timeoutMs = 10000): Promise<
  * Reusable assertion that we've returned to the saga map.
  */
 async function isOnSagaMap(page: Page): Promise<boolean> {
-  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
-  return await arcadeBtn.count() > 0 && await arcadeBtn.isVisible().catch(() => false);
+  const sagaNode = page.locator('[data-testid^="saga-node-"]').first();
+  return await sagaNode.count() > 0 && await sagaNode.isVisible().catch(() => false);
 }
 
 test.describe('Arcade Game-Over flows', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   // ─── Test 1: Survival mode — 3 wrong answers → return to saga map ───
   test('Survival mode — 3 wrong answers → return to saga map → best score saved', async ({ page }) => {
@@ -264,7 +264,7 @@ test.describe('Arcade Game-Over flows', () => {
 
   // ─── Test 2: Blitz mode — timer expires → return to saga map ───
   test('Blitz mode — play actively → timer expires → return to saga map → score saved', async ({ page }) => {
-    test.setTimeout(90000); // 90s: 60s blitz + 30s setup/buffer
+    // Global timeout is 180s — no need for local override
 
     await setupFreshProfile(page, 'BlitzBot');
     await selectArcadeMode(page, 'blitz');
@@ -346,66 +346,8 @@ test.describe('Arcade Game-Over flows', () => {
   test('Math Invaders — play → game over → return to saga map', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'InvadersBot');
 
-    // Enter n3_1 and switch to INVADERS mode via React fiber manipulation
-    // (same technique as memory-duel.spec.ts)
-    const lessonNode = page.locator('[data-testid="saga-node-n3_1"]').first();
-    await lessonNode.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
-
-    // Verify it's unlocked
-    const innerDiv = lessonNode.locator('div.rounded-full').first();
-    const innerClass = await innerDiv.getAttribute('class') || '';
-    if (innerClass.includes('grayscale') || innerClass.includes('cursor-not-allowed')) {
-      throw new Error('n3_1 node is locked. Ensure setupFreshProfileWithPracticeAccess is called.');
-    }
-
-    await lessonNode.click();
-    await page.waitForTimeout(2000);
-
-    // Switch GameOrchestrator from LESSON mode to INVADERS mode via React fiber
-    const switchResult = await page.evaluate(() => {
-      const lessonModal = document.querySelector('[data-testid="lesson-modal"]');
-      const rootEl = lessonModal || document.querySelector('.min-h-screen');
-      if (!rootEl) return { error: 'no root element found' };
-
-      const fiberKey = Object.keys(rootEl).find(k =>
-        k.startsWith('__reactFiber$') || k.startsWith('__reactInternalInstance$')
-      );
-      if (!fiberKey) return { error: 'no fiber key' };
-
-      let fiber = (rootEl as any)[fiberKey];
-      let depth = 0;
-      while (fiber && depth < 30) {
-        const fiberType = fiber.type;
-        const componentName = typeof fiberType === 'function'
-          ? (fiberType.name || fiberType.displayName)
-          : String(fiberType);
-
-        if (componentName === 'GameOrchestrator') {
-          // Find the internalMode useState hook (value is null)
-          let h = fiber.memoizedState;
-          while (h) {
-            const v = h.memoizedState;
-            if (v === null && h.queue && typeof h.queue.dispatch === 'function') {
-              h.queue.dispatch('INVADERS');
-              return { found: true, component: componentName };
-            }
-            h = h.next;
-          }
-          return { error: 'internalMode hook not found', component: componentName };
-        }
-        fiber = fiber.return;
-        depth++;
-      }
-      return { error: 'GameOrchestrator not found', depth };
-    });
-
-    if (switchResult.error) {
-      console.error('Switch result:', JSON.stringify(switchResult, null, 2));
-      throw new Error(`Failed to switch to INVADERS mode: ${switchResult.error}`);
-    }
-
-    console.log('[Invaders] Switched to INVADERS mode:', JSON.stringify(switchResult));
+    // Use selectPracticeMode to enter INVADERS mode via the mode selector UI
+    await selectPracticeMode(page, 'INVADERS');
     await page.waitForTimeout(2000);
 
     // Verify MathInvadersGame is visible
