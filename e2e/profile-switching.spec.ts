@@ -133,7 +133,7 @@ async function completeSensoryNode(page: Page): Promise<number> {
 
   for (let i = 0; i < maxAttempts; i++) {
     // Check if we're back on the saga map (game complete)
-    const arcadeVisible = await page.locator('[data-testid="arcade-button"]').first().isVisible().catch(() => false);
+    const arcadeVisible = await page.locator('[data-testid="saga-node-n1_1"]').first().isVisible().catch(() => false);
     if (arcadeVisible) {
       console.log(`[completeSensoryNode] saga map visible after ${popped} pops`);
       break;

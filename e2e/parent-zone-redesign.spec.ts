@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupFreshProfile, openParentGate } from './helpers';
+import { setupFreshProfile, openParentGate, openMenu } from './helpers';
 
 test.describe('Parent Zone Redesign', () => {
   test.setTimeout(120000);
@@ -8,6 +8,7 @@ test.describe('Parent Zone Redesign', () => {
     // 1. Parent gate from saga map: setupFreshProfile → click [data-testid=parent-zone-button] → parent gate opens → solve → dashboard visible
     await setupFreshProfile(page, 'ParentZoneTest1');
 
+    await openMenu(page);
     const parentZoneBtn = page.locator('[data-testid="parent-zone-button"]').first();
     await expect(parentZoneBtn).toBeVisible();
     await parentZoneBtn.click();
@@ -82,6 +83,7 @@ test.describe('Parent Zone Redesign', () => {
     // 4. Exit from dashboard returns to correct screen (saga map if opened from map)
     await setupFreshProfile(page, 'ParentZoneTest4');
 
+    await openMenu(page);
     const parentZoneBtn = page.locator('[data-testid="parent-zone-button"]').first();
     await parentZoneBtn.click();
 
@@ -104,8 +106,8 @@ test.describe('Parent Zone Redesign', () => {
     await page.waitForTimeout(1500);
 
     // Should return to saga map
-    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
-    await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
+    const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
+    await expect(sagaNode).toBeVisible({ timeout: 10000 });
   });
 
   test('Games tab shows ParentGamesHub with game cards', async ({ page }) => {

@@ -153,7 +153,7 @@ test.describe('Saga node completion', () => {
     const maxAttempts = 80; // Generous limit to allow for bubble spawn waits
     for (let i = 0; i < maxAttempts; i++) {
       // Check if we're back on the saga map (game complete)
-      const arcadeVisible = await page.locator('[data-testid="arcade-button"]').first().isVisible().catch(() => false);
+      const arcadeVisible = await page.locator('[data-testid="saga-node-n1_1"]').first().isVisible().catch(() => false);
       if (arcadeVisible) {
         console.log(`[Test 1] saga map visible after ${popped} pops`);
         break;
@@ -384,7 +384,7 @@ test.describe('Saga node completion', () => {
     await expect(mathInput).toBeVisible({ timeout: 10000 });
 
     // Verify we're NOT on the saga map (still in a session)
-    const arcadeVisible = await page.locator('[data-testid="arcade-button"]').first().isVisible().catch(() => false);
+    const arcadeVisible = await page.locator('[data-testid="saga-node-n1_1"]').first().isVisible().catch(() => false);
     expect(arcadeVisible).toBe(false);
   });
 });
