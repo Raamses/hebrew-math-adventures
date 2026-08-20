@@ -213,6 +213,32 @@
         "F",
         "S"
       ]
+    },
+    "games": {
+      "title": "Games",
+      "subtitle": "Pick a game and practise maths together in a few minutes",
+      "soon": "Coming soon",
+      "play": "Play",
+      "back": "Back",
+      "stub": "This game is still in development and will be available here soon.",
+      "items": {
+        "equationOfTheDay": {
+          "title": "Equation of the Day",
+          "description": "One equation a day — solve it together and keep your streak."
+        },
+        "parentBlitz": {
+          "title": "Parent Blitz",
+          "description": "One minute of rapid-fire questions. How many can you solve?"
+        },
+        "numberMerge": {
+          "title": "Number Merge",
+          "description": "Merge matching numbers until you reach the target sum."
+        },
+        "mathCrossword": {
+          "title": "Math Crossword",
+          "description": "Fill in the missing equations across the grid."
+        }
+      }
     }
   },
   "analytics": {
