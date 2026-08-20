@@ -259,10 +259,10 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
     }
   }
 
-  // Sensory: "Pop N" — find bubble with N
-  const popMatch = bodyText.match(/Pop\s+(\d+)/i);
+  // Sensory: "Pop the bubble with N" or "פוצצו את הבועה שכתוב עליה N"
+  const popMatch = bodyText.match(/Pop the bubble with (\d+)|Pop\s+(\d+)|פוצצו\s+את\s+הבועה\s+שכתוב\s+עליה\s+(\d+)/i);
   if (popMatch) {
-    const target = popMatch[1];
+    const target = popMatch[1] || popMatch[2] || popMatch[3];
     const bubble = page.locator(`[data-testid="bubble-${target}"]`).first();
     if (await bubble.count() > 0) {
       const box = await bubble.boundingBox();
@@ -742,6 +742,23 @@ export async function openPetScreen(page: Page): Promise<void> {
  * (saga map, settings menu, or profile selector).
  */
 export async function toggleLanguage(page: Page): Promise<void> {
+  // language-toggle lives inside either the saga map hamburger menu or the in-game Settings menu.
+  // Try the saga map menu first, then the in-game Settings button.
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  if (await menuToggle.isVisible().catch(() => false)) {
+    const isExpanded = await menuToggle.getAttribute('aria-expanded');
+    if (isExpanded !== 'true') {
+      await menuToggle.click();
+      await page.waitForTimeout(500);
+    }
+  } else {
+    // Inside a game — open the Settings menu (gear icon button)
+    const settingsBtn = page.locator('button[aria-label*="Settings"], button[aria-label*="הגדרות"]').first();
+    if (await settingsBtn.isVisible().catch(() => false)) {
+      await settingsBtn.click();
+      await page.waitForTimeout(500);
+    }
+  }
   const toggleBtn = page.locator('[data-testid="language-toggle"]').first();
   await expect(toggleBtn).toBeVisible({ timeout: 10000 });
   await toggleBtn.click();
