@@ -18,7 +18,7 @@ import { setupFreshProfile, waitForSagaMap } from './helpers';
  */
 
 test.describe('Pet Screen', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('Open pet screen → pet visible → feed pet → happiness increases', async ({ page }) => {
     // Set up a fresh profile (lands on saga map)

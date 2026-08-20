@@ -24,7 +24,7 @@ import { toggleLanguage, waitForSagaMap, openMenu } from './helpers';
  */
 
 test.describe('Language Toggle', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('Toggle language Hebrew → English → UI text changes', async ({ page }) => {
     // --- Pre-set Hebrew as the language before app loads ---

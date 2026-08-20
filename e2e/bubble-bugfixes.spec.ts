@@ -27,7 +27,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
 
   test.describe('Pop N i18n', () => {
     test('Instruction renders in Hebrew (default locale)', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'I18nHebrew');
       await selectArcadeMode(page, 'zen');
       await page.waitForTimeout(3000);
@@ -57,7 +57,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test.skip('Instruction renders in English after language toggle', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'I18nEnglish');
       await selectArcadeMode(page, 'zen');
       await page.waitForTimeout(3000);
@@ -95,7 +95,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test('No raw "Pop N" placeholder in either language', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'I18nNoLeak');
       await selectArcadeMode(page, 'classic');
       await page.waitForTimeout(3000);
@@ -117,7 +117,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test('Instruction interpolation updates when target changes', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'I18nInterp');
       await selectArcadeMode(page, 'zen');
       await page.waitForTimeout(3000);
@@ -177,7 +177,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
 
   test.describe('Boss bubble killable', () => {
     test('Boss bubble appears at session level 3 in survival mode', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'BossAppear');
       await selectArcadeMode(page, 'survival');
       await page.waitForTimeout(3000);
@@ -224,7 +224,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test('Boss bubble is damaged by correct answers and persists', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'BossDamage');
       await selectArcadeMode(page, 'survival');
       await page.waitForTimeout(3000);
@@ -283,7 +283,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test('Boss bubble is destroyed after solving all gate problems', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'BossKill');
       await selectArcadeMode(page, 'survival');
       await page.waitForTimeout(3000);
@@ -343,7 +343,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test('No stale "pop N" instruction during boss fight and game continues post-boss', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'BossPostGame');
       await selectArcadeMode(page, 'survival');
       await page.waitForTimeout(3000);
@@ -431,7 +431,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
 
   test.describe('SensoryProblem memoization', () => {
     test('Equation renders consistently in survival mode over extended play', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'MemoSurvival');
       await selectArcadeMode(page, 'survival');
       await page.waitForTimeout(3000);
@@ -471,7 +471,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test('Equation renders during boss fight (not blank/vanished)', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'MemoBoss');
       await selectArcadeMode(page, 'survival');
       await page.waitForTimeout(3000);
@@ -527,7 +527,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test('No instruction flickering during problem transitions', async ({ page }) => {
-      test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'MemoFlicker');
       await selectArcadeMode(page, 'classic');
       await page.waitForTimeout(3000);

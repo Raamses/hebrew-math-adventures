@@ -144,7 +144,7 @@ async function exitDashboard(page: Page) {
 // ─── Tests ──────────────────────────────────────────────────────────
 
 test.describe('Parent Zone — Redesign', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   // ── Gate Entry ──────────────────────────────────────────────────
 

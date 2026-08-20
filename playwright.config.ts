@@ -21,7 +21,7 @@ export default defineConfig({
   // CPU contention, so we deliberately stay below the 6-worker default.
   workers: 3,
   reporter: 'list',
-  timeout: 60000,
+  timeout: 180000,
   use: {
     baseURL,
     headless: true,

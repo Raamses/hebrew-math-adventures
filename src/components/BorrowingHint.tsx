@@ -174,6 +174,7 @@ export const BorrowingHint = ({ operand1, operand2, answer, operator }: Borrowin
 
             {/* Controls */}
             <button
+                data-testid="hint-step-prev"
                 onClick={prevStep}
                 disabled={step === 0}
                 aria-label={t('common.prev')}
@@ -182,6 +183,7 @@ export const BorrowingHint = ({ operand1, operand2, answer, operator }: Borrowin
                 <ChevronLeft size={32} />
             </button>
             <button
+                data-testid="hint-step-next"
                 onClick={nextStep}
                 disabled={step === 3}
                 aria-label={t('common.next')}
@@ -301,6 +303,7 @@ export const BorrowingHint = ({ operand1, operand2, answer, operator }: Borrowin
                 {[0, 1, 2, 3].map((i) => (
                     <button
                         key={i}
+                        data-testid="hint-step-dot"
                         onClick={() => setStep(i)}
                         className={cn(
                             "h-3 w-3 rounded-full transition-all duration-300",

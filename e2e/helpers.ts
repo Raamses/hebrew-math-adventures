@@ -764,3 +764,90 @@ export async function toggleLanguage(page: Page): Promise<void> {
   await toggleBtn.click();
   await page.waitForTimeout(500);
 }
+
+/**
+ * Create a fresh profile and unlock an arbitrary set of saga nodes.
+ *
+ * Unlike setupFreshProfileWithPracticeAccess (which hardcodes n1_1/n1_2/n1_3/n3_1),
+ * this helper accepts a list of node IDs to unlock, making it usable for tests
+ * that need to access nodes deeper in the saga (subtraction, multiplication,
+ * borrowing, division, etc.).
+ *
+ * @param page   Playwright page
+ * @param name   Profile name
+ * @param nodeIds Array of saga node IDs to unlock (e.g. ['n1_3', 'n2_4', 'n3_8'])
+ */
+export async function setupWithUnlockedNodes(
+  page: Page,
+  name: string,
+  nodeIds: string[]
+): Promise<void> {
+  await page.goto(APP_URL, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+
+  // Create profile
+  const newPlayerBtn = page.locator('button:has(svg.lucide-plus)').first();
+  await expect(newPlayerBtn).toBeVisible({ timeout: 5000 });
+  await newPlayerBtn.click();
+  await page.waitForTimeout(800);
+
+  await page.locator('input#setup-name').fill(name);
+  await page.waitForTimeout(300);
+  await page.locator('button[type="submit"]').click();
+  await page.waitForTimeout(1500);
+
+  // Wait for saga map to fully render before injecting progress
+  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1).toBeVisible({ timeout: 30000 });
+
+  // Inject progress to unlock the requested nodes
+  const progressInjected = await page.evaluate(({ profileName, nodes }) => {
+    const results: string[] = [];
+    const profileRaw = localStorage.getItem('hebrew-math-profiles');
+    results.push(`profiles: ${profileRaw ? 'found' : 'not found'}`);
+    if (profileRaw) {
+      try {
+        const profiles = JSON.parse(profileRaw);
+        const profileList = Object.values(profiles) as any[];
+        results.push(`profile count: ${profileList.length}`);
+        const profile = profileList.find((p) => p.name === profileName);
+        if (profile) {
+          results.push(`found profile: ${profile.id}, name: ${profile.name}`);
+          const progressKey = `hebrew_game_saga_progress_v1_${profile.id}`;
+          const progress: Record<string, { stars: number; isLocked: boolean; mistakes: number }> = {};
+          // Always include n1_1 as completed (entry point)
+          progress.n1_1 = { stars: 3, isLocked: false, mistakes: 0 };
+          for (const nodeId of nodes) {
+            progress[nodeId] = { stars: 0, isLocked: false, mistakes: 0 };
+          }
+          localStorage.setItem(progressKey, JSON.stringify(progress));
+          results.push(`injected progress for ${profile.id} with nodes: ${nodes.join(', ')}`);
+        } else {
+          results.push(`profile '${profileName}' not found`);
+        }
+      } catch (e) {
+        results.push(`error: ${e}`);
+      }
+    }
+    return results.join('\n');
+  }, { profileName: name, nodes: nodeIds });
+
+  console.log('Progress injection:', progressInjected);
+
+  // Reload to pick up the progress
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(2000);
+
+  // After reload, we're back at profile selection — click the profile button
+  const profileBtn = page.locator('button', { hasText: name }).first();
+  await expect(profileBtn).toBeVisible({ timeout: 10000 });
+  await profileBtn.click();
+
+  // Wait for saga map to fully render
+  const n1_1AfterReload = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1AfterReload).toBeVisible({ timeout: 30000 });
+  await page.waitForTimeout(500);
+}

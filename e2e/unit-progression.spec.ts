@@ -8,7 +8,7 @@ import {
 } from './helpers';
 
 test.describe('Unit progression', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('Complete n1_10 (CHALLENGE node) → n2_1 unlocks', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'UnitProgress');

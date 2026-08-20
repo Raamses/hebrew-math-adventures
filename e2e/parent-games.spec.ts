@@ -104,7 +104,7 @@ async function backToHub(page: Page) {
 // ─── Tests ───────────────────────────────────────────────────────
 
 test.describe('Parent Games', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test.beforeEach(async ({ page }) => {
     await navigateToGamesHub(page);

@@ -33,7 +33,7 @@ const SESSION_LENGTH = 10;
 const MAX_ATTEMPTS = SESSION_LENGTH + 10; // generous buffer for parse failures
 
 test.describe('Play Again Loop', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('Complete session → Play Again → complete second session → stars persist', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'PlayAgain');

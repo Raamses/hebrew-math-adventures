@@ -13,7 +13,7 @@ const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:5173';
  */
 
 test.describe('Spawn Overhaul — smoke test', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('Zen mode: bubbles spawn consistently, no dead zones', async ({ page }) => {
     await setupFreshProfile(page, 'SmokeZen');

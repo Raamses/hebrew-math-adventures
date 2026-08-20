@@ -225,7 +225,7 @@ async function selectProfile(page: Page, name: string): Promise<void> {
 }
 
 test.describe('Profile switching', () => {
-  test.setTimeout(180000);
+  // Global timeout is 180s — no need for local override
 
   test('Create two profiles → switch between them → progress isolated', async ({ page }) => {
     // ── Step 1: Create profile "Alpha" and complete n1_1 to earn stars ──

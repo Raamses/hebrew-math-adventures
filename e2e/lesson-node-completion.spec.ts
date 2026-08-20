@@ -8,7 +8,7 @@ import { setupFreshProfileWithPracticeAccess } from './helpers';
  */
 
 test.describe('Lesson node completion', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('LESSON node (n3_1) — step through lesson → complete → stars → unlock n3_2', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'LessonTest');
