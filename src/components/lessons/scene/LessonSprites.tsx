@@ -145,6 +145,14 @@ const ANIMAL_ART: Record<DesertAnimal, React.ReactElement> = {
 
 const DesertAnimalSprite: ArtFn = ({ animal }) => ANIMAL_ART[animal ?? 'camel'];
 
+
+const Star: ArtFn = () => (
+    <g>
+        <path d="M50 20 L58 40 L80 40 L62 54 L70 76 L50 62 L30 76 L38 54 L20 40 L42 40 Z"
+              fill="#FBBF24" stroke="#F59E0B" strokeWidth="2" />
+    </g>
+);
+
 const SPRITE_ART: Record<LessonItemType, ArtFn> = {
     apple: Apple,
     basket: Basket,
@@ -156,6 +164,7 @@ const SPRITE_ART: Record<LessonItemType, ArtFn> = {
     tree: Tree,
     ten_frame: TenFrameSprite,
     desert_animal: DesertAnimalSprite,
+    star: Star,
 };
 
 // ---------------------------------------------------------------------------
