@@ -5,6 +5,7 @@ import { CalendarDays, Zap, Layers, Puzzle, Grid3x3 } from 'lucide-react';
 import { EquationOfTheDay } from './EquationOfTheDay';
 import { ParentBlitz } from './ParentBlitz';
 import { Sudoku } from './Sudoku';
+import { NumberMerge } from './NumberMerge';
 
 /** Stable, URL-safe identifiers. Never localise or reuse these. */
 export type GameId =
@@ -78,9 +79,10 @@ export const GAMES: readonly GameDefinition[] = [
   {
     id: 'number-merge',
     i18nKey: 'numberMerge',
-    status: 'coming_soon',
+    status: 'available',
     icon: Layers,
     accentClass: 'bg-emerald-100 text-emerald-600',
+    component: NumberMerge,
   },
   {
     id: 'math-crossword',

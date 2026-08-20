@@ -1,2 +1,0 @@
-en=question_answered&_ee=1&ep.origin=firebase&ep.is_correct=true&epn.value=5&ep.mode=sensory&ep.node_type=SENSORY&_et=7209
-en=question_answered&_ee=1&ep.origin=firebase&ep.is_correct=true&epn.value=1&ep.mode=sensory&ep.node_type=SENSORY&_et=3629

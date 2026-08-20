@@ -21,13 +21,13 @@ describe('ParentGamesHub', () => {
 
     expect(screen.getByTestId('game-card-equation-of-the-day')).toBeEnabled();
     expect(screen.getByTestId('game-card-parent-blitz')).toBeEnabled();
-    expect(screen.getByTestId('game-card-number-merge')).toBeDisabled();
+    expect(screen.getByTestId('game-card-number-merge')).toBeEnabled();
     expect(screen.getByTestId('game-card-math-crossword')).toBeDisabled();
 
     expect(
       screen.getByText('parent.games.items.equationOfTheDay.title'),
     ).toBeInTheDocument();
-    expect(screen.getAllByText('parent.games.soon')).toHaveLength(2);
+    expect(screen.getAllByText('parent.games.soon')).toHaveLength(1);
   });
 
   it('switches to the playing view when an available game is clicked', async () => {
@@ -54,11 +54,21 @@ describe('ParentGamesHub', () => {
     expect(screen.queryByTestId('game-view')).not.toBeInTheDocument();
   });
 
-  it('does not open a coming-soon game', async () => {
+  it('opens the number merge game when clicked', async () => {
     const user = userEvent.setup();
     render(<ParentGamesHub />);
 
     await user.click(screen.getByTestId('game-card-number-merge'));
+
+    expect(screen.getByTestId('game-view')).toBeInTheDocument();
+    expect(screen.getByTestId('game-number-merge')).toBeInTheDocument();
+  });
+
+  it('does not open a coming-soon game', async () => {
+    const user = userEvent.setup();
+    render(<ParentGamesHub />);
+
+    await user.click(screen.getByTestId('game-card-math-crossword'));
 
     expect(screen.getByTestId('games-list')).toBeInTheDocument();
     expect(screen.queryByTestId('game-view')).not.toBeInTheDocument();

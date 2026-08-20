@@ -1,5 +1,0 @@
-en=page_view&_ee=1&ep.origin=firebase
-en=app_open&_ee=1&ep.origin=firebase&_et=1&dt=App%20Entry
-en=app_open&_ee=1&ep.origin=firebase&_et=1&dt=App%20Entry
-en=signup&_ee=1&ep.origin=firebase&epn.age=6&ep.avatar_id=%F0%9F%A6%81&ep.mascot_id=owl&_et=3597
-en=login&_ee=1&ep.origin=firebase&ep.profile_id=71474f57-5e00-470a-8331-3a7f6c6a8bd1&ep.mascot_id=owl&ep.age_group=primary&_et=1
