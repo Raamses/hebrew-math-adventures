@@ -453,6 +453,8 @@ export const STORAGE_KEYS = {
     COMBO_FUSION_BEST_SCORE: 'hebrew-math-combo-fusion-best',
     CINEMATIC_SEEN: 'cinematic_seen_units',
     IS_MUTED: 'isMuted',
+    PARENT_ECONOMY: 'hebrew-math-parent-economy',
+    PARENT_LEADERBOARD: 'hebrew-math-parent-leaderboard',
 } as const;
 
 // ================================================================

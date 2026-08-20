@@ -312,7 +312,36 @@
         },
         "numberMerge": {
           "title": "Number Merge",
-          "description": "Merge matching numbers until you reach the target sum."
+          "description": "Merge matching numbers until you reach the target sum.",
+          "howToPlay": "How to play",
+          "start": "Start",
+          "replay": "Play again",
+          "done": "Done",
+          "continue": "Keep playing",
+          "scoreLabel": "Score",
+          "bestLabel": "Best",
+          "bestScore": "Best: {{score}}",
+          "swipeHint": "Swipe to move tiles",
+          "coinsEarned": "coins earned!",
+          "rules": {
+            "swipe": "Swipe in any direction to move all tiles",
+            "merge": "Matching tiles that collide merge into one",
+            "target": "Reach the 2048 tile to win!"
+          },
+          "win": {
+            "title": "Fantastic! 🎉",
+            "subtitle": "You reached tile {{tile}}!"
+          },
+          "over": {
+            "title": "Game Over",
+            "newRecord": "New record! 🏆",
+            "finalScore": "Final score"
+          },
+          "share": {
+            "whatsapp": "Share on WhatsApp",
+            "copy": "Copy",
+            "copied": "Copied!"
+          }
         },
         "mathCrossword": {
           "title": "Math Crossword",
@@ -350,6 +379,76 @@
             "copy": "Copy"
           }
         }
+      }
+    },
+    "economy": {
+      "coins": "Parent Coins",
+      "giftToChild": "Gift to Child",
+      "streak": "Daily Streak",
+      "days": "days",
+      "best": "Best",
+      "freeze": "Freeze Streak",
+      "badges": "Badges",
+      "locked": "Locked",
+      "balance": "Balance",
+      "dailyRemaining": "Remaining today",
+      "selectChild": "Select Child",
+      "chooseChild": "— Choose a profile —",
+      "amount": "Amount",
+      "maxPerChild": "Max per child per day",
+      "cancel": "Cancel",
+      "sendGift": "Send Gift",
+      "weeklyLeaderboard": "Weekly Leaderboard",
+      "resetsSunday": "Resets Sunday",
+      "noScoresYet": "No scores yet this week",
+      "you": "you",
+      "errors": {
+        "invalid_amount": "Invalid amount",
+        "insufficient_coins": "Not enough coins",
+        "daily_limit_exceeded": "Daily gift limit exceeded",
+        "child_daily_limit_exceeded": "Gift limit for this child exceeded"
+      }
+    },
+    "badges": {
+      "firstGame": {
+        "title": "First Game",
+        "desc": "Played your first game"
+      },
+      "streak7": {
+        "title": "Week Streak",
+        "desc": "7-day streak"
+      },
+      "streak30": {
+        "title": "Month Streak",
+        "desc": "30-day streak"
+      },
+      "humanCalculator": {
+        "title": "Human Calculator",
+        "desc": "Earned 500+ coins"
+      },
+      "blitzMaster": {
+        "title": "Blitz Master",
+        "desc": "Score 100+ in Blitz"
+      },
+      "eodExpert": {
+        "title": "EoD Expert",
+        "desc": "Won 10+ times"
+      },
+      "generousParent": {
+        "title": "Generous Parent",
+        "desc": "Gifted 100+ coins"
+      },
+      "mergeMaster": {
+        "title": "Merge Master",
+        "desc": "Reached 2048 tile"
+      },
+      "sudokuSolver": {
+        "title": "Sudoku Solver",
+        "desc": "Won 5+ Sudoku games"
+      },
+      "streakSaver": {
+        "title": "Streak Saver",
+        "desc": "Used streak freeze"
       }
     }
   },
