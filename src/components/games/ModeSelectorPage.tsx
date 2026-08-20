@@ -31,7 +31,6 @@ import { ARCADE_MODE_LABELS } from '../../lib/arcadeModes';
 // --- Types ---
 
 /** Math practice modes (used by PracticeMode) */
-import type { GameMode } from '../../hooks/usePracticeSession';
 /** Bubble arcade modes (used by SagaMap / BubbleGame) */
 import type { ArcadeMode } from '../../engines/bubble/types';
 
@@ -126,7 +125,6 @@ const ARCADE_COLORS: Record<string, string> = {
 
 function getArcadeModes(): ModeDef[] {
     return (['zen', 'classic', 'blitz', 'survival', 'fusion'] as ArcadeMode[]).map(mode => {
-        const label = ARCADE_MODE_LABELS[mode];
         return {
             id: mode,
             titleKey: undefined, // Use ARCADE_MODE_LABELS directly

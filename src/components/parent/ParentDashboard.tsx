@@ -18,7 +18,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPrac
     const { t, i18n } = useTranslation();
     const [activeTab, setActiveTab] = useState<TabId>('profiles');
 
-    const isRtl = i18n.dir() === 'rtl';
 
     const tabs: { id: TabId; label: string; icon: string }[] = [
         { id: 'profiles', label: t('parent.manageProfiles'), icon: '👥' },

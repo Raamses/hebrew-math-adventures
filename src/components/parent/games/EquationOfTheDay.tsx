@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CalendarDays, Check, Copy, Delete, Flame, Share2 } from 'lucide-react';
+import { Check, Copy, Delete, Flame, Share2 } from 'lucide-react';
 
 import type { GameComponentProps } from './registry';
 import {

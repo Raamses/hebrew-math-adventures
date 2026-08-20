@@ -31,12 +31,6 @@ const DIFFICULTY_ACCENT: Record<Difficulty, string> = {
   hard: 'bg-rose-100 text-rose-700 border-rose-300',
 };
 
-const DIFFICULTY_ACTIVE: Record<Difficulty, string> = {
-  easy: 'bg-emerald-500 text-white border-emerald-500',
-  medium: 'bg-amber-500 text-white border-amber-500',
-  hard: 'bg-rose-500 text-white border-rose-500',
-};
-
 /* ── Component ───────────────────────────────────────────────────── */
 
 export function Sudoku({ onExit }: GameComponentProps) {
