@@ -76,11 +76,30 @@ const DESERT = (
     </>
 );
 
+
+const SPACE: React.ReactNode = (
+    <>
+        <defs>
+            <linearGradient id="lesson-sky-space" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0F172A" />
+                <stop offset="100%" stopColor="#1E293B" />
+            </linearGradient>
+        </defs>
+        <rect width="100" height="100" fill="url(#lesson-sky-space)" />
+        <circle cx="20" cy="15" r="1.5" fill="#F1F5F9" opacity="0.8" />
+        <circle cx="50" cy="25" r="1" fill="#F1F5F9" opacity="0.6" />
+        <circle cx="75" cy="10" r="2" fill="#F1F5F9" opacity="0.9" />
+        <circle cx="35" cy="40" r="1" fill="#F8FAFC" opacity="0.5" />
+        <circle cx="85" cy="35" r="1.5" fill="#F1F5F9" opacity="0.7" />
+    </>
+);
+
 const BACKGROUNDS: Record<LessonTheme, React.ReactNode> = {
     beach: BEACH,
     forest: FOREST,
     mountain: MOUNTAIN,
     desert: DESERT,
+    space: SPACE,
 };
 
 export const SceneBackground: React.FC<{ theme: LessonTheme }> = ({ theme }) => (
