@@ -198,7 +198,7 @@ test.describe('hint content by operation', () => {
     await setupWithUnlockedNodes(page, `hint mult ${profileSeq++}`, ['n3_8']);
     const viz = await openHint(page, NODES.multiplication);
     await expect(viz).toContainText(T.groups);
-    await expect(viz.locator('svg')).toBeVisible();
+    await expect(viz.locator('svg').first()).toBeVisible();
   });
 
   test.fixme('division shows baskets, apples and the sharing explainer', async ({ page }) => {
@@ -242,24 +242,26 @@ test.describe('borrowing hint', () => {
   test('walks forward through all four steps and back again', async ({ page }) => {
     await setupWithUnlockedNodes(page, `hint borrow walk ${profileSeq++}`, ['n5_5']);
     const viz = await openHint(page, NODES.subBorrow);
-    const next = nextStep(viz);
-    const prev = prevStep(viz);
 
-    // Forward to the last step.
-    for (let step = 1; step < 4; step++) {
-      await expect(next).toBeEnabled();
-      await next.click();
-      await page.waitForTimeout(300);
-    }
-    await expect(next).toBeDisabled();
+    // Use step dots for navigation — they are always visible (mobile + desktop).
+    // The prev/next chevron buttons are hidden sm:block (desktop only) and thus
+    // not clickable in the mobile-chrome project.
+    const stepDots = viz.getByTestId('hint-step-dot');
 
-    // Backward to the first step.
-    for (let step = 4; step > 1; step--) {
-      await expect(prev).toBeEnabled();
-      await prev.click();
+    // Forward: click dots 2, 3, 4 (indices 1, 2, 3).
+    for (let i = 1; i < 4; i++) {
+      await stepDots.nth(i).click();
       await page.waitForTimeout(300);
+      // The active dot widens (bg-primary w-6) when selected.
+      await expect(stepDots.nth(i)).toHaveClass(/bg-primary/);
     }
-    await expect(prev).toBeDisabled();
+
+    // Backward: click dots 3, 2, 1 (indices 2, 1, 0).
+    for (let i = 2; i >= 0; i--) {
+      await stepDots.nth(i).click();
+      await page.waitForTimeout(300);
+      await expect(stepDots.nth(i)).toHaveClass(/bg-primary/);
+    }
   });
 });
 
