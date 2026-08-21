@@ -318,6 +318,7 @@ export const BorrowingHint = ({ operand1, operand2, answer, operator }: Borrowin
             <div className="flex sm:hidden w-full gap-4 mt-4">
                 <button
                     onClick={prevStep}
+                    data-testid="hint-step-prev-mobile"
                     disabled={step === 0}
                     className="flex-1 p-3 bg-white rounded-xl shadow text-primary font-bold disabled:opacity-50"
                 >
@@ -325,6 +326,7 @@ export const BorrowingHint = ({ operand1, operand2, answer, operator }: Borrowin
                 </button>
                 <button
                     onClick={nextStep}
+                    data-testid="hint-step-next-mobile"
                     disabled={step === 3}
                     className="flex-1 p-3 bg-primary text-white rounded-xl shadow font-bold disabled:opacity-50"
                 >
