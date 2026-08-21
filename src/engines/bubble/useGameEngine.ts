@@ -121,7 +121,7 @@ export const useGameEngine = (
 
         // Use the same internalValue as the current target (boss shows the answer)
         const bossBubble: BubbleEntity = {
-            id: `boss-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `boss-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             x: 50, // Center of screen
             y: BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET,
             content: bossProps.content ?? '🛡️',
@@ -208,7 +208,7 @@ export const useGameEngine = (
         const spawnX = Math.max(8, Math.min(92, getLaneCenter(starLane, laneCount.current) + jitter));
 
         const starBubble: BubbleEntity = {
-            id: `frenzystar-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `frenzystar-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             x: spawnX,
             y: BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET,
             content: POWER_UP_EMOJI[powerUpType],
@@ -358,7 +358,7 @@ export const useGameEngine = (
             spawnX = Math.max(8, Math.min(92, spawnX));
 
             const newBubble: BubbleEntity = {
-                id: `bubble-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `bubble-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
                 x: spawnX,
                 y: spawnY,
                 velocity: currentConfig.baseVelocity,
@@ -758,7 +758,7 @@ export const useGameEngine = (
             // Emit a merge event for UI animation
             if (consumedIds.length > 0) {
                 const event: MergeEvent = {
-                    id: `merge-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+                    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `merge-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
                     centerId: id,
                     consumedIds,
                     centerX: target.x ?? 50,
