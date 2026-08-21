@@ -36,17 +36,22 @@ async function getBubbleInstruction(page: Page): Promise<string | null> {
 
 /**
  * Extract the target number from the instruction text.
- * Handles: "Pop N", "A + B = ?", "A - B = ?", "A × B = ?", "? + B = C", "A + ? = C"
+ * Handles: "Pop N", "Pop the bubble with N", "A + B = ?", "A - B = ?", "A × B = ?", "? + B = C", "A + ? = C"
  */
 function parseInstructionTarget(inst: string): number | null {
   if (!inst) return null;
 
-  // "Pop N" — sensory mode
-  const popMatch = inst.match(/Pop\s+(\d+)/i);
+  // Strip Unicode directional/format marks (RLM, LRM, LRE, RLE, PDF, LRI, RLI, FSI, PDI, nbsp)
+  // that the RTL Hebrew app inserts into text content. These invisible characters
+  // break regex matching if not removed.
+  const clean = inst.replace(/[\u200e\u200f\u200b\u202a-\u202e\u2066-\u2069\u00a0]/g, '');
+
+  // "Pop N" or "Pop the bubble with N" — sensory mode
+  const popMatch = clean.match(/Pop\s+(?:the\s+bubble\s+with\s+)?(\d+)/i);
   if (popMatch) return parseInt(popMatch[1]!);
 
   // Arithmetic: "A OP B = ?"
-  const eqMatch = inst.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);
+  const eqMatch = clean.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);
   if (eqMatch) {
     const a = parseInt(eqMatch[1]!);
     const op = eqMatch[2]!;
@@ -60,7 +65,7 @@ function parseInstructionTarget(inst: string): number | null {
   }
 
   // Missing operand: "? OP B = C"
-  const missingLeft = inst.match(/\?\s*([+\-−×÷*])\s*(\d+)\s*=\s*(\d+)/);
+  const missingLeft = clean.match(/\?\s*([+\-−×÷*])\s*(\d+)\s*=\s*(\d+)/);
   if (missingLeft) {
     const op = missingLeft[1]!;
     const b = parseInt(missingLeft[2]!);
@@ -74,7 +79,7 @@ function parseInstructionTarget(inst: string): number | null {
   }
 
   // Missing operand: "A OP ? = C"
-  const missingRight = inst.match(/(\d+)\s*([+\-−×÷*])\s*\?\s*=\s*(\d+)/);
+  const missingRight = clean.match(/(\d+)\s*([+\-−×÷*])\s*\?\s*=\s*(\d+)/);
   if (missingRight) {
     const a = parseInt(missingRight[1]!);
     const op = missingRight[2]!;
@@ -88,7 +93,7 @@ function parseInstructionTarget(inst: string): number | null {
   }
 
   // Just a number
-  const numMatch = inst.match(/^(\d+)$/);
+  const numMatch = clean.match(/^(\d+)$/);
   if (numMatch) return parseInt(numMatch[1]!);
 
   return null;
