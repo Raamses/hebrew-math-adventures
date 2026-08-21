@@ -30,7 +30,9 @@
  *
  * Selector strategy: TreasureShop has no data-testid attributes, so the shop
  * is located by its heading and item cards are located by their (unique)
- * emoji. That is deliberate but brittle — see NEEDED_TESTIDS.
+ * emoji. Language is English (headless Chrome navigator) after localStorage
+ * clear; selectors match both en and he where the app may switch. See
+ * NEEDED_TESTIDS for the data-testid follow-up.
  *
  * Model: claude-opus-5
  */
@@ -66,17 +68,17 @@ interface ShopItemFixture {
 }
 
 const SHOP_ITEMS: ShopItemFixture[] = [
-  { id: 'mascot_fox', emoji: '🦊', price: 50, he: 'שועל', category: 'mascot' },
-  { id: 'mascot_penguin', emoji: '🐧', price: 50, he: 'פינגווין', category: 'mascot' },
-  { id: 'mascot_unicorn', emoji: '🦄', price: 80, he: 'חד-קרן', category: 'mascot' },
-  { id: 'mascot_dragon', emoji: '🐉', price: 120, he: 'דרקון', category: 'mascot' },
-  { id: 'skin_star', emoji: '⭐', price: 30, he: 'כוכב', category: 'bubble_skin' },
-  { id: 'skin_apple', emoji: '🍎', price: 30, he: 'תפוח', category: 'bubble_skin' },
-  { id: 'skin_rainbow', emoji: '🌈', price: 60, he: 'קשת', category: 'bubble_skin' },
-  { id: 'skin_crystal', emoji: '🔮', price: 40, he: 'קריסטל', category: 'bubble_skin' },
-  { id: 'fx_confetti', emoji: '🎉', price: 25, he: 'קונפטי', category: 'particle_effect' },
-  { id: 'fx_fireworks', emoji: '🎆', price: 40, he: 'זיקוקים', category: 'particle_effect' },
-  { id: 'fx_sparkle', emoji: '✨', price: 20, he: 'ניצוצות', category: 'particle_effect' },
+  { id: 'mascot_fox', emoji: '🦊', price: 50, he: 'Fox', category: 'mascot' },
+  { id: 'mascot_penguin', emoji: '🐧', price: 50, he: 'Penguin', category: 'mascot' },
+  { id: 'mascot_unicorn', emoji: '🦄', price: 80, he: 'Unicorn', category: 'mascot' },
+  { id: 'mascot_dragon', emoji: '🐉', price: 120, he: 'Dragon', category: 'mascot' },
+  { id: 'skin_star', emoji: '⭐', price: 30, he: 'Star', category: 'bubble_skin' },
+  { id: 'skin_apple', emoji: '🍎', price: 30, he: 'Apple', category: 'bubble_skin' },
+  { id: 'skin_rainbow', emoji: '🌈', price: 60, he: 'Rainbow', category: 'bubble_skin' },
+  { id: 'skin_crystal', emoji: '🔮', price: 40, he: 'Crystal', category: 'bubble_skin' },
+  { id: 'fx_confetti', emoji: '🎉', price: 25, he: 'Confetti', category: 'particle_effect' },
+  { id: 'fx_fireworks', emoji: '🎆', price: 40, he: 'Fireworks', category: 'particle_effect' },
+  { id: 'fx_sparkle', emoji: '✨', price: 20, he: 'Sparkle', category: 'particle_effect' },
 ];
 
 const byId = (id: string): ShopItemFixture => {
@@ -87,17 +89,38 @@ const byId = (id: string): ShopItemFixture => {
 
 // Hebrew i18n strings (app defaults to lng: 'he').
 const HE = {
-  shopTitle: 'חנות האוצרות',
-  equip: 'הצג',
-  equipped: 'מוצג',
-  close: 'סגור',
-  categoryMascot: 'דמויות',
-  categorySkin: 'עיצובי בועות',
-  categoryEffect: 'אפקטים',
-  parentEconomyCoins: 'מטבעות הורים',
-  giftToChild: 'תרום לילד',
-  sendGift: 'שלחו מתנה',
+  // App uses i18next LanguageDetector; after localStorage.clear() the
+  // navigator language kicks in (en in headless Chrome), so the UI
+  // renders in English. Use English selectors and match Hebrew where
+  // the app does render it (item names come from he.json via t() when
+  // the detected language is he — but here it's en).
+  shopTitle: 'Treasure Shop',
+  equip: 'Equip',
+  equipped: 'Equipped',
+  close: 'Close',
+  categoryMascot: 'Mascots',
+  categorySkin: 'Bubble Skins',
+  categoryEffect: 'Particle Effects',
+  parentEconomyCoins: 'Parent Coins',
+  giftToChild: 'Gift to Child',
+  sendGift: 'Send Gift',
 } as const;
+
+// Hebrew item names (used in the test fixtures) — these match the en.json
+// translations when the browser language is English.
+const HE_ITEMS: Record<string, string> = {
+  mascot_fox: 'Fox',
+  mascot_penguin: 'Penguin',
+  mascot_unicorn: 'Unicorn',
+  mascot_dragon: 'Dragon',
+  skin_star: 'Star',
+  skin_apple: 'Apple',
+  skin_rainbow: 'Rainbow',
+  skin_crystal: 'Crystal',
+  fx_confetti: 'Confetti',
+  fx_fireworks: 'Fireworks',
+  fx_sparkle: 'Sparkle',
+};
 
 // ─── Shop locators ───────────────────────────────────────────────────────
 
@@ -148,18 +171,19 @@ async function revealItem(page: Page, itemId: string): Promise<Locator> {
 /** Open the shop from the saga map hamburger menu (button has aria-label only). */
 async function openShop(page: Page): Promise<void> {
   await openMenu(page);
-  const shopBtn = page.locator(`button[aria-label="${HE.shopTitle}"]`).first();
+  // Shop button aria-label is t('shop.title') — "Treasure Shop" (en) or "חנות האוצרות" (he).
+  const shopBtn = page.locator('button[aria-label="Treasure Shop"], button[aria-label="חנות האוצרות"]').first();
   await expect(shopBtn).toBeVisible({ timeout: 10000 });
   await shopBtn.click();
   await page.waitForTimeout(800);
   await expect(shopCard(page)).toBeVisible({ timeout: 10000 });
   await expect(
-    shopCard(page).getByRole('heading', { name: HE.shopTitle }),
+    shopCard(page).getByRole('heading', { name: /^Treasure Shop$|^חנות האוצרות$/ }),
   ).toBeVisible({ timeout: 5000 });
 }
 
 async function closeShop(page: Page): Promise<void> {
-  await shopCard(page).getByRole('button', { name: HE.close }).click();
+  await shopCard(page).getByRole('button', { name: /^Close$|^סגור$/ }).click();
   await page.waitForTimeout(800);
   await expect(shopCard(page)).toBeHidden({ timeout: 5000 });
 }
@@ -177,7 +201,7 @@ async function buyItem(page: Page, itemId: string): Promise<void> {
 async function equipItem(page: Page, itemId: string): Promise<void> {
   await revealItem(page, itemId);
   const btn = itemButton(page, itemId);
-  await expect(btn).toHaveText(HE.equip, { timeout: 5000 });
+  await expect(btn).toHaveText(/^Equip$|^הצג$/, { timeout: 5000 });
   await btn.click();
   await page.waitForTimeout(1200);
 }
@@ -199,13 +223,13 @@ async function expectBuyState(page: Page, itemId: string, opts: { affordable: bo
 async function expectOwnedState(page: Page, itemId: string) {
   const card = await revealItem(page, itemId);
   await expect(card, `${itemId} should have the owned border`).toHaveClass(/border-blue-200/);
-  await expect(itemButton(page, itemId), `${itemId} should offer equip`).toHaveText(HE.equip);
+  await expect(itemButton(page, itemId), `${itemId} should offer equip`).toHaveText(/^Equip$|^הצג$/);
 }
 
 async function expectEquippedState(page: Page, itemId: string) {
   const card = await revealItem(page, itemId);
   await expect(card, `${itemId} should have the equipped border`).toHaveClass(/border-green-400/);
-  await expect(card, `${itemId} should read as equipped`).toContainText(HE.equipped);
+  await expect(card, `${itemId} should read as equipped`).toContainText(/Equipped|מוצג/);
   await expect(
     card.locator('button'),
     `${itemId} should expose no action button while equipped`,
@@ -283,7 +307,9 @@ async function setupProfileWithCoins(page: Page, name: string, coins: number): P
   await page.waitForTimeout(500);
 
   // Sanity-check the saga map header picked up the balance.
-  const headerCoins = page.locator(`[aria-label="${coins} מטבעות"]`).first();
+  // aria-label is `${coins} ${t('shop.coins', 'מטבעות')}` — renders as
+  // "N Coins" in English or "N מטבעות" in Hebrew depending on detected lng.
+  const headerCoins = page.locator(`[aria-label="${coins} Coins"], [aria-label="${coins} מטבעות"]`).first();
   await expect(headerCoins, 'saga map header should show injected coins').toBeVisible({
     timeout: 10000,
   });
@@ -577,9 +603,11 @@ test.describe('Parent gifting economy', () => {
     await expect(tabs).toHaveCount(4);
 
     // No ParentEconomyPanel content is rendered anywhere.
-    await expect(dashboard).not.toContainText(HE.parentEconomyCoins);
-    await expect(dashboard).not.toContainText(HE.giftToChild);
-    await expect(page.getByRole('button', { name: HE.sendGift })).toHaveCount(0);
+    await expect(dashboard).not.toContainText('Parent Coins');
+    await expect(dashboard).not.toContainText('מטבעות הורים');
+    await expect(dashboard).not.toContainText('Gift to Child');
+    await expect(dashboard).not.toContainText('תרום לילד');
+    await expect(page.getByRole('button', { name: /^Send Gift$|^שלחו מתנה$/ })).toHaveCount(0);
 
     // The injected state is untouched: nothing reads or writes it.
     const stored = await page.evaluate(
