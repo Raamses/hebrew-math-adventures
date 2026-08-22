@@ -31,3 +31,4 @@ dist-ssr
 .claude/
 IMPLEMENTATION_TASKS/
 e2e/screenshots/
+test-results/
