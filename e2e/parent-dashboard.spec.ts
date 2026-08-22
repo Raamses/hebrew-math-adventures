@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupFreshProfile, openParentGate, waitForSagaMap } from './helpers';
+import { setupFreshProfile, openParentGate, waitForSagaMap, openMenu } from './helpers';
 
 /**
  * Parent Dashboard — Phase 2c (§4.6 of EXPANDED_COVERAGE_PLAN.md)
@@ -23,9 +23,10 @@ test.describe('Parent Dashboard', () => {
     // Set up a fresh profile (lands on saga map), then log out to reach ProfileSelector
     await setupFreshProfile(page, 'ParentTest');
 
+    // Open the hamburger menu to access the logout button
+    await openMenu(page);
+
     // Log out from saga map to return to ProfileSelector
-    // The logout button has aria-label "Log Out" (en) or "התנתק" (he)
-    // It's the last button in the header with a LogOut icon
     const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
     await expect(logoutBtn).toBeVisible({ timeout: 10000 });
     await logoutBtn.click();
@@ -44,6 +45,9 @@ test.describe('Parent Dashboard', () => {
   test('Parent dashboard — switch tabs → content renders → exit', async ({ page }) => {
     // Set up fresh profile and log out to reach ProfileSelector
     await setupFreshProfile(page, 'ParentTest2');
+
+    // Open the hamburger menu to access the logout button
+    await openMenu(page);
 
     // Log out to reach ProfileSelector
     const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();

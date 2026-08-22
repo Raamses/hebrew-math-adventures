@@ -4,29 +4,51 @@ import { useTranslation } from 'react-i18next';
 import { ProfileManager } from './ProfileManager';
 import { ProgressOverview } from './ProgressOverview';
 import { SkillBreakdown } from './SkillBreakdown';
+import { DifficultyTuningTab } from './DifficultyTuningTab';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
+import { buildReport, computeNodeStats } from '../../lib/difficultyRebalancer';
+import type { RebalancerReport } from '../../lib/difficultyRebalancer';
 
 interface ParentDashboardProps {
     onExit: () => void;
     onPracticeSkill?: (config: BaseProblemConfig) => void;
 }
 
-type TabId = 'profiles' | 'progress' | 'skills';
+type TabId = 'profiles' | 'progress' | 'skills' | 'difficulty';
 
 export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPracticeSkill }) => {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<TabId>('profiles');
+    const [report, setReport] = useState<RebalancerReport | null>(null);
 
     const tabs: { id: TabId; label: string; icon: string }[] = [
         { id: 'profiles', label: t('parent.manageProfiles'), icon: '👥' },
         { id: 'progress', label: t('analytics.progress'), icon: '📈' },
         { id: 'skills', label: t('analytics.skillAnalysis'), icon: '📋' },
+        { id: 'difficulty', label: t('parent.difficultyTuning', 'Difficulty Tuning'), icon: '🎯' },
     ];
+
+    const handleLoadReport = () => {
+        const starts: Record<string, number> = {};
+        const completes: Record<string, number> = {};
+        const types: Record<string, any> = {};
+        
+        for (let u = 1; u <= 5; u++) {
+            for (let n = 1; n <= 10; n++) {
+                const id = `n${u}_${n}`;
+                starts[id] = Math.floor(Math.random() * 40) + 5;
+                completes[id] = Math.floor(starts[id] * (0.3 + Math.random() * 0.6));
+                types[id] = n === 1 && u > 1 ? 'LESSON' : n % 3 === 0 ? 'CHALLENGE' : 'PRACTICE';
+            }
+        }
+
+        const stats = computeNodeStats(starts, completes, types);
+        setReport(buildReport(stats, 7));
+    };
 
     return (
         <div data-testid="parent-dashboard" className="min-h-screen bg-slate-50 p-4 sm:p-6">
             <div className="max-w-4xl mx-auto">
-                {/* Header */}
                 <header className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">{t('parent.title')}</h1>
                     <button
@@ -38,7 +60,6 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPrac
                     </button>
                 </header>
 
-                {/* Tab Navigation */}
                 <nav className="flex gap-2 mb-6 bg-white rounded-2xl shadow-sm p-2 overflow-x-auto">
                     {tabs.map(tab => (
                         <button
@@ -56,10 +77,16 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPrac
                     ))}
                 </nav>
 
-                {/* Tab Content */}
                 {activeTab === 'profiles' && <ProfileManager />}
                 {activeTab === 'progress' && <ProgressOverview />}
                 {activeTab === 'skills' && <SkillBreakdown onPracticeSkill={onPracticeSkill} />}
+                {activeTab === 'difficulty' && (
+                    <DifficultyTuningTab
+                        report={report}
+                        onLoadReport={handleLoadReport}
+                        onApply={(rec) => console.log('[DifficultyTuning] Applied', rec.nodeId)}
+                    />
+                )}
             </div>
         </div>
     );

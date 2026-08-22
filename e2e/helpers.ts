@@ -259,41 +259,35 @@ export async function enterSagaNode(page: Page, nodeIndex: number) {
 }
 
 export async function selectPracticeMode(page: Page, mode: 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL' | 'MEMORY' | 'INVADERS') {
-  // To reach the ModeSelectorOverlay, we need to click a LESSON-type node (n3_1).
-  // LESSON nodes have no config, so PracticeMode opens with ModeSelectorOverlay.
-  // n3_1 is the first node of unit 3 (index 20 among all nodes: 10 in unit1 + 10 in unit2).
-  // setupFreshProfileWithPracticeAccess unlocks n3_1.
+  // To reach the ModeSelectorOverlay in PracticeMode, we need to click a node that opens
+  // PracticeMode WITHOUT a problemConfig. CHALLENGE nodes from unit 3 onwards (n3_9, n3_10, etc.)
+  // don't have a config property, so clicking them opens PracticeMode with ModeSelectorOverlay.
+  // setupFreshProfileWithPracticeAccess unlocks n3_9.
   
-  const allNodes = page.locator('[data-testid^="saga-node-"]');
-  const totalNodes = await allNodes.count();
-  
-  if (totalNodes < 21) {
-    throw new Error(`Expected at least 21 nodes, found ${totalNodes}`);
-  }
-  
-  // n3_1 is at index 20 (0-indexed): 10 nodes in unit1 + 10 nodes in unit2 = 20, so n3_1 is the 21st
-  const lessonNode = allNodes.nth(20);
+  // Use data-testid selector for n3_9 (CHALLENGE node without config)
+  const challengeNode = page.locator('[data-testid="saga-node-n3_9"]').first();
+  await expect(challengeNode).toBeVisible({ timeout: 10000 });
   
   // Scroll it into view
-  await lessonNode.scrollIntoViewIfNeeded();
+  await challengeNode.scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
   
   // Verify it's unlocked
-  const innerDiv = lessonNode.locator('div.rounded-full').first();
+  const innerDiv = challengeNode.locator('div.rounded-full').first();
   const innerClass = await innerDiv.getAttribute('class') || '';
   
   if (innerClass.includes('grayscale') || innerClass.includes('cursor-not-allowed')) {
-    throw new Error('n3_1 node is locked. Ensure setupFreshProfileWithPracticeAccess is called.');
+    throw new Error('n3_9 node is locked. Ensure setupFreshProfileWithPracticeAccess is called.');
   }
   
   // Click it
-  await lessonNode.click();
+  await challengeNode.click();
   await page.waitForTimeout(2500);
   
   // Check if mode selector appeared
   const modeSelector = page.locator('[data-testid="mode-selector"]');
   if (await modeSelector.count() === 0) {
-    throw new Error('ModeSelectorOverlay did not appear after clicking n3_1');
+    throw new Error('ModeSelectorOverlay did not appear after clicking n3_9');
   }
   
   // Click the desired mode card
@@ -311,10 +305,14 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
   }
 
   // Comparison question?
-  const compareButtons = page.locator('button').filter({ hasText: /^[<=>]$/ });
+  // Buttons have text like "Select >", "Select =", "Select <" - match buttons containing the symbol
+  const compareButtons = page.locator('button').filter({ hasText: /[<=>]/ });
   const compareCount = await compareButtons.count();
   if (compareCount >= 3) {
-    const numbers = bodyText.match(/\d+/g) || [];
+    // Extract numbers from the problem card area, not the whole body
+    const mathCard = page.locator('.max-w-md.bg-white.rounded-3xl').first();
+    const cardText = await mathCard.textContent() || '';
+    const numbers = cardText.match(/\d+/g) || [];
     if (numbers.length >= 2) {
       const num1 = parseInt(numbers[0]!);
       const num2 = parseInt(numbers[1]!);
@@ -322,7 +320,8 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
       if (num1 > num2) symbol = '>';
       else if (num1 < num2) symbol = '<';
       else symbol = '=';
-      await compareButtons.filter({ hasText: symbol }).click();
+      // Click button containing the symbol (e.g., "Select >")
+      await compareButtons.filter({ hasText: symbol }).first().click();
       return true;
     }
   }

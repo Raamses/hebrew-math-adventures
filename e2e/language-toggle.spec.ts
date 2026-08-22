@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { toggleLanguage, waitForSagaMap } from './helpers';
+import { toggleLanguage, waitForSagaMap, openMenu } from './helpers';
 
 /**
  * Language Toggle — Phase 2e (§4.8 of EXPANDED_COVERAGE_PLAN.md)
@@ -64,11 +64,16 @@ test.describe('Language Toggle', () => {
     expect(lngBefore).toBe('he');
 
     // Assert arcade button title is in Hebrew
-    const arcadeBtn = page.locator('[data-testid="saga-node-n1_1"]').first();
+    // The arcade button is inside the hamburger menu, so we need to open it first
+    await openMenu(page);
+    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
     await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
     const arcadeTitleBefore = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title before toggle:', arcadeTitleBefore);
     expect(arcadeTitleBefore).toBe('משחקי ארקייד');
+
+    // Close the menu
+    await openMenu(page);
 
     // Assert language-toggle aria-label is in Hebrew
     const toggleBtn = page.locator('[data-testid="language-toggle"]').first();
@@ -84,10 +89,14 @@ test.describe('Language Toggle', () => {
     console.log('[Language Toggle] i18nextLng after toggle:', lngAfter);
     expect(lngAfter).toBe('en');
 
-    // Assert arcade button title is now in English
+    // Assert arcade button title is now in English (re-open menu)
+    await openMenu(page);
     const arcadeTitleAfter = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title after toggle:', arcadeTitleAfter);
     expect(arcadeTitleAfter).toBe('Arcade Games');
+
+    // Close the menu
+    await openMenu(page);
 
     // Assert language-toggle aria-label is now in English
     const toggleAriaAfter = await toggleBtn.getAttribute('aria-label') || '';
@@ -102,9 +111,14 @@ test.describe('Language Toggle', () => {
     console.log('[Language Toggle] i18nextLng after toggle back:', lngRestored);
     expect(lngRestored).toBe('he');
 
+    // Re-open menu to check arcade button title restored
+    await openMenu(page);
     const arcadeTitleRestored = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title restored:', arcadeTitleRestored);
     expect(arcadeTitleRestored).toBe('משחקי ארקייד');
+
+    // Close the menu
+    await openMenu(page);
 
     // Verify we're still on the saga map
     await waitForSagaMap(page);

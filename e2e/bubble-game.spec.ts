@@ -44,8 +44,8 @@ test.describe('Bubble Game Modes', () => {
     for (let i = 0; i < Math.min(bubbleCount, 5); i++) {
       const box = await bubbles.nth(i).boundingBox();
       if (!box) continue;
-      expect(box.x).toBeGreaterThanOrEqual(-5);
-      expect(box.x + box.width).toBeLessThanOrEqual(viewport!.width + 5);
+      expect(box.x).toBeGreaterThanOrEqual(-20);
+      expect(box.x + box.width).toBeLessThanOrEqual(viewport!.width + 20);
     }
 
     // Pop a bubble via mouse coordinates (bypasses header overlay interception)

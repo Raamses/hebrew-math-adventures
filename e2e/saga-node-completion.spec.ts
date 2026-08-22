@@ -150,7 +150,7 @@ test.describe('Saga node completion', () => {
     // The SENSORY game generates math problems; after every 3 correct pops,
     // the problem rotates and the target changes.
     let popped = 0;
-    const maxAttempts = 80; // Generous limit to allow for bubble spawn waits
+    const maxAttempts = 40; // Reduced from 80 to avoid timeout
     for (let i = 0; i < maxAttempts; i++) {
       // Check if we're back on the saga map (game complete)
       const arcadeVisible = await page.locator('[data-testid="saga-node-n1_1"]').first().isVisible().catch(() => false);
@@ -166,15 +166,15 @@ test.describe('Saga node completion', () => {
         break;
       }
 
-      const poppedNow = await popTargetBubble(page, 8000);
+      const poppedNow = await popTargetBubble(page, 5000);
       if (poppedNow) {
         popped++;
         console.log(`[Test 1] popped bubble #${popped}`);
         // Wait for: pop animation (300ms) + answer lock (120ms) + spawn (1200ms) + buffer
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(1500);
       } else {
         // No matching bubble on screen — wait for one to spawn
-        await page.waitForTimeout(1300);
+        await page.waitForTimeout(1000);
       }
     }
 

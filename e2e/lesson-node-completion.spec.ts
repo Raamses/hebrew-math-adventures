@@ -116,13 +116,15 @@ test.describe('Lesson node completion', () => {
 
     // --- Step 3: action_fill (interactive_drag) ---
     // Call engine.onItemDropped(itemId, targetId) directly.
+    // The multiplication mountain lesson has 6 crystals (c1-c6) and 3 rows (row1-row3).
+    // Each row has capacity 2, so we drop 2 crystals per row.
     const dragPlan: Array<{ itemId: string; targetId: string }> = [
-      { itemId: 'a1', targetId: 'b1' },
-      { itemId: 'a2', targetId: 'b1' },
-      { itemId: 'a3', targetId: 'b2' },
-      { itemId: 'a4', targetId: 'b2' },
-      { itemId: 'a5', targetId: 'b3' },
-      { itemId: 'a6', targetId: 'b3' },
+      { itemId: 'c1', targetId: 'row1' },
+      { itemId: 'c2', targetId: 'row1' },
+      { itemId: 'c3', targetId: 'row2' },
+      { itemId: 'c4', targetId: 'row2' },
+      { itemId: 'c5', targetId: 'row3' },
+      { itemId: 'c6', targetId: 'row3' },
     ];
 
     for (const { itemId, targetId } of dragPlan) {
@@ -137,6 +139,8 @@ test.describe('Lesson node completion', () => {
     await page.waitForTimeout(1000);
 
     // --- Step 3: click Next to proceed to conclusion ---
+    // Wait for the step to complete (button becomes enabled)
+    await page.waitForTimeout(2000);
     await clickLessonNext(page);
     await page.waitForTimeout(1000);
 
