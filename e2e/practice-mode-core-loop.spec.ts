@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfileWithPracticeAccess, enterSagaNode, solveCurrentProblem } from './helpers';
+import { setupFreshProfileWithPracticeAccess, enterSagaNodeById, solveCurrentProblem } from './helpers';
 
 /**
  * Practice Mode — Core Loop
@@ -47,11 +47,11 @@ test.describe('Practice Mode — core loop', () => {
   test('completing a PRACTICE node awards stars and persists progress', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'PracticeCore');
 
-    // n1_3 is the 3rd node (index 2) — PRACTICE type, addition_simple config (max 5).
+    // n1_3 — PRACTICE type, addition_simple config (max 5).
     // Chosen over n1_2 (series_simple) because solveCurrentProblem's series-answer
     // heuristic doesn't reliably handle a missing digit at the start of the sequence,
     // while its arithmetic-parsing path (used here) is well exercised elsewhere.
-    await enterSagaNode(page, 2);
+    await enterSagaNodeById(page, 'n1_3');
     await page.waitForTimeout(1500);
 
     // Answer questions until the session completes (SessionSummary appears) or we
