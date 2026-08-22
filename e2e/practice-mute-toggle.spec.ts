@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfileWithPracticeAccess, enterSagaNode } from './helpers';
+import { setupFreshProfileWithPracticeAccess, enterSagaNodeById } from './helpers';
 
 /**
  * Practice Mode — Mute Toggle
@@ -24,7 +24,7 @@ test.describe('Practice Mode — mute toggle', () => {
     await setupFreshProfileWithPracticeAccess(page, 'MuteToggle');
 
     // n1_2 is a PRACTICE node — enters PracticeMode directly with its header/settings menu.
-    await enterSagaNode(page, 1);
+    await enterSagaNodeById(page, 'n1_2');
     await page.waitForTimeout(1500);
 
     // Open the settings (gear) menu in the practice header.

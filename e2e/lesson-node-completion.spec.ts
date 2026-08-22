@@ -145,7 +145,7 @@ test.describe('Lesson node completion', () => {
     await page.waitForTimeout(2000);
 
     // --- Assert return to saga map ---
-    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
+    const arcadeBtn = page.locator('[data-testid="saga-node-n1_1"]').first();
     await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
 
     // --- Assert localStorage saga progress ---

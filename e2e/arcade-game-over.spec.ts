@@ -179,8 +179,8 @@ async function waitForBubblesInViewport(page: Page, timeoutMs = 10000): Promise<
  * Reusable assertion that we've returned to the saga map.
  */
 async function isOnSagaMap(page: Page): Promise<boolean> {
-  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
-  return await arcadeBtn.count() > 0 && await arcadeBtn.isVisible().catch(() => false);
+  const arcadeBtn = page.locator('[data-testid="saga-node-n1_1"]').first();
+  return (await arcadeBtn.count() > 0) && (await arcadeBtn.isVisible().catch(() => false));
 }
 
 test.describe('Arcade Game-Over flows', () => {

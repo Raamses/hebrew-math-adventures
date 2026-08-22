@@ -196,7 +196,7 @@ test.describe('Unit progression', () => {
       }
 
       // Check if we're back on saga map
-      const arcadeVisible = await page.locator('[data-testid="arcade-button"]').first()
+      const arcadeVisible = await page.locator('[data-testid="saga-node-n1_1"]').first()
         .isVisible().catch(() => false);
       if (arcadeVisible) {
         console.log(`[Unit Progression] Returned to saga map after ${solvedCount} correct answers`);

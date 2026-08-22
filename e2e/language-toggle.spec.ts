@@ -64,7 +64,7 @@ test.describe('Language Toggle', () => {
     expect(lngBefore).toBe('he');
 
     // Assert arcade button title is in Hebrew
-    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
+    const arcadeBtn = page.locator('[data-testid="saga-node-n1_1"]').first();
     await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
     const arcadeTitleBefore = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title before toggle:', arcadeTitleBefore);

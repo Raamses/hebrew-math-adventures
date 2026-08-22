@@ -133,7 +133,7 @@ async function completeSensoryNode(page: Page): Promise<number> {
 
   for (let i = 0; i < maxAttempts; i++) {
     // Check if we're back on the saga map (game complete)
-    const arcadeVisible = await page.locator('[data-testid="arcade-button"]').first().isVisible().catch(() => false);
+    const arcadeVisible = await page.locator('[data-testid="saga-node-n1_1"]').first().isVisible().catch(() => false);
     if (arcadeVisible) {
       console.log(`[completeSensoryNode] saga map visible after ${popped} pops`);
       break;
@@ -165,8 +165,16 @@ async function completeSensoryNode(page: Page): Promise<number> {
  * After clicking, the ProfileSelector screen should appear.
  */
 async function logoutToProfileSelector(page: Page): Promise<void> {
-  // The logout button has a LogOut icon (svg.lucide-log-out) in the saga map header.
-  // Use has: selector to find the button containing the logout icon.
+  // Open the hamburger menu first (logout button is inside)
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  await expect(menuToggle).toBeVisible({ timeout: 10000 });
+  const isExpanded = await menuToggle.getAttribute('aria-expanded');
+  if (isExpanded !== 'true') {
+    await menuToggle.click();
+    await page.waitForTimeout(500);
+  }
+
+  // The logout button has a LogOut icon (svg.lucide-log-out) in the menu
   const logoutBtn = page.locator('button:has(svg.lucide-log-out)').first();
   await expect(logoutBtn).toBeVisible({ timeout: 5000 });
   await logoutBtn.click();
