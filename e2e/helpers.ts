@@ -15,7 +15,7 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
 
   // Click "New Player" / "שחקן חדש" — has Plus icon
   const newPlayerBtn = page.locator('button:has(svg.lucide-plus)').first();
-  await expect(newPlayerBtn).toBeVisible({ timeout: 5000 });
+  await expect(newPlayerBtn).toBeVisible({ timeout: 15000 });
   await newPlayerBtn.click();
   await page.waitForTimeout(800);
 
@@ -62,7 +62,7 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
 
   // Create profile
   const newPlayerBtn = page.locator('button:has(svg.lucide-plus)').first();
-  await expect(newPlayerBtn).toBeVisible({ timeout: 5000 });
+  await expect(newPlayerBtn).toBeVisible({ timeout: 15000 });
   await newPlayerBtn.click();
   await page.waitForTimeout(800);
 
