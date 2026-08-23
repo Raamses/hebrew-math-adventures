@@ -362,6 +362,123 @@ export const SPAWN_CONFIG = {
 } as const;
 
 // ================================================================
+//  Bubble Geometry (shared: Bubble.tsx rendering + spawn X clamp)
+// ================================================================
+
+export type BubbleVariantName = 'small' | 'medium' | 'large';
+
+/**
+ * BUBBLE_HIT_AREA — the outer wrapper's tap-target box.
+ * BUBBLE_VISUAL_SIZE — the inner motion.button's visual circle.
+ *
+ * Both are CSS `clamp(minPx, vw, maxPx)` parameters. Bubble.tsx builds its
+ * width/height from these, and useGameEngine uses them to clamp spawnX.
+ *
+ * WHY THIS IS SHARED (regression guard):
+ * Bubble.tsx renders a WRAPPER div positioned with `left: ${x}vw` (its LEFT
+ * edge, sized to hitArea), containing an inner motion.button sized to
+ * `size` and CENTERED via `flex items-center justify-center`.
+ *
+ * So the visible/tappable button's right edge is NOT `x + hitArea`, it is:
+ *     x + (hitArea - size)/2 + size
+ *
+ * The old spawn clamp was `Math.max(8, Math.min(92, spawnX))` — a flat 92vw
+ * cap that ignored the element's width entirely. At a 393px viewport (Pixel 5)
+ * a wrapper at 92vw = 361.6px put the button's right edge at 411.6px (small)
+ * through 448.0px (large) — overflowing by 18.6-55.0px.
+ *
+ * The e2e assertion in bubble-game.spec.ts measures the INNER button
+ * (`button[aria-label*="Pop bubble"]`), which is why an earlier fix that
+ * clamped against hitArea alone still failed: right origin, wrong box.
+ * Duplicating these numbers is what let the drift survive, so both consumers
+ * now read from here.
+ */
+export const BUBBLE_HIT_AREA: Record<BubbleVariantName, { minPx: number; vw: number; maxPx: number }> = {
+    small:  { minPx: 60, vw: 14, maxPx: 76 },
+    medium: { minPx: 76, vw: 20, maxPx: 100 },
+    large:  { minPx: 96, vw: 26, maxPx: 128 },
+} as const;
+
+export const BUBBLE_VISUAL_SIZE: Record<BubbleVariantName, { minPx: number; vw: number; maxPx: number }> = {
+    small:  { minPx: 40, vw: 10, maxPx: 52 },
+    medium: { minPx: 52, vw: 13, maxPx: 68 },
+    large:  { minPx: 68, vw: 18, maxPx: 92 },
+} as const;
+
+export const BUBBLE_SPAWN_X = {
+    /** Left safe boundary (vw). */
+    MIN_VW: 8,
+    /** Absolute right boundary (vw) — never exceeded regardless of variant. */
+    MAX_VW: 92,
+    /** Fallback viewport width (px) for SSR / non-browser environments. */
+    SSR_VIEWPORT_PX: 480,
+} as const;
+
+/** Build the CSS clamp() string for a variant's hit area (outer wrapper). */
+export function bubbleHitAreaCss(variant: BubbleVariantName): string {
+    const g = BUBBLE_HIT_AREA[variant];
+    return `clamp(${g.minPx}px, ${g.vw}vw, ${g.maxPx}px)`;
+}
+
+/** Build the CSS clamp() string for a variant's visual size (inner button). */
+export function bubbleVisualSizeCss(variant: BubbleVariantName): string {
+    const g = BUBBLE_VISUAL_SIZE[variant];
+    return `clamp(${g.minPx}px, ${g.vw}vw, ${g.maxPx}px)`;
+}
+
+/** Replicate CSS clamp(min, preferred, max) in px against a concrete viewport. */
+function resolveClampPx(
+    g: { minPx: number; vw: number; maxPx: number },
+    viewportWidthPx: number,
+): number {
+    const preferredPx = (g.vw / 100) * viewportWidthPx;
+    return Math.max(g.minPx, Math.min(preferredPx, g.maxPx));
+}
+
+/**
+ * Rightward extent (in px) from the WRAPPER's left edge to the INNER button's
+ * right edge — i.e. the box the e2e overflow assertion actually measures.
+ *
+ * = centering inset + visual size, where inset = (hitArea - size) / 2.
+ * Clamped at >= 0 in case a future config makes size exceed hitArea.
+ */
+export function resolveButtonRightExtentPx(
+    variant: BubbleVariantName,
+    viewportWidthPx: number,
+): number {
+    const vp = Number.isFinite(viewportWidthPx) && viewportWidthPx > 0
+        ? viewportWidthPx
+        : BUBBLE_SPAWN_X.SSR_VIEWPORT_PX;
+    const hitAreaPx = resolveClampPx(BUBBLE_HIT_AREA[variant], vp);
+    const sizePx = resolveClampPx(BUBBLE_VISUAL_SIZE[variant], vp);
+    const insetPx = Math.max(0, (hitAreaPx - sizePx) / 2);
+    return insetPx + sizePx;
+}
+
+/**
+ * Max spawnX (vw) for a variant so the INNER button's right edge stays inside
+ * the viewport. Floored at MIN_VW so an extreme viewport can never invert the
+ * clamp range.
+ */
+export function computeMaxSpawnXVw(variant: BubbleVariantName, viewportWidthPx: number): number {
+    const vp = Number.isFinite(viewportWidthPx) && viewportWidthPx > 0
+        ? viewportWidthPx
+        : BUBBLE_SPAWN_X.SSR_VIEWPORT_PX;
+    const extentVw = (resolveButtonRightExtentPx(variant, vp) / vp) * 100;
+    return Math.max(BUBBLE_SPAWN_X.MIN_VW, Math.min(BUBBLE_SPAWN_X.MAX_VW, 100 - extentVw));
+}
+
+/** Clamp a candidate spawnX (vw) into the variant-safe horizontal band. */
+export function clampSpawnXVw(
+    spawnX: number,
+    variant: BubbleVariantName,
+    viewportWidthPx: number,
+): number {
+    const maxX = computeMaxSpawnXVw(variant, viewportWidthPx);
+    return Math.max(BUBBLE_SPAWN_X.MIN_VW, Math.min(maxX, spawnX));
+}
+
+// ================================================================
 //  Invader Config
 // ================================================================
 

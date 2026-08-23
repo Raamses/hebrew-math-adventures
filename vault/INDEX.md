@@ -40,6 +40,7 @@ Everything about this project, one place. **Start here.**
 - [[decisions/2026-08-centralize-sound]] — centralize sound handling in `useSound`
 - [[decisions/2026-08-world-config-consolidation]] — consolidate world config into `worldConfig.ts`
 - [[decisions/2026-08-park-difficulty-rebalancer]] — difficulty rebalancer parked (GA4 pipeline fix needed)
+- [[decisions/2026-08-bubble-spawn-x-overflow-clamp]] — variant-aware spawn-X clamp; fixed viewport overflow + e2e flake
 
 ## 📚 Domain / Curriculum
 - [[domain/curriculum-levels]] — level-by-level math standards (ages 5–11)

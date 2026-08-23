@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { GameConfig, GameState, BubbleEntity, IGameBehavior, PowerUpType, PowerUpState, FusionState, MergeEvent } from './types';
-import { POWER_UP_CONFIG, FRENZY_CONFIG, SCORING_CONFIG, BUBBLE_ENGINE_CONFIG, FUSION_CONFIG, FRENZY_STAR_CONFIG } from '../../lib/worldConfig';
+import { POWER_UP_CONFIG, FRENZY_CONFIG, SCORING_CONFIG, BUBBLE_ENGINE_CONFIG, FUSION_CONFIG, FRENZY_STAR_CONFIG, BUBBLE_SPAWN_X, clampSpawnXVw } from '../../lib/worldConfig';
+import type { BubbleVariantName } from '../../lib/worldConfig';
 import { ComboFusionStrategy } from './strategies/ComboFusionStrategy';
 
 // --- Power-Up Constants ---
@@ -160,6 +161,18 @@ export const useGameEngine = (
         Math.min(currentCfg.maxOnScreen, Math.max(3, Math.floor((typeof window !== 'undefined' ? window.innerWidth : 480) / 80)))
     , []);
 
+    /**
+     * Current viewport width in px, with an SSR-safe fallback.
+     * Needed because the spawn-X clamp is viewport-dependent: the hit-area
+     * clamp()'s px floor can resolve WIDER than its nominal vw on narrow
+     * phones (e.g. small = 60px floor = 18.75vw at 320px, not 14vw).
+     */
+    const getViewportWidthPx = useCallback((): number =>
+        typeof window !== 'undefined' && window.innerWidth > 0
+            ? window.innerWidth
+            : BUBBLE_SPAWN_X.SSR_VIEWPORT_PX
+    , []);
+
     const getLaneCenter = (laneIndex: number, count: number): number => {
         // 8-92vw range = 84vw total; lane i center = 8 + (i + 0.5) * (84 / count)
         return 8 + (laneIndex + 0.5) * (84 / count);
@@ -205,7 +218,14 @@ export const useGameEngine = (
         laneCount.current = computeLaneCount(currentConfig);
         const starLane = assignFreeLane(laneCount.current);
         const jitter = (Math.random() - 0.5) * 4; // ±2vw organic jitter
-        const spawnX = Math.max(8, Math.min(92, getLaneCenter(starLane, laneCount.current) + jitter));
+        // Variant-aware clamp: the Frenzy Star is always FRENZY_STAR_CONFIG.VARIANT
+        // ('large' = 26vw), the widest bubble — so it was the worst overflow
+        // offender under the old flat 92vw clamp.
+        const spawnX = clampSpawnXVw(
+            getLaneCenter(starLane, laneCount.current) + jitter,
+            FRENZY_STAR_CONFIG.VARIANT as BubbleVariantName,
+            getViewportWidthPx(),
+        );
 
         const starBubble: BubbleEntity = {
             id: `frenzystar-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -230,7 +250,7 @@ export const useGameEngine = (
         });
 
         callbacksRef.current?.onPowerUpSpawn?.(powerUpType, comboAtSpawn);
-    }, [computeLaneCount, assignFreeLane]);
+    }, [computeLaneCount, assignFreeLane, getViewportWidthPx]);
 
     const spawnSystem = useCallback((time: number) => {
         // Seed frame timing on first callback so we don't accumulate dt from 0
@@ -354,19 +374,29 @@ export const useGameEngine = (
             const spawnY = BUBBLE_ENGINE_CONFIG.SPAWN_Y_OFFSET + (spawnIndex * BUBBLE_ENGINE_CONFIG.SPAWN_Y_STEP);
             // Slightly vary x per bubble even within the same lane for organic look
             spawnX += (Math.random() - 0.5) * 2;
-            // Clamp to 8-92vw safe boundary (prevents edge drift from jitter + offset)
-            spawnX = Math.max(8, Math.min(92, spawnX));
+            // Variant-aware right-edge clamp. `left: ${x}vw` in Bubble.tsx sets the
+            // LEFT edge, so the safe max is (100 - renderedHitAreaVw), NOT a flat
+            // 92vw. Clamp AFTER both jitters so no later offset can push a bubble
+            // back out. Falls back to 'medium' to match Bubble.tsx's default.
+            spawnX = clampSpawnXVw(
+                spawnX,
+                (newBubbleProps.variant ?? 'medium') as BubbleVariantName,
+                getViewportWidthPx(),
+            );
 
             const newBubble: BubbleEntity = {
                 id: `bubble-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-                x: spawnX,
-                y: spawnY,
                 velocity: currentConfig.baseVelocity,
                 isPopped: false,
                 createdAt: Date.now(),
                 speedMultiplier,
                 lane: bubbleLane,
-                ...newBubbleProps
+                ...newBubbleProps,
+                // Position AFTER the spread: engine-owned geometry must win. If a
+                // strategy ever returns x/y (none do today), spreading last would
+                // silently defeat the variant-aware overflow clamp above.
+                x: spawnX,
+                y: spawnY,
             } as BubbleEntity;
 
             setEntities(prev => {
@@ -391,7 +421,7 @@ export const useGameEngine = (
         }
 
         lastSpawnTime.current = time;
-    }, [behavior, isTargetEntity]);
+    }, [behavior, isTargetEntity, computeLaneCount, assignFreeLane, getViewportWidthPx]);
 
     const cleanupSystem = useCallback(() => {
         const now = Date.now();

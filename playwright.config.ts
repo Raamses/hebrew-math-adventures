@@ -9,8 +9,17 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: 0,
-  workers: 1,
+  // retries: 1 enabled after the workers:3 validation completed and the
+  // bubble-overflow flake was root-caused and fixed (8/8 green, geometry
+  // verified flush at the boundary across 719 observations).
+  // See vault/decisions/2026-08-bubble-spawn-x-overflow-clamp.md
+  retries: 1,
+  // Mac E2E hub: MacBookPro16,1 — 6 physical cores / 16GB, ~2.7GB swap already
+  // in use. 3 workers ≈ 1.5-1.8GB Chromium RSS, leaves cores for vite + avoids
+  // thermal throttle on the i7-9750H. Timing-sensitive spawn assertions
+  // (rAF-driven spawnCredits, 4s target visibility, 6s drought net) skew under
+  // CPU contention, so we deliberately stay below the 6-worker default.
+  workers: 3,
   reporter: 'list',
   timeout: 60000,
   use: {

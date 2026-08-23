@@ -1,15 +1,21 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { UI_CONFIG } from '../../lib/worldConfig';
+import { UI_CONFIG, bubbleHitAreaCss, bubbleVisualSizeCss } from '../../lib/worldConfig';
 
 // --- Constants & Config ---
 
 type BubbleVariant = 'small' | 'medium' | 'large';
 
+// `hitArea` (outer wrapper) and `size` (inner button) both come from
+// worldConfig — they are shared with useGameEngine's spawn-X clamp, which needs
+// BOTH to compute the button's true right edge:
+//     x + (hitArea - size)/2 + size      (button is flex-centered in wrapper)
+// These MUST stay in sync or bubbles overflow the viewport edge.
+// See the BUBBLE_HIT_AREA docblock in worldConfig.ts.
 const BUBBLE_SIZES: Record<BubbleVariant, { size: string; hitArea: string; fontSize: string }> = {
-    small: { size: 'clamp(40px, 10vw, 52px)', hitArea: 'clamp(60px, 14vw, 76px)', fontSize: 'text-lg sm:text-xl' },
-    medium: { size: 'clamp(52px, 13vw, 68px)', hitArea: 'clamp(76px, 20vw, 100px)', fontSize: 'text-2xl sm:text-3xl' },
-    large: { size: 'clamp(68px, 18vw, 92px)', hitArea: 'clamp(96px, 26vw, 128px)', fontSize: 'text-3xl sm:text-4xl' }
+    small: { size: bubbleVisualSizeCss('small'), hitArea: bubbleHitAreaCss('small'), fontSize: 'text-lg sm:text-xl' },
+    medium: { size: bubbleVisualSizeCss('medium'), hitArea: bubbleHitAreaCss('medium'), fontSize: 'text-2xl sm:text-3xl' },
+    large: { size: bubbleVisualSizeCss('large'), hitArea: bubbleHitAreaCss('large'), fontSize: 'text-3xl sm:text-4xl' }
 };
 
 const BUBBLE_THEMES: Record<BubbleVariant, React.CSSProperties> = {
