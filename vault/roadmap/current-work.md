@@ -22,6 +22,10 @@ tags: [roadmap, current, work]
 - `be4af87` — Zen-mode answer race + anti-repeat duplicate-slip fix (ADR 2026-08-zen-answer-race)
 - `1677268` — Bubble spawn engine overhaul (P0+P1) — [[decisions/2026-07-spawn-overhaul]]
 
+## Active Plan
+- [[plans/game-ideation-2026-08-23]] — comprehensive feature plan from ideation session (P0/P1/P2 priorities)
+- Monetization parked → see [[backlog/monetization-and-growth]]
+
 ## In flight / next
 - **Zen-mode stale-bubble fix** ✅ landed (commit `0deaef6`, 2026-08-08): snapshot `targetValue` per pop, ignore stale bubbles. The answer-lock from ADR 2026-08-zen-answer-race was insufficient; synchronous target rotation left stale bubbles that validated as wrong. Fix applied + committed. See `handoff-zen-bug.md` and [[decisions/2026-08-zen-answer-race]].
 - **Bubble-spawn playability analytics** (GA4 data retrieved 2026-08-08): 565 `question_answered` events, 50 active users, 94% node-start → node-complete drop-off. Plan artifact at `docs/sdlc/bubble-spawn-analytics/0-plan.md`. See [[domain/analytics]].

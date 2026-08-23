@@ -39,7 +39,7 @@ Everything about this project, one place. **Start here.**
 - [[decisions/2026-08-zen-answer-race]] — zen answer race + anti-repeat fix
 - [[decisions/2026-08-centralize-sound]] — centralize sound handling in `useSound`
 - [[decisions/2026-08-world-config-consolidation]] — consolidate world config into `worldConfig.ts`
-- *(add new decisions here as they're made)*
+- [[decisions/2026-08-park-difficulty-rebalancer]] — difficulty rebalancer parked (GA4 pipeline fix needed)
 
 ## 📚 Domain / Curriculum
 - [[domain/curriculum-levels]] — level-by-level math standards (ages 5–11)
