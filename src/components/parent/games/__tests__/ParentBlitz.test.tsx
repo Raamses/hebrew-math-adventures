@@ -215,7 +215,7 @@ describe('blitzEngine', () => {
         // Replace Unicode minus and × with ASCII for eval
         const expr = q.display.replace(/−/g, '-').replace(/×/g, '*').replace(/\(/g, '(').replace(/\)/g, ')');
         // eslint-disable-next-line no-eval
-        const result = eval(expr);
+        const result = new Function('return ' + expr)();
         expect(result).toBe(q.answer);
       }
     });
@@ -226,7 +226,7 @@ describe('blitzEngine', () => {
         const q = generateQuestion('mixedArithmetic', 2, rng, i);
         const expr = q.display.replace(/−/g, '-').replace(/×/g, '*');
         // eslint-disable-next-line no-eval
-        const result = eval(expr);
+        const result = new Function('return ' + expr)();
         expect(result).toBe(q.answer);
       }
     });
@@ -879,5 +879,5 @@ function evalExpr(display: string): number {
     .replace(/⅝/g, '5/8')
     .replace(/⅞/g, '7/8');
   // eslint-disable-next-line no-eval
-  return eval(expr);
+  return new Function('return ' + expr)();
 }
