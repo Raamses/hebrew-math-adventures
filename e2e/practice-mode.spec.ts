@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupFreshProfileWithPracticeAccess, solveCurrentProblem, takeScreenshot } from './helpers';
+import { setupFreshProfileWithPracticeAccess, enterSagaNodeById, solveCurrentProblem, takeScreenshot } from './helpers';
 
 test.describe('Practice Mode', () => {
   test.describe.configure({ mode: 'serial' });
@@ -11,31 +11,9 @@ test.describe('Practice Mode', () => {
   test('Clicking a practice saga node opens practice mode with a question', async ({ page }) => {
   // Global timeout is 180s — no need for local override
 
-    // The first node (n1_1) is SENSORY (Bubbles). The second node (n1_2) is PRACTICE.
-    // We unlocked n1_1, n1_2, n1_3 in setupFreshProfileWithPracticeAccess.
-    // Find and click the second unlocked node (n1_2 — PRACTICE type).
-    const nodes = page.locator('div.cursor-pointer.group');
-    const nodeCount = await nodes.count();
-    expect(nodeCount).toBeGreaterThan(0);
-
-    let clicked = false;
-    let unlockedIndex = 0;
-    for (let i = 0; i < nodeCount; i++) {
-      const node = nodes.nth(i);
-      const innerDiv = node.locator('div.rounded-full').first();
-      const innerClass = await innerDiv.getAttribute('class') || '';
-      if (!innerClass.includes('grayscale') && !innerClass.includes('cursor-not-allowed')) {
-        unlockedIndex++;
-        // Skip the first unlocked node (SENSORY/Bubbles) — click the second (PRACTICE)
-        if (unlockedIndex === 2) {
-          await node.click();
-          clicked = true;
-          break;
-        }
-      }
-    }
-    expect(clicked).toBe(true);
-
+    // n1_3 is a PRACTICE node (type: 'PRACTICE', config: addition_simple).
+    // n1_2 at index 1 is actually a LESSON type, not PRACTICE.
+    await enterSagaNodeById(page, 'n1_3');
     await page.waitForTimeout(3000);
 
     await takeScreenshot(page, 'practice-01-initial');
@@ -54,22 +32,8 @@ test.describe('Practice Mode', () => {
   test('Solving a problem works and advances to next question', async ({ page }) => {
   // Global timeout is 180s — no need for local override
 
-    // Click the second unlocked node (PRACTICE type)
-    const nodes = page.locator('div.cursor-pointer.group');
-    let unlockedIndex = 0;
-    for (let i = 0; i < (await nodes.count()); i++) {
-      const node = nodes.nth(i);
-      const innerDiv = node.locator('div.rounded-full').first();
-      const innerClass = await innerDiv.getAttribute('class') || '';
-      if (!innerClass.includes('grayscale') && !innerClass.includes('cursor-not-allowed')) {
-        unlockedIndex++;
-        if (unlockedIndex === 2) {
-          await node.click();
-          break;
-        }
-      }
-    }
-
+    // n1_3 is the PRACTICE node (type: 'PRACTICE', config: addition_simple)
+    await enterSagaNodeById(page, 'n1_3');
     await page.waitForTimeout(3000);
 
     const input = page.locator('input').first();
@@ -94,21 +58,7 @@ test.describe('Practice Mode', () => {
   test('Session progress bar is visible during practice', async ({ page }) => {
   // Global timeout is 180s — no need for local override
 
-    const nodes = page.locator('div.cursor-pointer.group');
-    let unlockedIndex = 0;
-    for (let i = 0; i < (await nodes.count()); i++) {
-      const node = nodes.nth(i);
-      const innerDiv = node.locator('div.rounded-full').first();
-      const innerClass = await innerDiv.getAttribute('class') || '';
-      if (!innerClass.includes('grayscale') && !innerClass.includes('cursor-not-allowed')) {
-        unlockedIndex++;
-        if (unlockedIndex === 2) {
-          await node.click();
-          break;
-        }
-      }
-    }
-
+    await enterSagaNodeById(page, 'n1_3');
     await page.waitForTimeout(3000);
 
     await takeScreenshot(page, 'practice-05-progress-bar');
@@ -130,21 +80,7 @@ test.describe('Practice Mode', () => {
   test('Solve multiple problems in a session', async ({ page }) => {
   // Global timeout is 180s — no need for local override
 
-    const nodes = page.locator('div.cursor-pointer.group');
-    let unlockedIndex = 0;
-    for (let i = 0; i < (await nodes.count()); i++) {
-      const node = nodes.nth(i);
-      const innerDiv = node.locator('div.rounded-full').first();
-      const innerClass = await innerDiv.getAttribute('class') || '';
-      if (!innerClass.includes('grayscale') && !innerClass.includes('cursor-not-allowed')) {
-        unlockedIndex++;
-        if (unlockedIndex === 2) {
-          await node.click();
-          break;
-        }
-      }
-    }
-
+    await enterSagaNodeById(page, 'n1_3');
     await page.waitForTimeout(3000);
 
     const input = page.locator('input').first();

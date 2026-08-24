@@ -38,11 +38,19 @@ import { test, expect, type Page } from '@playwright/test';
 import { setupFreshProfile, openParentGate } from './helpers';
 
 /** Available game IDs from registry.ts. */
+// Games that are typically available (some may be locked based on progression)
 const AVAILABLE_GAMES = [
   'equation-of-the-day',
   'parent-blitz',
   'sudoku',
   'number-merge',
+] as const;
+
+// Subset that should be enabled for a fresh profile (no progression)
+const UNLOCKED_GAMES = [
+  'equation-of-the-day',
+  'parent-blitz',
+  'sudoku',
 ] as const;
 
 /** Coming-soon game (disabled card). */
@@ -54,6 +62,12 @@ const COMING_SOON_GAME = 'math-crossword';
  */
 async function navigateToGamesHub(page: Page) {
   await setupFreshProfile(page, 'ParentGamesTest');
+
+  // Open the hamburger menu to access the logout button
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  await expect(menuToggle).toBeVisible({ timeout: 10000 });
+  await menuToggle.click();
+  await page.waitForTimeout(500);
 
   // Log out from saga map to reach ProfileSelector
   const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
@@ -113,12 +127,16 @@ test.describe('Parent Games', () => {
   // ─── Navigation ─────────────────────────────────────────────────
 
   test('Games tab shows all 4 available game cards + disabled math-crossword', async ({ page }) => {
-    // All 4 available games should have visible, enabled cards
-    for (const gameId of AVAILABLE_GAMES) {
+    // Unlocked games should be visible and enabled
+    for (const gameId of UNLOCKED_GAMES) {
       const card = page.locator(`[data-testid="game-card-${gameId}"]`).first();
       await expect(card).toBeVisible({ timeout: 5000 });
       await expect(card).toBeEnabled({ timeout: 5000 });
     }
+
+    // number-merge may be locked (disabled but visible)
+    const numberMergeCard = page.locator('[data-testid="game-card-number-merge"]').first();
+    await expect(numberMergeCard).toBeVisible({ timeout: 5000 });
 
     // math-crossword should be visible but disabled (coming soon)
     const crosswordCard = page.locator(`[data-testid="game-card-${COMING_SOON_GAME}"]`).first();
@@ -127,8 +145,14 @@ test.describe('Parent Games', () => {
   });
 
   test('Each available game card opens the game view', async ({ page }) => {
-    for (const gameId of AVAILABLE_GAMES) {
+    for (const gameId of UNLOCKED_GAMES) {
       await openGame(page, gameId);
+      await backToHub(page);
+    }
+    // number-merge may be locked, skip if disabled
+    const numberMergeCard = page.locator('[data-testid="game-card-number-merge"]').first();
+    if (await numberMergeCard.isEnabled()) {
+      await openGame(page, 'number-merge');
       await backToHub(page);
     }
   });

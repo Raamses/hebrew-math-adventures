@@ -26,7 +26,9 @@ import {
 async function getBubbleInstruction(page: Page): Promise<string | null> {
   const instEl = page.locator('div[dir="ltr"] span.font-mono').first();
   if (await instEl.count() === 0) return null;
-  return await instEl.textContent();
+  // Strip Unicode bidi isolation characters (U+2068 ⁨, U+2069 ⁩)
+  const raw = await instEl.textContent();
+  return raw ? raw.replace(/[\u2066\u2067\u2068\u2069]/g, '') : null;
 }
 
 /**
@@ -36,8 +38,8 @@ async function getBubbleInstruction(page: Page): Promise<string | null> {
 function parseInstructionTarget(inst: string): number | null {
   if (!inst) return null;
 
-  // "Pop N" — sensory mode
-  const popMatch = inst.match(/Pop\s+(\d+)/i);
+  // "Pop N" or "Pop the bubble with N" — sensory mode
+  const popMatch = inst.match(/Pop\s+(?:the\s+bubble\s+with\s+)?(\d+)/i);
   if (popMatch) return parseInt(popMatch[1]!);
 
   // Arithmetic: "A OP B = ?"

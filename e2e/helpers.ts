@@ -81,6 +81,8 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
             n1_1: { stars: 3, isLocked: false, mistakes: 0 },
             n1_2: { stars: 0, isLocked: false, mistakes: 0 },
             n1_3: { stars: 0, isLocked: false, mistakes: 0 },
+            // Unlock n3_1 (MultiplicationMountainLesson) for lesson-node-completion test
+            n3_1: { stars: 0, isLocked: false, mistakes: 0 },
             // Unlock n3_9 (CHALLENGE type, no config) so PracticeMode opens with
             // ModeSelectorOverlay. LESSON nodes (like n3_1) open LessonModal instead.
             // CHALLENGE nodes without config fall through to PracticeMode with
@@ -200,7 +202,9 @@ export async function clickBubble(page: Page, bubbleSelector: string) {
  * Uses page.mouse.click for coordinate-based clicking to bypass the header overlay.
  */
 export async function solveBubbleProblem(page: Page): Promise<boolean> {
-  const bodyText = await page.textContent('body') || '';
+  // Strip Unicode bidi isolation characters (U+2068 ⁨, U+2069 ⁩) that wrap numbers in RTL text
+  const rawText = await page.textContent('body') || '';
+  const bodyText = rawText.replace(/[⁦⁧⁨⁩]/g, '');
 
   // Look for arithmetic instruction like "N + N = ?"
   const eqMatch = bodyText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);

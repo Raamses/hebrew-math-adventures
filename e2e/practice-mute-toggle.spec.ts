@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfileWithPracticeAccess, enterSagaNode } from './helpers';
+import { setupFreshProfileWithPracticeAccess, enterSagaNodeById } from './helpers';
 
 /**
  * Practice Mode — Mute Toggle
@@ -23,13 +23,16 @@ test.describe('Practice Mode — mute toggle', () => {
   test('toggling mute from the settings menu persists and flips the icon', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'MuteToggle');
 
-    // n1_2 is a PRACTICE node — enters PracticeMode directly with its header/settings menu.
-    await enterSagaNode(page, 1);
-    await page.waitForTimeout(1500);
+    // n1_3 is a PRACTICE node (type: 'PRACTICE', config: addition_simple) — enters PracticeMode
+    // directly with its header/settings menu. Node n1_2 at index 1 is actually a LESSON type.
+    await enterSagaNodeById(page, 'n1_3');
+    // Wait for practice mode UI to fully render
+    await page.waitForTimeout(2000);
 
     // Open the settings (gear) menu in the practice header.
-    const settingsGear = page.locator('button[aria-label="Settings"], button[aria-label*="הגדרות"]').first();
-    await expect(settingsGear).toBeVisible({ timeout: 10000 });
+    // The gear button may have aria-label "Settings", "הגדרות", or just be a button with a settings/gear svg.
+    const settingsGear = page.locator('button[aria-label="Settings"], button[aria-label*="הגדרות"], button:has(svg.lucide-settings)').first();
+    await expect(settingsGear).toBeVisible({ timeout: 15000 });
     await settingsGear.click();
     await page.waitForTimeout(500);
 

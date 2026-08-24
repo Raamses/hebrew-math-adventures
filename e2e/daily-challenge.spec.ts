@@ -169,10 +169,9 @@ test.describe('Daily Challenge — arcade modes', () => {
 
     // If tracking occurred, the date should be today (Asia/Jerusalem timezone)
     if (date) {
+      // Use proper timezone to get Jerusalem date
       const now = new Date();
-      // Asia/Jerusalem is GMT+3 (or GMT+2 with DST, but approximated here)
-      const jerusalemOffset = 3;
-      const jerusalemDate = new Date(now.getTime() + jerusalemOffset * 3600000).toISOString().slice(0, 10);
+      const jerusalemDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
       expect(date).toBe(jerusalemDate);
     }
   });
@@ -202,7 +201,8 @@ test.describe('Daily Challenge — arcade modes', () => {
         // If game ended, we need to go back and re-enter the mode
         // Check if we're back on the saga map
         const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
-        if (await arcadeBtn.count() > 0) {
+        const arcadeBtnLocator = page.locator('[data-testid="arcade-button"], button:has-text("משחקי ארקייד"), button:has-text("Arcade Games")').first();
+        if (await arcadeBtnLocator.count() > 0) {
           await selectArcadeMode(page, todayMode);
           await page.waitForTimeout(3000);
         } else {
