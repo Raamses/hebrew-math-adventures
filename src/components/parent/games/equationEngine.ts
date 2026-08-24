@@ -344,9 +344,17 @@ export function saveProgress(
 
 /**
  * Compute the current streak given the stored data and today's result.
- * If the last played date was yesterday, streak continues. If it was
- * today (already played), streak is whatever was stored. If there's a
- * gap, streak resets to 0 (or 1 if won today).
+ *
+ * Streak semantics (Nerdle-style, ADR 2026-08-equation-streak-loss-breaks):
+ *   - already played today  -> return stored streak unchanged (idempotent)
+ *   - won today, last played yesterday -> streak + 1 (continuation)
+ *   - LOST today            -> streak breaks to 0, regardless of gap
+ *   - won today after a gap -> streak restarts at 1
+ *
+ * A loss BREAKS the streak. The previous behaviour returned the stored
+ * streak on a yesterday-loss, which meant a player could lose every
+ * other day and keep an unbroken counter — the streak stopped meaning
+ * "consecutive wins" and became "days played with at least one win".
  */
 export function computeStreak(
   stored: { date: string; streak: number } | null,
@@ -355,12 +363,12 @@ export function computeStreak(
 ): number {
   const todayStr = todayKey(today);
   if (stored?.date === todayStr) return stored.streak; // already counted
+  if (!won) return 0; // a loss always breaks the streak
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = todayKey(yesterday);
-  if (stored?.date === yesterdayStr && won) return stored.streak + 1;
-  if (stored?.date === yesterdayStr && !won) return stored.streak; // lost but no gap
-  return won ? 1 : 0;
+  if (stored?.date === yesterdayStr) return stored.streak + 1;
+  return 1; // won today, but there was a gap -> restart at 1
 }
 
 function freshProgress(): GameProgress {

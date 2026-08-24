@@ -227,14 +227,21 @@ describe('equationEngine', () => {
       expect(computeStreak(stored, today, true)).toBe(4);
     });
 
-    it('keeps streak when lost but played yesterday', () => {
+    it('breaks streak to 0 when lost, even if played yesterday', () => {
       const today = new Date('2026-08-20');
       const yesterday = new Date('2026-08-19');
       const stored = {
         date: yesterday.toISOString().slice(0, 10),
         streak: 3,
       };
-      expect(computeStreak(stored, today, false)).toBe(3);
+      // Nerdle semantics: a loss breaks the streak. Previously returned 3.
+      expect(computeStreak(stored, today, false)).toBe(0);
+    });
+
+    it('breaks streak to 0 when lost after a gap', () => {
+      const today = new Date('2026-08-20');
+      const stored = { date: '2026-08-15', streak: 7 };
+      expect(computeStreak(stored, today, false)).toBe(0);
     });
 
     it('resets to 1 when gap and won', () => {
