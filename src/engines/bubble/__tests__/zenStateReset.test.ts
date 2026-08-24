@@ -52,6 +52,32 @@ const makeBubble = (id: string, internalValue: number): BubbleEntity => ({
     variant: 'medium',
 });
 
+/**
+ * Rotate the problem until the target actually moves.
+ *
+ * `regenerateProblem` draws at random, so it can land back on the answer it
+ * just had. That makes a bubble carrying the old answer legitimately correct
+ * and turns any staleness assertion into a coin flip — retrying keeps the
+ * rotation real while making the assertion deterministic.
+ *
+ * Mirrors the same helper in modeStatePersistence.test.ts.
+ */
+const rotateToNewTarget = (
+    strategy: MathBehaviorStrategy,
+    config: GameConfig,
+    round: number,
+): number => {
+    const before = strategy.getTargetValue()!;
+
+    for (let attempt = 0; attempt < 50; attempt++) {
+        strategy.regenerateProblem(1, config, round);
+        const next = strategy.getTargetValue()!;
+        if (next !== before) return next;
+    }
+
+    throw new Error(`regenerateProblem never moved off target ${before}`);
+};
+
 describe('Zen mode — state persists across questions (regression)', () => {
     it('a correct pop does NOT rotate the target before the pop is fully validated', () => {
         const strategy = new MathBehaviorStrategy();
@@ -71,8 +97,8 @@ describe('Zen mode — state persists across questions (regression)', () => {
 
         // Simulate the container's post-answer rotation (regenerateProblem).
         // This is what handleSessionLeveling does synchronously after enginePop.
-        strategy.regenerateProblem(1, config, 1);
-        const newTarget = strategy.getTargetValue();
+        // Rotate until the target actually changes (regenerateProblem is random).
+        const newTarget = rotateToNewTarget(strategy, config, 1);
 
         // The OLD target bubble must NOT validate as correct anymore.
         // (This is the crux: after rotation, stale on-screen targets are "wrong".)
@@ -93,8 +119,8 @@ describe('Zen mode — state persists across questions (regression)', () => {
         const snapshot = strategy.getTargetValue();
 
         // Player answers correctly → container rotates the problem.
-        strategy.regenerateProblem(1, config, 1);
-        const newTarget = strategy.getTargetValue();
+        // Rotate until the target actually changes (regenerateProblem is random).
+        const newTarget = rotateToNewTarget(strategy, config, 1);
 
         // The player then taps the still-visible OLD target bubble.
         const staleBubble = makeBubble('stale', initialTarget);

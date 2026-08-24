@@ -1,40 +1,56 @@
 ---
 type: roadmap
 project: hebrew-math-adventures
-updated: 2026-08-08
+updated: 2026-08-24
 tags: [roadmap, issues, known]
 ---
 
 # Known Issues & Watch Items
 
-- **Bubble spawn playability** (⚠️ active concern): after P0 overhaul, validate no dead zones / no idle waiting in real kid playtesting. GA4 data (2026-08-08) shows 94% node-start → node-complete drop-off and 23% of node starters never answer a question. See [[domain/bubble-spawn-design]] and [[domain/analytics]].
-  - **Note (2026-08-23):** the spawn-X clamp is now variant-aware, which slightly narrows usable width at the right edge. Factor this into any lane-density retuning — see [[decisions/2026-08-bubble-spawn-x-overflow-clamp]].
-- **Bubble viewport overflow** (✅ fixed, 2026-08-23): bubbles rendered up to 58px past the viewport edge on phones ≤414px. The spawn clamp capped at a flat `92vw` without subtracting the element's own width, and `Bubble.tsx` centres the inner button inside a wider wrapper, so the button's true right edge is `x + (hitArea - size)/2 + size`. 14 of 18 variant × viewport combinations overflowed. Surfaced as a ~1-in-3 e2e flake (needs lane 4-5 + positive jitter + the 20% `large` roll to coincide) — **not** parallelism-related, despite appearing during the `workers: 3` rollout. Fix = per-variant viewport-aware clamp in `worldConfig.ts`, consumed by both `Bubble.tsx` and `useGameEngine.ts`. See [[decisions/2026-08-bubble-spawn-x-overflow-clamp]].
-- **Zen-mode stale-bubble validation** (✅ fixed, commit `0deaef6`, 2026-08-08): the answer-lock from ADR 2026-08-zen-answer-race was insufficient. Synchronous target rotation in `onPopWrapper` left stale bubbles that validated as wrong. Fix = snapshot `targetValue` per pop, ignore stale bubbles. See [[decisions/2026-08-zen-answer-race]] for the original ADR; updated investigation in `handoff-zen-bug.md`.
-- **Anti-repeat duplicate-slip** (✅ fixed, ADR 2026-08-zen-answer-race): final re-check + perturbation landed in commit `be4af87`.
-- **Lesson coverage**: only 1 real lesson (`lesson1_multiplication`); others fall back to practice. Content gap.
-- **Sound calls** in `BubbleGameContainer`/`MathInvadersGame`/`MemoryDuelGame` — raw `soundGarden` ternaries remain (ADR 2026-08-centralize-sound follow-up). `PracticeMode` migration done ✅.
-- **GA4 custom dimensions not yet tested**: event params like `profile_id`, `node_id`, `equation`, `response_time_ms` exist in the code but haven't been queried as custom dimensions via the Data API. See [[domain/analytics]].
+> **Model:** glm-5.2 (direct — Claude OAuth expired, Gemini IneligibleTierError; both delegations failed)
+> **Delegation note:** `ask-claude --escalate` failed (OAuth session expired). `gemini` failed (IneligibleTierError — client no longer supported). Artifact built from direct analysis of git log, test output, build output, and vault files.
 
-## Resolved (kept for reference)
-- ~~**Zen-mode stale-bubble validation**~~ — ✅ fixed (commit `0deaef6`, snapshot target per pop).
-- ~~**Star rewards hardcoded to 3**~~ — ✅ fixed (ADR 2026-08-dynamic-star-tiers, commit `a3e664c`).
-- ~~**WorldMap dead code**~~ — ✅ resolved (world-config consolidation, commit `45304c4`).
+## Active issues
 
-## How to log new issues
-Create a dated note in `roadmap/known-issues.md` or link from [[INDEX]]. Keep entries factual with a "status" field.
+- **LESSON node dead code** (⚠️ bug): `GameOrchestrator.tsx:85-87` — `effectiveMode` never returns `'LESSON'`; LESSON-type nodes fall through to `'PRACTICE'`. `isLessonOpen` initialized `false`, never set `true`. The entire `if (effectiveMode === 'LESSON')` block (lines 207–216) is unreachable. Identified as B1 blocker in e2e coverage review (`vault/reviews/e2e-coverage-review.md`). **Impact:** lesson-node e2e spec cannot pass; `LessonModal` never renders. **Fix:** set `effectiveMode = 'LESSON'` when `node?.type === 'LESSON'`, wire `isLessonOpen`, render `LessonModal` with `isOpen={true}`.
+
+- **Bubble spawn playability** (⚠️ active concern): 94% node-start → node-complete drop-off, 23% of node starters never answer a question (GA4 data, 2026-08-08). Variant-aware spawn-X clamp landed (ADR 2026-08-bubble-spawn-x-overflow-clamp). Real kid playtesting still needed. See [[domain/bubble-spawn-design]] and [[domain/analytics]].
+
+- **Chunk size warning** (⚠️ build): Vite build emits a 910 kB JS chunk (gzip: 265 kB), exceeding the 500 kB threshold. No `manualChunks` config in `vite.config.ts`. Single-bundle load impacts first-paint on mobile. **Fix:** add `build.rollupOptions.output.manualChunks` to split vendor libs.
+
+- **E2E suite failures** (⚠️ testing): Aug 20 run — 53 passed / 40 failed / 1 skipped / 5 did not run (99 total, 58.4 min against deployed Firebase site). Root causes:
+  1. **Generic timeout (30 tests)** — 120s Playwright timeout too short for deployed site latency (fix card: increase to 180s — partially applied)
+  2. **waitForSagaMap timeout (3 tests)** — local helpers reference arcade-button without opening hamburger menu first (fix card: helpers updated with `openMenu`)
+  3. **GameOrchestrator not found (2 tests)** — mode switch via GameOrchestrator fails on deployed site
+  4. **Node locked (2 tests)** — `setupFreshProfileWithPracticeAccess` doesn't unlock target nodes
+  5. **ERR_CONNECTION_REFUSED (1 test)** — invaders spec targets localhost:5173 instead of deployed site
+  6. **Star tier assertion (1 test)** — perfect-run star calculation mismatch (fix card: strip Unicode directional marks)
+  **Status:** fix cards created on workboard, some partially applied. **Next step:** re-run full suite to verify.
+
+- **Sound handling incomplete** (🔧 debt): `PracticeMode` migrated to `useSound` ✅. Raw `soundGarden` ternaries remain in `BubbleGameContainer`, `MathInvadersGame`, `MemoryDuelGame`. See ADR 2026-08-centralize-sound.
+
+- **Lesson coverage** (📏 gap): 21 lesson files exist (up from 1). Curriculum covers Gr 1–6 (ages 5–11) with many more LESSON-type nodes. Nodes without dedicated lesson content fall back to PracticeMode.
+
+- **GA4 custom dimensions untested** (📊 analytics): event params (`profile_id`, `node_id`, `equation`, `response_time_ms`, `age_group`) exist in code but not registered in GA4 Admin or tested as custom dimensions via Data API. See [[domain/analytics]].
+
+- **Difficulty rebalancer parked** (⏸️ parked): removed from main (commit `d1b2f79`). GA4 data pipeline needs fix before reactivation. See [[decisions/2026-08-park-difficulty-rebalancer]].
 
 ## E2E Suite Results (2026-08-20)
 
 - **Full run**: 99 tests, 58.4 minutes, against deployed Firebase site
 - **Results**: 53 passed, 40 failed, 1 skipped, 5 did not run
-- **Root causes**:
-  1. **Generic timeout (30 tests)** — 120s Playwright timeout too short for deployed site latency
-  2. **waitForSagaMap timeout (3 tests)** — local helpers in specs still reference arcade-button without opening hamburger menu first
-  3. **GameOrchestrator not found (2 tests)** — mode switch via GameOrchestrator fails on deployed site
-  4. **Node locked (2 tests)** — setupFreshProfileWithPracticeAccess doesn't unlock target nodes
-  5. **ERR_CONNECTION_REFUSED (1 test)** — invaders spec targets localhost:5173 instead of deployed site
-  6. **Star tier assertion (1 test)** — perfect-run star calculation mismatch
 - **Clean specs** (zero failures): arcade-mode-selector, bubble-bugfixes, bubble-game, learning-hints, new-lessons-star-space, pet-screen, play-again-loop, profile-creation-smoke, unit-progression, wrong-answer-feedback
-- **Fix cards created**: 6 cards on workboard for each root cause
-- **Coverage gap cards**: 8 cards for untested features (hints, shop, badges, quests, story scenes, dashboard viz, powerups, fusion mode)
+- **New specs added (Aug 24)**: badge-unlocks, daily-quests-streaks, dashboard-visualization, fusion-arcade, powerups-frenzy, story-scenes
+- **CI workflow**: `.github/workflows/e2e.yml` added
+- **Config**: timeout 180s (up from 120s), removed local setTimeout overrides, helpers use `waitForSelector` instead of fixed 5s mascot waits
+
+## Resolved (kept for reference)
+
+- ~~**Zen-mode stale-bubble validation**~~ — ✅ fixed (commit `0deaef6`, snapshot target per pop). See [[decisions/2026-08-zen-answer-race]].
+- ~~**Anti-repeat duplicate-slip**~~ — ✅ fixed (ADR 2026-08-zen-answer-race, commit `be4af87`).
+- ~~**Bubble viewport overflow**~~ — ✅ fixed (2026-08-23, ADR 2026-08-bubble-spawn-x-overflow-clamp, variant-aware spawn-X clamp in `worldConfig.ts`). 14 of 18 variant × viewport combinations overflowed; surfaced as ~1-in-3 e2e flake.
+- ~~**Star rewards hardcoded to 3**~~ — ✅ fixed (ADR 2026-08-dynamic-star-tiers, commit `a3e664c`).
+- ~~**WorldMap dead code**~~ — ✅ resolved (world-config consolidation, commit `45304c4`).
+
+## How to log new issues
+Create a dated note in `roadmap/known-issues.md` or link from [[INDEX]]. Keep entries factual with a "status" field.

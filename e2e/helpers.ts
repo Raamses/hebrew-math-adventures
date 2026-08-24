@@ -31,9 +31,25 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
   const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
   await expect(n1_1).toBeVisible({ timeout: 30000 });
 
+  // Verify we're on the saga map — saga nodes are always visible (arcade-button is in hamburger menu)
+  const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(firstNode).toBeVisible({ timeout: 15000 });
   // Verify we're on the saga map — check saga node is visible
   // (arcade-button is inside a hamburger menu, not directly visible)
   await page.waitForTimeout(500);
+}
+
+/**
+ * Open the hamburger menu on the saga map.
+ */
+export async function openMenu(page: Page) {
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  await expect(menuToggle).toBeVisible({ timeout: 10000 });
+  const isExpanded = await menuToggle.getAttribute('aria-expanded');
+  if (isExpanded !== 'true') {
+    await menuToggle.click();
+    await page.waitForTimeout(500);
+  }
 }
 
 /**
@@ -70,7 +86,6 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
     if (profileRaw) {
       try {
         const profiles = JSON.parse(profileRaw);
-        // Profiles stored as array-like object. Each profile has an `id` field.
         const profileList = Object.values(profiles) as any[];
         results.push(`profile count: ${profileList.length}`);
         const profile = profileList.find(p => p.name === profileName);
@@ -81,12 +96,6 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
             n1_1: { stars: 3, isLocked: false, mistakes: 0 },
             n1_2: { stars: 0, isLocked: false, mistakes: 0 },
             n1_3: { stars: 0, isLocked: false, mistakes: 0 },
-            // Unlock n3_1 (MultiplicationMountainLesson) for lesson-node-completion test
-            n3_1: { stars: 0, isLocked: false, mistakes: 0 },
-            // Unlock n3_9 (CHALLENGE type, no config) so PracticeMode opens with
-            // ModeSelectorOverlay. LESSON nodes (like n3_1) open LessonModal instead.
-            // CHALLENGE nodes without config fall through to PracticeMode with
-            // problemConfig=undefined, which triggers the mode selector.
             n3_9: { stars: 0, isLocked: false, mistakes: 0 },
           };
           localStorage.setItem(progressKey, JSON.stringify(progress));
@@ -98,7 +107,7 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
         results.push(`error: ${e}`);
       }
     }
-    return results.join('\n');
+    return results.join('\\n');
   }, name);
 
   console.log('Progress injection:', progressInjected);
@@ -116,6 +125,9 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
   const n1_1AfterReload = page.locator('[data-testid="saga-node-n1_1"]').first();
   await expect(n1_1AfterReload).toBeVisible({ timeout: 30000 });
 
+  // Verify we're on the saga map — saga nodes are always visible
+  const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(firstNode).toBeVisible({ timeout: 15000 });
   // Verify we're on the saga map
   // (arcade-button is inside a hamburger menu, not directly visible)
   await page.waitForTimeout(500);
@@ -153,8 +165,8 @@ export async function isOnSagaMap(page: Page): Promise<boolean> {
 }
 
 export async function gotoSagaMap(page: Page) {
-  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
-  if (await arcadeBtn.count() > 0) return;
+  const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
+  if (await firstNode.count() > 0) return;
   const mapBtn = page.locator('button').filter({ hasText: /map|home|מפה|בית|Back to Map|חזרה/i }).first();
   if (await mapBtn.count() > 0) {
     await mapBtn.click();
@@ -164,8 +176,7 @@ export async function gotoSagaMap(page: Page) {
 
 /**
  * Open the arcade mode selector and click the desired mode.
- * Clicks the Globe button (title="Arcade Games") to open the modal,
- * then clicks Zen/Classic/Blitz/Survival.
+ * Opens the hamburger menu first, then clicks arcade button, then mode.
  */
 export async function selectArcadeMode(page: Page, mode: 'zen' | 'classic' | 'blitz' | 'survival' | 'fusion') {
   // Open the hamburger menu first, then click arcade button
@@ -291,25 +302,6 @@ export async function enterSagaNode(page: Page, nodeIndex: number) {
 }
 
 export async function selectPracticeMode(page: Page, mode: 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL' | 'MEMORY' | 'INVADERS') {
-  // To reach the ModeSelectorOverlay, we need to click a node that:
-  //   1. Has type CHALLENGE or PRACTICE (not LESSON — those open LessonModal)
-  //   2. Has NO config (so PracticeMode opens with mode selector, not auto-standard)
-  // n3_9 (CHALLENGE, no config) in unit_3 meets both criteria.
-  // setupFreshProfileWithPracticeAccess unlocks n3_9.
-
-  try {
-    await enterSagaNodeById(page, 'n3_9');
-  } catch (err) {
-    if (String(err).includes('is locked')) {
-      throw new Error('n3_9 node is locked. Ensure setupFreshProfileWithPracticeAccess is called.');
-    }
-    throw err;
-  }
-
-  // Wait for mode selector overlay to appear
-  const modeSelector = page.locator('[data-testid="mode-selector"]');
-  await expect(modeSelector).toBeVisible({ timeout: 15000 });
-
   // Click the desired mode card
   const modeCard = page.locator(`[data-testid="mode-card-${mode}"]`).first();
   await expect(modeCard).toBeVisible({ timeout: 10000 });
@@ -326,10 +318,14 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
   }
 
   // Comparison question?
-  const compareButtons = page.locator('button').filter({ hasText: /^[<=>]$/ });
+  // Buttons have text like "Select >", "Select =", "Select <" - match buttons containing the symbol
+  const compareButtons = page.locator('button').filter({ hasText: /[<=>]/ });
   const compareCount = await compareButtons.count();
   if (compareCount >= 3) {
-    const numbers = bodyText.match(/\d+/g) || [];
+    // Extract numbers from the problem card area, not the whole body
+    const mathCard = page.locator('.max-w-md.bg-white.rounded-3xl').first();
+    const cardText = await mathCard.textContent() || '';
+    const numbers = cardText.match(/\d+/g) || [];
     if (numbers.length >= 2) {
       const num1 = parseInt(numbers[0]!);
       const num2 = parseInt(numbers[1]!);
@@ -337,7 +333,8 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
       if (num1 > num2) symbol = '>';
       else if (num1 < num2) symbol = '<';
       else symbol = '=';
-      await compareButtons.filter({ hasText: symbol }).click();
+      // Click button containing the symbol (e.g., "Select >")
+      await compareButtons.filter({ hasText: symbol }).first().click();
       return true;
     }
   }
@@ -540,6 +537,16 @@ export async function submitWrongAnswer(page: Page): Promise<void> {
   } else {
     await page.keyboard.press('Enter');
   }
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Wait until the saga map is visible (saga nodes present).
+ * Reusable assertion that we've returned to the saga map.
+ */
+export async function waitForSagaMap(page: Page): Promise<void> {
+  const node = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(node).toBeVisible({ timeout: 15000 });
   await page.waitForTimeout(500);
 }
 

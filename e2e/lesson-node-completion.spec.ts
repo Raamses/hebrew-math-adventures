@@ -116,8 +116,8 @@ test.describe('Lesson node completion', () => {
 
     // --- Step 3: action_fill (interactive_drag) ---
     // Call engine.onItemDropped(itemId, targetId) directly.
-    // MultiplicationMountainLesson: 6 crystals (c1-c6) into 3 rows (row1-row3), 2 per row.
-    // Validation: every target has currentCount === 2.
+    // The multiplication mountain lesson has 6 crystals (c1-c6) and 3 rows (row1-row3).
+    // Each row has capacity 2, so we drop 2 crystals per row.
     const dragPlan: Array<{ itemId: string; targetId: string }> = [
       { itemId: 'c1', targetId: 'row1' },
       { itemId: 'c2', targetId: 'row1' },
@@ -139,6 +139,8 @@ test.describe('Lesson node completion', () => {
     await page.waitForTimeout(1000);
 
     // --- Step 3: click Next to proceed to conclusion ---
+    // Wait for the step to complete (button becomes enabled)
+    await page.waitForTimeout(2000);
     await clickLessonNext(page);
     await page.waitForTimeout(1000);
 
@@ -147,6 +149,8 @@ test.describe('Lesson node completion', () => {
     await page.waitForTimeout(2000);
 
     // --- Assert return to saga map ---
+    const arcadeBtn = page.locator('[data-testid="saga-node-n1_1"]').first();
+    await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
     const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
     await expect(sagaNode).toBeVisible({ timeout: 30000 });
 

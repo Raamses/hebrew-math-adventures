@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { toggleLanguage, waitForSagaMap } from './helpers';
+import { toggleLanguage, waitForSagaMap, openMenu } from './helpers';
 
 const APP_URL = process.env.E2E_BASE_URL || 'http://localhost:5173';
 
@@ -62,7 +62,11 @@ test.describe('Language Toggle', () => {
     console.log('[Language Toggle] i18nextLng before toggle:', lngBefore);
     expect(lngBefore).toBe('he');
 
-    // Verify we're on the saga map
+    // Assert arcade button title is in Hebrew
+    // The arcade button is inside the hamburger menu, so we need to open it first
+    await openMenu(page);
+    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
+    await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
     const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
     await expect(sagaNode).toBeVisible({ timeout: 30000 });
 
@@ -77,6 +81,9 @@ test.describe('Language Toggle', () => {
     const arcadeTitleBefore = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title before toggle:', arcadeTitleBefore);
     expect(arcadeTitleBefore).toBe('משחקי ארקייד');
+
+    // Close the menu
+    await openMenu(page);
 
     // Assert language-toggle aria-label is in Hebrew
     const toggleBtn = page.locator('[data-testid="language-toggle"]').first();
@@ -97,13 +104,14 @@ test.describe('Language Toggle', () => {
     console.log('[Language Toggle] i18nextLng after toggle:', lngAfter);
     expect(lngAfter).toBe('en');
 
-    // Reopen menu to check arcade button title in English
-    await expect(menuToggle).toBeVisible({ timeout: 15000 });
-    await menuToggle.click({ force: true });
-    await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
+    // Assert arcade button title is now in English (re-open menu)
+    await openMenu(page);
     const arcadeTitleAfter = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title after toggle:', arcadeTitleAfter);
     expect(arcadeTitleAfter).toBe('Arcade Games');
+
+    // Close the menu
+    await openMenu(page);
 
     // Assert language-toggle aria-label is now in English
     const toggleAriaAfter = await toggleBtn.getAttribute('aria-label') || '';
@@ -122,13 +130,14 @@ test.describe('Language Toggle', () => {
     console.log('[Language Toggle] i18nextLng after toggle back:', lngRestored);
     expect(lngRestored).toBe('he');
 
-    // Reopen menu to check arcade button title restored to Hebrew
-    await expect(menuToggle).toBeVisible({ timeout: 15000 });
-    await menuToggle.click({ force: true });
-    await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
+    // Re-open menu to check arcade button title restored
+    await openMenu(page);
     const arcadeTitleRestored = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title restored:', arcadeTitleRestored);
     expect(arcadeTitleRestored).toBe('משחקי ארקייד');
+
+    // Close the menu
+    await openMenu(page);
 
     // Verify we're still on the saga map
     await waitForSagaMap(page);
