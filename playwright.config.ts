@@ -4,6 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 // Default: local dev server (vite dev on port 5173).
 // Set E2E_BASE_URL=https://hebrew-math-adventures-2025.web.app to test deployed site.
 const baseURL = process.env.E2E_BASE_URL || 'http://localhost:5173';
+const isDeployed = !!process.env.E2E_BASE_URL;
 
 export default defineConfig({
   testDir: './e2e',
@@ -22,12 +23,23 @@ export default defineConfig({
   workers: 3,
   reporter: 'list',
   timeout: 180000,
+  expect: {
+    // Raise default expect timeout from 5s to 15s. Deployed Firebase site
+    // has CDN cold-start, service-worker interception, and network latency
+    // that make the Playwright default 5s assertion timeout too tight.
+    // Specs that need longer can still pass explicit timeout values.
+    timeout: 15000,
+  },
   use: {
     baseURL,
     headless: true,
     viewport: { width: 390, height: 844 },
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
+    // Action timeout: 20s for clicks/fills on deployed site
+    actionTimeout: 20000,
+    // Navigation timeout: 45s for deployed Firebase cold loads
+    navigationTimeout: 45000,
     launchOptions: {
       args: [
         '--disable-dev-shm-usage',

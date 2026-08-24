@@ -213,7 +213,9 @@ export async function clickBubble(page: Page, bubbleSelector: string) {
  * Uses page.mouse.click for coordinate-based clicking to bypass the header overlay.
  */
 export async function solveBubbleProblem(page: Page): Promise<boolean> {
-  const bodyText = await page.textContent('body') || '';
+  // Strip Unicode bidi isolation characters (U+2068 ⁨, U+2069 ⁩) that wrap numbers in RTL text
+  const rawText = await page.textContent('body') || '';
+  const bodyText = rawText.replace(/[⁦⁧⁨⁩]/g, '');
 
   // Look for arithmetic instruction like "N + N = ?"
   const eqMatch = bodyText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);

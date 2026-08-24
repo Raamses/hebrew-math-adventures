@@ -28,8 +28,9 @@ test.describe('Practice Mode — mute toggle', () => {
     await page.waitForTimeout(1500);
 
     // Open the settings (gear) menu in the practice header.
-    const settingsGear = page.locator('button[aria-label="Settings"], button[aria-label*="הגדרות"]').first();
-    await expect(settingsGear).toBeVisible({ timeout: 10000 });
+    // The gear button may have aria-label "Settings", "הגדרות", or just be a button with a settings/gear svg.
+    const settingsGear = page.locator('button[aria-label="Settings"], button[aria-label*="הגדרות"], button:has(svg.lucide-settings)').first();
+    await expect(settingsGear).toBeVisible({ timeout: 15000 });
     await settingsGear.click();
     await page.waitForTimeout(500);
 

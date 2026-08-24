@@ -31,7 +31,7 @@ const SENSORY_TARGET_COUNT = 10; // winCondition.value for n1_1 (target_count: 1
 async function getBubbleInstruction(page: Page): Promise<string | null> {
   const instEl = page.locator('div[dir="ltr"] span.font-mono').first();
   if (await instEl.count() === 0) return null;
-  return await instEl.textContent();
+  const raw = await instEl.textContent(); return raw ? raw.replace(/[\u2066\u2067\u2068\u2069]/g, '') : null;
 }
 
 /**

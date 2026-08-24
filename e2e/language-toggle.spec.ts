@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { toggleLanguage, waitForSagaMap, openMenu } from './helpers';
 
+const APP_URL = process.env.E2E_BASE_URL || 'http://localhost:5173';
+
 /**
  * Language Toggle — Phase 2e (§4.8 of EXPANDED_COVERAGE_PLAN.md)
  *
@@ -28,7 +30,7 @@ test.describe('Language Toggle', () => {
 
   test('Toggle language Hebrew → English → UI text changes', async ({ page }) => {
     // --- Pre-set Hebrew as the language before app loads ---
-    await page.goto('http://localhost:5173', { waitUntil: 'domcontentloaded' });
+    await page.goto(APP_URL, { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => {
       localStorage.clear();
       localStorage.setItem('i18nextLng', 'he');
@@ -36,24 +38,21 @@ test.describe('Language Toggle', () => {
 
     // --- Set up fresh profile (reload with Hebrew language) ---
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
-
-    // Click "New Player" / "שחקן חדש" — has Plus icon
+    // Wait for profile selector to appear
     const newPlayerBtn = page.locator('button:has(svg.lucide-plus)').first();
-    await expect(newPlayerBtn).toBeVisible({ timeout: 5000 });
+    await expect(newPlayerBtn).toBeVisible({ timeout: 15000 });
     await newPlayerBtn.click();
-    await page.waitForTimeout(800);
+    // Wait for name input to appear
+    await expect(page.locator('input#setup-name')).toBeVisible({ timeout: 5000 });
 
     // Fill name — input has id="setup-name"
     await page.locator('input#setup-name').fill('LangTest');
-    await page.waitForTimeout(300);
 
     // Submit — button[type="submit"]
     await page.locator('button[type="submit"]').click();
-    await page.waitForTimeout(1500);
 
-    // Wait for mascot greeting to auto-dismiss
-    await page.waitForTimeout(5000);
+    // Wait for saga map to render (mascot greeting auto-dismisses)
+    await expect(page.locator('[data-testid="saga-node-n1_1"]').first()).toBeVisible({ timeout: 30000 });
 
     // Verify we're on the saga map
     await waitForSagaMap(page);
@@ -70,6 +69,15 @@ test.describe('Language Toggle', () => {
     await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
     const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
     await expect(sagaNode).toBeVisible({ timeout: 30000 });
+
+    // Open menu to access the arcade button
+    const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+    await expect(menuToggle).toBeVisible({ timeout: 15000 });
+    await menuToggle.click();
+    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
+    await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
+
+    // Assert arcade button title is in Hebrew
     const arcadeTitleBefore = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title before toggle:', arcadeTitleBefore);
     expect(arcadeTitleBefore).toBe('משחקי ארקייד');
@@ -82,6 +90,11 @@ test.describe('Language Toggle', () => {
     const toggleAriaBefore = await toggleBtn.getAttribute('aria-label') || '';
     console.log('[Language Toggle] Language toggle aria-label before:', toggleAriaBefore);
     expect(toggleAriaBefore).toBe('החלף שפה');
+
+    // Close menu before toggling language (toggleLanguage opens it itself)
+    // Use Escape to close the modal menu (backdrop intercepts pointer events)
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
 
     // --- Toggle to English ---
     await toggleLanguage(page);
@@ -104,6 +117,10 @@ test.describe('Language Toggle', () => {
     const toggleAriaAfter = await toggleBtn.getAttribute('aria-label') || '';
     console.log('[Language Toggle] Language toggle aria-label after:', toggleAriaAfter);
     expect(toggleAriaAfter).toBe('Switch Language');
+
+    // Close menu before toggling back
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
 
     // --- Toggle back to Hebrew ---
     await toggleLanguage(page);
