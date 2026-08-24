@@ -840,7 +840,7 @@
   "bubble": {
     "targets": "מטרות",
     "popNumber": "פוצצו את הבועה שכתוב עליה {{number}}",
-    "solveEquation": "פתרו את התרגיל ופוצצו את הבועה עם התשובה",
+    "solveEquation": "{{equation}} — פוצצו את הבועה עם התשובה",
     "popReady": "פוצצו את הבועות!"
   }
 }

@@ -565,11 +565,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         </div>
                         {/* Fusion streak badge (Combo Fusion mode) */}
                         {fusionState && (
-                            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
+                            <div data-testid="fusion-hud" className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
                                 <span className="text-xs">🌀</span>
-                                <span className={`font-bold text-xs ${fusionState.fusionStreak >= 3 ? 'text-cyan-700' : 'text-slate-700'}`}>{fusionState.fusionStreak}</span>
+                                <span data-testid="fusion-streak" className={`font-bold text-xs ${fusionState.fusionStreak >= 3 ? 'text-cyan-700' : 'text-slate-700'}`}>{fusionState.fusionStreak}</span>
                                 {fusionState.fusionStreak >= 3 && (
-                                    <span className="text-[10px] font-bold text-violet-600">
+                                    <span data-testid="fusion-multiplier" className="text-[10px] font-bold text-violet-600">
                                         {fusionState.fusionStreak >= 10 ? '5×' : fusionState.fusionStreak >= 7 ? '3×' : fusionState.fusionStreak >= 5 ? '2×' : '1.5×'}
                                     </span>
                                 )}
