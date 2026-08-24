@@ -24,7 +24,7 @@ import type {
     GiftTransaction,
     GameResult,
     CoinEarningResult,
-} from '../../types/parent';
+} from '../../../types/parent';
 
 // ================================================================
 //  Constants
@@ -67,8 +67,8 @@ export function calculateCoinsEarned(result: GameResult): CoinEarningResult {
         case 'equation-of-the-day': {
             coins = result.won ? 20 : 5;
             // Streak bonus: +5 per consecutive day, capped at +25
-            if (result.won && result.currentStreak > 0) {
-                bonusCoins = Math.min(25, Math.floor(result.currentStreak / 2) * 5);
+            if (result.won && (result.currentStreak ?? 0) > 0) {
+                bonusCoins = Math.min(25, Math.floor((result.currentStreak ?? 0) / 2) * 5);
                 if (bonusCoins > 0) bonusReason = 'streak_bonus';
             }
             break;

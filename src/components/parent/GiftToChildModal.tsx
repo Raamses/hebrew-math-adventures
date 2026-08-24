@@ -8,7 +8,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Gift, Coins } from 'lucide-react';
-import type { ParentEconomyState, GiftTransaction } from '../types/parent';
+import type { ParentEconomyState, GiftTransaction } from '../../types/parent';
 import {
     validateGift,
     MAX_DAILY_GIFT_PER_CHILD,

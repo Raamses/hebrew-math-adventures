@@ -10,7 +10,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Coins, Flame, Gift, Shield, Award } from 'lucide-react';
-import type { ParentEconomyState, ParentBadgeId } from '../types/parent';
+import type { ParentEconomyState, ParentBadgeId } from '../../types/parent';
 import { PARENT_BADGES } from './games/parentEconomyEngine';
 
 interface ParentEconomyPanelProps {

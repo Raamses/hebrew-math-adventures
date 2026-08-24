@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import type { ParentEconomyState, GameResult, GiftTransaction, LeaderboardEntry } from '../types/parent';
+import type { ParentEconomyState, GameResult, LeaderboardEntry } from '../types/parent';
 import {
     createInitialState,
     applyGameResult,
