@@ -32,7 +32,7 @@ import {
  */
 
 test.describe('Wrong Answer Feedback', () => {
-  test.setTimeout(60000);
+  // Global timeout is 180s — no need for local override
 
   test('Submit wrong answer → wrong feedback shown → session continues', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'WrongFeedback');

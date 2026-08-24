@@ -555,7 +555,7 @@ describe('STORAGE_KEYS', () => {
     it('exports an object with all 9 keys', () => {
         expect(STORAGE_KEYS).toBeDefined();
         expect(typeof STORAGE_KEYS).toBe('object');
-        expect(Object.keys(STORAGE_KEYS)).toHaveLength(9);
+        expect(Object.keys(STORAGE_KEYS)).toHaveLength(11);
     });
 
     it('has all expected key names', () => {
@@ -905,6 +905,6 @@ describe('BUBBLE_ENGINE_CONFIG', () => {
         expect(BUBBLE_ENGINE_CONFIG.POWER_UP_SLOW_SPEED).toBe(0.3);
         expect(BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS).toBe(2000);
         expect(BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS).toBe(20000);
-        expect(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBe(13000);
+        expect(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBe(15000);
     });
 });

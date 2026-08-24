@@ -9,7 +9,7 @@ test.describe('Bubble Game Modes', () => {
   });
 
   test('Zen mode is playable', async ({ page }) => {
-    test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
     await selectArcadeMode(page, 'zen');
     await page.waitForTimeout(3000);
@@ -72,7 +72,7 @@ test.describe('Bubble Game Modes', () => {
   });
 
   test('Classic mode is playable', async ({ page }) => {
-    test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
     await selectArcadeMode(page, 'classic');
     await page.waitForTimeout(3000);
@@ -104,7 +104,7 @@ test.describe('Bubble Game Modes', () => {
   });
 
   test('Blitz mode is playable', async ({ page }) => {
-    test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
     await selectArcadeMode(page, 'blitz');
     await page.waitForTimeout(3000);
@@ -151,7 +151,7 @@ test.describe('Bubble Game Modes', () => {
   });
 
   test('Survival mode is playable', async ({ page }) => {
-    test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
     await selectArcadeMode(page, 'survival');
     await page.waitForTimeout(3000);
@@ -184,7 +184,7 @@ test.describe('Bubble Game Modes', () => {
   });
 
   test('Bubble overflow check — no bubble beyond viewport edges', async ({ page }) => {
-    test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
     await selectArcadeMode(page, 'zen');
     await page.waitForTimeout(4000);

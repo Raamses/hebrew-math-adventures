@@ -1,4 +1,4 @@
-import type { IGameBehavior, GameConfig, BubbleEntity } from '../types';
+import type { IGameBehavior, GameConfig, BubbleEntity, InstructionKey } from '../types';
 import { MathModule } from '../../MathModule';
 import { INITIAL_CAPABILITY_PROFILE } from '../../../types/progress';
 import type { ArithmeticProblem, Problem, SensoryProblem } from '../../../lib/gameLogic';
@@ -457,6 +457,18 @@ export class MathBehaviorStrategy implements IGameBehavior {
         return this.bossGate !== null;
     }
 
+    /**
+     * FIX(d): Clear all boss gate state. Called after boss defeat so that:
+     * - isBossGateActive() returns false (guards in (a)/(b) stop blocking)
+     * - bossGateIndex resets to 0 (next boss starts fresh)
+     * - regenerateProblem is unblocked (post-boss problem can be generated)
+     * Idempotent: safe to call when no gate is active.
+     */
+    clearBossGate(): void {
+        this.bossGate = null;
+        this.bossGateIndex = 0;
+    }
+
     getBossGateIcon(): string {
         return this.bossGate?.icon ?? '🛡️';
     }
@@ -477,13 +489,13 @@ export class MathBehaviorStrategy implements IGameBehavior {
         return this.mathModule;
     }
 
-    getInstruction(): string {
-        if (!this.currentProblem) return "Pop bubbles!";
+    getInstructionKey(): InstructionKey {
+        if (!this.currentProblem) return { key: 'bubble.popReady' };
 
         const p = this.currentProblem;
 
         if (p.type === 'sensory') {
-            return `Pop ${p.target}`;
+            return { key: 'bubble.popNumber', params: { number: p.target } };
         }
 
         // Arithmetic
@@ -491,16 +503,14 @@ export class MathBehaviorStrategy implements IGameBehavior {
 
         // Handle missing operand rendering for boss gates
         if (ap.missing === 'num1') {
-            // num1 is the answer (unknown to player), show: ? OP num2 = result
             const result = computeResult(ap.num1, ap.num2, ap.operator);
-            return `? ${ap.operator} ${ap.num2} = ${result}`;
+            return { key: 'bubble.solveEquation', params: { equation: `? ${ap.operator} ${ap.num2} = ${result}` } };
         }
         if (ap.missing === 'num2') {
-            // num2 is the answer (unknown to player), show: num1 OP ? = result
             const result = computeResult(ap.num1, ap.num2, ap.operator);
-            return `${ap.num1} ${ap.operator} ? = ${result}`;
+            return { key: 'bubble.solveEquation', params: { equation: `${ap.num1} ${ap.operator} ? = ${result}` } };
         }
 
-        return `${ap.num1} ${ap.operator} ${ap.num2} = ?`;
+        return { key: 'bubble.solveEquation', params: { equation: `${ap.num1} ${ap.operator} ${ap.num2} = ?` } };
     }
 }

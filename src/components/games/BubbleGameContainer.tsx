@@ -67,7 +67,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const { playFrenzy, playStreak, playLevelUp, playMilestone, playWrong: playWrongSound } = soundManager;
     const { logEvent } = useAnalytics();
     const { recordQuestEvent } = useQuest();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     // --- Session-Internal Leveling State ---
     const [sessionLevel, setSessionLevel] = useState(() => {
@@ -205,6 +205,21 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     const hasStrikes = config.failCondition.type === 'strikes' && (config.failCondition.value ?? 0) > 0;
     const maxStrikes = config.failCondition.value ?? 0;
 
+    // FIX(b): Helper to guard regenerateProblem during boss fights.
+    // During a boss fight, the strategy owns the problem (set via prepareBossGate).
+    // regenerateProblem would overwrite targetValue after updateBossTarget committed it.
+    // All call sites should use this helper instead of calling behavior.regenerateProblem directly.
+    const regenerateProblemUnlessBossGate = useCallback((
+        level: number,
+        cfg: GameConfig,
+        correctCount?: number
+    ) => {
+        if (behavior instanceof MathBehaviorStrategy && (behavior as MathBehaviorStrategy).isBossGateActive()) {
+            return; // Boss gate active — strategy owns the problem
+        }
+        behavior.regenerateProblem(level, cfg, correctCount);
+    }, [behavior]);
+
     // --- Session Leveling Logic ---
     const handleSessionLeveling = useCallback((isCorrect: boolean) => {
         const correctCount = gameState.targetsPopped + (isCorrect ? 1 : 0);
@@ -224,14 +239,14 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     maxOnScreen: Math.min(12, config.maxOnScreen + 1),
                 };
                 setAdaptiveConfig(harderConfig);
-                behavior.regenerateProblem(sessionLevelRef.current, harderConfig, correctCount);
+                regenerateProblemUnlessBossGate(sessionLevelRef.current, harderConfig, correctCount);
             }
 
             // Problem rotation within a level (every N correct)
             if (correctSinceRotationRef.current >= SESSION_CONFIG.PROBLEM_ROTATION_EVERY) {
                 correctSinceRotationRef.current = 0;
                 setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on rotation
-                behavior.regenerateProblem(sessionLevelRef.current, config, correctCount);
+                regenerateProblemUnlessBossGate(sessionLevelRef.current, config, correctCount);
             }
 
             // Level up check (accelerating thresholds)
@@ -249,7 +264,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     soundManager.vibrate([100, 50, 100]);
                     setTimeout(() => setShowLevelUp(false), 2000);
                     // Regenerate problem at new level
-                    behavior.regenerateProblem(newLevel, config, correctCount);
+                    regenerateProblemUnlessBossGate(newLevel, config, correctCount);
                     logEvent('session_level_up', { level: newLevel });
                 }
             }
@@ -270,7 +285,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     maxOnScreen: Math.max(3, config.maxOnScreen - 1),
                 };
                 setAdaptiveConfig(simplerConfig);
-                behavior.regenerateProblem(sessionLevelRef.current, simplerConfig, correctCount);
+                regenerateProblemUnlessBossGate(sessionLevelRef.current, simplerConfig, correctCount);
             }
 
             // Level down after too many consecutive wrong (floor at 1)
@@ -280,11 +295,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 setSessionLevel(newLevel);
                 sessionLevelRef.current = newLevel;
                 setAdaptiveConfig(null); // B1 Fix: Reset adaptive config on level change
-                behavior.regenerateProblem(newLevel, config, correctCount);
+                regenerateProblemUnlessBossGate(newLevel, config, correctCount);
                 logEvent('session_level_down', { level: newLevel });
             }
         }
-    }, [behavior, config, logEvent, playLevelUp, gameState.targetsPopped]);
+    }, [behavior, config, logEvent, playLevelUp, gameState.targetsPopped, regenerateProblemUnlessBossGate]);
 
     const onPopWrapper = useCallback((id: string, val: number | string, x: number, y: number) => {
         // ADR 2026-08-zen-answer-race (Fix 1): answer-lock to prevent the
@@ -305,6 +320,13 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         // --- Boss Defeat Handling ---
         if (isCorrect && typeof isCorrect === 'object' && 'bossDefeated' in isCorrect) {
             const bossResult = isCorrect as BossDefeatResult;
+            // FIX(d): Clear boss gate state BEFORE regenerateProblem so the (b) guard
+            // doesn't suppress the post-boss problem. Order: clear gate → clear spawn ref → regenerate.
+            if (behavior instanceof MathBehaviorStrategy) {
+                (behavior as MathBehaviorStrategy).clearBossGate();
+            }
+            // Clear bossSpawnedForLevelRef so a new boss can spawn on the next boss level
+            bossSpawnedForLevelRef.current.delete(sessionLevelRef.current);
             // Show celebration
             setBossDefeatedCelebration(true);
             playLevelUp();
@@ -315,6 +337,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 sessionLevelRef.current = newLevel;
                 setShowLevelUp(true);
                 setTimeout(() => setShowLevelUp(false), 2000);
+                // Now safe to regenerate — gate is cleared
                 behavior.regenerateProblem(newLevel, config, gameState.targetsPopped + 1);
                 logEvent('boss_defeated', { level: bossResult.level, bonus: bossResult.bonusPoints, newLevel });
                 recordQuestEvent('boss_defeated', 1);
@@ -457,7 +480,14 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
         }
     }, [gameState.isVictory, gameState.isGameOver, onComplete, soundManager, recordSession, recordQuestEvent]);
 
-    const instruction = behavior.getInstruction ? behavior.getInstruction() : undefined;
+    const instructionKey = behavior.getInstructionKey ? behavior.getInstructionKey() : undefined;
+    // Wrap interpolated params with Unicode FSI/PDI isolates so LTR equations/numbers
+    // render correctly inside RTL Hebrew sentences without needing <Trans>/<bdi> elements.
+    const instruction = instructionKey
+        ? t(instructionKey.key, Object.fromEntries(
+            Object.entries(instructionKey.params ?? {}).map(([k, v]) => [k, `\u2068${v}\u2069`])
+          ))
+        : undefined;
 
     // Compute effective speed multiplier for bubbles (always 1 — freeze /
     // slow_motion were removed from the power-up set).
@@ -535,11 +565,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         </div>
                         {/* Fusion streak badge (Combo Fusion mode) */}
                         {fusionState && (
-                            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
+                            <div data-testid="fusion-hud" className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
                                 <span className="text-xs">🌀</span>
-                                <span className={`font-bold text-xs ${fusionState.fusionStreak >= 3 ? 'text-cyan-700' : 'text-slate-700'}`}>{fusionState.fusionStreak}</span>
+                                <span data-testid="fusion-streak" className={`font-bold text-xs ${fusionState.fusionStreak >= 3 ? 'text-cyan-700' : 'text-slate-700'}`}>{fusionState.fusionStreak}</span>
                                 {fusionState.fusionStreak >= 3 && (
-                                    <span className="text-[10px] font-bold text-violet-600">
+                                    <span data-testid="fusion-multiplier" className="text-[10px] font-bold text-violet-600">
                                         {fusionState.fusionStreak >= 10 ? '5×' : fusionState.fusionStreak >= 7 ? '3×' : fusionState.fusionStreak >= 5 ? '2×' : '1.5×'}
                                     </span>
                                 )}
@@ -589,7 +619,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                         {title || 'Blast Off'}
                     </h1>
                     {instruction && (
-                        <div dir="ltr" style={{ unicodeBidi: 'isolate' }} className="bg-white/85 backdrop-blur-md px-4 py-1 rounded-xl shadow-sm border border-blue-100">
+                        <div dir={i18n.dir()} style={{ unicodeBidi: 'isolate' }} className="bg-white/85 backdrop-blur-md px-4 py-1 rounded-xl shadow-sm border border-blue-100">
                             <span className={`text-lg font-bold ${theme.accent} tracking-wide font-mono leading-tight`}>
                                 {instruction}
                             </span>

@@ -122,14 +122,14 @@ describe('useGameEngine — Combo Fusion mode', () => {
         expect(FUSION_CONFIG.MERGE_RADIUS_PERCENT).toBeGreaterThan(0);
     });
 
-    it('ARCADE_CONFIGS.fusion uses spawnIntervalMs=650', () => {
+    it('ARCADE_CONFIGS.fusion uses spawnIntervalMs=500', () => {
         expect(ARCADE_CONFIGS.fusion).toBeDefined();
-        expect(ARCADE_CONFIGS.fusion.spawnIntervalMs).toBe(650);
+        expect(ARCADE_CONFIGS.fusion.spawnIntervalMs).toBe(500);
     });
 
-    it('getArcadeModeConfig(fusion) returns spawnIntervalMs=650 override', () => {
+    it('getArcadeModeConfig(fusion) returns spawnIntervalMs=500 override', () => {
         const cfg = getArcadeModeConfig('fusion');
-        expect(cfg.spawnIntervalMs).toBe(650);
+        expect(cfg.spawnIntervalMs).toBe(500);
         expect(cfg.winCondition).toEqual({ type: 'time_limit', value: 120 });
     });
 });

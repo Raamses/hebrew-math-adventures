@@ -91,6 +91,30 @@ const makeBubble = (id: string, internalValue: number): BubbleEntity => ({
     variant: 'medium' as const,
 });
 
+/**
+ * Rotate the problem until the target actually moves.
+ *
+ * `regenerateProblem` draws at random, so it can land back on the answer it
+ * just had. That makes a bubble carrying the old answer legitimately correct
+ * and turns any staleness assertion into a coin flip — retrying keeps the
+ * rotation real while making the assertion deterministic.
+ */
+const rotateToNewTarget = (
+    strategy: MathBehaviorStrategy,
+    config: GameConfig,
+    round: number
+): number => {
+    const before = strategy.getTargetValue()!;
+
+    for (let attempt = 0; attempt < 50; attempt++) {
+        strategy.regenerateProblem(1, config, round);
+        const next = strategy.getTargetValue()!;
+        if (next !== before) return next;
+    }
+
+    throw new Error(`regenerateProblem never moved off target ${before}`);
+};
+
 // Simulate the engine's handlePop logic for stale detection
 const simulatePop = (
     strategy: MathBehaviorStrategy,
@@ -549,7 +573,7 @@ describe('Blitz mode — state persistence with timer', () => {
         }
 
         const lastSnapshot = strategy.getTargetValue()!;
-        strategy.regenerateProblem(1, config, 4);
+        rotateToNewTarget(strategy, config, 4);
 
         // Stale bubble
         const staleBubble = makeBubble('stale', lastSnapshot);
@@ -638,7 +662,7 @@ describe('validateAgainst three-way verdict across all modes', () => {
         expect(strategy.validateAgainst(correctBubble, snapshot)).toBe('correct');
 
         // After rotation: stale
-        strategy.regenerateProblem(1, config, 1);
+        rotateToNewTarget(strategy, config, 1);
         expect(strategy.validateAgainst(correctBubble, snapshot)).toBe('stale');
 
         // Unrelated value: wrong

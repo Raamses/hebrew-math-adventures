@@ -140,6 +140,7 @@ export const UnitCompleteCinematic: React.FC<UnitCompleteCinematicProps> = ({
 
     return (
         <motion.div
+            data-testid="unit-complete-cinematic"
             className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-gradient-to-b from-indigo-900 via-purple-900 to-slate-900"
             initial={{ y: 0 }}
             animate={phase === 'reveal' ? { y: '100%' } : { y: 0 }}

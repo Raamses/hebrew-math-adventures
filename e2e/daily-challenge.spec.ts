@@ -72,10 +72,10 @@ async function getDailyStamps(page: Page): Promise<string[]> {
  * or a max number of attempts is reached.
  * Returns the number of correct bubbles popped.
  */
-async function playBubbleSession(page: Page, maxAttempts = 8): Promise<number> {
+async function playBubbleSession(page: Page, maxAttempts = 20): Promise<number> {
   let correctPops = 0;
   for (let i = 0; i < maxAttempts; i++) {
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(1500);
 
     // Check if game is still active (no game-over modal)
     const bodyText = await page.textContent('body') || '';
@@ -88,14 +88,14 @@ async function playBubbleSession(page: Page, maxAttempts = 8): Promise<number> {
     if (solved) {
       correctPops++;
       // Wait for pop animation + next problem
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(2000);
     }
   }
   return correctPops;
 }
 
 test.describe('Daily Challenge — arcade modes', () => {
-  test.setTimeout(300000); // 5 minutes for all 5 serial tests
+  // Global timeout is 180s — no need for local override
 
   test('zen mode: correct bubbles accumulate daily challenge progress', async ({ page }) => {
     await setupFreshProfile(page, 'DCZen');
@@ -169,10 +169,9 @@ test.describe('Daily Challenge — arcade modes', () => {
 
     // If tracking occurred, the date should be today (Asia/Jerusalem timezone)
     if (date) {
+      // Use proper timezone to get Jerusalem date
       const now = new Date();
-      // Asia/Jerusalem is GMT+3 (or GMT+2 with DST, but approximated here)
-      const jerusalemOffset = 3;
-      const jerusalemDate = new Date(now.getTime() + jerusalemOffset * 3600000).toISOString().slice(0, 10);
+      const jerusalemDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
       expect(date).toBe(jerusalemDate);
     }
   });
@@ -195,23 +194,24 @@ test.describe('Daily Challenge — arcade modes', () => {
     // Pop correct bubbles. We may need multiple sessions if target > bubbles per session.
     // Play up to target + 5 extra attempts to account for misses.
     let totalPopped = 0;
-    const maxSessions = 3;
+    const maxSessions = 5;
 
     for (let session = 0; session < maxSessions && totalPopped < todayTarget; session++) {
       if (session > 0) {
         // If game ended, we need to go back and re-enter the mode
         // Check if we're back on the saga map
-        const arcadeBtn = page.locator('[data-testid="saga-node-n1_1"]').first();
-        if (await arcadeBtn.count() > 0) {
+        const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
+        const arcadeBtnLocator = page.locator('[data-testid="arcade-button"], button:has-text("משחקי ארקייד"), button:has-text("Arcade Games")').first();
+        if (await arcadeBtnLocator.count() > 0) {
           await selectArcadeMode(page, todayMode);
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(3000);
         } else {
           // Still in game or transition — wait
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(3000);
         }
       }
 
-      const popped = await playBubbleSession(page, Math.min(todayTarget + 3, 15));
+      const popped = await playBubbleSession(page, Math.min(todayTarget + 5, 25));
       totalPopped += popped;
       console.log(`[DC Complete] Session ${session + 1}: popped ${popped}, total ${totalPopped}/${todayTarget}`);
     }
@@ -222,8 +222,7 @@ test.describe('Daily Challenge — arcade modes', () => {
     console.log(`[DC Complete] dailyChallengeCorrect = ${correct}, stamps = ${JSON.stringify(stamps)}`);
 
     // If we managed to pop enough correct bubbles matching today's mode, the challenge should complete
-    // But if tracking isn't working (correct === 0), fall back to verifying progress was attempted
-    if (totalPopped >= todayTarget && correct > 0) {
+    if (totalPopped >= todayTarget) {
       const todayStr = new Date().toISOString().slice(0, 10);
       // Use Jerusalem timezone
       const now = new Date();
@@ -231,9 +230,8 @@ test.describe('Daily Challenge — arcade modes', () => {
       const jerusalemDate = new Date(now.getTime() + jerusalemOffset * 3600000).toISOString().slice(0, 10);
       expect(stamps).toContain(jerusalemDate);
     } else {
-      // If we didn't reach the target OR tracking isn't working, at least verify progress was tracked
-      // (correct may be 0 if daily challenge tracking has issues in E2E)
-      expect(correct).toBeGreaterThanOrEqual(0);
+      // If we didn't reach the target (bubbles can be tricky in E2E), at least verify progress was tracked
+      expect(correct).toBeGreaterThan(0);
     }
   });
 });

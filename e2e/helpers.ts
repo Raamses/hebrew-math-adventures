@@ -8,45 +8,32 @@ const APP_URL = process.env.E2E_BASE_URL || 'http://localhost:5173';
  */
 export async function setupFreshProfile(page: Page, name = 'TestBot') {
   await page.goto(APP_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  // Wait for app shell to render before clearing state
+  await expect(page.locator('button:has(svg.lucide-plus)').first()).toBeVisible({ timeout: 15000 });
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  // Wait for profile selector to appear after reload
+  await expect(page.locator('button:has(svg.lucide-plus)').first()).toBeVisible({ timeout: 15000 });
 
   // Click "New Player" / "שחקן חדש" — has Plus icon
   const newPlayerBtn = page.locator('button:has(svg.lucide-plus)').first();
-  await expect(newPlayerBtn).toBeVisible({ timeout: 15000 });
   await newPlayerBtn.click();
-  await page.waitForTimeout(800);
+  // Wait for name input to appear
+  await expect(page.locator('input#setup-name')).toBeVisible({ timeout: 5000 });
 
   // Fill name — input has id="setup-name"
   await page.locator('input#setup-name').fill(name);
-  await page.waitForTimeout(300);
 
   // Submit — button[type="submit"] with text "בוא נתחיל!" / "Let's Start!"
   await page.locator('button[type="submit"]').click();
-  await page.waitForTimeout(1500);
 
-  // Wait for mascot greeting to auto-dismiss (4s + 300ms exit animation)
-  await page.waitForTimeout(5000);
+  // Wait for saga map to fully render (mascot greeting auto-dismisses)
+  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1).toBeVisible({ timeout: 30000 });
 
-  // Verify we're on the saga map — saga nodes are always visible (arcade-button is in hamburger menu)
-  const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
-  await expect(firstNode).toBeVisible({ timeout: 15000 });
+  // Verify we're on the saga map — check saga node is visible
+  // (arcade-button is inside a hamburger menu, not directly visible)
   await page.waitForTimeout(500);
-}
-
-/**
- * Open the hamburger menu on the saga map.
- */
-export async function openMenu(page: Page) {
-  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
-  await expect(menuToggle).toBeVisible({ timeout: 10000 });
-  const isExpanded = await menuToggle.getAttribute('aria-expanded');
-  if (isExpanded !== 'true') {
-    await menuToggle.click();
-    await page.waitForTimeout(500);
-  }
 }
 
 /**
@@ -55,24 +42,25 @@ export async function openMenu(page: Page) {
  */
 export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'TestBot') {
   await page.goto(APP_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  // Wait for app shell to render before clearing state
+  await expect(page.locator('button:has(svg.lucide-plus)').first()).toBeVisible({ timeout: 15000 });
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(1500);
+  // Wait for profile selector to appear after reload
+  await expect(page.locator('button:has(svg.lucide-plus)').first()).toBeVisible({ timeout: 15000 });
 
   // Create profile
   const newPlayerBtn = page.locator('button:has(svg.lucide-plus)').first();
-  await expect(newPlayerBtn).toBeVisible({ timeout: 15000 });
   await newPlayerBtn.click();
-  await page.waitForTimeout(800);
+  // Wait for name input to appear
+  await expect(page.locator('input#setup-name')).toBeVisible({ timeout: 5000 });
 
   await page.locator('input#setup-name').fill(name);
-  await page.waitForTimeout(300);
   await page.locator('button[type="submit"]').click();
-  await page.waitForTimeout(1500);
 
-  // Wait for mascot greeting
-  await page.waitForTimeout(5000);
+  // Wait for saga map to fully render before injecting progress
+  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1).toBeVisible({ timeout: 30000 });
 
   // Now inject progress to unlock n1_1 (SENSORY - already unlocked) and n1_2 (PRACTICE)
   const progressInjected = await page.evaluate((profileName) => {
@@ -82,6 +70,7 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
     if (profileRaw) {
       try {
         const profiles = JSON.parse(profileRaw);
+        // Profiles stored as array-like object. Each profile has an `id` field.
         const profileList = Object.values(profiles) as any[];
         results.push(`profile count: ${profileList.length}`);
         const profile = profileList.find(p => p.name === profileName);
@@ -92,7 +81,12 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
             n1_1: { stars: 3, isLocked: false, mistakes: 0 },
             n1_2: { stars: 0, isLocked: false, mistakes: 0 },
             n1_3: { stars: 0, isLocked: false, mistakes: 0 },
+            // Unlock n3_1 (MultiplicationMountainLesson) for lesson-node-completion test
             n3_1: { stars: 0, isLocked: false, mistakes: 0 },
+            // Unlock n3_9 (CHALLENGE type, no config) so PracticeMode opens with
+            // ModeSelectorOverlay. LESSON nodes (like n3_1) open LessonModal instead.
+            // CHALLENGE nodes without config fall through to PracticeMode with
+            // problemConfig=undefined, which triggers the mode selector.
             n3_9: { stars: 0, isLocked: false, mistakes: 0 },
           };
           localStorage.setItem(progressKey, JSON.stringify(progress));
@@ -104,7 +98,7 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
         results.push(`error: ${e}`);
       }
     }
-    return results.join('\\n');
+    return results.join('\n');
   }, name);
 
   console.log('Progress injection:', progressInjected);
@@ -117,19 +111,50 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
   const profileBtn = page.locator('button', { hasText: name }).first();
   await expect(profileBtn).toBeVisible({ timeout: 10000 });
   await profileBtn.click();
-  
-  // Wait for mascot greeting to auto-dismiss
-  await page.waitForTimeout(5000);
 
-  // Verify we're on the saga map — saga nodes are always visible
-  const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
-  await expect(firstNode).toBeVisible({ timeout: 15000 });
+  // Wait for saga map to fully render (mascot greeting auto-dismisses)
+  const n1_1AfterReload = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1AfterReload).toBeVisible({ timeout: 30000 });
+
+  // Verify we're on the saga map
+  // (arcade-button is inside a hamburger menu, not directly visible)
   await page.waitForTimeout(500);
 }
 
+/**
+ * Open the hamburger menu on the saga map.
+ * The arcade-button and parent-zone-button live inside this menu.
+ */
+export async function openMenu(page: Page) {
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  await expect(menuToggle).toBeVisible({ timeout: 10000 });
+  // Only click if menu isn't already open
+  const isExpanded = await menuToggle.getAttribute('aria-expanded');
+  if (isExpanded !== 'true') {
+    await menuToggle.click();
+    await page.waitForTimeout(500);
+  }
+}
+
+/**
+ * Wait for the saga map to be visible by checking for saga nodes.
+ */
+export async function waitForSagaMap(page: Page) {
+  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1).toBeVisible({ timeout: 30000 });
+}
+
+/**
+ * Check if we're on the saga map.
+ */
+export async function isOnSagaMap(page: Page): Promise<boolean> {
+  const node = page.locator('[data-testid="saga-node-n1_1"]').first();
+  return await node.isVisible().catch(() => false);
+}
+
 export async function gotoSagaMap(page: Page) {
-  const firstNode = page.locator('[data-testid="saga-node-n1_1"]').first();
-  if (await firstNode.count() > 0) return;
+  const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
+  if (await arcadeBtn.count() > 0) return;
   const mapBtn = page.locator('button').filter({ hasText: /map|home|מפה|בית|Back to Map|חזרה/i }).first();
   if (await mapBtn.count() > 0) {
     await mapBtn.click();
@@ -139,19 +164,24 @@ export async function gotoSagaMap(page: Page) {
 
 /**
  * Open the arcade mode selector and click the desired mode.
- * Opens the hamburger menu first, then clicks arcade button, then mode.
+ * Clicks the Globe button (title="Arcade Games") to open the modal,
+ * then clicks Zen/Classic/Blitz/Survival.
  */
 export async function selectArcadeMode(page: Page, mode: 'zen' | 'classic' | 'blitz' | 'survival' | 'fusion') {
-  await openMenu(page);
+  // Open the hamburger menu first, then click arcade button
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  await expect(menuToggle).toBeVisible({ timeout: 15000 });
+  await menuToggle.click();
+  // Wait for arcade button to appear in the menu
   const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
-  await expect(arcadeBtn).toBeVisible({ timeout: 5000 });
+  await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
   await arcadeBtn.click();
-  await page.waitForTimeout(800);
-
+  // Wait for mode selector modal to appear
   const btn = page.locator(`[data-testid="arcade-mode-${mode}"]`).first();
-  await expect(btn).toBeVisible({ timeout: 5000 });
+  await expect(btn).toBeVisible({ timeout: 15000 });
   await btn.click();
-  await page.waitForTimeout(3000);
+  // Wait for game to start — verify bubbles or game UI appears
+  await page.waitForTimeout(2000);
 }
 
 /**
@@ -172,7 +202,9 @@ export async function clickBubble(page: Page, bubbleSelector: string) {
  * Uses page.mouse.click for coordinate-based clicking to bypass the header overlay.
  */
 export async function solveBubbleProblem(page: Page): Promise<boolean> {
-  const bodyText = await page.textContent('body') || '';
+  // Strip Unicode bidi isolation characters (U+2068 ⁨, U+2069 ⁩) that wrap numbers in RTL text
+  const rawText = await page.textContent('body') || '';
+  const bodyText = rawText.replace(/[⁦⁧⁨⁩]/g, '');
 
   // Look for arithmetic instruction like "N + N = ?"
   const eqMatch = bodyText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);
@@ -190,7 +222,7 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
     }
 
     // Find a bubble containing the answer number via aria-label
-    const bubble = page.locator(`[data-testid="bubble-${answer}"]`).first();
+    const bubble = page.locator(`[data-testid="bubble-${answer}"], [data-testid="fusion-bubble-${answer}"]`).first();
     if (await bubble.count() > 0) {
       const box = await bubble.boundingBox();
       if (box) {
@@ -214,11 +246,11 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
     }
   }
 
-  // Sensory: "Pop N" — find bubble with N
-  const popMatch = bodyText.match(/Pop\s+(\d+)/i);
+  // Sensory: "Pop the bubble with N" or "פוצצו את הבועה שכתוב עליה N"
+  const popMatch = bodyText.match(/Pop the bubble with (\d+)|Pop\s+(\d+)|פוצצו\s+את\s+הבועה\s+שכתוב\s+עליה\s+(\d+)/i);
   if (popMatch) {
-    const target = popMatch[1];
-    const bubble = page.locator(`[data-testid="bubble-${target}"]`).first();
+    const target = popMatch[1] || popMatch[2] || popMatch[3];
+    const bubble = page.locator(`[data-testid="bubble-${target}"], [data-testid="fusion-bubble-${target}"]`).first();
     if (await bubble.count() > 0) {
       const box = await bubble.boundingBox();
       if (box) {
@@ -259,41 +291,30 @@ export async function enterSagaNode(page: Page, nodeIndex: number) {
 }
 
 export async function selectPracticeMode(page: Page, mode: 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL' | 'MEMORY' | 'INVADERS') {
-  // To reach the ModeSelectorOverlay in PracticeMode, we need to click a node that opens
-  // PracticeMode WITHOUT a problemConfig. CHALLENGE nodes from unit 3 onwards (n3_9, n3_10, etc.)
-  // don't have a config property, so clicking them opens PracticeMode with ModeSelectorOverlay.
+  // To reach the ModeSelectorOverlay, we need to click a node that:
+  //   1. Has type CHALLENGE or PRACTICE (not LESSON — those open LessonModal)
+  //   2. Has NO config (so PracticeMode opens with mode selector, not auto-standard)
+  // n3_9 (CHALLENGE, no config) in unit_3 meets both criteria.
   // setupFreshProfileWithPracticeAccess unlocks n3_9.
-  
-  // Use data-testid selector for n3_9 (CHALLENGE node without config)
-  const challengeNode = page.locator('[data-testid="saga-node-n3_9"]').first();
-  await expect(challengeNode).toBeVisible({ timeout: 10000 });
-  
-  // Scroll it into view
-  await challengeNode.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(500);
-  
-  // Verify it's unlocked
-  const innerDiv = challengeNode.locator('div.rounded-full').first();
-  const innerClass = await innerDiv.getAttribute('class') || '';
-  
-  if (innerClass.includes('grayscale') || innerClass.includes('cursor-not-allowed')) {
-    throw new Error('n3_9 node is locked. Ensure setupFreshProfileWithPracticeAccess is called.');
+
+  try {
+    await enterSagaNodeById(page, 'n3_9');
+  } catch (err) {
+    if (String(err).includes('is locked')) {
+      throw new Error('n3_9 node is locked. Ensure setupFreshProfileWithPracticeAccess is called.');
+    }
+    throw err;
   }
-  
-  // Click it
-  await challengeNode.click();
-  await page.waitForTimeout(2500);
-  
-  // Check if mode selector appeared
+
+  // Wait for mode selector overlay to appear
   const modeSelector = page.locator('[data-testid="mode-selector"]');
-  if (await modeSelector.count() === 0) {
-    throw new Error('ModeSelectorOverlay did not appear after clicking n3_9');
-  }
-  
+  await expect(modeSelector).toBeVisible({ timeout: 15000 });
+
   // Click the desired mode card
   const modeCard = page.locator(`[data-testid="mode-card-${mode}"]`).first();
-  await expect(modeCard).toBeVisible({ timeout: 5000 });
+  await expect(modeCard).toBeVisible({ timeout: 10000 });
   await modeCard.click();
+  // Wait for game/practice UI to start
   await page.waitForTimeout(2000);
 }
 
@@ -305,14 +326,10 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
   }
 
   // Comparison question?
-  // Buttons have text like "Select >", "Select =", "Select <" - match buttons containing the symbol
-  const compareButtons = page.locator('button').filter({ hasText: /[<=>]/ });
+  const compareButtons = page.locator('button').filter({ hasText: /^[<=>]$/ });
   const compareCount = await compareButtons.count();
   if (compareCount >= 3) {
-    // Extract numbers from the problem card area, not the whole body
-    const mathCard = page.locator('.max-w-md.bg-white.rounded-3xl').first();
-    const cardText = await mathCard.textContent() || '';
-    const numbers = cardText.match(/\d+/g) || [];
+    const numbers = bodyText.match(/\d+/g) || [];
     if (numbers.length >= 2) {
       const num1 = parseInt(numbers[0]!);
       const num2 = parseInt(numbers[1]!);
@@ -320,8 +337,7 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
       if (num1 > num2) symbol = '>';
       else if (num1 < num2) symbol = '<';
       else symbol = '=';
-      // Click button containing the symbol (e.g., "Select >")
-      await compareButtons.filter({ hasText: symbol }).first().click();
+      await compareButtons.filter({ hasText: symbol }).click();
       return true;
     }
   }
@@ -528,16 +544,6 @@ export async function submitWrongAnswer(page: Page): Promise<void> {
 }
 
 /**
- * Wait until the saga map is visible (saga nodes present).
- * Reusable assertion that we've returned to the saga map.
- */
-export async function waitForSagaMap(page: Page): Promise<void> {
-  const node = page.locator('[data-testid="saga-node-n1_1"]').first();
-  await expect(node).toBeVisible({ timeout: 15000 });
-  await page.waitForTimeout(500);
-}
-
-/**
  * Read saga progress for a specific node from localStorage.
  * Returns { stars, isLocked, mistakes } or null if not found.
  */
@@ -697,8 +703,112 @@ export async function openPetScreen(page: Page): Promise<void> {
  * (saga map, settings menu, or profile selector).
  */
 export async function toggleLanguage(page: Page): Promise<void> {
+  // language-toggle lives inside either the saga map hamburger menu or the in-game Settings menu.
+  // Try the saga map menu first, then the in-game Settings button.
+  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
+  if (await menuToggle.isVisible().catch(() => false)) {
+    const isExpanded = await menuToggle.getAttribute('aria-expanded');
+    if (isExpanded !== 'true') {
+      await menuToggle.click();
+      await page.waitForTimeout(500);
+    }
+  } else {
+    // Inside a game — open the Settings menu (gear icon button)
+    const settingsBtn = page.locator('button[aria-label*="Settings"], button[aria-label*="הגדרות"]').first();
+    if (await settingsBtn.isVisible().catch(() => false)) {
+      await settingsBtn.click();
+      await page.waitForTimeout(500);
+    }
+  }
   const toggleBtn = page.locator('[data-testid="language-toggle"]').first();
   await expect(toggleBtn).toBeVisible({ timeout: 10000 });
   await toggleBtn.click();
+  await page.waitForTimeout(500);
+}
+
+/**
+ * Create a fresh profile and unlock an arbitrary set of saga nodes.
+ *
+ * Unlike setupFreshProfileWithPracticeAccess (which hardcodes n1_1/n1_2/n1_3/n3_1),
+ * this helper accepts a list of node IDs to unlock, making it usable for tests
+ * that need to access nodes deeper in the saga (subtraction, multiplication,
+ * borrowing, division, etc.).
+ *
+ * @param page   Playwright page
+ * @param name   Profile name
+ * @param nodeIds Array of saga node IDs to unlock (e.g. ['n1_3', 'n2_4', 'n3_8'])
+ */
+export async function setupWithUnlockedNodes(
+  page: Page,
+  name: string,
+  nodeIds: string[]
+): Promise<void> {
+  await page.goto(APP_URL, { waitUntil: 'domcontentloaded' });
+  // Wait for app shell to render before clearing state
+  await expect(page.locator('button:has(svg.lucide-plus)').first()).toBeVisible({ timeout: 15000 });
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  // Wait for profile selector to appear after reload
+  await expect(page.locator('button:has(svg.lucide-plus)').first()).toBeVisible({ timeout: 15000 });
+
+  // Create profile
+  const newPlayerBtn = page.locator('button:has(svg.lucide-plus)').first();
+  await newPlayerBtn.click();
+  // Wait for name input to appear
+  await expect(page.locator('input#setup-name')).toBeVisible({ timeout: 5000 });
+
+  await page.locator('input#setup-name').fill(name);
+  await page.locator('button[type="submit"]').click();
+
+  // Wait for saga map to fully render before injecting progress
+  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1).toBeVisible({ timeout: 30000 });
+
+  // Inject progress to unlock the requested nodes
+  const progressInjected = await page.evaluate(({ profileName, nodes }) => {
+    const results: string[] = [];
+    const profileRaw = localStorage.getItem('hebrew-math-profiles');
+    results.push(`profiles: ${profileRaw ? 'found' : 'not found'}`);
+    if (profileRaw) {
+      try {
+        const profiles = JSON.parse(profileRaw);
+        const profileList = Object.values(profiles) as any[];
+        results.push(`profile count: ${profileList.length}`);
+        const profile = profileList.find((p) => p.name === profileName);
+        if (profile) {
+          results.push(`found profile: ${profile.id}, name: ${profile.name}`);
+          const progressKey = `hebrew_game_saga_progress_v1_${profile.id}`;
+          const progress: Record<string, { stars: number; isLocked: boolean; mistakes: number }> = {};
+          // Always include n1_1 as completed (entry point)
+          progress.n1_1 = { stars: 3, isLocked: false, mistakes: 0 };
+          for (const nodeId of nodes) {
+            progress[nodeId] = { stars: 0, isLocked: false, mistakes: 0 };
+          }
+          localStorage.setItem(progressKey, JSON.stringify(progress));
+          results.push(`injected progress for ${profile.id} with nodes: ${nodes.join(', ')}`);
+        } else {
+          results.push(`profile '${profileName}' not found`);
+        }
+      } catch (e) {
+        results.push(`error: ${e}`);
+      }
+    }
+    return results.join('\n');
+  }, { profileName: name, nodes: nodeIds });
+
+  console.log('Progress injection:', progressInjected);
+
+  // Reload to pick up the progress
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(2000);
+
+  // After reload, we're back at profile selection — click the profile button
+  const profileBtn = page.locator('button', { hasText: name }).first();
+  await expect(profileBtn).toBeVisible({ timeout: 10000 });
+  await profileBtn.click();
+
+  // Wait for saga map to fully render
+  const n1_1AfterReload = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(n1_1AfterReload).toBeVisible({ timeout: 30000 });
   await page.waitForTimeout(500);
 }

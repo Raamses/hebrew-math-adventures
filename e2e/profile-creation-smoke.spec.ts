@@ -28,7 +28,7 @@ async function getProfiles(page: Page): Promise<StoredProfile[]> {
 }
 
 test.describe('Profile creation + saga map landing', () => {
-  test.setTimeout(60000);
+  // Global timeout is 180s — no need for local override
 
   test('creating a new profile persists it and lands on the saga map', async ({ page }) => {
     await setupFreshProfile(page, 'SmokeProfile');
@@ -39,9 +39,12 @@ test.describe('Profile creation + saga map landing', () => {
     expect(profiles.length).toBeGreaterThan(0);
     const created = profiles.find((p) => p.name === 'SmokeProfile');
     expect(created).toBeTruthy();
-    expect(created!.id).toBeTruthy();
+    expect(created.id).toBeTruthy();
 
-    // Saga map landing: at least one map node visible.
+    // Saga map landing: arcade button + at least one map node visible.
+    const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
+    await expect(sagaNode).toBeVisible();
+
     const mapNodes = page.locator('[data-testid^="saga-node-"]');
     expect(await mapNodes.count()).toBeGreaterThan(0);
 

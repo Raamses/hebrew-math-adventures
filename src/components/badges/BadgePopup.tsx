@@ -42,6 +42,7 @@ export const BadgePopup: React.FC<BadgePopupProps> = ({
             onClick={onClose}
           >
             <motion.div
+              data-testid="badge-popup"
               className="bg-white rounded-3xl p-6 m-4 max-w-xs w-full shadow-2xl text-center"
               initial={{ scale: 0.5, rotate: -10, opacity: 0 }}
               animate={{ scale: 1, rotate: 0, opacity: 1 }}
@@ -75,6 +76,7 @@ export const BadgePopup: React.FC<BadgePopupProps> = ({
 
               {/* Dismiss button */}
               <button
+                data-testid="badge-popup-dismiss"
                 onClick={onClose}
                 className="w-full py-3 rounded-xl bg-purple-500 text-white font-bold text-sm shadow-md hover:bg-purple-600 transition-colors min-h-[48px] active:scale-95"
               >

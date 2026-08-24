@@ -42,6 +42,12 @@ export const THEME_PALETTES: Record<LessonTheme, ThemePalette> = {
         ink: '#B45309',
         slot: '#FBBF24',
     },
+    space: {
+        containerClass: 'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900',
+        ground: '#334155',
+        ink: '#E2E8F0',
+        slot: '#64748B',
+    },
 };
 
 /**

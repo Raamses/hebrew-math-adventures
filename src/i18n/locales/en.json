@@ -213,6 +213,243 @@
         "F",
         "S"
       ]
+    },
+    "games": {
+      "title": "Games",
+      "subtitle": "Pick a game and practise maths together in a few minutes",
+      "soon": "Coming soon",
+      "play": "Play",
+      "back": "Back",
+      "stub": "This game is still in development and will be available here soon.",
+      "items": {
+        "equationOfTheDay": {
+          "title": "Equation of the Day",
+          "description": "One equation a day — solve it together and keep your streak.",
+          "instructions": "Guess today's equation in 6 tries. Each character gets a color:",
+          "puzzleNumber": "Puzzle #{{number}}",
+          "submit": "Check",
+          "backspace": "Delete",
+          "guessesLeft": "{{count}} guesses left",
+          "nextPuzzle": "New puzzle tomorrow!",
+          "done": "Done",
+          "streak": {
+            "label": "Day streak",
+            "best": "Best streak"
+          },
+          "cellState": {
+            "correct": "Correct spot: {{char}}",
+            "present": "Wrong spot: {{char}}",
+            "absent": "Not in equation: {{char}}"
+          },
+          "invalid": {
+            "wrongLength": "Wrong length — equation must be the correct length",
+            "noEquals": "Must contain an equals sign (=)",
+            "invalidRight": "Right side must be a number",
+            "invalidLeft": "Left side is not valid",
+            "wrongResult": "Equation is mathematically incorrect"
+          },
+          "win": {
+            "title": "Well done! 🎉",
+            "subtitle": "Solved in {{count}} guesses"
+          },
+          "lose": {
+            "title": "Maybe tomorrow 🙃",
+            "subtitle": "Not this time — try again tomorrow!"
+          },
+          "stats": {
+            "played": "Played",
+            "winRate": "Win rate"
+          },
+          "share": {
+            "whatsapp": "Share on WhatsApp",
+            "copy": "Copy"
+          }
+        },
+        "parentBlitz": {
+          "title": "Parent Blitz",
+          "description": "One minute of rapid-fire questions. How many can you solve?",
+          "howToPlay": "How to play",
+          "start": "Start",
+          "replay": "Play again",
+          "done": "Done",
+          "skip": "Skip",
+          "rules": {
+            "time": "60 seconds — answer as many questions as you can",
+            "scoring": "Each correct answer earns points, fast answers get a bonus",
+            "streak": "Consecutive correct answers multiply your score"
+          },
+          "hud": {
+            "score": "Score",
+            "streak": "Streak",
+            "timeRemaining": "{{seconds}} seconds",
+            "timerLabel": "{{seconds}} seconds remaining"
+          },
+          "keypad": {
+            "submit": "Submit",
+            "backspace": "Delete",
+            "digit": "Digit {{digit}}"
+          },
+          "feedback": {
+            "correct": "Correct! ✓",
+            "wrong": "The answer is {{answer}}"
+          },
+          "results": {
+            "heading": "Time's up!",
+            "finalScore": "Final score",
+            "accuracy": "Accuracy",
+            "bestStreak": "Best streak",
+            "newRecord": "New record! 🏆",
+            "previousBest": "Previous best: {{score}}",
+            "noHighScore": "No high score yet"
+          },
+          "types": {
+            "percentage": "Percentages",
+            "orderOfOperations": "Order of operations",
+            "fraction": "Fractions",
+            "doubleDigitMultiply": "Double-digit multiply",
+            "mixedArithmetic": "Mixed arithmetic"
+          }
+        },
+        "numberMerge": {
+          "title": "Number Merge",
+          "description": "Merge matching numbers until you reach the target sum.",
+          "howToPlay": "How to play",
+          "start": "Start",
+          "replay": "Play again",
+          "done": "Done",
+          "continue": "Keep playing",
+          "scoreLabel": "Score",
+          "bestLabel": "Best",
+          "bestScore": "Best: {{score}}",
+          "swipeHint": "Swipe to move tiles",
+          "coinsEarned": "coins earned!",
+          "rules": {
+            "swipe": "Swipe in any direction to move all tiles",
+            "merge": "Matching tiles that collide merge into one",
+            "target": "Reach the 2048 tile to win!"
+          },
+          "win": {
+            "title": "Fantastic! 🎉",
+            "subtitle": "You reached tile {{tile}}!"
+          },
+          "over": {
+            "title": "Game Over",
+            "newRecord": "New record! 🏆",
+            "finalScore": "Final score"
+          },
+          "share": {
+            "whatsapp": "Share on WhatsApp",
+            "copy": "Copy",
+            "copied": "Copied!"
+          }
+        },
+        "mathCrossword": {
+          "title": "Math Crossword",
+          "description": "Fill in the missing equations across the grid."
+        },
+        "sudoku": {
+          "title": "Sudoku",
+          "description": "Daily Sudoku puzzle — fill the grid with logic, no timer pressure.",
+          "selectDifficulty": "Choose difficulty",
+          "puzzleNumber": "Puzzle #{{number}}",
+          "difficulty": {
+            "easy": "Easy",
+            "easyDesc": "More clues, fewer gaps — great for relaxing.",
+            "medium": "Medium",
+            "mediumDesc": "Balanced challenge for a coffee break.",
+            "hard": "Hard",
+            "hardDesc": "Minimal clues — for the sharp-minded."
+          },
+          "erase": "Erase cell",
+          "coinsEarned": "coins earned!",
+          "newGame": "New Game",
+          "done": "Done",
+          "win": {
+            "title": "Solved! 🎉",
+            "subtitle": "Time: {{time}} · {{mistakes}} mistakes"
+          },
+          "stats": {
+            "time": "Time",
+            "mistakes": "Mistakes",
+            "coins": "Coins"
+          },
+          "bestTime": "Best time: {{time}}",
+          "share": {
+            "whatsapp": "Share on WhatsApp",
+            "copy": "Copy"
+          }
+        }
+      }
+    },
+    "economy": {
+      "coins": "Parent Coins",
+      "giftToChild": "Gift to Child",
+      "streak": "Daily Streak",
+      "days": "days",
+      "best": "Best",
+      "freeze": "Freeze Streak",
+      "badges": "Badges",
+      "locked": "Locked",
+      "balance": "Balance",
+      "dailyRemaining": "Remaining today",
+      "selectChild": "Select Child",
+      "chooseChild": "— Choose a profile —",
+      "amount": "Amount",
+      "maxPerChild": "Max per child per day",
+      "cancel": "Cancel",
+      "sendGift": "Send Gift",
+      "weeklyLeaderboard": "Weekly Leaderboard",
+      "resetsSunday": "Resets Sunday",
+      "noScoresYet": "No scores yet this week",
+      "you": "you",
+      "errors": {
+        "invalid_amount": "Invalid amount",
+        "insufficient_coins": "Not enough coins",
+        "daily_limit_exceeded": "Daily gift limit exceeded",
+        "child_daily_limit_exceeded": "Gift limit for this child exceeded"
+      }
+    },
+    "badges": {
+      "firstGame": {
+        "title": "First Game",
+        "desc": "Played your first game"
+      },
+      "streak7": {
+        "title": "Week Streak",
+        "desc": "7-day streak"
+      },
+      "streak30": {
+        "title": "Month Streak",
+        "desc": "30-day streak"
+      },
+      "humanCalculator": {
+        "title": "Human Calculator",
+        "desc": "Earned 500+ coins"
+      },
+      "blitzMaster": {
+        "title": "Blitz Master",
+        "desc": "Score 100+ in Blitz"
+      },
+      "eodExpert": {
+        "title": "EoD Expert",
+        "desc": "Won 10+ times"
+      },
+      "generousParent": {
+        "title": "Generous Parent",
+        "desc": "Gifted 100+ coins"
+      },
+      "mergeMaster": {
+        "title": "Merge Master",
+        "desc": "Reached 2048 tile"
+      },
+      "sudokuSolver": {
+        "title": "Sudoku Solver",
+        "desc": "Won 5+ Sudoku games"
+      },
+      "streakSaver": {
+        "title": "Streak Saver",
+        "desc": "Used streak freeze"
+      }
     }
   },
   "analytics": {
@@ -681,6 +918,9 @@
     "candy": "Candy"
   },
   "bubble": {
-    "targets": "Targets"
+    "targets": "Targets",
+    "popNumber": "Pop the bubble with {{number}}",
+    "solveEquation": "{{equation}} — pop the bubble with the answer",
+    "popReady": "Pop the bubbles!"
   }
 }

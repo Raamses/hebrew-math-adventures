@@ -2,7 +2,7 @@ export type LessonType = 'dialog' | 'interactive_drag' | 'interactive_tap';
 export type MascotEmotion = 'idle' | 'happy' | 'thinking' | 'excited' | 'encourage';
 
 /** Visual world a lesson is set in. Drives the scene background + palette. */
-export type LessonTheme = 'beach' | 'forest' | 'mountain' | 'desert';
+export type LessonTheme = 'beach' | 'forest' | 'mountain' | 'desert' | 'space';
 
 /**
  * Every sprite the story scene knows how to draw.
@@ -19,7 +19,7 @@ export type LessonItemType =
     | 'bunny'
     | 'tree'
     | 'ten_frame'
-    | 'desert_animal';
+    | 'desert_animal' | 'star';
 
 /** How a drop zone is drawn. Defaults to 'basket' for backwards compatibility. */
 export type LessonTargetVisual = 'basket' | 'ten_frame' | 'crystal_row' | 'animal_plate';

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CURRICULUM } from '../../data/learningPath';
 import { useProgress } from '../../context/ProgressContext';
 import type { LearningNode } from '../../types/learningPath';
-import { Star, Lock, LogOut, Globe, Award, ShoppingBag, Menu, X, Gamepad2 } from 'lucide-react';
+import { Star, Lock, LogOut, Globe, Award, ShoppingBag, Menu, X, Gamepad2, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, type Variants, AnimatePresence } from 'framer-motion';
 import type { ArcadeMode } from '../../engines/bubble/types';
@@ -20,6 +20,7 @@ interface SagaMapProps {
     onLogout: () => void;
     onArcadeMode: (mode?: ArcadeMode, dailyMode?: string, dailyTarget?: number) => void;
     onOpenPet: () => void;
+    onParentAccess?: () => void;
 }
 
 const containerVariants: Variants = {
@@ -46,7 +47,7 @@ const nodeVariants: Variants = {
     }
 };
 
-export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode, onOpenPet }) => {
+export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode, onOpenPet, onParentAccess }) => {
     const { isNodeLocked, getStars } = useProgress();
     const { t, i18n } = useTranslation();
     const { logEvent } = useAnalytics();
@@ -223,6 +224,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
 
                                     {/* 3. Badges */}
                                     <button
+                                        data-testid="badge-collection-nav"
                                         onClick={() => {
                                             setIsMenuOpen(false);
                                             setShowBadges(true);
@@ -238,6 +240,29 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                                             <div className="text-sm font-black text-purple-950">{t('badges.collection')}</div>
                                             <div className="text-[11px] text-purple-700/80 truncate">
                                                 {isRtl ? 'הישגים ומדליות' : 'Achievements & medals'}
+                                            </div>
+                                        </div>
+                                    </button>
+
+
+                                    {/* Parent Zone Access */}
+                                    <button
+                                        data-testid="parent-zone-button"
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            onParentAccess?.();
+                                        }}
+                                        className="flex items-center gap-3 p-2.5 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50 hover:from-slate-100 hover:to-blue-100 border border-slate-200/60 text-slate-800 transition-all active:scale-[0.98] cursor-pointer text-start w-full min-h-[48px]"
+                                        title={t('parent.title', 'אזור הורים')}
+                                        aria-label={t('parent.title', 'אזור הורים')}
+                                    >
+                                        <div className="w-9 h-9 rounded-xl bg-slate-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                                            <Settings size={19} aria-hidden="true" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-black text-slate-800">{t('parent.title', 'אזור הורים')}</div>
+                                            <div className="text-[11px] text-slate-600/80 truncate">
+                                                {isRtl ? 'ניהול פרופילים והתקדמות' : 'Profiles & progress'}
                                             </div>
                                         </div>
                                     </button>

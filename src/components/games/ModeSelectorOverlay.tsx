@@ -58,7 +58,7 @@ const ModeCard: React.FC<Omit<ModeCardProps, 'delay'>> = ({ mode, title, descrip
             }}
             variants={itemVariants}
             onClick={() => onSelect(mode)}
-            className="group relative w-full h-auto min-h-[14rem] sm:min-h-[14rem] bg-white/90 backdrop-blur-sm rounded-3xl p-4 sm:p-6 
+            className="group relative w-full h-auto min-h-[14rem] sm:min-h-[14rem] bg-white/90 backdrop-blur-sm rounded-3xl p-4 sm:p-6
                        flex flex-col items-center text-center justify-between
                        shadow-xl border-2 border-transparent hover:border-white/50
                        transition-all hover:scale-[1.02]"
@@ -72,14 +72,16 @@ const ModeCard: React.FC<Omit<ModeCardProps, 'delay'>> = ({ mode, title, descrip
             </div>
 
             <div className="space-y-2 z-10 flex-grow flex flex-col justify-center">
-                <h3 className="text-2xl font-black text-slate-800 tracking-tight">{title}</h3>
-                <p className="text-slate-500 font-medium text-sm leading-snug">{description}</p>
+                {/* dir="auto": a value that falls back to English inside the Hebrew UI keeps its
+                    own direction instead of inheriting rtl and flipping its trailing punctuation. */}
+                <h3 dir="auto" className="text-2xl font-black text-slate-800 tracking-tight">{title}</h3>
+                <p dir="auto" className="text-slate-500 font-medium text-sm leading-snug">{description}</p>
             </div>
 
             {/* High Score Badge */}
             <div className="mt-4 flex items-center gap-1.5 bg-slate-100 px-3 py-1 rounded-full shrink-0">
                 <Trophy size={14} className="text-yellow-500" />
-                <span className="text-xs font-bold text-slate-600">
+                <span dir="auto" className="text-xs font-bold text-slate-600">
                     {bestScore ? t('practice.bestScore', { score: bestScore }) : t('practice.noRecord', 'No Record')}
                 </span>
             </div>
@@ -116,10 +118,10 @@ export const ModeSelectorOverlay: React.FC<ModeSelectorOverlayProps> = ({ onSele
                     >
                         {/* Header */}
                         <motion.div variants={itemVariants} className="mb-8 md:mb-12">
-                            <h1 className="text-4xl md:text-6xl font-black text-white drop-shadow-lg mb-2 tracking-tight">
+                            <h1 dir="auto" className="text-4xl md:text-6xl font-black text-white drop-shadow-lg mb-2 tracking-tight">
                                 {t('practice.chooseMode', 'Choose Your Challenge')}
                             </h1>
-                            <p className="text-white/80 font-medium text-lg max-w-lg mx-auto leading-relaxed">
+                            <p dir="auto" className="text-white/80 font-medium text-lg max-w-lg mx-auto leading-relaxed">
                                 {t('practice.chooseModeDesc', 'Select how you want to play today')}
                             </p>
                         </motion.div>
@@ -186,7 +188,7 @@ export const ModeSelectorOverlay: React.FC<ModeSelectorOverlayProps> = ({ onSele
                         </div>
 
                         {/* Keyboard Hint */}
-                        <motion.p variants={itemVariants} className="mt-8 text-white/80 font-medium text-sm md:text-base">
+                        <motion.p variants={itemVariants} dir="auto" className="mt-8 text-white/80 font-medium text-sm md:text-base">
                             {t('game.tip')} {t('practice.keyboardHint', 'Prefer typing? Try Practice Mode for keyboard-friendly play')}
                         </motion.p>
                     </motion.div>

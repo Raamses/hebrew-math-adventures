@@ -9,7 +9,7 @@ test.describe('Math Invaders', () => {
   });
 
   test('Invaders loads with ship, lives, and score', async ({ page }) => {
-    test.setTimeout(90000);
+  // Global timeout is 180s — no need for local override
 
     // Navigate to practice mode and select Math Invaders
     await selectPracticeMode(page, 'INVADERS');
@@ -39,7 +39,7 @@ test.describe('Math Invaders', () => {
   });
 
   test('Answer bubbles appear and can be tapped', async ({ page }) => {
-    test.setTimeout(90000);
+  // Global timeout is 180s — no need for local override
 
     await selectPracticeMode(page, 'INVADERS');
     await page.waitForTimeout(3000);
@@ -70,7 +70,7 @@ test.describe('Math Invaders', () => {
   });
 
   test('Invaders equation text is LTR even in Hebrew RTL mode', async ({ page }) => {
-    test.setTimeout(90000);
+  // Global timeout is 180s — no need for local override
 
     await selectPracticeMode(page, 'INVADERS');
     await page.waitForTimeout(3000);

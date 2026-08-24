@@ -54,7 +54,7 @@ export const StreakHeatmap: React.FC<StreakHeatmapProps> = ({ dailyStamps }) => 
     const dayLabels: string[] = (t('parent.heatmap.dayLabels', { returnObjects: true }) as string[]) || ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 
     return (
-        <div dir="rtl" className="w-full">
+        <div className="w-full">
             <div className="flex gap-1">
                 {/* Day labels column */}
                 <div className="flex flex-col gap-1 justify-around" style={{ width: '16px' }}>

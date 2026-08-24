@@ -231,41 +231,47 @@ export interface ArcadeModeConfigEntry {
     spawnIntervalMs: number;
     distractorRatio: number;
     levelMultiplier?: number;
+    maxOnScreen?: number;
 }
 
 export const ARCADE_CONFIGS: Record<ArcadeMode, ArcadeModeConfigEntry> = {
     zen: {
         winCondition: { type: 'endless', value: 0 },
         failCondition: { type: 'strikes', value: 0 },
-        spawnIntervalMs: 950,
+        spawnIntervalMs: 750,
         distractorRatio: 0.8,
+        maxOnScreen: 8,
     },
     blitz: {
         winCondition: { type: 'time_limit', value: 60 },
         failCondition: { type: 'strikes', value: 0 },
-        spawnIntervalMs: 650,
+        spawnIntervalMs: 500,
         distractorRatio: 1.2,
+        maxOnScreen: 10,
     },
     survival: {
         winCondition: { type: 'endless', value: 0 },
         failCondition: { type: 'strikes', value: 3 },
-        spawnIntervalMs: 650,
+        spawnIntervalMs: 500,
         levelMultiplier: 1.5,
         distractorRatio: 1.5,
+        maxOnScreen: 10,
     },
     classic: {
         winCondition: { type: 'target_count', value: 20 },
         failCondition: { type: 'strikes', value: 3 },
-        spawnIntervalMs: 650,
+        spawnIntervalMs: 500,
         levelMultiplier: 1.0,
         distractorRatio: 1.5,
+        maxOnScreen: 10,
     },
     fusion: {
         winCondition: { type: 'time_limit', value: 120 },
         failCondition: { type: 'strikes', value: 3 },
-        spawnIntervalMs: 650,
+        spawnIntervalMs: 500,
         levelMultiplier: 1.2,
         distractorRatio: 1.5,
+        maxOnScreen: 10,
     },
 } as const;
 
@@ -564,6 +570,8 @@ export const STORAGE_KEYS = {
     COMBO_FUSION_BEST_SCORE: 'hebrew-math-combo-fusion-best',
     CINEMATIC_SEEN: 'cinematic_seen_units',
     IS_MUTED: 'isMuted',
+    PARENT_ECONOMY: 'hebrew-math-parent-economy',
+    PARENT_LEADERBOARD: 'hebrew-math-parent-leaderboard',
 } as const;
 
 // ================================================================
@@ -639,7 +647,7 @@ export const BUBBLE_ENGINE_CONFIG = {
     POWER_UP_SLOW_SPEED: 0.3,
     STALE_FRAME_THRESHOLD_MS: 2000,
     TARGET_LIFESPAN_MS: 20000,   // was 35000 — bubbles sat too long, lanes stayed occupied
-    DISTRACTOR_LIFESPAN_MS: 13000, // was 22000 — faster turnover frees lanes for targets
+    DISTRACTOR_LIFESPAN_MS: 15000, // was 22000 — faster turnover frees lanes for targets
     // --- Bubble Spawn Remediation (card 56d68ec3) ---
     // Initial spawn credits: seed 5 so screen populates in first 1-2 frames (was 3)
     INITIAL_SPAWN_CREDITS: 5,

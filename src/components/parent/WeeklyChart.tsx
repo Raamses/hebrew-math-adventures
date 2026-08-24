@@ -13,7 +13,7 @@ export const WeeklyChart: React.FC<WeeklyChartProps> = ({ data }) => {
     const barWidth = 100 / data.length;
 
     return (
-        <div className="w-full" dir="rtl">
+        <div className="w-full">
             <svg
                 viewBox={`0 0 100 ${chartHeight}`}
                 preserveAspectRatio="none"

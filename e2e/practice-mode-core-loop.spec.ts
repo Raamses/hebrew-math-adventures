@@ -42,7 +42,7 @@ async function getSagaProgress(page: Page, profileId: string): Promise<Record<st
 }
 
 test.describe('Practice Mode — core loop', () => {
-  test.setTimeout(120000);
+  // Global timeout is 180s — no need for local override
 
   test('completing a PRACTICE node awards stars and persists progress', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'PracticeCore');
