@@ -1,26 +1,28 @@
 ---
 type: roadmap
 project: hebrew-math-adventures
-updated: 2026-08-08
-status: in-flight
+updated: 2026-08-24
+status: ready-to-merge
 tags: [roadmap, current, work]
 ---
 
 # Current Work
 
 ## Branch
-- `sdlc/loop-v0` (current) — SDLC loop experimentation branch.
+- `fix/saga-node-star-tier` (current) — 20 commits ahead of main, build passing, 1533/1533 unit tests passing.
+- **Not yet merged to main. Not deployed.**
 
-## Recently landed (git log highlights)
-- `0deaef6` — Zen-mode stale-bubble validation fix (snapshot target per pop) — [[decisions/2026-08-zen-answer-race]]
-- `8cd58cc` — World config consolidation plan (full audit & phased design)
-- `4cec323` — Dynamic star rewards plan (audit & tier-based implementation design)
-- `c3eca67` — Centralize sound handling plan (audit & useSoundManager design)
-- `45304c4` — World config consolidation (feat)
-- `e5e3832` — Sound centralization via semantic feedback API (feat)
-- `a3e664c` — Dynamic star rewards by performance tier (feat)
-- `be4af87` — Zen-mode answer race + anti-repeat duplicate-slip fix (ADR 2026-08-zen-answer-race)
-- `1677268` — Bubble spawn engine overhaul (P0+P1) — [[decisions/2026-07-spawn-overhaul]]
+## Recently landed (on branch, unmerged)
+- `ee8fd5e` — feat: parent zone redesign, arcade i18n fix, parent games (Equation of the Day, Parent Blitz, Sudoku), arcade mode selector page, 14 new lessons
+- `141e1af` — feat: parent economy + competitive features (Phase 6) — ParentEconomyPanel, GiftToChildModal, WeeklyLeaderboard, useParentEconomy, 10 parent badges, coin earning, 56 engine tests
+- `c8210e4` — fix: bubble game bugs — Pop N i18n, boss bubble unkillable, memoized SensoryProblem
+- `3a382a8` — fix: wire up 15 new lessons, repair ParentBlitz/hub tests, de-flake bubble test
+- `e6f29e3` — fix: resolve 22 TypeScript build errors
+- `f910775` — fix: add 'space' theme and 'star' item type to sprite/theme maps
+- `de79b39` — test: update DISTRACTOR_LIFESPAN_MS expectation to match 15000 config value
+- `f709165` — fix: correct parent economy import paths and null-safe streak access
+- `2a195d0` — feat: badge collection improvements, bubble/cinematic tweaks, i18n fixes
+- `82f4d86` — test: e2e suite improvements — 6 new specs, helpers fix, CI workflow
 
 ## Active Plan
 - [[plans/game-ideation-2026-08-23]] — comprehensive feature plan from ideation session (P0/P1/P2 priorities)
@@ -34,14 +36,14 @@ tags: [roadmap, current, work]
 - Challenge clutter reduction (`CHALLENGE_CLUTTER_PLAN.md`).
 - PracticeMode design review follow-ups (`DESIGN_REVIEW_PRACTICEMODE.md`).
 
-## Source plans (repo)
-- `SPAWN_OVERHAUL_PLAN.md`, `CHALLENGE_CLUTTER_PLAN.md`, `COUNSEL_FRENZY*.md`, `DESIGN_REVIEW_PRACTICEMODE.md`, `CLAUDE_BRIEF.md`.
+## E2E test status (as of Aug 24)
+- 10 modified specs + 6 new specs added (badge-unlocks, daily-quests-streaks, dashboard-visualization, fusion-arcade, powerups-frenzy, story-scenes)
+- Playwright config: timeout 180s, removed local setTimeout overrides
+- Helpers: waitForSelector instead of fixed 5s mascot waits
+- GitHub Actions CI workflow added (.github/workflows/e2e.yml)
 
-## E2E Suite + Coverage Analysis (2026-08-20)
-
-- Full e2e suite run completed: 53/99 passed, 40 failed, 5 did not run, 1 skipped (58.4m)
-- Gemini coverage analysis identified 8 blind spots — all have workboard cards
-- 6 fix cards created for failing specs grouped by root cause
-- Fix priority: timeout increase (30 tests), waitForSagaMap helper fix (3 tests), GameOrchestrator mode switch (2 tests), node unlock (2 tests), localhost URL fix (1 test), star tier assertion (1 test)
-- Learning-hints.spec.ts already written and passing against deployed site
-- Next: dispatch Claude to fix timeout-prone specs, then implement coverage gap cards
+## Next steps
+- **Merge `fix/saga-node-star-tier` to main** (awaiting Ram's go)
+- **Deploy to Firebase** (awaiting Ram's go)
+- **Close stale Bolt/Sentinel PRs** (9 open, mostly FrenzyOverlay duplicates and localStorage noise)
+- **Update known-issues.md and backlog.md** to reflect current state
