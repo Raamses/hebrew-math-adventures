@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { BADGES } from '../../data/badges';
+import { BADGES, type BadgeStats } from '../../data/badges';
 import { useProfile } from '../../context/ProfileContext';
 
 interface BadgeCollectionProps {
@@ -18,7 +18,8 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ open, onClose 
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          data-testid="badge-collection"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -41,22 +42,29 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ open, onClose 
             <div className="grid grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto">
               {BADGES.map((badge, idx) => {
                 const isUnlocked = unlocked.includes(badge.id);
+                // Compute badge progress from profile data.
+                // Note: BadgeStats fields like totalBubblesPopped, maxCombo, bossesDefeated
+                // are not tracked on the profile. totalCorrect and totalSessionTime can be
+                // approximated from sessionHistory. dailyStreak comes from profile.streak.
+                const sessionHistory = profile?.sessionHistory ?? [];
+                const stats: BadgeStats = {
+                  totalCorrect: sessionHistory.reduce((sum, s) => sum + (s.correct ?? 0), 0),
+                  totalBubblesPopped: 0,
+                  maxCombo: 0,
+                  bossesDefeated: 0,
+                  perfectSessions: 0,
+                  dailyStreak: profile?.streak ?? 0,
+                  daysPlayed: new Set(sessionHistory.map(s => s.date)).size,
+                  totalSessionTime: sessionHistory.reduce((sum, s) => sum + (s.durationSec ?? 0), 0),
+                };
                 const progress = badge.progress
-                  ? badge.progress({
-                      totalCorrect: 0,
-                      totalBubblesPopped: 0,
-                      maxCombo: 0,
-                      bossesDefeated: 0,
-                      perfectSessions: 0,
-                      dailyStreak: 0,
-                      daysPlayed: 0,
-                      totalSessionTime: 0,
-                    })
+                  ? badge.progress(stats)
                   : null;
 
                 return (
                   <motion.div
                     key={badge.id}
+                    data-testid={`badge-${badge.id}`}
                     className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 text-center ${
                       isUnlocked
                         ? 'border-yellow-400 bg-yellow-50'
@@ -85,6 +93,7 @@ export const BadgeCollection: React.FC<BadgeCollectionProps> = ({ open, onClose 
             </div>
 
             <button
+              data-testid="badge-collection-close"
               onClick={onClose}
               className="mt-4 w-full py-2.5 text-slate-400 hover:text-slate-600 font-bold text-sm min-h-[48px]"
             >

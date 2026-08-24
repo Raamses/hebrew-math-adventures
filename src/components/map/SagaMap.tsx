@@ -224,6 +224,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
 
                                     {/* 3. Badges */}
                                     <button
+                                        data-testid="badge-collection-nav"
                                         onClick={() => {
                                             setIsMenuOpen(false);
                                             setShowBadges(true);

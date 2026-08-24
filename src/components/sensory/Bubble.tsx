@@ -166,7 +166,7 @@ export const Bubble: React.FC<BubbleProps> = React.memo(({ id, value, onClick, o
             {/* The Visual Bubble - Animates independently */}
             <motion.button
                 ref={bubbleRef}
-                data-testid={`bubble-${value}`}
+                data-testid={isFusion ? `fusion-bubble-${value}` : `bubble-${value}`}
                 onClick={handleClick}
                 aria-label={isPowerUp ? `Pop power-up bubble: ${value}` : isBoss ? `Pop boss bubble with value ${value}` : `Pop bubble with value ${value}`}
                 initial={{ y: "110vh", opacity: 0, scale: 0.5 }}
