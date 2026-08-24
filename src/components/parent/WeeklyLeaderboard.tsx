@@ -8,7 +8,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trophy, Medal } from 'lucide-react';
-import type { LeaderboardEntry } from '../types/parent';
+import type { LeaderboardEntry } from '../../types/parent';
 import { getCurrentWeekLeaderboard, getWeekStartISO } from './games/parentEconomyEngine';
 
 interface WeeklyLeaderboardProps {
