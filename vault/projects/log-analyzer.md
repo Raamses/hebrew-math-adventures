@@ -1,70 +1,64 @@
 ---
-type: project
-name: Log Analyzer
-repo: "github.com/Raamses/log_analyzer_electron_prompt"
-local_path: "~/log_analyzer_electron_prompt"
-status: active
-current_branch: feat/generic-log-analyzer
-domain: developer-tools
-audience: Developers, SRE, data analysts
+type: project-update
 project: log-analyzer
-updated: 2026-08-25
-tags: [project, logs, analytics, client-side, vite, react19, typescript, tailwindv4]
-stack:
-  - React 19
-  - TypeScript (strict, no any)
-  - Vite 7
-  - Tailwind CSS v4
-  - Vitest (happy-dom)
-owners: [ram]
+date: 2026-08-25
+status: phase6-implementation
+tags: [log-analyzer, phase6, columnar, implementation]
 ---
 
-# Log Analyzer — Project Spec
+# Phase 6 Implementation — Progress
 
-A 100% client-side SPA that ingests structured logs of many formats and gives you
-a query-first table with role-driven insights. Nothing leaves the browser.
+**Branch:** `feat/phase6-columnstore`
+**Plan:** `docs/plans/phase-6-columnar-storage.md`
+**PR:** https://github.com/Raamses/log_analyzer_electron_prompt/pull/new/feat/phase6-columnstore
 
-**Not** an Electron app despite the repo name. Tauri v2 is the eventual desktop
-path; the current deliverable is a browser SPA.
+## Status: 4/5 PRs committed and pushed
 
-## What it does
-- **Dialect framing**: W3C, TSV, CSV (RFC4180), JSON-lines, Apache CLF, key-value. Encoding detection (BOM, UTF-16, UTF-8).
-- **Semantic roles**: `timestamp`, `status`, `latency_ms`, `client_ip`, `uri`... Registry-driven format matching.
-- **TZ-safe normalization**: no `new Date(ambiguousString)` anywhere.
-- **Generic virtualized table**: sort, resize, reorder, hide, pin, detail drawer. Data-driven by `ColumnDef[]`.
-- **Query-first UX**: KQL subset parser, filter chips, command palette, saved views.
-- **Role-driven insights**: error rate, slow endpoints p95, top talkers, cache health — each with a reproduction query.
-- **Export**: CSV / TSV / JSON / NDJSON, with optional PII redaction.
+### PR 1 — ColumnStore foundation
+- Chunked columnar storage (64k-row blocks, no realloc-copy)
+- Type-aware stores: Int32/Float64/Dict(Uint16)/String
+- DTO serialization for zero-copy postMessage transfer
+- 21 tests
 
-## Architecture: three layers
-1. **Dialect → Schema** — framing + encoding detection → semantic role binding
-2. **Schema → Dataset** — normalization into typed columns
-3. **Dataset → UX** — table, query, insights, export all read `Dataset`
+### PR 2 — Columnar filter engine + adapter bridge
+- Recursive bitset filter with NULL-safe NOT via NNF/De Morgan
+- 3VL bug fixed: NOT (FALSE AND UNKNOWN) = TRUE
+- Boolean precedence tested across shared columns
+- ColumnarDataset adapter (additive — existing call sites unchanged)
+- 29 new tests
 
-## Known limits (current)
-- **<50MB comfortable, ~80MB ceiling** (row-object store, 100MB OOMs a tab)
-- Compressed files: detected, not decompressed
-- Filter-chip removal clears whole query (stub)
-- `role: 'unknown'` for unrecognized formats → no insights
-- 705KB JS bundle (no code-splitting)
+### PR 3 — Query serializer + inferRole + gzip
+- serializeQuery: AST → text, enables real filter-chip removal
+- Value-sampled inferRole: name-based first, then sample scoring
+- Gzip: DecompressionStream with test-injectable fallback
+- bzip2: Bzip2UnsupportedError with clear user message
+- 16 new tests
 
-## Phase 6 goal: columnar storage
-Measured at 500k rows × 40 cols: Array<Record> = 1116 MB, columnar (low-card) = 96 MB,
-columnar + unique-ids = 207 MB. Reduction: **5-12×** depending on cardinality.
+### PR 4 — Production hardening
+- Multi-chunk delimiter bug fixed (preserve across chunks)
+- Worker error recovery (per-line try/catch + skipped counter)
+- LogAnalyzer mounted in App.tsx with toggle
+- Real clause removal via AST walk + serializeQuery
+- compileQuery stub marked for deletion
+- entry-to-dataset adapter for LogEntry[] → Dataset
 
-Lifts ceiling from ~50MB to ~1GB (300-500MB comfortable) with chunked allocation,
-buffer transfer, recursive bitset filters, and vectorized analytics.
+## Total: 218 unit tests passing, tsc clean
 
-## Success criteria
-| Criterion | Status |
-|-----------|--------|
-| IIS W3C with XFF | ✅ |
-| IIS without XFF | ✅ |
-| Azure APGW | ✅ |
-| Cloudflare | ✅ |
-| 100MB+ files | ⚠️ streams, heap-bound |
-| Corrupt files | ✅ partial results |
-| PII redaction | ✅ |
+## Key findings during implementation
 
-## Related projects
-- **[[projects/hebrew-math-adventures]]** — the main project this agent also works on
+1. **Benchmark was wrong** (caught by Gemini): the original "1MB columnar"
+   number measured heapUsed only, missing ArrayBuffer memory. Real figures:
+   96MB (low-card) / 207MB (unique-ids) at 500k×40. Reduction: 5-12×.
+
+2. **AmosBot's DateColumn Int32 suggestion was mathematically broken**:
+   Int32 max = 2.1 billion; current epoch ms = 1.787 trillion. Kept Float64.
+
+3. **Gemini's two catches**: 3VL NULL semantics needed NNF (not compound
+   masking), and the column-grouping filter design destroyed precedence.
+
+## Remaining work
+- Delete `rows` from Dataset after all consumers migrate (additive-then-delete)
+- Columnar sort (on codes, off-main-thread above 250k)
+- Vectorized analytics (count into arrays indexed by dict code)
+- Bundle code-splitting (manualChunks + lazy insight/export)
+- Tauri v2 packaging
