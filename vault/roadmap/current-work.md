@@ -9,16 +9,17 @@ tags: [roadmap, current, work]
 # Current Work
 
 ## Branch
-- `fix/saga-node-star-tier` — **MERGED to main** (commit `0aeaddf`, Aug 24). Build passing, 1546/1546 unit tests across 71 files, tsc --noEmit clean.
+- `fix/saga-node-star-tier` — **MERGED to main** (commit `0aeaddf`, Aug 24). Build passing, 1547/1547 unit tests across 71 files, tsc --noEmit clean.
 - **Deploy to Firebase** — not yet deployed (awaiting Ram's go).
 
 ## Recently landed (on main)
+- `d3e1437` — fix(equation): a loss breaks the daily streak (Nerdle semantics)
 - `0aeaddf` — docs: merge artifact for fix/saga-node-star-tier → main
 - `7840dc3` — fix(test): apply rotateToNewTarget pattern to zenStateReset.test.ts
 - `8ea214d` — feat: badge collection improvements, bubble/cinematic tweaks, i18n fixes
 - `d63896c` — test: e2e suite improvements — 6 new specs, helpers fix, CI workflow
-- `6959c71` — feat: parent economy + competitive features (Phase 6) — ParentEconomyPanel, GiftToChildModal, WeeklyLeaderboard, 10 parent badges, coin earning, 56 engine tests
-- `1a692ba` — feat: parent zone redesign, arcade i18n fix, parent games (Equation of the Day, Parent Blitz, Sudoku), arcade mode selector page, 14 new lessons
+- `6959c71` — feat: parent economy + competitive features (Phase 6)
+- `1a692ba` — feat: parent zone redesign, arcade i18n fix, parent games, arcade mode selector, 14 new lessons
 - `97acab6` — fix: bubble game bugs — Pop N i18n, boss bubble unkillable, memoized SensoryProblem
 - `e4f0f9f` — fix: wire up 15 new lessons, repair ParentBlitz/hub tests, de-flake bubble test
 - `a262011` — fix(bubble): variant-aware spawn-X clamp + correct overflow assertions

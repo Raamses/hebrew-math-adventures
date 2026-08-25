@@ -45,5 +45,8 @@ flowchart TD
 - Hosting (primary deploy). Analytics (env-safe fallback to console mock via `src/lib/logger.ts`).
 - Security: no `dangerouslySetInnerHTML`; validate all Firestore/Storage writes.
 
+## Related projects
+- **[[projects/log-analyzer]]** — generic log analyzer SPA (Raamses/log_analyzer_electron_prompt)
+
 ## Full feature inventory
 See [[architecture/feature-inventory]] for the complete per-feature status table (works / partial / broken) with file locations.
