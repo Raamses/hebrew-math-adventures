@@ -83,12 +83,11 @@ const TIER_EMOJI: Record<FrenzyTier, string> = {
     mega: '🔥',
 };
 
-// ⚡ Bolt: Wrapped in React.memo to prevent 60fps reconciliations in game loops
-export const FrenzyOverlay = React.memo(function FrenzyOverlay({
+export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
     isActive,
     combo,
     variant = 'bubble',
-}: FrenzyOverlayProps) {
+}) => {
     const { play } = useSoundManager();
     const { t } = useTranslation();
 
@@ -241,4 +240,4 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
             )}
         </AnimatePresence>
     );
-});
+};

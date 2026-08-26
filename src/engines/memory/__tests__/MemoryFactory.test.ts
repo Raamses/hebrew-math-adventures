@@ -131,20 +131,12 @@ describe('MemoryFactory', () => {
         });
 
         it('level 5+ can use × and ÷', () => {
-            let foundTargetOps = false;
-            // Retry a few times since operation picking is purely random
-            // With 10 pairs (cardCount=20), there is a small chance (~3%) that + or - is picked 10 times in a row out of 4 ops
-            for (let i = 0; i < 5; i++) {
-                const config: MemoryGameConfig = { level: 5, cardCount: 20, problemTypes: [] };
-                const cards = factory.generate(config);
-                const equations = cards.filter(c => c.type === 'equation');
-                const ops = equations.map(eq => eq.displayValue.split(' ')[1]);
-                if (ops.some(op => op === '×' || op === '÷')) {
-                    foundTargetOps = true;
-                    break;
-                }
-            }
-            expect(foundTargetOps).toBe(true);
+            const config: MemoryGameConfig = { level: 5, cardCount: 20, problemTypes: [] };
+            const cards = factory.generate(config);
+            const equations = cards.filter(c => c.type === 'equation');
+            const ops = equations.map(eq => eq.displayValue.split(' ')[1]);
+            // With 10 pairs, likely at least one × or ÷
+            expect(ops.some(op => op === '×' || op === '÷')).toBe(true);
         });
 
         it('division always produces clean integer answers', () => {
