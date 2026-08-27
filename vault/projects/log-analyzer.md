@@ -42,7 +42,18 @@ tags: [log-analyzer, phase6, columnar, implementation]
 - compileQuery stub marked for deletion
 - entry-to-dataset adapter for LogEntry[] → Dataset
 
-## Total: 218 unit tests passing, tsc clean
+### PR 5 — Strip hotel app + fix build + CI green
+- Removed hotel-specific app (useLogAnalysis, DashboardLayout, FileUploader,
+  SummaryCard, TrafficSegmentation, VirtualizedLogViewer, charts, ipUtils,
+  parser, analytics, logParser.worker, their tests)
+- Replaced App.tsx with thin shell using ingest worker + LogAnalyzer
+- Added src/lib/ingest.ts wrapper (worker → Dataset)
+- Fixed 32 build errors that tsc -b caught (tsc --noEmit had missed them)
+- Fixed test script: 'vitest src/test' → 'vitest run'
+- CI: dropped Node 18 (Vite 7 requires Node 20.19+), Node 20 green
+- Merged into feat-log-analyzer-electron (CI/default branch)
+
+## Total: 195 unit tests passing, lint clean, build passes, CI green
 
 ## Key findings during implementation
 
