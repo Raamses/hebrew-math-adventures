@@ -20,6 +20,6 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --cpu x64 --os linux
       - run: npx playwright install --with-deps
       - run: npm run test:e2e
