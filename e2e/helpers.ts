@@ -40,19 +40,6 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
 }
 
 /**
- * Open the hamburger menu on the saga map.
- */
-export async function openMenu(page: Page) {
-  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
-  await expect(menuToggle).toBeVisible({ timeout: 10000 });
-  const isExpanded = await menuToggle.getAttribute('aria-expanded');
-  if (isExpanded !== 'true') {
-    await menuToggle.click();
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
  * Set up a fresh profile AND unlock a PRACTICE-type saga node.
  * This injects progress into localStorage so we can test PracticeMode (input-based questions).
  */
@@ -151,10 +138,6 @@ export async function openMenu(page: Page) {
 /**
  * Wait for the saga map to be visible by checking for saga nodes.
  */
-export async function waitForSagaMap(page: Page) {
-  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
-  await expect(n1_1).toBeVisible({ timeout: 30000 });
-}
 
 /**
  * Check if we're on the saga map.
