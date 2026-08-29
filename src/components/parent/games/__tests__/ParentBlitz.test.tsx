@@ -859,9 +859,9 @@ function hashStr(s: string): number {
 function evalExpr(display: string): number {
   const expr = display
     .replace(/−/g, '-')
+    .replace(/%/g, '/100*')  // must run BEFORE ×→* to avoid double *
     .replace(/×/g, '*')
     .replace(/÷/g, '/')
-    .replace(/%/g, '/100*')
     // Handle vulgar fractions
     .replace(/½/g, '1/2')
     .replace(/⅓/g, '1/3')
