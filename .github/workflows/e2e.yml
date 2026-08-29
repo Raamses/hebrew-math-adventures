@@ -22,4 +22,4 @@ jobs:
           cache: 'npm'
       - run: npm ci --cpu x64 --os linux
       - run: npx playwright install --with-deps
-      - run: npm run test:e2e
+      - run: npx playwright test --config=playwright.config.ts e2e/
