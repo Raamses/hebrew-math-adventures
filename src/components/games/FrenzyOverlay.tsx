@@ -83,11 +83,19 @@ const TIER_EMOJI: Record<FrenzyTier, string> = {
     mega: '🔥',
 };
 
-export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
+/**
+ * ⚡ Bolt Optimization:
+ * Wrapped FrenzyOverlay in React.memo() to prevent unnecessary reconciliations.
+ *
+ * Impact: Since this overlay is rendered inside high-frequency game loops (e.g. up to 60fps),
+ * preventing it from re-rendering when parent state changes (unless isActive, combo, or variant change)
+ * saves significant CPU cycles and helps maintain a smooth framerate.
+ */
+export const FrenzyOverlay = React.memo(({
     isActive,
     combo,
     variant = 'bubble',
-}) => {
+}: FrenzyOverlayProps) => {
     const { play } = useSoundManager();
     const { t } = useTranslation();
 
@@ -240,4 +248,6 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
             )}
         </AnimatePresence>
     );
-};
+});
+
+FrenzyOverlay.displayName = 'FrenzyOverlay';
