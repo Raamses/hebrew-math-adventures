@@ -75,7 +75,7 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
               <input
                 type="text"
                 value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
+                onChange={(e) => setNameInput(e.target.value.slice(0, 20))}
                 maxLength={20}
                 className="text-lg font-bold text-center border-b-2 border-blue-400 outline-none bg-transparent"
                 autoFocus
