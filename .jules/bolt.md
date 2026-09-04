@@ -1,0 +1,3 @@
+## 2025-02-12 - Memoizing Static/Overlay Components in Game Loops
+**Learning:** In high-frequency game loops where React state updates at up to 60fps (e.g., via `requestAnimationFrame`), static or infrequently updating overlay UI components (like `FrenzyOverlay`) must be wrapped with `React.memo()`. Without it, these components suffer severe performance degradation from unnecessary component reconciliations on every frame tick.
+**Action:** Always wrap overlay UI components in `React.memo()` and remove `React.FC` while typing properties inline to let TypeScript infer the structure. Add a `displayName` for easier debugging.
