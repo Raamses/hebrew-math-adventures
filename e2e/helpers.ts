@@ -134,21 +134,6 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
 }
 
 /**
- * Open the hamburger menu on the saga map.
- * The arcade-button and parent-zone-button live inside this menu.
- */
-export async function openMenu(page: Page) {
-  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
-  await expect(menuToggle).toBeVisible({ timeout: 10000 });
-  // Only click if menu isn't already open
-  const isExpanded = await menuToggle.getAttribute('aria-expanded');
-  if (isExpanded !== 'true') {
-    await menuToggle.click();
-    await page.waitForTimeout(500);
-  }
-}
-
-/**
  * Wait for the saga map to be visible by checking for saga nodes.
  */
 export async function waitForSagaMap(page: Page) {
@@ -537,16 +522,6 @@ export async function submitWrongAnswer(page: Page): Promise<void> {
   } else {
     await page.keyboard.press('Enter');
   }
-  await page.waitForTimeout(500);
-}
-
-/**
- * Wait until the saga map is visible (saga nodes present).
- * Reusable assertion that we've returned to the saga map.
- */
-export async function waitForSagaMap(page: Page): Promise<void> {
-  const node = page.locator('[data-testid="saga-node-n1_1"]').first();
-  await expect(node).toBeVisible({ timeout: 15000 });
   await page.waitForTimeout(500);
 }
 
