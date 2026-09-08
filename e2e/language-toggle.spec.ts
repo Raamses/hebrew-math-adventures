@@ -65,7 +65,7 @@ test.describe('Language Toggle', () => {
     // Assert arcade button title is in Hebrew
     // The arcade button is inside the hamburger menu, so we need to open it first
     await openMenu(page);
-    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
+    let arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
     await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
     const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
     await expect(sagaNode).toBeVisible({ timeout: 30000 });
@@ -74,7 +74,7 @@ test.describe('Language Toggle', () => {
     const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
     await expect(menuToggle).toBeVisible({ timeout: 15000 });
     await menuToggle.click();
-    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
+    arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
     await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
 
     // Assert arcade button title is in Hebrew
