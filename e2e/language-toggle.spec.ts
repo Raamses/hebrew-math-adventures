@@ -74,11 +74,11 @@ test.describe('Language Toggle', () => {
     const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
     await expect(menuToggle).toBeVisible({ timeout: 15000 });
     await menuToggle.click();
-    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
-    await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
+    const arcadeBtn2 = page.locator('[data-testid="arcade-button"]').first();
+    await expect(arcadeBtn2).toBeVisible({ timeout: 10000 });
 
     // Assert arcade button title is in Hebrew
-    const arcadeTitleBefore = await arcadeBtn.getAttribute('title') || '';
+    const arcadeTitleBefore = await arcadeBtn2.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title before toggle:', arcadeTitleBefore);
     expect(arcadeTitleBefore).toBe('משחקי ארקייד');
 
@@ -106,7 +106,7 @@ test.describe('Language Toggle', () => {
 
     // Assert arcade button title is now in English (re-open menu)
     await openMenu(page);
-    const arcadeTitleAfter = await arcadeBtn.getAttribute('title') || '';
+    const arcadeTitleAfter = await arcadeBtn2.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title after toggle:', arcadeTitleAfter);
     expect(arcadeTitleAfter).toBe('Arcade Games');
 
@@ -132,7 +132,7 @@ test.describe('Language Toggle', () => {
 
     // Re-open menu to check arcade button title restored
     await openMenu(page);
-    const arcadeTitleRestored = await arcadeBtn.getAttribute('title') || '';
+    const arcadeTitleRestored = await arcadeBtn2.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title restored:', arcadeTitleRestored);
     expect(arcadeTitleRestored).toBe('משחקי ארקייד');
 
