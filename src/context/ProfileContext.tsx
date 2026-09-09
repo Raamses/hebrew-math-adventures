@@ -279,6 +279,9 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
             throw new Error('Invalid profile name');
         }
 
+        // SECURITY: Profile IDs must be unpredictable to prevent unauthorized enumeration or access.
+        // Replacing Math.random() with crypto.randomUUID() ensures cryptographic strength.
+        // If crypto is unavailable (e.g. non-HTTPS), it falls back to Date.now() + Math.random() to prevent crashes.
         const newProfile: UserProfile = {
             id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `profile-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             name: sanitizedName,

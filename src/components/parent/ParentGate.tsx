@@ -10,7 +10,8 @@ interface ParentGateProps {
 export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) => {
     const { t, i18n } = useTranslation();
     const [problem, setProblem] = useState<{ n1: number, n2: number }>(() => {
-        // Use crypto for secure random generation (authorization gate), fallback for HTTP contexts
+        // Use crypto for secure random generation (authorization gate).
+        // A secure ID is required to prevent bypass of the parent gate via predictable random numbers.
         if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
             const array = new Uint32Array(2);
             crypto.getRandomValues(array);
@@ -19,15 +20,20 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
                 n2: (array[1] % 40) + 10
             };
         }
+        // Fallback using Date.now() if crypto is unavailable (e.g. non-HTTPS without polyfill).
+        // This is less secure but prevents unhandled crashes in fallback environments.
+        const fallbackValue = Date.now();
         return {
-            n1: Math.floor(Math.random() * 40) + 10,
-            n2: Math.floor(Math.random() * 40) + 10
+            n1: (fallbackValue % 40) + 10,
+            n2: ((fallbackValue >> 4) % 40) + 10
         };
     });
     const [answer, setAnswer] = useState('');
     const [error, setError] = useState(false);
 
     const generateProblem = () => {
+        // Use crypto for secure random generation (authorization gate).
+        // A secure ID is required to prevent bypass of the parent gate via predictable random numbers.
         if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
             const array = new Uint32Array(2);
             crypto.getRandomValues(array);
@@ -36,9 +42,12 @@ export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) =
                 n2: (array[1] % 40) + 10
             });
         } else {
+            // Fallback using Date.now() if crypto is unavailable (e.g. non-HTTPS without polyfill).
+            // This is less secure but prevents unhandled crashes in fallback environments.
+            const fallbackValue = Date.now();
             setProblem({
-                n1: Math.floor(Math.random() * 40) + 10,
-                n2: Math.floor(Math.random() * 40) + 10
+                n1: (fallbackValue % 40) + 10,
+                n2: ((fallbackValue >> 4) % 40) + 10
             });
         }
     };
