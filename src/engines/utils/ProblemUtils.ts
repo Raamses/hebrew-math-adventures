@@ -35,16 +35,23 @@ export class RandomUtils {
     }
 
     /**
-     * Generates a UUID (with fallback for non-secure contexts).
+     * Generates a UUID (with secure fallback for non-secure contexts).
      */
     static generateId(): string {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
             return crypto.randomUUID();
         }
-        // Fallback for HTTP environments
+        // Secure fallback using crypto.getRandomValues if available, otherwise highly discouraged Math.random
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = (Math.random() * 16) | 0,
-                v = c == 'x' ? r : (r & 0x3) | 0x8;
+            let r;
+            if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+                const randomArray = new Uint8Array(1);
+                crypto.getRandomValues(randomArray);
+                r = randomArray[0] % 16;
+            } else {
+                r = (Math.random() * 16) | 0;
+            }
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
             return v.toString(16);
         });
     }
