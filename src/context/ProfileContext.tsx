@@ -5,6 +5,7 @@ import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { isValidProfileName } from '../lib/validation';
 import { STORAGE_KEYS } from '../lib/worldConfig';
+import { RandomUtils } from '../engines/utils/ProblemUtils';
 
 const PET_DEFAULT: PetState = { species: 'owl', name: 'Buddy', happiness: 60, unlockedTricks: [], lastFedDate: null };
 
@@ -280,7 +281,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
 
         const newProfile: UserProfile = {
-            id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `profile-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: `profile-${Date.now()}-${RandomUtils.generateId()}`,
             name: sanitizedName,
             age,
             avatarId,
