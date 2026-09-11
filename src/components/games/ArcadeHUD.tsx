@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import { Heart, Clock, Trophy } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -15,19 +15,15 @@ interface ArcadeHUDProps {
 
 export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLeft, combo }) => {
     const { t } = useTranslation();
-    // Local state to animate score increments
-    const [displayScore, setDisplayScore] = useState(score);
+
+    // ⚡ Bolt: Use Framer Motion's useSpring to lerp the score directly in the DOM
+    // This bypasses 60fps React render cycles that would occur with setInterval + setState
+    const springScore = useSpring(score, { stiffness: 50, damping: 15 });
+    const formattedScore = useTransform(springScore, (latest) => Math.round(latest).toLocaleString());
 
     useEffect(() => {
-        // Simple lerp effect for score
-        const interval = setInterval(() => {
-            setDisplayScore(prev => {
-                if (prev < score) return prev + Math.ceil((score - prev) / 5);
-                return score;
-            });
-        }, 16);
-        return () => clearInterval(interval);
-    }, [score]);
+        springScore.set(score);
+    }, [score, springScore]);
 
     if (mode === 'STANDARD') return null;
 
@@ -85,7 +81,7 @@ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLe
                             animate={{ scale: 1, color: '#334155' }}
                             className="text-2xl font-black text-slate-700 font-mono"
                         >
-                            {displayScore.toLocaleString()}
+                            {formattedScore}
                         </motion.span>
                     </div>
                     <div className="bg-orange-100 p-2 rounded-xl">
