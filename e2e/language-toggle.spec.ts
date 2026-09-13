@@ -70,13 +70,6 @@ test.describe('Language Toggle', () => {
     const sagaNode = page.locator('[data-testid="saga-node-n1_1"]').first();
     await expect(sagaNode).toBeVisible({ timeout: 30000 });
 
-    // Open menu to access the arcade button
-    const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
-    await expect(menuToggle).toBeVisible({ timeout: 15000 });
-    await menuToggle.click();
-    const arcadeBtn = page.locator('[data-testid="arcade-button"]').first();
-    await expect(arcadeBtn).toBeVisible({ timeout: 10000 });
-
     // Assert arcade button title is in Hebrew
     const arcadeTitleBefore = await arcadeBtn.getAttribute('title') || '';
     console.log('[Language Toggle] Arcade button title before toggle:', arcadeTitleBefore);

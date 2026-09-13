@@ -39,18 +39,6 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
   await page.waitForTimeout(500);
 }
 
-/**
- * Open the hamburger menu on the saga map.
- */
-export async function openMenu(page: Page) {
-  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
-  await expect(menuToggle).toBeVisible({ timeout: 10000 });
-  const isExpanded = await menuToggle.getAttribute('aria-expanded');
-  if (isExpanded !== 'true') {
-    await menuToggle.click();
-    await page.waitForTimeout(500);
-  }
-}
 
 /**
  * Set up a fresh profile AND unlock a PRACTICE-type saga node.
@@ -540,15 +528,6 @@ export async function submitWrongAnswer(page: Page): Promise<void> {
   await page.waitForTimeout(500);
 }
 
-/**
- * Wait until the saga map is visible (saga nodes present).
- * Reusable assertion that we've returned to the saga map.
- */
-export async function waitForSagaMap(page: Page): Promise<void> {
-  const node = page.locator('[data-testid="saga-node-n1_1"]').first();
-  await expect(node).toBeVisible({ timeout: 15000 });
-  await page.waitForTimeout(500);
-}
 
 /**
  * Read saga progress for a specific node from localStorage.
