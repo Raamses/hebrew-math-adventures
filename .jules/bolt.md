@@ -1,0 +1,3 @@
+## 2024-05-20 - Memoizing Overlays in High-Frequency Game Loops
+**Learning:** React components (like `FrenzyOverlay`) rendered inside high-frequency game loop containers (e.g., `BubbleGameContainer` which updates at 60fps) will re-render on every tick unless explicitly memoized. This can cause severe performance degradation, especially if the overlay contains complex animations or effects.
+**Action:** Always wrap static or infrequently updating overlay UI components with `React.memo()` when they are placed inside high-frequency game loops to prevent unnecessary component reconciliations. Remove `React.FC` and explicitly set `displayName` to satisfy TypeScript and React DevTools.
