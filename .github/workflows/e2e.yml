@@ -1,19 +1,35 @@
 name: E2E Tests (Deployed Site)
-
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
   push:
     branches: [main]
+    paths: ['.github/workflows/e2e.yml']
   pull_request:
     branches: [main]
-
+    paths: ['.github/workflows/e2e.yml']
 env:
   E2E_BASE_URL: https://hebrew-math-adventures-2025.web.app
-
 jobs:
-  e2e:
-    timeout-minutes: 30
+  smoke:
+    name: E2E Smoke (Deployed Site)
+    timeout-minutes: 10
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci --cpu x64 --os linux
+      - run: npx playwright install --with-deps
+      - run: npx playwright test --config=playwright.config.ts e2e/profile-creation-smoke.spec.ts e2e/spawn-overhaul-smoke.spec.ts
+  full-regression:
+    name: E2E Full Regression (Deployed Site)
+    timeout-minutes: 90
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
