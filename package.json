@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "deploy": "bash scripts/deploy.sh",
     "test": "vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test e2e/",
     "test:e2e:report": "playwright show-report",
     "typecheck": "tsc --noEmit"
   },
@@ -30,7 +30,6 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.62.1",
-    "@rolldown/binding-darwin-x64": "^1.0.0-beta.50",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -44,7 +43,8 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "firebase-tools": "^15.25.0",
     "globals": "^16.5.0",
-    "jsdom": "^27.4.0",
+    "happy-dom": "^20.11.6",
+    "jsdom": "^26.1.0",
     "playwright": "^1.62.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.17",

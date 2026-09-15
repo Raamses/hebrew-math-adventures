@@ -42,9 +42,10 @@ tags: [roadmap, backlog, debt]
 - ~~**Consolidate world config**~~ ✅ done (commit `45304c4`, world-config SDLC chain complete).
 - ~~**Dynamic star rewards**~~ ✅ done (ADR 2026-08-dynamic-star-tiers, commit `a3e664c`).
 - ~~**Legacy Zone Map**~~ ✅ resolved (world-config consolidation removed dead code).
+- ~~**Daily streak loss-breaks**~~ ✅ done (ADR 2026-08-equation-streak-loss-breaks, commit `d3e1437`, 3 tests updated).
 - ~~**Zen-mode stale-bubble fix**~~ ✅ done (commit `0deaef6`, snapshot target per pop).
 - ~~**Anti-repeat duplicate-slip**~~ ✅ done (ADR 2026-08-zen-answer-race, commit `be4af87`).
 - ~~**Bubble viewport overflow**~~ ✅ done (ADR 2026-08-bubble-spawn-x-overflow-clamp, variant-aware clamp).
-- ~~**Merge fix/saga-node-star-tier to main**~~ ✅ done (commit `0aeaddf`, 1546/1546 tests, tsc clean).
+- ~~**Merge fix/saga-node-star-tier to main**~~ ✅ done (commit `0aeaddf`, 1547/1547 tests, tsc clean).
 - ~~**Close stale Bolt/Sentinel PRs**~~ ✅ done (9 PRs closed, branches deleted).
 - ~~**Parent economy + arcade revamp**~~ ✅ landed (ParentEconomyPanel, GiftToChildModal, WeeklyLeaderboard, 10 parent badges, coin earning, 56 engine tests, parent games, arcade mode selector, 14 new lessons).
