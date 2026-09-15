@@ -54,3 +54,19 @@ tags: [roadmap, issues, known]
 
 ## How to log new issues
 Create a dated note in `roadmap/known-issues.md` or link from [[INDEX]]. Keep entries factual with a "status" field.
+## E2E regression run — 2026-09-10 (local dev, mobile-chrome)
+
+**Result:** 131 passed / 38 failed / 1 flaky / 17 skipped (187 total, 22.5 min, local dev server, 3 workers, retries=1).
+Full JSON report: `/tmp/e2e-report.json`. Failure clusters:
+
+1. **Parent-zone access broken in tests (13 failures)** — `dashboard-visualization.spec.ts` (8), `parent-dashboard.spec.ts` (3), `parent-zone-redesign.spec.ts` (2+): page snapshot shows the **SagaMap with Daily Challenge card** instead of the parent dashboard. Locator `[data-testid="parent-access"]` exists in `ProfileSelector.tsx:66,97` but the page never reaches ProfileSelector — the parent-gate/dashboard entry flow changed. `parent-dashboard.spec.ts:9` also asserts `dir="rtl"` and gets non-rtl → wrong page entirely, not an RTL bug. `parent-zone-redesign` clicks time out waiting for logout button — also wrong page.
+2. **Mode selector entry broken (4 failures)** — `invaders.spec.ts`, `arcade-game-over.spec.ts` (INVADERS), `memory-duel.spec.ts`: `selectPracticeMode` waits for `mode-card-INVADERS/MEMORY` after `setupFreshProfileWithPracticeAccess`, but snapshot shows saga map — the spec never opens the hamburger menu / navigates to the mode-selector page (`selectArcadeMode` does this, `selectPracticeMode` assumes the page is already there). Same root pattern as cluster 1.
+3. **Fusion arcade streak/HUD (7 failures)** — `fusion-arcade.spec.ts`: `fusion-hud` locator or multiplier `×` text never appears → fusion HUD not rendered or testid changed.
+4. **Arcade gameplay regressions (5 failures)** — `spawn-overhaul-smoke` (targets < 7 in 6s), `powerups-frenzy` (super-tier match, combo-break click timeout), `daily-challenge` (completion toast), `arcade-game-over`/`invaders` (mode-card entry — cluster 2).
+5. **Lesson/story nodes (5 failures)** — `lesson-node-completion` (`not.toContain` hit — LESSON dead-code issue still open, see above), `story-scenes` (0 lesson-item/target elements, dialog text mismatch, drag-step click timeout).
+6. **Parent games (3 failures)** — `parent-games.spec.ts`: Sudoku attribute, EOTD submit disabled, Blitz feedback falsy.
+7. **Test-code bug (1 failure)** — `unit-progression.spec.ts`: `ReferenceError: n1_10Selector is not defined` — spec references an undefined variable.
+8. **Flaky (1)** — `wrong-answer-feedback.spec.ts` passed on retry.
+
+**Working-tree note:** `e2e/helpers.ts` and `e2e/language-toggle.spec.ts` have uncommitted deletions (openMenu/waitForSagaMap removed from an earlier export block; duplicates still exist at lines 45/524, so no import errors). Unrelated to the failures above.
+**Next step:** fix cluster 1+2 (parent-zone + mode-selector entry flow) — likely one root cause in navigation/test setup.
