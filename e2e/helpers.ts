@@ -134,14 +134,6 @@ export async function setupFreshProfileWithPracticeAccess(page: Page, name = 'Te
 }
 
 /**
- * Wait for the saga map to be visible by checking for saga nodes.
- */
-export async function waitForSagaMap(page: Page) {
-  const n1_1 = page.locator('[data-testid="saga-node-n1_1"]').first();
-  await expect(n1_1).toBeVisible({ timeout: 30000 });
-}
-
-/**
  * Check if we're on the saga map.
  */
 export async function isOnSagaMap(page: Page): Promise<boolean> {
@@ -525,6 +517,15 @@ export async function submitWrongAnswer(page: Page): Promise<void> {
   await page.waitForTimeout(500);
 }
 
+/**
+ * Wait until the saga map is visible (saga nodes present).
+ * Reusable assertion that we've returned to the saga map.
+ */
+export async function waitForSagaMap(page: Page): Promise<void> {
+  const node = page.locator('[data-testid="saga-node-n1_1"]').first();
+  await expect(node).toBeVisible({ timeout: 15000 });
+  await page.waitForTimeout(500);
+}
 
 /**
  * Read saga progress for a specific node from localStorage.
