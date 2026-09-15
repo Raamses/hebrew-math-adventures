@@ -2,7 +2,7 @@
 type: project-update
 project: log-analyzer
 date: 2026-08-25
-status: phase6-implementation
+status: phase6-complete
 tags: [log-analyzer, phase6, columnar, implementation]
 ---
 
@@ -12,7 +12,7 @@ tags: [log-analyzer, phase6, columnar, implementation]
 **Plan:** `docs/plans/phase-6-columnar-storage.md`
 **PR:** https://github.com/Raamses/log_analyzer_electron_prompt/pull/new/feat/phase6-columnstore
 
-## Status: 4/5 PRs committed and pushed
+## Status: 5/5 PRs landed + merged (feat-log-analyzer-electron). Beyond plan: Tauri security hardening (4 fixes, 14 unit tests) + insights detectors (7 security/perf detectors, rolling-baseline anomaly detection). Plan doc reviewed post-implementation 2026-09-15 (docs/plans/phase-6-columnar-storage.md Review section).
 
 ### PR 1 — ColumnStore foundation
 - Chunked columnar storage (64k-row blocks, no realloc-copy)
