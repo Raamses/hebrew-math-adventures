@@ -90,13 +90,15 @@ test.describe('Spawn Overhaul — smoke test', () => {
         });
 
         // Check if any bubble matches the current target
-        const bodyText = document.body.textContent || '';
+        // Strip unicode formatting characters like \u2068 and \u2069 (used for LTR/RTL bidi isolation)
+        const bodyText = (document.body.textContent || '').replace(/[\u2068\u2069]/g, '');
 
         // Arithmetic: "N + N = ?"
         const eqMatch = bodyText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);
-        // Sensory: "Pop N"
-        const popMatch = bodyText.match(/Pop\s+(\d+)/i) || bodyText.match(/פצץ\s+(\d+)/);
+        // Sensory: "Pop N" (also checking for "Pop the bubble with N")
+        const popMatch = bodyText.match(/Pop.*?\b(\d+)\b/i) || bodyText.match(/פצץ.*?\b(\d+)\b/);
         let hasTarget = false;
+        let expectedTarget: string | null = null;
 
         if (eqMatch) {
           const a = parseInt(eqMatch[1]);
@@ -110,13 +112,14 @@ test.describe('Spawn Overhaul — smoke test', () => {
             case '÷': case '/': answer = Math.floor(a / b); break;
             default: answer = a + b;
           }
-          hasTarget = visibleBubbles.some(b => b.textContent?.trim() === String(answer));
+          expectedTarget = String(answer);
+          hasTarget = visibleBubbles.some(b => b.textContent?.replace(/[\u2068\u2069]/g, '').trim() === expectedTarget);
         } else if (popMatch) {
-          const target = popMatch[1];
-          hasTarget = visibleBubbles.some(b => b.textContent?.trim() === target);
+          expectedTarget = popMatch[1];
+          hasTarget = visibleBubbles.some(b => b.textContent?.replace(/[\u2068\u2069]/g, '').trim() === expectedTarget);
         }
 
-        results.push({ time: Math.round(time), hasTarget, totalBubbles: visibleBubbles.length });
+        results.push({ time: Math.round(time), hasTarget, totalBubbles: visibleBubbles.length, expectedTarget, bodyText: bodyText.substring(0, 100) });
       }
       return results;
     });
