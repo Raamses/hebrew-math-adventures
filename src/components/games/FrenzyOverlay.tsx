@@ -83,11 +83,14 @@ const TIER_EMOJI: Record<FrenzyTier, string> = {
     mega: '🔥',
 };
 
-export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
+// ⚡ Bolt: Wrapped in React.memo() to prevent unnecessary re-renders during high-frequency
+// game loops where the parent combo or active state might change frequently. This ensures
+// the expensive framer-motion animations inside aren't disrupted or re-evaluated needlessly.
+export const FrenzyOverlay = React.memo(({
     isActive,
     combo,
     variant = 'bubble',
-}) => {
+}: FrenzyOverlayProps) => {
     const { play } = useSoundManager();
     const { t } = useTranslation();
 
@@ -240,4 +243,6 @@ export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
             )}
         </AnimatePresence>
     );
-};
+});
+
+FrenzyOverlay.displayName = 'FrenzyOverlay';
