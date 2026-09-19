@@ -83,12 +83,11 @@ const TIER_EMOJI: Record<FrenzyTier, string> = {
     mega: '🔥',
 };
 
-// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary component reconciliations in high-frequency game loops
-export const FrenzyOverlay = React.memo(({
+export const FrenzyOverlay: React.FC<FrenzyOverlayProps> = ({
     isActive,
     combo,
     variant = 'bubble',
-}: FrenzyOverlayProps) => {
+}) => {
     const { play } = useSoundManager();
     const { t } = useTranslation();
 
@@ -241,6 +240,4 @@ export const FrenzyOverlay = React.memo(({
             )}
         </AnimatePresence>
     );
-});
-
-FrenzyOverlay.displayName = 'FrenzyOverlay';
+};
