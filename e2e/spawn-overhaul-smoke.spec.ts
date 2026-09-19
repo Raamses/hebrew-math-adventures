@@ -94,8 +94,8 @@ test.describe('Spawn Overhaul — smoke test', () => {
 
         // Arithmetic: "N + N = ?"
         const eqMatch = bodyText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);
-        // Sensory: "Pop the bubble with N"
-        const popMatch = bodyText.match(/Pop[^\d]+(\d+)/i) || bodyText.match(/פצץ[^\d]+(\d+)/);
+        // Sensory: "Pop N"
+        const popMatch = bodyText.match(/Pop\s+(\d+)/i) || bodyText.match(/פצץ\s+(\d+)/);
         let hasTarget = false;
 
         if (eqMatch) {
