@@ -861,7 +861,7 @@ function evalExpr(display: string): number {
     .replace(/−/g, '-')
     .replace(/×/g, '*')
     .replace(/÷/g, '/')
-    .replace(/%/g, '/100*')
+    .replace(/%/g, '/100*').replace(/of/g, '').replace(/מתוך/g, '')
     // Handle vulgar fractions
     .replace(/½/g, '1/2')
     .replace(/⅓/g, '1/3')
