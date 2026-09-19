@@ -1,3 +1,0 @@
-## 2025-03-10 - Memoizing static overlay components in high-frequency React game loops
-**Learning:** In a React application running a high-frequency game loop (e.g., up to 60fps via `requestAnimationFrame` and `setState`), static or infrequently updating overlay UI components like `FrenzyOverlay` will suffer from severe performance degradation if they re-render on every frame.
-**Action:** Wrap these static or infrequently updating overlay UI components with `React.memo()` to prevent unnecessary component reconciliations. Make sure to define the component's types inline since `React.memo()` returns a `MemoExoticComponent`, which isn't assignable to `React.FC`. Also, set `.displayName` on the component for easier debugging in React DevTools.
