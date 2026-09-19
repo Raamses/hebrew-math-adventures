@@ -5,8 +5,9 @@ import type { LessonDefinition } from '../../types/lesson';
 describe('Lesson Definitions', () => {
     const allLessons = Object.values(LESSONS_BY_ID);
 
-    it('should have at least 19 registered lessons', () => {
-        expect(allLessons.length).toBeGreaterThanOrEqual(19);
+    it('should have exactly 19 registered lessons', () => {
+        // Exact count — bump deliberately when a lesson is added to the registry.
+        expect(allLessons.length).toBe(19);
     });
 
     it.each(allLessons)('$id should have at least 3 steps', (lesson: LessonDefinition) => {
