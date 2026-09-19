@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence, useSpring, useTransform, useAnimation } from 'framer-motion';
 import { Heart, Clock, Trophy } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -15,19 +15,23 @@ interface ArcadeHUDProps {
 
 export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLeft, combo }) => {
     const { t } = useTranslation();
-    // Local state to animate score increments
-    const [displayScore, setDisplayScore] = useState(score);
+
+    // Smoothly animate score changes directly in the DOM, bypassing React renders
+    const springScore = useSpring(score, { stiffness: 100, damping: 20 });
+    const displayScore = useTransform(springScore, (latest) => Math.round(latest).toLocaleString());
+
+    // Controls for the score pop animation
+    const controls = useAnimation();
 
     useEffect(() => {
-        // Simple lerp effect for score
-        const interval = setInterval(() => {
-            setDisplayScore(prev => {
-                if (prev < score) return prev + Math.ceil((score - prev) / 5);
-                return score;
-            });
-        }, 16);
-        return () => clearInterval(interval);
-    }, [score]);
+        springScore.set(score);
+        // Trigger the visual pop animation
+        controls.start({
+            scale: [1.2, 1],
+            color: ['#f59e0b', '#334155'],
+            transition: { duration: 0.3 }
+        });
+    }, [score, springScore, controls]);
 
     if (mode === 'STANDARD') return null;
 
@@ -80,12 +84,10 @@ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLe
                     <div className="flex flex-col items-end">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('game.scoreLabel')}</span>
                         <motion.span
-                            key={score}
-                            initial={{ scale: 1.2, color: '#f59e0b' }}
-                            animate={{ scale: 1, color: '#334155' }}
+                            animate={controls}
                             className="text-2xl font-black text-slate-700 font-mono"
                         >
-                            {displayScore.toLocaleString()}
+                            {displayScore}
                         </motion.span>
                     </div>
                     <div className="bg-orange-100 p-2 rounded-xl">
