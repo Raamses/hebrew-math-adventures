@@ -7,8 +7,10 @@ import { setupFreshProfileWithPracticeAccess } from './helpers';
  * For each LESSON node: seed full progression (all nodes unlocked), open the node,
  * assert the LessonModal renders, extract the LessonEngine via the React fiber tree,
  * then drive engine.nextStep() through the dialog prefix. Lessons finish if they
- * are dialog-driven; interactive-first steps stop at the first unsolvable step and
- * assert it renders. Deep interactive playthroughs remain in lesson-node-completion.spec.ts.
+ * advance the dialog prefix. Note: engine.nextStep() bypasses isStepComplete() gating
+ * (only the UI Next button gates), so interactive steps are stepped through unsolved —
+ * this is an open/initialize/driver smoke, not a full playthrough. Full playthroughs
+ * remain in lesson-node-completion.spec.ts (n3_1).
  */
 
 const LESSON_NODES = ['n1_2', 'n1_3a', 'n1_3b', 'n1_7', 'n2_3', 'n2_3a', 'n2_3b', 'n2_6', 'unit_3', 'n3_3', 'n3_5', 'unit_4', 'n4_2', 'n4_3a', 'n4_5', 'n5_1a', 'n5_2', 'n5_5a', 'n5_8'];
@@ -33,6 +35,8 @@ test.describe('All lessons open and initialize', () => {
       }, { nodeIds: ALL_NODE_IDS });
 
       await page.reload({ waitUntil: 'domcontentloaded' });
+      // Reload resets the active profile (no persisted active-profile key) — re-select by name
+      await page.locator(`button:has-text('LessonOpen-${nodeId}')`).first().click({ timeout: 15000 });
       const node = page.locator(`[data-testid="saga-node-${nodeId}"]`).first();
       await expect(node).toBeVisible({ timeout: 30000 });
 
