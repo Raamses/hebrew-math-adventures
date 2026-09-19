@@ -1,3 +1,3 @@
-## 2024-05-24 - React Framer Motion Performance Optimization
-**Learning:** Animating primitive numbers like score using setInterval causes 60fps reconciliations in React components. Using useSpring and useTransform with motion elements allows the DOM to be updated directly, bypassing React's render phase.
-**Action:** Use framer-motion's useSpring for animating numeric values instead of React state and setInterval.
+## 2026-09-17 - React.memo Optimization in Game Loops
+**Learning:** In high-frequency game loops where React state updates at up to 60fps (e.g., via `requestAnimationFrame`), unmemoized static or infrequently updating overlay UI components (like `FrenzyOverlay`) cause severe performance degradation from unnecessary component reconciliations.
+**Action:** Wrap such components with `React.memo()` to prevent useless re-renders. Avoid explicitly typing the variable as `React.FC<Props>` when wrapping components to avoid TypeScript `MemoExoticComponent` type mismatch, instead type properties inline and set `displayName`.
