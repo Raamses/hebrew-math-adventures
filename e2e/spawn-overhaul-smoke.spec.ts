@@ -92,10 +92,11 @@ test.describe('Spawn Overhaul — smoke test', () => {
         // Check if any bubble matches the current target
         const bodyText = document.body.textContent || '';
 
-        // Arithmetic: "N + N = ?"
-        const eqMatch = bodyText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);
-        // Sensory: "Pop N"
-        const popMatch = bodyText.match(/Pop\s+(\d+)/i) || bodyText.match(/פצץ\s+(\d+)/);
+        // Arithmetic: "N + N = ?" (Need to ignore unicode isolates in the text content)
+        const cleanText = bodyText.replace(/[\u2068\u2069]/g, '');
+        const eqMatch = cleanText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);
+        // Sensory: "Pop the bubble with N" or equivalent in Hebrew
+        const popMatch = cleanText.match(/Pop the bubble with\s+(\d+)/i) || cleanText.match(/פוצצו את הבועה שכתוב עליה\s+(\d+)/) || cleanText.match(/Pop\s+(\d+)/i) || cleanText.match(/פצץ\s+(\d+)/);
         let hasTarget = false;
 
         if (eqMatch) {
