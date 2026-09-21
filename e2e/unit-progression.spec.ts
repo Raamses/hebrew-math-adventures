@@ -10,8 +10,8 @@ import {
 test.describe('Unit progression', () => {
   // Global timeout is 180s — no need for local override
 
-  test('Complete n1_10 (CHALLENGE node) → n2_1 unlocks', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('Complete n1_10 (CHALLENGE node) → n2_1 unlocks', async ({ page }) => {
+
     await setupFreshProfileWithPracticeAccess(page, 'UnitProgress');
 
     const profileId = await getProfileId(page, 'UnitProgress');

@@ -8,8 +8,8 @@ test.describe('Math Invaders', () => {
     await setupFreshProfileWithPracticeAccess(page);
   });
 
-  test('Invaders loads with ship, lives, and score', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('Invaders loads with ship, lives, and score', async ({ page }) => {
+
   // Global timeout is 180s — no need for local override
 
     // Navigate to practice mode and select Math Invaders
