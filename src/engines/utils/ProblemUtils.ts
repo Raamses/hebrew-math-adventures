@@ -21,6 +21,21 @@ export class RandomUtils {
     }
 
     /**
+     * Returns a cryptographically secure random integer between min (inclusive) and max (exclusive).
+     * Falls back to standard PRNG if crypto is unavailable.
+     * @param min Inclusive minimum
+     * @param max Exclusive maximum
+     */
+    static secureIntInRange(min: number, max: number): number {
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+            const array = new Uint32Array(1);
+            crypto.getRandomValues(array);
+            return (array[0] % (max - min)) + min;
+        }
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    /**
      * Returns true with the specified probability (0.0 to 1.0).
      */
     static chance(probability: number): boolean {
