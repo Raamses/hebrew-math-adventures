@@ -212,8 +212,8 @@ test.describe('Parent Games', () => {
     await expect(page.locator('[data-testid="sudoku-mistakes"]').first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('Sudoku: cell selection + number input → cell updates, wrong input increments mistakes', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('Sudoku: cell selection + number input → cell updates, wrong input increments mistakes', async ({ page }) => {
+
     await openGame(page, 'sudoku');
 
     // Select easy difficulty
@@ -311,8 +311,8 @@ test.describe('Parent Games', () => {
     await expect(page.locator('[data-testid="eq-guesses-left"]').first()).toBeVisible({ timeout: 5000 });
   });
 
-  test('EOTD: type a full-length guess and submit → cells get scored states', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('EOTD: type a full-length guess and submit → cells get scored states', async ({ page }) => {
+
     await openGame(page, 'equation-of-the-day');
 
     // Wait for keyboard
