@@ -12,6 +12,20 @@ export class RandomUtils {
     }
 
     /**
+     * Returns a random integer between min (inclusive) and max (exclusive) securely.
+     * @param min Inclusive minimum
+     * @param max Exclusive maximum
+     */
+    static secureIntInRange(min: number, max: number): number {
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+            const array = new Uint32Array(1);
+            crypto.getRandomValues(array);
+            return (array[0] % (max - min)) + min;
+        }
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    /**
      * Returns a random integer between min (inclusive) and max (inclusive).
      * @param min Inclusive minimum
      * @param max Inclusive maximum

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { RandomUtils } from '../../engines/utils/ProblemUtils';
 
 interface ParentGateProps {
     onSuccess: () => void;
@@ -10,37 +11,19 @@ interface ParentGateProps {
 export const ParentGate: React.FC<ParentGateProps> = ({ onSuccess, onCancel }) => {
     const { t, i18n } = useTranslation();
     const [problem, setProblem] = useState<{ n1: number, n2: number }>(() => {
-        // Use crypto for secure random generation (authorization gate), fallback for HTTP contexts
-        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-            const array = new Uint32Array(2);
-            crypto.getRandomValues(array);
-            return {
-                n1: (array[0] % 40) + 10,
-                n2: (array[1] % 40) + 10
-            };
-        }
         return {
-            n1: Math.floor(Math.random() * 40) + 10,
-            n2: Math.floor(Math.random() * 40) + 10
+            n1: RandomUtils.secureIntInRange(10, 50),
+            n2: RandomUtils.secureIntInRange(10, 50)
         };
     });
     const [answer, setAnswer] = useState('');
     const [error, setError] = useState(false);
 
     const generateProblem = () => {
-        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-            const array = new Uint32Array(2);
-            crypto.getRandomValues(array);
-            setProblem({
-                n1: (array[0] % 40) + 10,
-                n2: (array[1] % 40) + 10
-            });
-        } else {
-            setProblem({
-                n1: Math.floor(Math.random() * 40) + 10,
-                n2: Math.floor(Math.random() * 40) + 10
-            });
-        }
+        setProblem({
+            n1: RandomUtils.secureIntInRange(10, 50),
+            n2: RandomUtils.secureIntInRange(10, 50)
+        });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
