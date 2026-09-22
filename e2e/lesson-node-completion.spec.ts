@@ -10,8 +10,8 @@ import { setupFreshProfileWithPracticeAccess } from './helpers';
 test.describe('Lesson node completion', () => {
   // Global timeout is 180s — no need for local override
 
-  test('LESSON node (n3_1) — step through lesson → complete → stars → unlock n3_2', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('LESSON node (n3_1) — step through lesson → complete → stars → unlock n3_2', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await setupFreshProfileWithPracticeAccess(page, 'LessonTest');
 
     // --- Navigate to the LESSON node (n3_1) ---

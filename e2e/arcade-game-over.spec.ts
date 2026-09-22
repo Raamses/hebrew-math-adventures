@@ -347,8 +347,8 @@ test.describe('Arcade Game-Over flows', () => {
   });
 
   // ─── Test 3: Math Invaders — play → game over → return to saga map ───
-  test('Math Invaders — play → game over → return to saga map', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('Math Invaders — play → game over → return to saga map', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     test.setTimeout(300_000); // 5 min — invaders game loop needs headroom beyond 180s global
     await setupFreshProfileWithPracticeAccess(page, 'InvadersBot');
 

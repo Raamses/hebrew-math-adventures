@@ -124,8 +124,8 @@ test.describe('entering fusion mode', () => {
 // --- Streak progression ---------------------------------------------------
 
 test.describe('streak progression', () => {
-  test('correct answers advance the streak', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('correct answers advance the streak', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await startFusion(page);
     await buildStreak(page, 1);
 
@@ -134,8 +134,8 @@ test.describe('streak progression', () => {
     await expect(fusionStreak(page)).toContainText(/\b1\b/, APPEAR);
   });
 
-  test('the first multiplier tier lands at streak three', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('the first multiplier tier lands at streak three', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await startFusion(page);
     await buildStreak(page, TIERS[0].streak);
 
@@ -153,8 +153,8 @@ test.describe('streak progression', () => {
     await expect(fusionMultiplier(page)).not.toBeVisible();
   });
 
-  test('each tier replaces the last as the streak climbs', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('each tier replaces the last as the streak climbs', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await startFusion(page);
 
     const hud = fusionHud(page);
@@ -173,8 +173,8 @@ test.describe('streak progression', () => {
     await expect(hud).not.toContainText(TIERS[0].label);
   });
 
-  test('the streak counter matches the tier it unlocked', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('the streak counter matches the tier it unlocked', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await startFusion(page);
     await buildStreak(page, TIERS[1].streak);
 
@@ -188,8 +188,8 @@ test.describe('streak progression', () => {
 // --- Fusion bubbles -------------------------------------------------------
 
 test.describe('fusion bubbles', () => {
-  test('a fusion bubble spawns once the streak reaches three', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('a fusion bubble spawns once the streak reaches three', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     // Fusion bubbles now have data-testid="fusion-bubble-{value}" (added in
     // this commit). ComboFusionStrategy.shouldSpawnFusion() returns true at
     // streak >= MIN_FUSION_STREAK (3). The next target bubble generated after
@@ -203,8 +203,8 @@ test.describe('fusion bubbles', () => {
     await expect(fusionBubble).toBeVisible({ timeout: 10_000 });
   });
 
-  test('merging a fusion bubble records a merge event', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('merging a fusion bubble records a merge event', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     // When a fusion bubble is popped, the engine triggers a merge: nearby
     // bubbles within MERGE_RADIUS_PERCENT (25%) are consumed, and mergeEvents
     // gets a new entry with points scaled by the multiplier. The merge
@@ -237,8 +237,8 @@ test.describe('fusion bubbles', () => {
 // --- Breaking the streak --------------------------------------------------
 
 test.describe('breaking the streak', () => {
-  test('a wrong answer resets the fusion streak to zero', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+  test('a wrong answer resets the fusion streak to zero', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     // Build a streak, then click a wrong bubble. solveBubbleProblem reads the
     // math prompt and clicks the correct answer. To click wrong, we need to
     // find a bubble with a different value than the answer.

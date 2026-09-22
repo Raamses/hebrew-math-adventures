@@ -84,8 +84,8 @@ test.describe('Powerups, Frenzy Mode, and Level Up Banners', () => {
       expect(frenzyVisible).toBe(true);
     });
 
-    test('2. Combo 10 → frenzy escalates to super tier', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+    test('2. Combo 10 → frenzy escalates to super tier', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfile(page, 'FrenzyTester');
       await startClassicArcade(page);
       // Build a combo of 10 correct answers
@@ -107,8 +107,8 @@ test.describe('Powerups, Frenzy Mode, and Level Up Banners', () => {
         'Consider injecting combo state or using a longer timeout.');
     });
 
-    test('4. Frenzy ends when combo breaks (wrong answer)', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+    test('4. Frenzy ends when combo breaks (wrong answer)', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfile(page, 'FrenzyTester');
       await startClassicArcade(page);
       // Build combo to 5 to trigger frenzy
