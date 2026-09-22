@@ -185,8 +185,8 @@ test.describe('Daily Challenge — arcade modes', () => {
     const todayMode = MODES[seed % MODES.length];
     const todayTarget = 10 + (seed % 10); // 10-19
 
-    console.log(`[DC Complete] Today's challenge: mode=${
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');todayMode}, target=${todayTarget}`);
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    console.log(`[DC Complete] Today's challenge: mode=${todayMode}, target=${todayTarget}`);
 
     await setupFreshProfile(page, 'DCComplete');
     await selectArcadeMode(page, todayMode);
