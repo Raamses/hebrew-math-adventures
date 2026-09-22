@@ -64,8 +64,8 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
       await expect(scene).toBeVisible();
     });
 
-    test('2. Scene renders items with data-testid="lesson-item-{id}"', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+    test('2. Scene renders items with data-testid="lesson-item-{id}"', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
@@ -87,8 +87,8 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
       expect(countAfter).toBeGreaterThan(0);
     });
 
-    test('3. Scene renders targets with data-testid="lesson-target-{id}"', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+    test('3. Scene renders targets with data-testid="lesson-target-{id}"', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
@@ -117,8 +117,8 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
       }
     });
 
-    test('4. Dialog step shows mascot text and a Next button', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+    test('4. Dialog step shows mascot text and a Next button', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
@@ -136,8 +136,8 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
 
   test.describe('Interactive step progression', () => {
 
-    test('5. Drag step: drag an item to a target → target count increases', async ({
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)'); page }) => {
+    test('5. Drag step: drag an item to a target → target count increases', async ({ page  }) => {
+    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
