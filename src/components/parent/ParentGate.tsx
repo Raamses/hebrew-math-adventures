@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Lock, RefreshCw, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n';
 import { Mascot, type MascotCharacter } from '../mascot/Mascot';
 
 export interface ParentGateProps {
@@ -13,26 +14,58 @@ export interface ParentGateProps {
   mascotId?: MascotCharacter | string;
 }
 
-export function getInWorldCopy(mascot: string = 'bear'): string {
-  const m = mascot.toLowerCase();
-  let callToAction = 'עזרו לדב לפתוח את השער';
-  if (m === 'owl' || m === 'ינשוף') {
-    callToAction = 'עזרו לינשוף לפתוח את השער';
-  } else if (m === 'ant' || m === 'נמלה') {
-    callToAction = 'עזרו לנמלה לפתוח את השער';
-  } else if (m === 'lion' || m === 'אריה') {
-    callToAction = 'עזרו לאריה לפתוח את השער';
-  } else if (m === 'bear' || m === 'דב' || m === 'דוב') {
-    callToAction = 'עזרו לדב לפתוח את השער';
-  } else {
-    callToAction = `עזרו ל${mascot} לפתוח את השער`;
-  }
-  return `רגע של גדולים — ${callToAction}`;
-}
-
 const isKnownMascot = (m: string): m is MascotCharacter => {
   return ['owl', 'bear', 'ant', 'lion'].includes(m);
 };
+
+export function getInWorldCopy(
+  mascotOrT?: string | ((key: string, opts?: any) => string),
+  tOrMascot?: ((key: string, opts?: any) => string) | string
+): string {
+  let mascot = 'bear';
+  let t = (key: string, opts?: any) => opts?.defaultValue || key;
+  if (typeof i18n !== 'undefined' && i18n.t) {
+    t = i18n.t.bind(i18n);
+  }
+
+  if (typeof mascotOrT === 'function') {
+    t = mascotOrT;
+    if (typeof tOrMascot === 'string') mascot = tOrMascot;
+  } else if (typeof mascotOrT === 'string') {
+    mascot = mascotOrT;
+    if (typeof tOrMascot === 'function') t = tOrMascot;
+  }
+
+  const m = mascot.toLowerCase();
+  let mascotKey: MascotCharacter = 'bear';
+  if (m === 'owl' || m === 'ינשוף') {
+    mascotKey = 'owl';
+  } else if (m === 'ant' || m === 'נמלה') {
+    mascotKey = 'ant';
+  } else if (m === 'lion' || m === 'אריה') {
+    mascotKey = 'lion';
+  } else if (m === 'bear' || m === 'דב' || m === 'דוב') {
+    mascotKey = 'bear';
+  } else if (isKnownMascot(m)) {
+    mascotKey = m;
+  } else {
+    return t('parent.gate.customMascot', {
+      mascot,
+      defaultValue: `רגע של גדולים — עזרו ל${mascot} לפתוח את השער`,
+    });
+  }
+
+  return t(`parent.gate.mascots.${mascotKey}`, {
+    defaultValue:
+      mascotKey === 'owl'
+        ? 'רגע של גדולים — עזרו לינשוף לפתוח את השער'
+        : mascotKey === 'ant'
+        ? 'רגע של גדולים — עזרו לנמלה לפתוח את השער'
+        : mascotKey === 'lion'
+        ? 'רגע של גדולים — עזרו לאריה לפתוח את השער'
+        : 'רגע של גדולים — עזרו לדב לפתוח את השער',
+  });
+}
 
 export const ParentGate: React.FC<ParentGateProps> = ({
   onSuccess,
@@ -43,7 +76,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
   mascot,
   mascotId,
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n: i18nInstance } = useTranslation();
   const currentMascot = activeMascot || mascot || mascotId || 'bear';
 
   const mascotChar: MascotCharacter = isKnownMascot(currentMascot)
@@ -116,7 +149,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
         setFailedAttempts(nextFailed);
         setAnswer('');
         generateProblem();
-        setMascotMessage('לא נורא, בוא ננסה שאלה אחרת!');
+        setMascotMessage(t('parent.gate.tryAgain'));
       }
     }
   };
@@ -139,7 +172,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
     <div
       data-testid="parent-gate"
       className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
-      dir={i18n.dir ? i18n.dir() : 'rtl'}
+      dir={i18nInstance.dir ? i18nInstance.dir() : 'rtl'}
     >
       <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-[393px] relative flex flex-col items-center gap-3">
         {/* Cancel (X) button */}
@@ -147,7 +180,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
           type="button"
           onClick={handleClose}
           className="absolute top-4 left-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
-          aria-label="סגור"
+          aria-label={t('parent.gate.close')}
           data-testid="parent-gate-cancel"
         >
           <X size={22} />
@@ -160,16 +193,16 @@ export const ParentGate: React.FC<ParentGateProps> = ({
             className="flex items-center gap-1.5 text-xs text-slate-500 font-medium bg-slate-100/90 rounded-full px-3 py-1 select-none"
           >
             <Lock size={12} className="text-slate-400" />
-            <span>כניסה מאובטחת</span>
+            <span>{t('parent.gate.hint')}</span>
           </div>
         )}
 
-        {/* In-world Hebrew copy at the top */}
+        {/* In-world copy at the top */}
         <h2
           className="text-lg font-bold text-center text-slate-800 px-6 pt-1 leading-snug"
           data-testid="parent-gate-title"
         >
-          {getInWorldCopy(currentMascot)}
+          {getInWorldCopy(currentMascot, t)}
         </h2>
 
         {/* Mascot Handover Frame: child's active mascot holds a clipboard */}
@@ -234,7 +267,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
               }
             }}
             maxLength={3}
-            aria-label="תשובה"
+            aria-label={t('parent.gate.answer')}
             className="w-full max-w-[220px] text-center text-3xl font-bold py-2 px-4 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none tracking-widest bg-slate-50 text-slate-800"
             placeholder="?"
             dir="ltr"
@@ -261,7 +294,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
             <button
               type="button"
               onClick={handleBackspace}
-              aria-label="מחק"
+              aria-label={t('parent.gate.backspace')}
               className="h-14 min-h-[56px] text-xl font-bold bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-600 rounded-2xl border border-slate-200/80 transition-all active:scale-95 shadow-sm touch-manipulation flex items-center justify-center cursor-pointer select-none"
               data-testid="parent-gate-key-backspace"
             >
@@ -277,7 +310,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
             </button>
             <button
               type="submit"
-              aria-label="אישור"
+              aria-label={t('parent.gate.confirm')}
               className="h-14 min-h-[56px] text-xl font-bold bg-primary hover:bg-primary/90 active:bg-primary/80 text-white rounded-2xl transition-all active:scale-95 shadow-md touch-manipulation flex items-center justify-center cursor-pointer select-none"
               data-testid="parent-gate-key-submit"
             >
@@ -294,7 +327,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
           data-testid="parent-gate-another-problem"
         >
           <RefreshCw size={14} />
-          <span>שאלה אחרת</span>
+          <span>{t('parent.gate.anotherProblem')}</span>
         </button>
       </div>
     </div>

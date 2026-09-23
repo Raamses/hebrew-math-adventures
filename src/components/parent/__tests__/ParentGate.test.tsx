@@ -1,10 +1,15 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ParentGate } from '../ParentGate';
+import i18n from '../../../i18n';
+import { ParentGate, getInWorldCopy } from '../ParentGate';
 
 describe('ParentGate', () => {
+  afterEach(async () => {
+    await i18n.changeLanguage('he');
+  });
+
   /* ── 1. Mascot handover frame & in-world copy ──────────────────── */
   describe('mascot handover frame and in-world copy', () => {
     it('renders with the default active mascot (bear) and in-world copy', () => {
@@ -206,7 +211,7 @@ describe('ParentGate', () => {
 
       const hint = screen.getByTestId('parent-gate-friction-hint');
       expect(hint).toBeInTheDocument();
-      expect(hint).toHaveTextContent('כניסה מאובטחת');
+      expect(hint).toHaveTextContent('שער לגדולים');
     });
 
     it('does not render the friction hint for select origin', () => {
@@ -284,6 +289,71 @@ describe('ParentGate', () => {
       const submitKey = screen.getByTestId('parent-gate-key-submit');
       expect(submitKey.className).toContain('h-14');
       expect(submitKey.className).toContain('min-h-[56px]');
+    });
+  });
+
+  /* ── 6. i18n translations (English & Hebrew) ─────────────────────── */
+  describe('i18n localization', () => {
+    it('renders English strings when language is set to English', async () => {
+      await i18n.changeLanguage('en');
+
+      render(
+        <ParentGate
+          onSuccess={vi.fn()}
+          onCancel={vi.fn()}
+          origin="map"
+          activeMascot="owl"
+        />
+      );
+
+      // English in-world title with owl
+      expect(
+        screen.getByText("Grown-ups' Moment — Help Owl open the gate")
+      ).toBeInTheDocument();
+
+      // English friction hint for map origin
+      expect(screen.getByTestId('parent-gate-friction-hint')).toHaveTextContent(
+        "Grown-ups' Gate"
+      );
+
+      // English aria labels
+      expect(screen.getByTestId('parent-gate-cancel')).toHaveAttribute('aria-label', 'Close');
+      expect(screen.getByTestId('parent-gate-input')).toHaveAttribute('aria-label', 'Answer');
+      expect(screen.getByTestId('parent-gate-key-backspace')).toHaveAttribute('aria-label', 'Delete');
+      expect(screen.getByTestId('parent-gate-key-submit')).toHaveAttribute('aria-label', 'Confirm');
+
+      // English button text
+      expect(screen.getByTestId('parent-gate-another-problem')).toHaveTextContent(
+        'Another question'
+      );
+    });
+
+    it('renders English retry message on failed attempt', async () => {
+      const user = userEvent.setup();
+      await i18n.changeLanguage('en');
+
+      render(<ParentGate onSuccess={vi.fn()} onCancel={vi.fn()} />);
+
+      await user.click(screen.getByTestId('parent-gate-key-1'));
+      await user.click(screen.getByTestId('parent-gate-key-submit'));
+
+      expect(
+        screen.getByText("Never mind, let's try another question!")
+      ).toBeInTheDocument();
+    });
+
+    it('getInWorldCopy returns translated copy for all mascots in both languages', async () => {
+      await i18n.changeLanguage('he');
+      expect(getInWorldCopy('bear')).toBe('רגע של גדולים — עזרו לדב לפתוח את השער');
+      expect(getInWorldCopy('owl')).toBe('רגע של גדולים — עזרו לינשוף לפתוח את השער');
+      expect(getInWorldCopy('ant')).toBe('רגע של גדולים — עזרו לנמלה לפתוח את השער');
+      expect(getInWorldCopy('lion')).toBe('רגע של גדולים — עזרו לאריה לפתוח את השער');
+
+      await i18n.changeLanguage('en');
+      expect(getInWorldCopy('bear')).toBe("Grown-ups' Moment — Help Bear open the gate");
+      expect(getInWorldCopy('owl')).toBe("Grown-ups' Moment — Help Owl open the gate");
+      expect(getInWorldCopy('ant')).toBe("Grown-ups' Moment — Help Ant open the gate");
+      expect(getInWorldCopy('lion')).toBe("Grown-ups' Moment — Help Lion open the gate");
     });
   });
 });

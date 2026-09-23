@@ -189,6 +189,27 @@
     "gateTitle": "Parent Gate",
     "gateDesc": "Solve to continue:",
     "enter": "Enter",
+    "gate": {
+      "hint": "Grown-ups' Gate",
+      "title": "Grown-ups' Moment — Help Bear open the gate",
+      "title_bear": "Grown-ups' Moment — Help Bear open the gate",
+      "title_owl": "Grown-ups' Moment — Help Owl open the gate",
+      "title_ant": "Grown-ups' Moment — Help Ant open the gate",
+      "title_lion": "Grown-ups' Moment — Help Lion open the gate",
+      "mascots": {
+        "bear": "Grown-ups' Moment — Help Bear open the gate",
+        "owl": "Grown-ups' Moment — Help Owl open the gate",
+        "ant": "Grown-ups' Moment — Help Ant open the gate",
+        "lion": "Grown-ups' Moment — Help Lion open the gate"
+      },
+      "customMascot": "Grown-ups' Moment — Help {{mascot}} open the gate",
+      "tryAgain": "Never mind, let's try another question!",
+      "anotherProblem": "Another question",
+      "close": "Close",
+      "answer": "Answer",
+      "backspace": "Delete",
+      "confirm": "Confirm"
+    },
     "edit": {
       "title": "Edit Profile",
       "save": "Save Changes",
