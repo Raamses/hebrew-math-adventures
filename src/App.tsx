@@ -121,6 +121,8 @@ const AppContent = () => {
         <ProfileSelector onParentAccess={handleParentAccessFromSelector} />
         {showParentGate && (
           <ParentGate
+            origin={parentGateOrigin}
+            activeMascot={profile?.mascotId}
             onSuccess={handleParentGateSuccess}
             onCancel={() => setShowParentGate(false)}
           />
@@ -148,6 +150,8 @@ const AppContent = () => {
         />
         {showParentGate && (
           <ParentGate
+            origin={parentGateOrigin}
+            activeMascot={profile?.mascotId}
             onSuccess={handleParentGateSuccess}
             onCancel={() => setShowParentGate(false)}
           />
