@@ -6,9 +6,11 @@ import { deriveSkillInsights } from '../../lib/skillAnalysis';
 import {
     selectPracticeTarget,
     getSkillLabel,
+    getSkillPracticeConfig,
     SKILL_LABELS,
     SKILL_PRACTICE_CONFIGS,
 } from '../../lib/skillFocus';
+import { getWeekStartISO } from './games/parentEconomyEngine';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
 import type { UserProfile } from '../../types/user';
 
@@ -74,7 +76,13 @@ export const PostcardHub: React.FC<PostcardHubProps> = ({
     onOpenDetails,
 }) => {
     const { t, i18n } = useTranslation();
-    const { profile: contextProfile } = useProfile();
+    let contextProfile: UserProfile | null = null;
+    try {
+        const ctx = useProfile();
+        contextProfile = ctx.profile;
+    } catch {
+        // Fallback for tests rendered without ProfileProvider
+    }
     const activeProfile = propProfile !== undefined ? propProfile : contextProfile;
 
     const skillAnalysis = useMemo(
@@ -91,6 +99,14 @@ export const PostcardHub: React.FC<PostcardHubProps> = ({
     const practiceTarget = useMemo(() => {
         return selectPracticeTarget(skillAnalysis);
     }, [skillAnalysis]);
+
+    // Active weekly goal (if present and current weekStart matches)
+    const activeWeeklyGoal = useMemo(() => {
+        if (!activeProfile?.weeklyGoal) return null;
+        const currentWeek = getWeekStartISO();
+        if (activeProfile.weeklyGoal.weekStart !== currentWeek) return null;
+        return activeProfile.weeklyGoal;
+    }, [activeProfile?.weeklyGoal]);
 
     // 3 compact stats
     const streak = activeProfile?.streak || 0;
@@ -199,6 +215,70 @@ export const PostcardHub: React.FC<PostcardHubProps> = ({
                     </button>
                 )}
             </div>
+
+            {/* Weekly Goal Chip (card PG-3) */}
+            {activeWeeklyGoal ? (
+                <div
+                    data-testid="postcard-weekly-goal-chip"
+                    className="bg-white rounded-2xl border border-blue-100 p-4 shadow-xs flex items-center justify-between gap-3"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 font-black text-xl shrink-0">
+                            🎯
+                        </div>
+                        <div>
+                            <div className="text-xs font-bold text-blue-500">
+                                {t('parent.postcard.weeklyGoalTitle', 'יעד שבועי')}
+                            </div>
+                            <div className="text-sm font-extrabold text-slate-800">
+                                {`${activeWeeklyGoal.target} תרגילי ${getSkillLabel(activeWeeklyGoal.skillKey)}`}
+                            </div>
+                        </div>
+                    </div>
+                    {onPracticeSkill ? (
+                        <button
+                            type="button"
+                            onClick={() => onPracticeSkill(getSkillPracticeConfig(activeWeeklyGoal.skillKey))}
+                            data-testid="postcard-goal-practice-btn"
+                            className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-all min-h-[44px] shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                        >
+                            <span>{t('analytics.practiceThis', 'תרגל עכשיו')}</span>
+                            <span aria-hidden="true">←</span>
+                        </button>
+                    ) : onOpenDetails ? (
+                        <button
+                            type="button"
+                            onClick={onOpenDetails}
+                            data-testid="postcard-goal-details-btn"
+                            className="text-blue-600 font-bold text-xs hover:underline cursor-pointer"
+                        >
+                            {t('parent.tabs.goals', 'מטרות')} →
+                        </button>
+                    ) : null}
+                </div>
+            ) : onOpenDetails ? (
+                <div
+                    data-testid="postcard-weekly-goal-chip"
+                    className="bg-white/80 rounded-2xl border border-dashed border-slate-200 p-3.5 flex items-center justify-between gap-3"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-base shrink-0">
+                            🎯
+                        </div>
+                        <div className="text-xs font-bold text-slate-500">
+                            {t('parent.postcard.noWeeklyGoal', 'טרם הוגדר יעד שבועי')}
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onOpenDetails}
+                        data-testid="postcard-set-goal-btn"
+                        className="text-blue-600 hover:text-blue-700 font-bold text-xs px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer"
+                    >
+                        {t('parent.postcard.setGoalAction', 'הגדר יעד')} +
+                    </button>
+                </div>
+            ) : null}
 
             {/* 3. Compact 3-Stat Strip (streak / badges / accuracy) */}
             <div data-testid="postcard-stat-strip" className="grid grid-cols-3 gap-2.5">

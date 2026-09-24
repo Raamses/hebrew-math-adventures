@@ -3,6 +3,8 @@ import { getDailyChallenge, getStreakMultiplier, type DailyChallenge } from '../
 import { getDailyQuests, type DailyQuest, type QuestMetric } from '../data/dailyQuests';
 import { useProfile } from './ProfileContext';
 import { STORAGE_KEYS } from '../lib/worldConfig';
+import { getSkillLabel } from '../lib/skillFocus';
+import { getWeekStartISO } from '../components/parent/games/parentEconomyEngine';
 
 interface DailyProgress {
   dailyStamps: string[]; // dates completed (YYYY-MM-DD)
@@ -29,6 +31,7 @@ interface QuestContextType {
   questClaimed: string[];
   recordQuestEvent: (metric: QuestMetric, amount?: number) => void;
   claimQuest: (questId: string) => void;
+  weeklyGoalQuest?: DailyQuest | null;
 }
 
 
@@ -101,7 +104,46 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const { profile, updateProfile, unlockBadge, addGems } = useProfile();
   const todayChallenge = getDailyChallenge();
   const todayStr = todayChallenge.date;
-  const todayQuests = useMemo(() => getDailyQuests(), []);
+  const baseQuests = useMemo(() => getDailyQuests(), []);
+
+  // Weekly Goal as in-fiction quest in mascot's voice (Card PG-3)
+  const weeklyGoal = profile?.weeklyGoal;
+  const currentWeekStart = getWeekStartISO();
+  const isGoalActive = Boolean(weeklyGoal && weeklyGoal.weekStart === currentWeekStart);
+
+  const weeklyGoalQuest: DailyQuest | null = useMemo(() => {
+    if (!isGoalActive || !weeklyGoal) return null;
+    const skillLabel = getSkillLabel(weeklyGoal.skillKey);
+    const mascotKey = profile?.mascotId || 'bear';
+    const mascotNames: Record<string, string> = {
+      owl: 'הינשוף',
+      bear: 'הדב',
+      ant: 'הנמלה',
+      lion: 'האריה',
+    };
+    const mascotIcons: Record<string, string> = {
+      owl: '🦉',
+      bear: '🐻',
+      ant: '🐜',
+      lion: '🦁',
+    };
+    const mascotName = mascotNames[mascotKey] || 'המדריך';
+    const mascotIcon = mascotIcons[mascotKey] || '🎯';
+
+    return {
+      id: `weekly-goal-${weeklyGoal.weekStart}`,
+      metric: 'correct_answers',
+      target: weeklyGoal.target,
+      gemReward: 10,
+      titleKey: `אתגר השבוע של ${mascotName}`,
+      descKey: `בואו נפתור יחד ${weeklyGoal.target} תרגילי ${skillLabel} השבוע!`,
+      icon: mascotIcon,
+    };
+  }, [isGoalActive, weeklyGoal, profile?.mascotId]);
+
+  const todayQuests = useMemo(() => {
+    return weeklyGoalQuest ? [...baseQuests, weeklyGoalQuest] : baseQuests;
+  }, [baseQuests, weeklyGoalQuest]);
 
   const [dailyProgress, setDailyProgress] = useState<DailyProgress>(() => {
     if (!profile) return { ...EMPTY_PROGRESS };
@@ -317,6 +359,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     questClaimed: dailyProgress.questClaimed || [],
     recordQuestEvent,
     claimQuest,
+    weeklyGoalQuest,
   };
 
   return <QuestContext.Provider value={value}>{children}</QuestContext.Provider>;

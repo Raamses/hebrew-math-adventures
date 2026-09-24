@@ -6,7 +6,10 @@ import { PostcardHub } from './PostcardHub';
 import { SkillBreakdown } from './SkillBreakdown';
 import { ParentGamesHub } from './ParentGamesHub';
 import { ProfileManager } from './ProfileManager';
+import { SKILL_CONFIGS, getSkillLabel, getSkillPracticeConfig } from '../../lib/skillFocus';
+import { getWeekStartISO } from './games/parentEconomyEngine';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
+import type { UserProfile, WeeklyGoal } from '../../types/user';
 
 export type ParentTabId = 'postcard' | 'goals' | 'games' | 'settings';
 
@@ -23,6 +26,255 @@ export const PARENT_TABS: TabConfig[] = [
     { id: 'games', labelKey: 'parent.tabs.games', defaultLabel: 'משחקים', icon: '🎮' },
     { id: 'settings', labelKey: 'parent.tabs.settings', defaultLabel: 'הגדרות', icon: '⚙️' },
 ];
+
+export interface WeeklyGoalCardProps {
+    profile?: UserProfile | null;
+    onPracticeSkill?: (config: BaseProblemConfig) => void;
+    onSetGoal?: (goal: WeeklyGoal | undefined) => void;
+}
+
+export const WeeklyGoalCard: React.FC<WeeklyGoalCardProps> = ({
+    profile: propProfile,
+    onPracticeSkill,
+    onSetGoal,
+}) => {
+    const { t } = useTranslation();
+    let contextProfile: UserProfile | null = null;
+    let updateProfile: ((id: string, updates: Partial<UserProfile>) => void) | undefined = undefined;
+    try {
+        const ctx = useProfile();
+        contextProfile = ctx.profile;
+        updateProfile = ctx.updateProfile;
+    } catch {
+        // Fallback for tests rendered without ProfileProvider
+    }
+    const activeProfile = propProfile !== undefined ? propProfile : contextProfile;
+
+    const currentWeek = getWeekStartISO();
+    const rawGoal = activeProfile?.weeklyGoal;
+    const isRolledOver = Boolean(rawGoal && rawGoal.weekStart !== currentWeek);
+    const activeGoal = isRolledOver ? null : rawGoal;
+
+    // Auto-clear on rollover if weekStart mismatch
+    useEffect(() => {
+        if (isRolledOver && activeProfile?.id) {
+            if (updateProfile) {
+                updateProfile(activeProfile.id, { weeklyGoal: undefined });
+            }
+            if (onSetGoal) {
+                onSetGoal(undefined);
+            }
+        }
+    }, [isRolledOver, activeProfile?.id, updateProfile, onSetGoal]);
+
+    const [isEditing, setIsEditing] = useState(false);
+    const skillKeys = useMemo(() => Object.keys(SKILL_CONFIGS), []);
+    const [selectedSkill, setSelectedSkill] = useState<string>(activeGoal?.skillKey || skillKeys[0] || 'addition');
+    const [targetCount, setTargetCount] = useState<number>(activeGoal?.target || 5);
+
+    // Sync form state when activeGoal changes
+    useEffect(() => {
+        if (activeGoal) {
+            setSelectedSkill(activeGoal.skillKey);
+            setTargetCount(activeGoal.target);
+        } else {
+            setSelectedSkill(skillKeys[0] || 'addition');
+            setTargetCount(5);
+        }
+    }, [activeGoal, skillKeys]);
+
+    const handleSave = useCallback(() => {
+        const target = Math.max(1, Number(targetCount) || 5);
+        const goalData: WeeklyGoal = {
+            skillKey: selectedSkill,
+            target,
+            weekStart: currentWeek,
+        };
+        if (activeProfile?.id && updateProfile) {
+            updateProfile(activeProfile.id, { weeklyGoal: goalData });
+        }
+        if (onSetGoal) {
+            onSetGoal(goalData);
+        }
+        setIsEditing(false);
+    }, [activeProfile?.id, selectedSkill, targetCount, currentWeek, updateProfile, onSetGoal]);
+
+    const handleClear = useCallback(() => {
+        if (activeProfile?.id && updateProfile) {
+            updateProfile(activeProfile.id, { weeklyGoal: undefined });
+        }
+        if (onSetGoal) {
+            onSetGoal(undefined);
+        }
+        setIsEditing(false);
+    }, [activeProfile?.id, updateProfile, onSetGoal]);
+
+    if (!activeProfile) {
+        return null;
+    }
+
+    const showForm = !activeGoal || isEditing;
+
+    return (
+        <div
+            data-testid="weekly-goal-card"
+            className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4"
+        >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-xl shrink-0">
+                        🎯
+                    </div>
+                    <div>
+                        <h2 className="text-base font-extrabold text-slate-800 leading-tight">
+                            {t('parent.goals.title', 'מטרה שבועית')}
+                        </h2>
+                        <p className="text-xs text-slate-400">
+                            {t('parent.goals.subtitle', 'הגדר יעד שיופיע כאתגר מיוחד לילד/ה')}
+                        </p>
+                    </div>
+                </div>
+                {activeGoal && !isEditing && (
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                        {t('parent.goals.activeStatus', 'פעיל השבוע ✓')}
+                    </span>
+                )}
+            </div>
+
+            {showForm ? (
+                <div data-testid="weekly-goal-form" className="space-y-4">
+                    <div>
+                        <label
+                            htmlFor="weekly-goal-skill-picker"
+                            className="block text-xs font-bold text-slate-600 mb-1.5"
+                        >
+                            {t('parent.goals.selectSkill', 'בחר מיומנות יעד:')}
+                        </label>
+                        <select
+                            id="weekly-goal-skill-picker"
+                            data-testid="weekly-goal-skill-picker"
+                            value={selectedSkill}
+                            onChange={(e) => setSelectedSkill(e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 min-h-[44px] shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                        >
+                            {skillKeys.map((key) => (
+                                <option key={key} value={key}>
+                                    {SKILL_CONFIGS[key]?.defaultLabelHe || key}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label
+                            htmlFor="weekly-goal-target-input"
+                            className="block text-xs font-bold text-slate-600 mb-1.5"
+                        >
+                            {t('parent.goals.selectCount', 'כמות תרגילים:')}
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                id="weekly-goal-target-input"
+                                type="number"
+                                data-testid="weekly-goal-target-input"
+                                min={1}
+                                max={100}
+                                value={targetCount}
+                                onChange={(e) => setTargetCount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                className="w-24 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-center text-slate-800 min-h-[44px] shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+                            {[5, 10, 15, 20].map((preset) => (
+                                <button
+                                    key={preset}
+                                    type="button"
+                                    onClick={() => setTargetCount(preset)}
+                                    className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] transition-colors cursor-pointer ${
+                                        targetCount === preset
+                                            ? 'bg-blue-600 text-white shadow-xs'
+                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    }`}
+                                >
+                                    {preset}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                        <button
+                            type="button"
+                            onClick={handleSave}
+                            data-testid="weekly-goal-save-btn"
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-sm py-2.5 px-4 rounded-xl transition-all min-h-[44px] shadow-xs cursor-pointer"
+                        >
+                            {activeGoal ? t('common.save', 'שמור שינויים') : t('parent.goals.saveGoal', 'שמור מטרה')}
+                        </button>
+                        {activeGoal && (
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(false)}
+                                data-testid="weekly-goal-cancel-btn"
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-2.5 px-4 rounded-xl transition-all min-h-[44px] cursor-pointer"
+                            >
+                                {t('common.cancel', 'ביטול')}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <div data-testid="weekly-goal-display" className="space-y-4">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex items-center justify-between gap-3">
+                        <div>
+                            <div className="text-xs font-bold text-slate-400 mb-0.5">
+                                {t('parent.goals.activeGoalTitle', 'יעד שהוגדר')}
+                            </div>
+                            <div
+                                data-testid="weekly-goal-text"
+                                className="text-lg font-black text-slate-800"
+                            >
+                                {`${activeGoal.target} תרגילי ${getSkillLabel(activeGoal.skillKey)}`}
+                            </div>
+                            <div className="text-[11px] font-medium text-slate-400 mt-0.5">
+                                {`שבוע שהחל ב-${activeGoal.weekStart}`}
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(true)}
+                                data-testid="weekly-goal-edit-btn"
+                                className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs py-2 px-3 rounded-xl transition-all min-h-[44px] shadow-xs cursor-pointer"
+                            >
+                                {t('parent.goals.edit', 'ערוך')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleClear}
+                                data-testid="weekly-goal-clear-btn"
+                                aria-label="נקה מטרה"
+                                className="bg-white border border-rose-100 hover:bg-rose-50 text-rose-600 font-bold text-xs p-2 rounded-xl transition-all min-h-[44px] min-w-[44px] flex items-center justify-center shadow-xs cursor-pointer"
+                            >
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+
+                    {onPracticeSkill && (
+                        <button
+                            type="button"
+                            onClick={() => onPracticeSkill(getSkillPracticeConfig(activeGoal.skillKey))}
+                            data-testid="weekly-goal-practice-btn"
+                            className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-sm py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5 min-h-[44px] cursor-pointer"
+                        >
+                            <span>{t('parent.goals.practiceTarget', 'תרגל יעד שבועי עכשיו')}</span>
+                            <span aria-hidden="true">←</span>
+                        </button>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
 
 export interface ParentDashboardProps {
     onExit: () => void;
@@ -123,7 +375,13 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPrac
                         />
                     )}
                     {activeTab === 'goals' && (
-                        <SkillBreakdown onPracticeSkill={onPracticeSkill} />
+                        <div className="space-y-6" data-testid="parent-goals-tab">
+                            <WeeklyGoalCard
+                                profile={selectedProfile}
+                                onPracticeSkill={onPracticeSkill}
+                            />
+                            <SkillBreakdown onPracticeSkill={onPracticeSkill} />
+                        </div>
                     )}
                     {activeTab === 'games' && (
                         <ParentGamesHub />
