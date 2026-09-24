@@ -45,6 +45,14 @@ export interface UserProfile {
     // Phase 3 fields
     pet?: PetState | null;
     gems?: number;
+    // Card PG-3: Weekly Goals
+    weeklyGoal?: WeeklyGoal;
+}
+
+export interface WeeklyGoal {
+    skillKey: string;
+    target: number;
+    weekStart: string;
 }
 
 export const XP_PER_LEVEL = 100; // Deprecated, kept for safe removal reference only

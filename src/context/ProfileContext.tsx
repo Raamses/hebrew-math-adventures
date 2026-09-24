@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { type UserProfile, type PetState, type PetSpecies } from '../types/user';
+import { type UserProfile, type PetState, type PetSpecies, type WeeklyGoal } from '../types/user';
 import type { SessionRecord } from '../types/analytics';
 import { INITIAL_CAPABILITY_PROFILE } from '../types/progress';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { isValidProfileName } from '../lib/validation';
 import { STORAGE_KEYS } from '../lib/worldConfig';
 import { RandomUtils } from '../engines/utils/ProblemUtils';
+import { getWeekStartISO } from '../components/parent/games/parentEconomyEngine';
 
 const PET_DEFAULT: PetState = { species: 'owl', name: 'Buddy', happiness: 60, unlockedTricks: [], lastFedDate: null };
 
@@ -33,6 +34,7 @@ interface ProfileContextType {
     feedPet: () => void;
     setPetSpecies: (species: PetSpecies) => void;
     renamePet: (name: string) => void;
+    setWeeklyGoal: (goal: WeeklyGoal | null) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -222,6 +224,32 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
         }
     }
 
+    if (updates.weeklyGoal !== undefined) {
+        const wg = updates.weeklyGoal;
+        if (wg === null || wg === undefined) {
+            sanitized.weeklyGoal = undefined;
+        } else if (
+            isPlainObject(wg) &&
+            typeof wg.skillKey === 'string' && wg.skillKey.trim().length > 0 &&
+            typeof wg.target === 'number' && Number.isFinite(wg.target) && wg.target > 0 &&
+            typeof wg.weekStart === 'string'
+        ) {
+            const currentWeekStart = getWeekStartISO();
+            if (wg.weekStart !== currentWeekStart) {
+                // Auto-clears on week rollover (weekStart mismatch)
+                sanitized.weeklyGoal = undefined;
+            } else {
+                sanitized.weeklyGoal = {
+                    skillKey: wg.skillKey,
+                    target: wg.target,
+                    weekStart: wg.weekStart,
+                };
+            }
+        } else {
+            console.warn('Attempted to update profile with invalid weeklyGoal, skipping update');
+        }
+    }
+
     return sanitized;
 };
 
@@ -251,6 +279,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     sessionHistory: p.sessionHistory || [],
                     gems: p.gems ?? 0,
                     pet: p.pet ?? PET_DEFAULT,
+                    weeklyGoal: p.weeklyGoal && p.weeklyGoal.weekStart === getWeekStartISO() ? p.weeklyGoal : undefined,
                 }));
             } catch (error) {
                 console.error('Failed to parse profiles from local storage:', error);
@@ -503,6 +532,20 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateProfile(profile.id, { pet: { ...profile.pet, name: name.slice(0, 20) } });
     }, [profile, updateProfile]);
 
+    const setWeeklyGoal = useCallback((goal: WeeklyGoal | null) => {
+        if (!profile) return;
+        updateProfile(profile.id, { weeklyGoal: goal === null ? undefined : goal });
+    }, [profile, updateProfile]);
+
+    // Auto-clear weeklyGoal on week rollover
+    useEffect(() => {
+        if (!profile?.weeklyGoal) return;
+        const currentWeekStart = getWeekStartISO();
+        if (profile.weeklyGoal.weekStart !== currentWeekStart) {
+            updateProfile(profile.id, { weeklyGoal: undefined });
+        }
+    }, [profile?.weeklyGoal, profile?.id, updateProfile]);
+
     const value = useMemo(() => ({
         profile,
         allProfiles,
@@ -527,7 +570,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         feedPet,
         setPetSpecies,
         renamePet,
-    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore, addCoins, spendCoins, unlockBadge, buyItem, equipItem, toggleSoundGarden, recordSession, addGems, spendGems, feedPet, setPetSpecies, renamePet]);
+        setWeeklyGoal,
+    }), [profile, allProfiles, createProfile, switchProfile, deleteProfile, logout, resetStreak, incrementStreak, updateMascot, updateProfile, updateArcadeBestScore, addCoins, spendCoins, unlockBadge, buyItem, equipItem, toggleSoundGarden, recordSession, addGems, spendGems, feedPet, setPetSpecies, renamePet, setWeeklyGoal]);
 
     return (
         <ProfileContext.Provider value={value}>
