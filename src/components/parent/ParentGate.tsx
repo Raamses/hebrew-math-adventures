@@ -9,9 +9,9 @@ export interface ParentGateProps {
   onCancel: () => void;
   onClose?: () => void;
   origin?: 'select' | 'map';
-  activeMascot?: MascotCharacter | string;
-  mascot?: MascotCharacter | string;
-  mascotId?: MascotCharacter | string;
+  activeMascot?: MascotCharacter;
+  mascot?: MascotCharacter;
+  mascotId?: MascotCharacter;
 }
 
 const isKnownMascot = (m: string): m is MascotCharacter => {
@@ -72,7 +72,7 @@ export const ParentGate: React.FC<ParentGateProps> = ({
   onCancel,
   onClose,
   origin = 'select',
-  activeMascot,
+  activeMascot = 'bear',
   mascot,
   mascotId,
 }) => {
