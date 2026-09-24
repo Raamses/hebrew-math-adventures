@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ParentDashboard, resetParentSandbox } from '../ParentDashboard';
+import { ParentDashboard } from '../ParentDashboard';
 import type { UserProfile } from '../../../types/user';
 
 const mockProfile1: UserProfile = {
@@ -188,32 +188,13 @@ describe('ParentDashboard Shell', () => {
         });
     });
 
-    /* ── 3. Strict Sandbox on Exit ───────────────────────────────── */
-    describe('strict sandbox on exit', () => {
-        it('clears parent gate and authentication tokens upon resetParentSandbox', () => {
-            sessionStorage.setItem('parent_gate_token', 'secret_token_123');
-            sessionStorage.setItem('parent_authenticated', 'true');
-            sessionStorage.setItem('parent_session', 'session_abc');
-            sessionStorage.setItem('parent_gate_passed', 'true');
-            localStorage.setItem('parent_temp_state', 'temp_data');
-
-            resetParentSandbox();
-
-            expect(sessionStorage.getItem('parent_gate_token')).toBeNull();
-            expect(sessionStorage.getItem('parent_authenticated')).toBeNull();
-            expect(sessionStorage.getItem('parent_session')).toBeNull();
-            expect(sessionStorage.getItem('parent_gate_passed')).toBeNull();
-            expect(localStorage.getItem('parent_temp_state')).toBeNull();
-        });
-
-        it('executes sandbox reset and calls onExit when exit button is clicked', async () => {
+    /* ── 3. Honest In-Memory Boundary on Exit ─────────────────────── */
+    describe('in-memory boundary on exit', () => {
+        it('resets in-memory tab state to default postcard landing and calls onExit', async () => {
             const user = userEvent.setup();
             const handleExit = vi.fn();
 
-            // Set up a token in sessionStorage
-            sessionStorage.setItem('parent_gate_token', 'active_gate_token');
-
-            render(<ParentDashboard onExit={handleExit} />);
+            const { rerender } = render(<ParentDashboard onExit={handleExit} />);
 
             // First navigate to a non-postcard tab
             await user.click(screen.getByTestId('tab-settings'));
@@ -226,11 +207,36 @@ describe('ParentDashboard Shell', () => {
             // Verified: onExit called
             expect(handleExit).toHaveBeenCalledTimes(1);
 
-            // Verified: tokens cleared from storage
-            expect(sessionStorage.getItem('parent_gate_token')).toBeNull();
+            // Verified: in-memory component state resets to default postcard landing
+            rerender(<ParentDashboard onExit={handleExit} />);
+            expect(screen.getByTestId('postcard-hub')).toBeInTheDocument();
+            expect(screen.getByTestId('tab-postcard')).toHaveAttribute('aria-selected', 'true');
         });
 
-        it('ensures kid storage keys remain unaffected and unpolluted', async () => {
+        it('operates with zero storage footprint — parent auth lives only in React state and does not persist to storage', async () => {
+            const user = userEvent.setup();
+            const handleExit = vi.fn();
+
+            // Storage starts completely clear
+            sessionStorage.clear();
+            localStorage.clear();
+
+            render(<ParentDashboard onExit={handleExit} />);
+
+            // Interact with dashboard tabs and switcher
+            await user.click(screen.getByTestId('tab-goals'));
+            await user.click(screen.getByTestId('tab-games'));
+            await user.click(screen.getByTestId('parent-exit-button'));
+
+            // Assert: zero storage footprint — parent auth is in-memory in ParentGate and does not persist
+            expect(sessionStorage.getItem('parent_gate_token')).toBeNull();
+            expect(sessionStorage.getItem('parent_authenticated')).toBeNull();
+            expect(sessionStorage.length).toBe(0);
+            expect(localStorage.getItem('parent_gate_token')).toBeNull();
+            expect(localStorage.getItem('parent_authenticated')).toBeNull();
+        });
+
+        it('ensures kid flow reads none of the parent state and kid storage keys remain isolated and unpolluted', async () => {
             const user = userEvent.setup();
             const handleExit = vi.fn();
 
@@ -241,13 +247,17 @@ describe('ParentDashboard Shell', () => {
             render(<ParentDashboard onExit={handleExit} />);
             await user.click(screen.getByTestId('parent-exit-button'));
 
-            // Verify kid storage is preserved and uncorrupted
+            // Verify kid storage is preserved, uncorrupted, and contains zero parent leakage
             expect(localStorage.getItem('hebrew_game_saga_progress_v1')).toBe(
                 JSON.stringify({ currentLevel: 5 })
             );
             expect(localStorage.getItem('hebrew-math-daily-progress')).toBe(
                 JSON.stringify({ streak: 3 })
             );
+            // Storage has zero parent tokens or state
+            expect(sessionStorage.length).toBe(0);
+            const parentKeys = Object.keys(localStorage).filter(k => k.startsWith('parent_') || k.includes('parent'));
+            expect(parentKeys).toEqual([]);
         });
     });
 });

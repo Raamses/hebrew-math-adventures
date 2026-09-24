@@ -3,34 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useProfile } from '../../context/ProfileContext';
 import { Mascot, type MascotCharacter } from '../mascot/Mascot';
 import { deriveSkillInsights } from '../../lib/skillAnalysis';
+import {
+    selectPracticeTarget,
+    getSkillLabel,
+    SKILL_LABELS,
+    SKILL_PRACTICE_CONFIGS,
+} from '../../lib/skillFocus';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
 import type { UserProfile } from '../../types/user';
 
-export const SKILL_LABELS: Record<string, string> = {
-    addition: 'חיבור',
-    addition_carry: 'חיבור',
-    subtraction: 'חיסור',
-    subtraction_borrow: 'חיסור',
-    multiplication: 'כפל',
-    division: 'חילוק',
-    series: 'סדרות',
-    comparison: 'השוואה',
-    word_problems: 'בעיות מילוליות',
-    algebraic: 'משוואות',
-};
-
-export const SKILL_PRACTICE_CONFIGS: Record<string, { label: string; config: BaseProblemConfig }> = {
-    addition: { label: 'חיבור', config: { type: 'addition_simple' } },
-    addition_carry: { label: 'חיבור עם המרה', config: { type: 'addition_carry' } },
-    subtraction: { label: 'חיסור', config: { type: 'sub_simple' } },
-    subtraction_borrow: { label: 'חיסור עם פריטה', config: { type: 'sub_borrow' } },
-    multiplication: { label: 'כפל', config: { type: 'multiplication' } },
-    division: { label: 'חילוק', config: { type: 'division' } },
-    series: { label: 'סדרות', config: { type: 'series_simple' } },
-    comparison: { label: 'השוואת מספרים', config: { type: 'comparison_simple' } },
-    word_problems: { label: 'בעיות מילוליות', config: { type: 'word' } },
-    algebraic: { label: 'משוואות', config: { type: 'addition_simple' } },
-};
+export { SKILL_LABELS, SKILL_PRACTICE_CONFIGS };
 
 /**
  * Derives a single positive, mascot-voice narrative sentence based on the child's
@@ -58,7 +40,7 @@ export function deriveNarrativeSentence(profile?: UserProfile | null): string {
         minutes = Math.round(totalSec / 60);
     }
 
-    const strongestLabel = strongest ? (SKILL_LABELS[strongest.skillKey] || strongest.skillKey) : null;
+    const strongestLabel = strongest ? getSkillLabel(strongest.skillKey) : null;
     const streak = profile.streak || 0;
 
     if (minutes > 0 && strongestLabel) {
@@ -105,42 +87,10 @@ export const PostcardHub: React.FC<PostcardHubProps> = ({
         [activeProfile],
     );
 
-    // Derive weakest skill for the single action chip (reusing existing SkillBreakdown logic)
+    // Derive weakest skill for the single action chip using shared helper
     const practiceTarget = useMemo(() => {
-        if (!activeProfile) {
-            return {
-                label: 'חיבור',
-                accuracy: 0,
-                config: { type: 'addition_simple' as const },
-            };
-        }
-
-        if (skillAnalysis.weakest) {
-            const key = skillAnalysis.weakest.skillKey;
-            return {
-                label: SKILL_LABELS[key] || key,
-                accuracy: skillAnalysis.weakest.accuracy,
-                config: SKILL_PRACTICE_CONFIGS[key]?.config || { type: 'addition_simple' as const },
-            };
-        }
-
-        // If no weakest skill (e.g. fewer than 5 attempts), find lowest accuracy insight if available
-        if (skillAnalysis.insights.length > 0) {
-            const lowest = [...skillAnalysis.insights].sort((a, b) => a.accuracy - b.accuracy)[0];
-            const key = lowest.skillKey;
-            return {
-                label: SKILL_LABELS[key] || key,
-                accuracy: lowest.accuracy,
-                config: SKILL_PRACTICE_CONFIGS[key]?.config || { type: 'addition_simple' as const },
-            };
-        }
-
-        return {
-            label: 'חיבור',
-            accuracy: 0,
-            config: { type: 'addition_simple' as const },
-        };
-    }, [activeProfile, skillAnalysis]);
+        return selectPracticeTarget(skillAnalysis);
+    }, [skillAnalysis]);
 
     // 3 compact stats
     const streak = activeProfile?.streak || 0;

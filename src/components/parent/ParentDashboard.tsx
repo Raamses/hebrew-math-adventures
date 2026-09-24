@@ -24,28 +24,6 @@ export const PARENT_TABS: TabConfig[] = [
     { id: 'settings', labelKey: 'parent.tabs.settings', defaultLabel: 'הגדרות', icon: '⚙️' },
 ];
 
-/**
- * Strict sandbox reset:
- * Clears any parent gate/authentication tokens and temporary parent session state
- * from storage so nothing parent-visible leaks into keys the kid engine reads.
- */
-export function resetParentSandbox(): void {
-    try {
-        if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.removeItem('parent_gate_token');
-            sessionStorage.removeItem('parent_authenticated');
-            sessionStorage.removeItem('parent_session');
-            sessionStorage.removeItem('parent_gate_passed');
-        }
-        if (typeof localStorage !== 'undefined') {
-            localStorage.removeItem('parent_temp_state');
-            localStorage.removeItem('parent_gate_verified');
-        }
-    } catch {
-        // Safe fallback if storage is restricted
-    }
-}
-
 export interface ParentDashboardProps {
     onExit: () => void;
     onPracticeSkill?: (config: BaseProblemConfig) => void;
@@ -82,19 +60,10 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPrac
     }, [switchProfile]);
 
     const handleExit = useCallback(() => {
-        // Reset internal tab view to default landing
+        // Reset in-memory tab view to default landing
         setActiveTab('postcard');
-        // Clear sandbox tokens and parent temporary storage
-        resetParentSandbox();
         onExit();
     }, [onExit]);
-
-    // Ensure sandbox cleans up when unmounting
-    useEffect(() => {
-        return () => {
-            resetParentSandbox();
-        };
-    }, []);
 
     return (
         <div

@@ -3,50 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useProfile } from '../../context/ProfileContext';
 import { deriveSkillInsights } from '../../lib/skillAnalysis';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
+import {
+    SKILL_CONFIGS,
+    getSkillPracticeConfig,
+    selectPracticeTarget,
+} from '../../lib/skillFocus';
 
-// Canonical skill keys and their i18n keys + problem config for targeted practice
-const SKILL_CONFIGS: Record<string, { i18nKey: string; config: BaseProblemConfig }> = {
-    addition: {
-        i18nKey: 'skills.addition',
-        config: { type: 'addition_simple' },
-    },
-    'addition_carry': {
-        i18nKey: 'skills.addition',
-        config: { type: 'addition_carry' },
-    },
-    subtraction: {
-        i18nKey: 'skills.subtraction',
-        config: { type: 'sub_simple' },
-    },
-    'subtraction_borrow': {
-        i18nKey: 'skills.subtraction',
-        config: { type: 'sub_borrow' },
-    },
-    multiplication: {
-        i18nKey: 'skills.multiplication',
-        config: { type: 'multiplication' },
-    },
-    division: {
-        i18nKey: 'skills.division',
-        config: { type: 'division' },
-    },
-    series: {
-        i18nKey: 'skills.series',
-        config: { type: 'series_simple' },
-    },
-    comparison: {
-        i18nKey: 'skills.comparison',
-        config: { type: 'comparison_simple' },
-    },
-    word_problems: {
-        i18nKey: 'skills.word_problems',
-        config: { type: 'word' },
-    },
-    algebraic: {
-        i18nKey: 'skills.algebraic',
-        config: { type: 'addition_simple' }, // fallback
-    },
-};
+export { SKILL_CONFIGS, getSkillPracticeConfig, selectPracticeTarget };
 
 interface SkillBreakdownProps {
     onPracticeSkill?: (config: BaseProblemConfig) => void;
@@ -135,7 +98,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                             </div>
                             {onPracticeSkill && (
                                 <button
-                                    onClick={() => onPracticeSkill(SKILL_CONFIGS[weakest.skillKey]?.config || { type: 'addition_simple' })}
+                                    onClick={() => onPracticeSkill(getSkillPracticeConfig(weakest.skillKey))}
                                     className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white font-bold text-sm px-3 py-2 rounded-xl transition-all min-h-[44px] whitespace-nowrap"
                                 >
                                     {t('analytics.practiceThis')}
@@ -188,7 +151,7 @@ export const SkillBreakdown: React.FC<SkillBreakdownProps> = ({ onPracticeSkill 
                                         </div>
                                         {isWeakest && onPracticeSkill && (
                                             <button
-                                                onClick={() => onPracticeSkill(config?.config || { type: 'addition_simple' })}
+                                                onClick={() => onPracticeSkill(getSkillPracticeConfig(insight.skillKey))}
                                                 className="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs px-3 py-2 rounded-lg transition-all min-h-[44px] whitespace-nowrap"
                                             >
                                                 {t('analytics.practiceThis')}

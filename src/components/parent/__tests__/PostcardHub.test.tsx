@@ -163,6 +163,17 @@ describe('PostcardHub', () => {
             expect(handlePractice).toHaveBeenCalledWith({ type: 'sub_simple' });
         });
 
+        it('uses shared skillFocus helper fallback to default practice when profile has no skill data', () => {
+            const profileNoSkills: UserProfile = {
+                ...mockProfile,
+                capabilities: { skills: {} },
+            };
+            render(<PostcardHub profile={profileNoSkills} onPracticeSkill={vi.fn()} />);
+
+            const actionChip = screen.getByTestId('postcard-action-chip');
+            expect(actionChip).toHaveTextContent('חיבור');
+        });
+
         it('renders the compact 3-stat strip with streak, badges, and accuracy', () => {
             render(<PostcardHub profile={mockProfile} />);
 
