@@ -199,6 +199,11 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
     // Visual Effects State
     const [explosions, setExplosions] = useState<{ id: string; x: number; y: number }[]>([]);
 
+    // ⚡ Bolt: Stable callback to prevent Explosion component re-renders
+    const handleExplosionComplete = useCallback((id: string) => {
+        setExplosions(prev => prev.filter(e => e.id !== id));
+    }, []);
+
     // --- Arcade Mode Display Flags ---
     const isTimeLimit = config.winCondition.type === 'time_limit';
     const isEndless = config.winCondition.type === 'endless';
@@ -685,9 +690,10 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             {explosions.map(exp => (
                 <Explosion
                     key={exp.id}
+                    id={exp.id}
                     x={exp.x}
                     y={exp.y}
-                    onComplete={() => setExplosions(prev => prev.filter(e => e.id !== exp.id))}
+                    onComplete={handleExplosionComplete}
                 />
             ))}
 
