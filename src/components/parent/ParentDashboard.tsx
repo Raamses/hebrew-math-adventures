@@ -7,9 +7,11 @@ import { SkillBreakdown } from './SkillBreakdown';
 import { ParentGamesHub } from './ParentGamesHub';
 import { ProfileManager } from './ProfileManager';
 import { SKILL_CONFIGS, getSkillLabel, getSkillPracticeConfig } from '../../lib/skillFocus';
-import { getWeekStartISO } from './games/parentEconomyEngine';
+import { getWeekStartISO, PARENT_BADGES } from './games/parentEconomyEngine';
+import { useParentEconomy } from '../../hooks/useParentEconomy';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
 import type { UserProfile, WeeklyGoal } from '../../types/user';
+import type { ParentBadgeId } from '../../types/parent';
 
 export type ParentTabId = 'postcard' | 'goals' | 'games' | 'settings';
 
@@ -317,6 +319,8 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPrac
         onExit();
     }, [onExit]);
 
+    const { state: economyState } = useParentEconomy();
+
     return (
         <div
             data-testid="parent-dashboard"
@@ -372,6 +376,7 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPrac
                             profile={selectedProfile}
                             onPracticeSkill={onPracticeSkill}
                             onOpenDetails={() => setActiveTab('goals')}
+                            onOpenGames={() => setActiveTab('games')}
                         />
                     )}
                     {activeTab === 'goals' && (
@@ -384,7 +389,90 @@ export const ParentDashboard: React.FC<ParentDashboardProps> = ({ onExit, onPrac
                         </div>
                     )}
                     {activeTab === 'games' && (
-                        <ParentGamesHub />
+                        <div className="space-y-6" data-testid="parent-games-tab">
+                            {/* Economy Summary: Coins Balance + Streak + Badges */}
+                            <div
+                                data-testid="parent-economy-bar"
+                                className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-5 shadow-xs"
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl">🪙</span>
+                                        <div>
+                                            <div className="text-xs font-bold text-amber-700">
+                                                {t('parent.economy.balance', 'מטבעות שצברת')}
+                                            </div>
+                                            <div
+                                                data-testid="parent-coin-balance"
+                                                className="text-2xl font-black text-amber-900 leading-tight"
+                                            >
+                                                {economyState.coins}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl">🔥</span>
+                                        <div>
+                                            <div className="text-xs font-bold text-orange-700">
+                                                {t('parent.economy.streak', 'רצף הורה')}
+                                            </div>
+                                            <div
+                                                data-testid="parent-streak-count"
+                                                className="text-2xl font-black text-orange-900 leading-tight"
+                                            >
+                                                {economyState.streak}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl">🏅</span>
+                                        <div>
+                                            <div className="text-xs font-bold text-purple-700">
+                                                {t('parent.economy.badges', 'תגי הורה')}
+                                            </div>
+                                            <div
+                                                data-testid="parent-badges-count"
+                                                className="text-2xl font-black text-purple-900 leading-tight"
+                                            >
+                                                {economyState.unlockedBadges.length}/{Object.keys(PARENT_BADGES).length}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Parent Badges Strip */}
+                                <div className="pt-2 border-t border-amber-200/60">
+                                    <div className="text-[11px] font-bold text-amber-800/80 mb-2">
+                                        {t('parent.economy.myBadges', 'תגים שצברת במשחקים:')}
+                                    </div>
+                                    <div className="flex items-center gap-2 overflow-x-auto pb-1" data-testid="parent-badges-strip">
+                                        {(Object.keys(PARENT_BADGES) as ParentBadgeId[]).map((badgeId) => {
+                                            const badge = PARENT_BADGES[badgeId];
+                                            const isUnlocked = economyState.unlockedBadges.includes(badgeId);
+                                            return (
+                                                <div
+                                                    key={badgeId}
+                                                    data-testid={`parent-badge-${badgeId}`}
+                                                    title={isUnlocked ? t(badge.titleKey, badgeId) : t('parent.economy.locked', 'נעול')}
+                                                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 transition-all ${
+                                                        isUnlocked
+                                                            ? 'bg-white shadow-xs border border-amber-200 scale-105'
+                                                            : 'bg-black/5 opacity-30 grayscale'
+                                                    }`}
+                                                >
+                                                    {badge.icon}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Mini-Games Hub UI (Kept Intact) */}
+                            <ParentGamesHub />
+                        </div>
                     )}
                     {activeTab === 'settings' && (
                         <ProfileManager />

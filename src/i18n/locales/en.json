@@ -419,10 +419,6 @@
       "maxPerChild": "Max per child per day",
       "cancel": "Cancel",
       "sendGift": "Send Gift",
-      "weeklyLeaderboard": "Weekly Leaderboard",
-      "resetsSunday": "Resets Sunday",
-      "noScoresYet": "No scores yet this week",
-      "you": "you",
       "errors": {
         "invalid_amount": "Invalid amount",
         "insufficient_coins": "Not enough coins",

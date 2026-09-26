@@ -51,13 +51,6 @@ export interface GiftTransaction {
     date: string;          // YYYY-MM-DD
 }
 
-/** Leaderboard entry for weekly Blitz competition */
-export interface LeaderboardEntry {
-    playerName: string;
-    score: number;
-    weekStart: string;     // YYYY-MM-DD (Sunday)
-    timestamp: number;     // ms epoch
-}
 
 /** Full parent economy state, persisted to localStorage */
 export interface ParentEconomyState {

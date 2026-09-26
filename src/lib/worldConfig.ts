@@ -571,7 +571,6 @@ export const STORAGE_KEYS = {
     CINEMATIC_SEEN: 'cinematic_seen_units',
     IS_MUTED: 'isMuted',
     PARENT_ECONOMY: 'hebrew-math-parent-economy',
-    PARENT_LEADERBOARD: 'hebrew-math-parent-leaderboard',
 } as const;
 
 // ================================================================

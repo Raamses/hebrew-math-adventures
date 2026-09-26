@@ -2,7 +2,7 @@
  * parentEconomyEngine.test.ts — Tests for the parent economy engine.
  *
  * Tests all pure functions: coin earning, streak tracking, badge unlocks,
- * gift-to-child validation/execution, weekly leaderboard, and state helpers.
+ * gift-to-child validation/execution, and state helpers.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -13,9 +13,6 @@ import {
     checkBadgeUnlocks,
     validateGift,
     executeGift,
-    submitLeaderboardScore,
-    getCurrentWeekLeaderboard,
-    pruneOldLeaderboardEntries,
     createInitialState,
     applyGameResult,
     PARENT_BADGES,
@@ -320,77 +317,6 @@ describe('parentEconomyEngine', () => {
                 state = result!.state;
             }
             expect(state.giftHistory!.length).toBeLessThanOrEqual(100);
-        });
-    });
-
-    // ================================================================
-    //  Weekly Leaderboard
-    // ================================================================
-    describe('submitLeaderboardScore', () => {
-        it('adds new entry', () => {
-            const entries = submitLeaderboardScore([], 'Alice', 50, '2025-01-12');
-            expect(entries).toHaveLength(1);
-            expect(entries[0].score).toBe(50);
-        });
-
-        it('updates existing entry if score is higher', () => {
-            let entries = submitLeaderboardScore([], 'Alice', 50, '2025-01-12');
-            entries = submitLeaderboardScore(entries, 'Alice', 80, '2025-01-12');
-            expect(entries).toHaveLength(1);
-            expect(entries[0].score).toBe(80);
-        });
-
-        it('does not update if score is lower', () => {
-            let entries = submitLeaderboardScore([], 'Alice', 80, '2025-01-12');
-            entries = submitLeaderboardScore(entries, 'Alice', 50, '2025-01-12');
-            expect(entries).toHaveLength(1);
-            expect(entries[0].score).toBe(80);
-        });
-
-        it('adds separate entries for different weeks', () => {
-            let entries = submitLeaderboardScore([], 'Alice', 50, '2025-01-12');
-            entries = submitLeaderboardScore(entries, 'Alice', 60, '2025-01-19');
-            expect(entries).toHaveLength(2);
-        });
-
-        it('adds separate entries for different players', () => {
-            let entries = submitLeaderboardScore([], 'Alice', 50, '2025-01-12');
-            entries = submitLeaderboardScore(entries, 'Bob', 70, '2025-01-12');
-            expect(entries).toHaveLength(2);
-        });
-    });
-
-    describe('getCurrentWeekLeaderboard', () => {
-        it('returns only current week entries sorted by score desc', () => {
-            const entries = [
-                { playerName: 'Alice', score: 50, weekStart: '2025-01-12', timestamp: 1 },
-                { playerName: 'Bob', score: 80, weekStart: '2025-01-12', timestamp: 2 },
-                { playerName: 'Carol', score: 60, weekStart: '2025-01-05', timestamp: 3 },
-            ];
-            const result = getCurrentWeekLeaderboard(entries, '2025-01-12');
-            expect(result).toHaveLength(2);
-            expect(result[0].playerName).toBe('Bob');
-            expect(result[1].playerName).toBe('Alice');
-        });
-
-        it('returns empty for week with no entries', () => {
-            const entries = [
-                { playerName: 'Alice', score: 50, weekStart: '2025-01-05', timestamp: 1 },
-            ];
-            expect(getCurrentWeekLeaderboard(entries, '2025-01-12')).toHaveLength(0);
-        });
-    });
-
-    describe('pruneOldLeaderboardEntries', () => {
-        it('removes entries older than keepWeeks', () => {
-            const entries = [
-                { playerName: 'Old', score: 50, weekStart: '2025-01-01', timestamp: 1 },
-                { playerName: 'Recent', score: 80, weekStart: '2025-01-12', timestamp: 2 },
-            ];
-            // Mock current date context — with keepWeeks=2, entries from 2+ weeks ago are pruned
-            const result = pruneOldLeaderboardEntries(entries, 2);
-            // The exact cutoff depends on "now", so just verify the function runs
-            expect(result.length).toBeLessThanOrEqual(2);
         });
     });
 
