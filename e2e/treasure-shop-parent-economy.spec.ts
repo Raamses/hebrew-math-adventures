@@ -38,7 +38,7 @@
  */
 
 import { test, expect, type Page, type Locator } from '@playwright/test';
-import { setupFreshProfile, openMenu } from './helpers';
+import { setupFreshProfile, openMenu, solveParentGate } from './helpers';
 
   // Global timeout is 180s — no need for local override
 
@@ -561,17 +561,17 @@ test.describe('Parent gifting economy', () => {
     await expect(gate).toBeVisible({ timeout: 5000 });
     await page.waitForTimeout(300);
 
-    const gateText = (await gate.textContent()) || '';
-    const problemMatch = gateText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
+    // Read the math problem from the clipboard (PG-1 keypad rework)
+    const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
+    await expect(problemEl).toBeVisible({ timeout: 5000 });
+    const problemText = (await problemEl.textContent()) || '';
+    const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
     if (!problemMatch) {
-      throw new Error(`Could not parse parent gate problem from text: "${gateText}"`);
+      throw new Error(`Could not parse parent gate problem from text: "${problemText}"`);
     }
     const sum = parseInt(problemMatch[1]) + parseInt(problemMatch[2]);
 
-    await page.locator('[data-testid="parent-gate-input"]').first().fill(String(sum));
-    await page.waitForTimeout(300);
-    await gate.locator('button[type="submit"]').first().click();
-    await page.waitForTimeout(1500);
+    await solveParentGate(page, sum);
 
     await expect(page.locator('[data-testid="parent-dashboard"]').first()).toBeVisible({
       timeout: 10000,

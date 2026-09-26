@@ -605,11 +605,13 @@ export async function openParentGate(page: Page): Promise<void> {
   await expect(gate).toBeVisible({ timeout: 5000 });
   await page.waitForTimeout(300);
 
-  // Read the math problem from the DOM: "{n1} + {n2} = ?"
-  const gateText = await gate.textContent() || '';
-  const problemMatch = gateText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
+  // Read the math problem from the clipboard: "{n1} + {n2} = ?"
+  const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
+  await expect(problemEl).toBeVisible({ timeout: 5000 });
+  const problemText = (await problemEl.textContent()) || '';
+  const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
   if (!problemMatch) {
-    throw new Error(`Could not parse parent gate problem from text: "${gateText}"`);
+    throw new Error(`Could not parse parent gate problem from text: "${problemText}"`);
   }
 
   const n1 = parseInt(problemMatch[1]);
@@ -618,21 +620,36 @@ export async function openParentGate(page: Page): Promise<void> {
 
   console.log(`[ParentGate] Parsed problem: ${n1} + ${n2} = ${sum}`);
 
-  // Fill the input and submit
-  const input = page.locator('[data-testid="parent-gate-input"]').first();
-  await expect(input).toBeVisible({ timeout: 5000 });
-  await input.fill(String(sum));
-  await page.waitForTimeout(300);
-
-  // Submit via the submit button (inside the form)
-  const submitBtn = gate.locator('button[type="submit"]').first();
-  await expect(submitBtn).toBeVisible({ timeout: 5000 });
-  await submitBtn.click();
-  await page.waitForTimeout(1500);
+  await solveParentGate(page, sum);
 
   // Verify parent dashboard is now visible
   const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
   await expect(dashboard).toBeVisible({ timeout: 10000 });
+}
+
+/**
+ * Solve the parent gate via the 3x4 numeric keypad (PG-1 rework, ff272ee).
+ * The gate no longer has an input field — digits are tapped as buttons:
+ *   parent-gate-key-{1..9}, parent-gate-key-0, parent-gate-key-backspace,
+ *   parent-gate-key-submit.
+ * Assumes the gate modal is already open and the problem is visible.
+ */
+export async function solveParentGate(page: Page, answer: number): Promise<void> {
+  const gate = page.locator('[data-testid="parent-gate"]').first();
+  await expect(gate).toBeVisible({ timeout: 5000 });
+
+  const digits = String(answer).split('');
+  for (const d of digits) {
+    const key = gate.locator(`[data-testid="parent-gate-key-${d}"]`).first();
+    await expect(key).toBeVisible({ timeout: 5000 });
+    await key.click();
+    await page.waitForTimeout(120);
+  }
+
+  const submitBtn = gate.locator('[data-testid="parent-gate-key-submit"]').first();
+  await expect(submitBtn).toBeVisible({ timeout: 5000 });
+  await submitBtn.click();
+  await page.waitForTimeout(1200);
 }
 
 // ─── Phase 2a Helpers ────────────────────────────────────────────────

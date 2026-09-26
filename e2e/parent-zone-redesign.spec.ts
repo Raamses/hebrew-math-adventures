@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupFreshProfile, openParentGate, openMenu } from './helpers';
+import { setupFreshProfile, openParentGate, openMenu, solveParentGate } from './helpers';
 
 test.describe('Parent Zone Redesign', () => {
   // Global timeout is 180s — no need for local override
@@ -17,15 +17,14 @@ test.describe('Parent Zone Redesign', () => {
     const gate = page.locator('[data-testid="parent-gate"]').first();
     await expect(gate).toBeVisible({ timeout: 5000 });
 
-    // Read the math problem from the DOM: "{n1} + {n2} = ?"
-    const gateText = await gate.textContent() || '';
-    const problemMatch = gateText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
+    // Read the math problem from the clipboard (PG-1 keypad rework)
+    const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
+    await expect(problemEl).toBeVisible({ timeout: 5000 });
+    const problemText = (await problemEl.textContent()) || '';
+    const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
     if (problemMatch) {
       const sum = parseInt(problemMatch[1]) + parseInt(problemMatch[2]);
-      const input = page.locator('[data-testid="parent-gate-input"]').first();
-      await input.fill(String(sum));
-      const submitBtn = gate.locator('button[type="submit"]').first();
-      await submitBtn.click();
+      await solveParentGate(page, sum);
     }
 
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
@@ -92,18 +91,22 @@ test.describe('Parent Zone Redesign', () => {
     const gate = page.locator('[data-testid="parent-gate"]').first();
     await expect(gate).toBeVisible();
     
-    const gateText = await gate.textContent() || '';
-    const problemMatch = gateText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
+    // Read the math problem from the clipboard (PG-1 keypad rework)
+    const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
+    await expect(problemEl).toBeVisible({ timeout: 5000 });
+    const problemText = (await problemEl.textContent()) || '';
+    const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
     if (problemMatch) {
       const sum = parseInt(problemMatch[1]) + parseInt(problemMatch[2]);
-      await page.locator('[data-testid="parent-gate-input"]').first().fill(String(sum));
-      await gate.locator('button[type="submit"]').first().click();
+      await solveParentGate(page, sum);
     }
 
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
     await expect(dashboard).toBeVisible();
 
-    const exitBtn = page.locator('button').filter({ hasText: /יציאה|Exit/ }).first();
+    // PG-2 redesign: exit via [data-testid="parent-exit-button"] (labeled "חזרה למשחק")
+    const exitBtn = page.locator('[data-testid="parent-exit-button"]').first();
+    await expect(exitBtn).toBeVisible({ timeout: 5000 });
     await exitBtn.click();
     await page.waitForTimeout(1500);
 
