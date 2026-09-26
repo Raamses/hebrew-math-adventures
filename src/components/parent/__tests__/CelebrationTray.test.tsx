@@ -75,7 +75,7 @@ describe('CelebrationTray (Card PG-4)', () => {
 
             const textEl = screen.getByTestId('celebration-milestone-text');
             expect(textEl).toHaveTextContent('מאיה');
-            expect(textEl).toHaveTextContent('first_steps');
+            expect(textEl).toHaveTextContent('צעדים ראשונים');
         });
 
         it('triggers contextually on a new streak milestone (streak >= 3)', () => {
