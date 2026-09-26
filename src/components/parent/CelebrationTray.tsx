@@ -15,8 +15,10 @@
  *     'קיבלת מחיאות כפיים מאמא/אבא! 👏') via ScoreToast / in-game mailbox — NEVER the parent-side mechanics.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Coins, Sparkles, X } from 'lucide-react';
+import i18n from '../../i18n';
 import { BADGE_MAP } from '../../data/badges';
 import { useParentEconomy } from '../../hooks/useParentEconomy';
 import { useProfile } from '../../context/ProfileContext';
@@ -90,16 +92,34 @@ export function recordMilestoneSeen(childId: string, milestoneId: string): void 
     }
 }
 
+export const BADGE_LOCALIZED_NAMES_HE: Record<string, string> = {
+    first_steps: 'צעדים ראשונים',
+    sharp_shooter: 'צלף מדויק',
+    century: 'מאה מושלמת',
+    on_fire: 'בלתי עציר',
+    lightning: 'מהיר כברק',
+    boss_slayer: 'קוטל בוסים',
+    perfectionist: 'פרפקציוניסט',
+    dedicated: 'מתמיד',
+    weekly_warrior: 'אלוף השבוע',
+    bubble_master: 'אדון הבועות',
+    streak_star: 'כוכב הרצף',
+    superstar: 'סופרסטאר',
+};
+
 /**
  * Detects whether a new milestone/badge has fired since last visit.
  * Returns null if nothing new.
+ * Badge names and milestone descriptions are routed through i18n / localized definitions.
  */
 export function detectNewMilestone(
     profile: UserProfile | null | undefined,
     seenIds: string[] = [],
+    t?: (key: string, options?: any) => string,
 ): CelebrationMilestone | null {
     if (!profile) return null;
 
+    const translate = t || i18n.t.bind(i18n);
     const childName = profile.name || 'הילד/ה';
     const unlockedBadges = profile.unlockedBadges || [];
 
@@ -109,12 +129,27 @@ export function detectNewMilestone(
         if (!seenIds.includes(badgeId)) {
             const badgeDef = BADGE_MAP[badgeId];
             const badgeIcon = badgeDef?.emoji || '🏅';
-            const badgeName = badgeDef?.nameKey ? badgeDef.id : badgeId;
+            let badgeName = badgeId;
+            if (badgeDef?.nameKey) {
+                const translated = translate(badgeDef.nameKey);
+                badgeName = (translated && translated !== badgeDef.nameKey)
+                    ? translated
+                    : (BADGE_LOCALIZED_NAMES_HE[badgeId] || badgeId);
+            } else if (BADGE_LOCALIZED_NAMES_HE[badgeId]) {
+                badgeName = BADGE_LOCALIZED_NAMES_HE[badgeId];
+            }
+
+            const milestoneText = translate('celebration.badgeWon', {
+                childName,
+                badgeName,
+                defaultValue: `${childName} זכה/תה בתג ${badgeName}!`,
+            });
+
             return {
                 id: badgeId,
                 badgeId,
                 badgeIcon,
-                milestoneText: `${childName} זכה/תה בתג ${badgeName}!`,
+                milestoneText,
                 childId: profile.id,
                 childName,
                 type: 'badge',
@@ -127,10 +162,15 @@ export function detectNewMilestone(
     if (streak >= 3) {
         const streakMilestoneId = `streak-${streak}`;
         if (!seenIds.includes(streakMilestoneId)) {
+            const milestoneText = translate('celebration.streakMilestone', {
+                childName,
+                streak,
+                defaultValue: `${childName} הגיע/ה לרצף מרשים של ${streak} ימים!`,
+            });
             return {
                 id: streakMilestoneId,
                 badgeIcon: '🔥',
-                milestoneText: `${childName} הגיע/ה לרצף מרשים של ${streak} ימים!`,
+                milestoneText,
                 childId: profile.id,
                 childName,
                 type: 'streak',
@@ -171,6 +211,9 @@ export function queueKidCelebration(celebration: Omit<KidCelebration, 'id' | 'cr
         const existing = getPendingKidCelebrations(item.childId);
         const updated = [...existing, item];
         localStorage.setItem(`${KID_MAILBOX_STORAGE_KEY}_${item.childId}`, JSON.stringify(updated));
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('kid-celebration-queued'));
+        }
     } catch {
         // ignore
     }
@@ -229,7 +272,7 @@ export function incrementCheersToday(childId: string, today: string = getTodayIS
 // ================================================================
 
 export interface KidCelebrationDeliveryProps {
-    childId: string;
+    childId?: string;
     onDelivered?: (celebration: KidCelebration) => void;
 }
 
@@ -238,14 +281,41 @@ export interface KidCelebrationDeliveryProps {
  * Displays the mascot moment ('קיבלת מתנה מאמא/אבא! 🎁' or 'קיבלת מחיאות כפיים מאמא/אבא! 👏')
  * with ZERO parent-side mechanics leakage (no balance, no caps, no adult banking terms).
  */
-export const KidCelebrationDelivery: React.FC<KidCelebrationDeliveryProps> = ({ childId, onDelivered }) => {
+export const KidCelebrationDelivery: React.FC<KidCelebrationDeliveryProps> = ({ childId: propChildId, onDelivered }) => {
+    let contextChildId = '';
+    try {
+        const { profile } = useProfile();
+        contextChildId = profile?.id || '';
+    } catch {
+        // no profile provider
+    }
+    const childId = propChildId || contextChildId;
+
     const [celebration, setCelebration] = useState<KidCelebration | null>(() => {
+        if (!childId) return null;
         const pending = getPendingKidCelebrations(childId);
         return pending.length > 0 ? pending[0] : null;
     });
 
+    useEffect(() => {
+        if (!childId) return;
+        const checkForCelebration = () => {
+            const pending = getPendingKidCelebrations(childId);
+            if (pending.length > 0) {
+                setCelebration((prev) => prev || pending[0]);
+            }
+        };
+        checkForCelebration();
+        window.addEventListener('storage', checkForCelebration);
+        window.addEventListener('kid-celebration-queued', checkForCelebration);
+        return () => {
+            window.removeEventListener('storage', checkForCelebration);
+            window.removeEventListener('kid-celebration-queued', checkForCelebration);
+        };
+    }, [childId]);
+
     const handleDismiss = useCallback(() => {
-        if (celebration) {
+        if (celebration && childId) {
             markKidCelebrationDelivered(childId, celebration.id);
             if (onDelivered) {
                 onDelivered(celebration);
@@ -317,8 +387,8 @@ export const CelebrationTray: React.FC<CelebrationTrayProps> = ({
         }
         if (!activeProfile) return null;
         const seen = getSeenMilestones(activeProfile.id);
-        return detectNewMilestone(activeProfile, seen);
-    }, [propMilestone, activeProfile]);
+        return detectNewMilestone(activeProfile, seen, t);
+    }, [propMilestone, activeProfile, t]);
 
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const [actionState, setActionState] = useState<'idle' | 'gift_sent' | 'cheer_sent'>('idle');
@@ -434,8 +504,8 @@ export const CelebrationTray: React.FC<CelebrationTrayProps> = ({
                     </div>
                     <div>
                         <div className="text-xs font-bold text-amber-700 flex items-center gap-1">
-                            <span>🎉</span>
-                            <span>{t('parent.celebration.winHeader', 'הישג חדש שנרשם!')}</span>
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                            <span>{t('celebration.winHeader', t('parent.celebration.winHeader', 'הישג חדש שנרשם!'))}</span>
                         </div>
                         <div
                             data-testid="celebration-milestone-text"
@@ -451,10 +521,10 @@ export const CelebrationTray: React.FC<CelebrationTrayProps> = ({
                         type="button"
                         onClick={handleDismiss}
                         data-testid="celebration-dismiss-btn"
-                        aria-label="סגור חגיגה"
-                        className="text-slate-400 hover:text-slate-600 p-1 text-sm cursor-pointer"
+                        aria-label={t('celebration.dismiss', 'סגור חגיגה')}
+                        className="text-slate-400 hover:text-slate-600 p-1 text-sm cursor-pointer rounded-lg hover:bg-amber-100/50 transition-colors"
                     >
-                        ✕
+                        <X className="w-4 h-4" />
                     </button>
                 )}
             </div>
@@ -465,7 +535,7 @@ export const CelebrationTray: React.FC<CelebrationTrayProps> = ({
                 className="bg-white/80 rounded-2xl border border-amber-200/80 p-3 text-xs flex items-center justify-between gap-2"
             >
                 <div className="flex items-center gap-2">
-                    <span className="text-base">🪙</span>
+                    <Coins className="w-5 h-5 text-amber-500 shrink-0" />
                     <div>
                         <span className="font-bold text-slate-700">{economyPrompt}</span>
                         <div className="text-[11px] text-amber-700 mt-0.5">
@@ -480,7 +550,7 @@ export const CelebrationTray: React.FC<CelebrationTrayProps> = ({
                         data-testid="celebration-play-games-btn"
                         className="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs px-3 py-1.5 rounded-xl transition-colors shrink-0 cursor-pointer"
                     >
-                        שחקו עכשיו 🎮
+                        {t('celebration.playNow', 'שחקו עכשיו 🎮')}
                     </button>
                 )}
             </div>
@@ -504,8 +574,8 @@ export const CelebrationTray: React.FC<CelebrationTrayProps> = ({
                     data-testid="celebration-send-coins-btn"
                     className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 text-white font-extrabold text-sm py-3 px-3 rounded-2xl transition-all shadow-xs flex items-center justify-center gap-2 min-h-[48px] cursor-pointer"
                 >
-                    <span>🪙</span>
-                    <span>שלח מטבעות</span>
+                    <Coins className="w-4 h-4 shrink-0" />
+                    <span>{t('celebration.sendCoins', 'שלח מטבעות')}</span>
                 </button>
 
                 <button
@@ -515,8 +585,8 @@ export const CelebrationTray: React.FC<CelebrationTrayProps> = ({
                     data-testid="celebration-send-cheer-btn"
                     className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 text-white font-extrabold text-sm py-3 px-3 rounded-2xl transition-all shadow-xs flex items-center justify-center gap-2 min-h-[48px] cursor-pointer"
                 >
-                    <span>👏</span>
-                    <span>שלח מחיאות כפיים</span>
+                    <Sparkles className="w-4 h-4 shrink-0" />
+                    <span>{t('celebration.sendCheer', 'שלח מחיאות כפיים')}</span>
                 </button>
             </div>
 
