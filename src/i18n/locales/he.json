@@ -339,10 +339,6 @@
       "maxPerChild": "מקסימום לילד ליום",
       "cancel": "ביטול",
       "sendGift": "שלחו מתנה",
-      "weeklyLeaderboard": "טבלת שיאים שבועית",
-      "resetsSunday": "תתאפס ביום ראשון",
-      "noScoresYet": "אין עדיין תוצאות השבוע",
-      "you": "אתם",
       "errors": {
         "invalid_amount": "סכום לא תקין",
         "insufficient_coins": "אין מספיק מטבעות",

@@ -13,14 +13,12 @@
  *   - Parent daily streak tracking (separate from child streak)
  *   - Parent badge definitions and unlock criteria
  *   - Gift-to-child mechanism (transfer parent coins to child profile)
- *   - Weekly Blitz leaderboard (resets every Sunday)
  */
 
 import type {
     ParentEconomyState,
     ParentBadgeId,
     ParentBadge,
-    LeaderboardEntry,
     GiftTransaction,
     GameResult,
     CoinEarningResult,
@@ -290,6 +288,7 @@ export function validateGift(
     childProfileId: string,
     amount: number,
     today: string = getTodayISO(),
+    maxDailyPerChild: number = MAX_DAILY_GIFT_PER_CHILD,
 ): string | null {
     if (amount <= 0) return 'invalid_amount';
     if (amount > state.coins) return 'insufficient_coins';
@@ -304,7 +303,7 @@ export function validateGift(
     const toThisChildToday = todaysGifts
         .filter((g: GiftTransaction) => g.childProfileId === childProfileId)
         .reduce((sum: number, g: GiftTransaction) => sum + g.amount, 0);
-    if (toThisChildToday + amount > MAX_DAILY_GIFT_PER_CHILD) return 'child_daily_limit_exceeded';
+    if (toThisChildToday + amount > maxDailyPerChild) return 'child_daily_limit_exceeded';
 
     return null;
 }
@@ -319,8 +318,9 @@ export function executeGift(
     childName: string,
     amount: number,
     today: string = getTodayISO(),
+    maxDailyPerChild: number = MAX_DAILY_GIFT_PER_CHILD,
 ): { state: ParentEconomyState; transaction: GiftTransaction } | null {
-    const error = validateGift(state, childProfileId, amount, today);
+    const error = validateGift(state, childProfileId, amount, today, maxDailyPerChild);
     if (error) return null;
 
     const transaction: GiftTransaction = {
@@ -343,74 +343,16 @@ export function executeGift(
 }
 
 // ================================================================
-//  Weekly Leaderboard
+//  Weekly Cycle
 // ================================================================
 
-/** Get the ISO date of the most recent Sunday (start of leaderboard week) */
+/** Get the ISO date of the most recent Sunday (start of week) */
 export function getWeekStartISO(date: Date = new Date()): string {
     const d = new Date(date);
     const day = d.getDay(); // 0 = Sunday
     d.setDate(d.getDate() - day);
     d.setHours(0, 0, 0, 0);
     return d.toISOString().slice(0, 10);
-}
-
-/**
- * Add or update a score entry on the weekly leaderboard.
- * Only keeps the best score per player per week.
- */
-export function submitLeaderboardScore(
-    entries: LeaderboardEntry[],
-    playerName: string,
-    score: number,
-    weekStart: string = getWeekStartISO(),
-): LeaderboardEntry[] {
-    const existing = entries.find(
-        (e: LeaderboardEntry) => e.playerName === playerName && e.weekStart === weekStart,
-    );
-
-    if (existing) {
-        if (score > existing.score) {
-            return entries.map((e: LeaderboardEntry) =>
-                e === existing ? { ...e, score, timestamp: Date.now() } : e,
-            );
-        }
-        return entries; // no update needed
-    }
-
-    const entry: LeaderboardEntry = {
-        playerName,
-        score,
-        weekStart,
-        timestamp: Date.now(),
-    };
-
-    return [...entries, entry];
-}
-
-/**
- * Get the current week's leaderboard, sorted by score descending.
- */
-export function getCurrentWeekLeaderboard(
-    entries: LeaderboardEntry[],
-    weekStart: string = getWeekStartISO(),
-): LeaderboardEntry[] {
-    return entries
-        .filter((e: LeaderboardEntry) => e.weekStart === weekStart)
-        .sort((a: LeaderboardEntry, b: LeaderboardEntry) => b.score - a.score);
-}
-
-/**
- * Remove entries from previous weeks. Call this on load to keep storage small.
- */
-export function pruneOldLeaderboardEntries(
-    entries: LeaderboardEntry[],
-    keepWeeks: number = 2,
-): LeaderboardEntry[] {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - keepWeeks * 7);
-    const cutoffStr = cutoff.toISOString().slice(0, 10);
-    return entries.filter((e: LeaderboardEntry) => e.weekStart >= cutoffStr);
 }
 
 // ================================================================

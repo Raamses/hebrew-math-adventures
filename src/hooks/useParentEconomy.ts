@@ -2,23 +2,20 @@
  * useParentEconomy.ts — React hook for managing parent economy state.
  *
  * Handles localStorage persistence, game result application, gift execution,
- * streak freeze, and leaderboard management.
+ * and streak freeze.
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import type { ParentEconomyState, GameResult, LeaderboardEntry } from '../types/parent';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import type { ParentEconomyState, GameResult } from '../types/parent';
 import {
     createInitialState,
     applyGameResult,
     executeGift,
     applyStreakFreeze,
-    submitLeaderboardScore,
-    pruneOldLeaderboardEntries,
     getTodayISO,
 } from '../components/parent/games/parentEconomyEngine';
 
 const STORAGE_KEY = 'hebrew-math-parent-economy';
-const LEADERBOARD_KEY = 'hebrew-math-parent-leaderboard';
 
 function loadState(): ParentEconomyState {
     try {
@@ -33,40 +30,22 @@ function loadState(): ParentEconomyState {
     return createInitialState();
 }
 
-function loadLeaderboard(): LeaderboardEntry[] {
-    try {
-        const raw = localStorage.getItem(LEADERBOARD_KEY);
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            return pruneOldLeaderboardEntries(parsed);
-        }
-    } catch {
-        // ignore
-    }
-    return [];
-}
-
 export function useParentEconomy() {
     const [state, setState] = useState<ParentEconomyState>(loadState);
-    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(loadLeaderboard);
+    const isInitialMount = useRef(true);
 
     // Persist state to localStorage on change
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         } catch {
             // ignore
         }
     }, [state]);
-
-    // Persist leaderboard on change
-    useEffect(() => {
-        try {
-            localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
-        } catch {
-            // ignore
-        }
-    }, [leaderboard]);
 
     // Record a game result (earn coins, update streak, check badges)
     const recordGameResult = useCallback((result: GameResult) => {
@@ -76,8 +55,8 @@ export function useParentEconomy() {
     }, [state]);
 
     // Gift coins to a child
-    const giftToChild = useCallback((childId: string, childName: string, amount: number) => {
-        const result = executeGift(state, childId, childName, amount, getTodayISO());
+    const giftToChild = useCallback((childId: string, childName: string, amount: number, maxDaily?: number) => {
+        const result = executeGift(state, childId, childName, amount, getTodayISO(), maxDaily);
         if (result) {
             setState(result.state);
             return result.transaction;
@@ -95,17 +74,10 @@ export function useParentEconomy() {
         return false;
     }, [state]);
 
-    // Submit a score to the weekly leaderboard
-    const submitScore = useCallback((playerName: string, score: number) => {
-        setLeaderboard(prev => submitLeaderboardScore(prev, playerName, score));
-    }, []);
-
     return {
         state,
-        leaderboard,
         recordGameResult,
         giftToChild,
         useStreakFreeze,
-        submitScore,
     };
 }

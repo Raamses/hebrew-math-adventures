@@ -11,6 +11,7 @@ import {
     SKILL_PRACTICE_CONFIGS,
 } from '../../lib/skillFocus';
 import { getWeekStartISO } from './games/parentEconomyEngine';
+import { CelebrationTray } from './CelebrationTray';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
 import type { UserProfile } from '../../types/user';
 
@@ -68,12 +69,14 @@ export interface PostcardHubProps {
     profile?: UserProfile | null;
     onPracticeSkill?: (config: BaseProblemConfig) => void;
     onOpenDetails?: () => void;
+    onOpenGames?: () => void;
 }
 
 export const PostcardHub: React.FC<PostcardHubProps> = ({
     profile: propProfile,
     onPracticeSkill,
     onOpenDetails,
+    onOpenGames,
 }) => {
     const { t, i18n } = useTranslation();
     let contextProfile: UserProfile | null = null;
@@ -183,6 +186,12 @@ export const PostcardHub: React.FC<PostcardHubProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* CelebrationTray (Card PG-4) — Contextual card when new milestone/badge fired */}
+            <CelebrationTray
+                profile={activeProfile}
+                onPlayGames={onOpenGames}
+            />
 
             {/* 2. ONE Action Chip: the weakest-skill practice */}
             <div
