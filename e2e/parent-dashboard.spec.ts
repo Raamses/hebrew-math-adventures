@@ -34,7 +34,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfile, openParentGate, openMenu, waitForSagaMap } from './helpers';
+import { setupFreshProfile, openParentGate, openMenu, waitForSagaMap, solveParentGate } from './helpers';
 
 // ─── Local Helpers ───────────────────────────────────────────────────
 
@@ -75,11 +75,13 @@ async function openParentGateFromMap(page: Page) {
   await expect(gate).toBeVisible({ timeout: 5000 });
   await page.waitForTimeout(300);
 
-  // Read the math problem from the DOM: "{n1} + {n2} = ?"
-  const gateText = await gate.textContent() || '';
-  const problemMatch = gateText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
+  // Read the math problem from the clipboard (PG-1 keypad rework)
+  const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
+  await expect(problemEl).toBeVisible({ timeout: 5000 });
+  const problemText = (await problemEl.textContent()) || '';
+  const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
   if (!problemMatch) {
-    throw new Error(`Could not parse parent gate problem from text: "${gateText}"`);
+    throw new Error(`Could not parse parent gate problem from text: "${problemText}"`);
   }
 
   const n1 = parseInt(problemMatch[1]);
@@ -88,16 +90,8 @@ async function openParentGateFromMap(page: Page) {
 
   console.log(`[ParentGate from Map] Parsed problem: ${n1} + ${n2} = ${sum}`);
 
-  // Fill the input and submit
-  const input = page.locator('[data-testid="parent-gate-input"]').first();
-  await expect(input).toBeVisible({ timeout: 5000 });
-  await input.fill(String(sum));
-  await page.waitForTimeout(300);
-
-  const submitBtn = gate.locator('button[type="submit"]').first();
-  await expect(submitBtn).toBeVisible({ timeout: 5000 });
-  await submitBtn.click();
-  await page.waitForTimeout(1500);
+  // Solve via the shared keypad helper (PG-1 rework)
+  await solveParentGate(page, sum);
 
   // Verify parent dashboard is now visible
   const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
@@ -137,7 +131,8 @@ async function clickTab(page: Page, hePattern: RegExp, enPattern: RegExp) {
  * Exit the parent dashboard by clicking the Exit button.
  */
 async function exitDashboard(page: Page) {
-  const exitBtn = page.locator('button').filter({ hasText: /יציאה|Exit/ }).first();
+  // PG-2 redesign: the exit button is [data-testid="parent-exit-button"] labeled "חזרה למשחק"
+  const exitBtn = page.locator('[data-testid="parent-exit-button"]').first();
   await expect(exitBtn).toBeVisible({ timeout: 5000 });
   await exitBtn.click();
   await page.waitForTimeout(1500);
@@ -165,9 +160,10 @@ test.describe('Parent Zone — Redesign', () => {
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
     await expect(dashboard).toBeVisible({ timeout: 10000 });
 
-    // Verify default tab is "profiles" — Manage Profiles heading visible
-    const profilesHeading = page.locator('h2').filter({ hasText: /ניהול פרופילים|Manage Profiles/ }).first();
-    await expect(profilesHeading).toBeVisible({ timeout: 5000 });
+    // PG-2/PG-3: default tab is 'postcard' (PostcardHub landing) — verify its content
+    const postcardTab = page.locator('button[role="tab"]').filter({ hasText: /גלויה|Postcard/ }).first();
+    await expect(postcardTab).toBeVisible({ timeout: 5000 });
+    await expect(postcardTab).toHaveAttribute('aria-selected', 'true');
 
     console.log('[Test 1] PASSED: Parent gate from ProfileSelector solved, dashboard visible');
   });
@@ -182,9 +178,10 @@ test.describe('Parent Zone — Redesign', () => {
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
     await expect(dashboard).toBeVisible({ timeout: 10000 });
 
-    // Verify default tab is "profiles"
-    const profilesHeading = page.locator('h2').filter({ hasText: /ניהול פרופילים|Manage Profiles/ }).first();
-    await expect(profilesHeading).toBeVisible({ timeout: 5000 });
+    // PG-2/PG-3: default tab is 'postcard' (PostcardHub landing) — verify its content
+    const postcardTab = page.locator('button[role="tab"]').filter({ hasText: /גלויה|Postcard/ }).first();
+    await expect(postcardTab).toBeVisible({ timeout: 5000 });
+    await expect(postcardTab).toHaveAttribute('aria-selected', 'true');
 
     console.log('[Test 2] PASSED: Parent gate from SagaMap solved, dashboard visible');
   });
@@ -292,7 +289,10 @@ test.describe('Parent Zone — Redesign', () => {
   test('5. Edit profile — change name → save → name updated', async ({ page }) => {
     await navigateToDashboardFromSelector(page, 'EditTest');
 
-    // On the profiles tab (default), find the edit button for the profile
+    // PG-2/PG-3: profile manager lives in the 'settings' tab — navigate there first
+    await clickTab(page, /הגדרות/, /Settings/);
+
+    // On the settings (profiles) tab, find the edit button for the profile
     // Edit button has aria-label = ערוך / Edit
     const editBtn = page.locator('button[aria-label*="ערוך"], button[aria-label*="Edit"]').first();
     await expect(editBtn).toBeVisible({ timeout: 5000 });
@@ -346,7 +346,10 @@ test.describe('Parent Zone — Redesign', () => {
     await logoutToProfileSelector(page);
     await openParentGate(page);
 
-    // On the profiles tab, find the delete button for "DeleteMe"
+    // PG-2/PG-3: profile manager lives in the 'settings' tab — navigate there first
+    await clickTab(page, /הגדרות/, /Settings/);
+
+    // On the settings (profiles) tab, find the delete button for "DeleteMe"
     // The profile cards have the name in a div.font-bold, and delete button has aria-label מחק פרופיל / Delete Profile
     // We need to find the delete button that corresponds to the "DeleteMe" profile card
     const profileCards = page.locator('div.bg-white.rounded-2xl.p-4.flex.items-center.gap-3');
@@ -394,6 +397,9 @@ test.describe('Parent Zone — Redesign', () => {
     // Verify we're on the dashboard
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
     await expect(dashboard).toBeVisible({ timeout: 10000 });
+
+    // PG-2/PG-3: danger zone lives in the 'settings' tab — navigate there first
+    await clickTab(page, /הגדרות/, /Settings/);
 
     // Find the danger zone reset button — text: איפוס כל הנתונים / Reset All Data
     const resetBtn = page.locator('button').filter({ hasText: /איפוס כל הנתונים|Reset All Data/ }).first();
