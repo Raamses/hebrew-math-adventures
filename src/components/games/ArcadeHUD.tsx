@@ -13,7 +13,10 @@ interface ArcadeHUDProps {
     combo: number;
 }
 
-export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLeft, combo }) => {
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
+// in PracticeMode or other parent components update. ArcadeHUD receives primitives
+// and only needs to update when these specific props change.
+export const ArcadeHUD = React.memo(function ArcadeHUD({ mode, score, lives, timeLeft, combo }: ArcadeHUDProps) {
     const { t } = useTranslation();
 
     // Smoothly animate score changes directly in the DOM, bypassing React renders
@@ -97,4 +100,6 @@ export const ArcadeHUD: React.FC<ArcadeHUDProps> = ({ mode, score, lives, timeLe
             </div>
         </div>
     );
-};
+});
+
+ArcadeHUD.displayName = 'ArcadeHUD';

@@ -8,7 +8,9 @@ interface LevelUpBannerProps {
     show: boolean;
 }
 
-export const LevelUpBanner: React.FC<LevelUpBannerProps> = ({ level, show }) => {
+// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
+// like `gameState` in `BubbleGameContainer` update frequently (e.g., at 60fps).
+export const LevelUpBanner = React.memo(function LevelUpBanner({ level, show }: LevelUpBannerProps) {
     const { t } = useTranslation();
     return (
         <AnimatePresence>
@@ -41,4 +43,6 @@ export const LevelUpBanner: React.FC<LevelUpBannerProps> = ({ level, show }) => 
             )}
         </AnimatePresence>
     );
-};
+});
+
+LevelUpBanner.displayName = 'LevelUpBanner';
