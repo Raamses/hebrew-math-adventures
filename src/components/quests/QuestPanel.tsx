@@ -2,7 +2,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useQuest } from '../../context/QuestContext';
+import { useProfile } from '../../context/ProfileContext';
 import { ARCADE_MODE_LABELS } from '../../lib/arcadeModes';
+import { KidCelebrationDelivery } from '../parent/CelebrationTray';
 
 interface QuestPanelProps {
   onStartChallenge: () => void;
@@ -11,6 +13,7 @@ interface QuestPanelProps {
 export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
   const { t } = useTranslation();
   const { todayChallenge, hasCompletedToday, dailyStreak, stampAlbumProgress, dailyChallengeCorrect } = useQuest();
+  const { profile } = useProfile();
 
   const modeInfo = ARCADE_MODE_LABELS[todayChallenge.mode] || {
     name: todayChallenge.mode,
@@ -19,12 +22,14 @@ export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
   };
 
   return (
-    <motion.div
-      className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white rounded-3xl p-3.5 mx-3 my-3 shadow-xl border border-white/20 relative overflow-hidden"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: 'easeOut' }}
-    >
+    <>
+      {profile?.id && <KidCelebrationDelivery childId={profile.id} />}
+      <motion.div
+        className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white rounded-3xl p-3.5 mx-3 my-3 shadow-xl border border-white/20 relative overflow-hidden"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+      >
       {/* Decorative background ambient glows */}
       <div className="absolute -top-10 -right-10 w-28 h-28 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       <div className="absolute -bottom-10 -left-10 w-28 h-28 bg-pink-500/20 rounded-full blur-2xl pointer-events-none" />
@@ -190,5 +195,6 @@ export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
         )}
       </div>
     </motion.div>
+    </>
   );
 };

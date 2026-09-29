@@ -387,6 +387,21 @@
         "title": "שומר רצף",
         "desc": "השתמשתם בהקפאת רצף"
       }
+    },
+    "celebration": {
+      "winHeader": "הישג חדש שנרשם!",
+      "badgeWon": "{{childName}} זכה/תה בתג {{badgeName}}!",
+      "streakMilestone": "{{childName}} הגיע/ה לרצף מרשים של {{streak}} ימים!",
+      "sendCoins": "שלח מטבעות",
+      "sendCheer": "שלח מחיאות כפיים",
+      "coinsSent": "נשלחו {{amount}} מטבעות ל{{childName}}! 🎁",
+      "cheerSent": "נשלחו מחיאות כפיים ל{{childName}}! 👏",
+      "economyPrompt": "שחקו סיבוב קצר, ואז שלחו את המטבעות של היום ל{{childName}}",
+      "coinBalance": "יתרת המטבעות שלך: {{balance}} (עד {{cap}} ליום לילד)",
+      "playNow": "שחקו עכשיו 🎮",
+      "dismiss": "סגור חגיגה",
+      "insufficientCoins": "שחקו סיבוב קצר במשחקי הורים כדי לצבור מטבעות",
+      "dailyCapHit": "הגעת למכסה היומית של {{cap}} מטבעות לילד זה"
     }
   },
   "analytics": {
@@ -667,7 +682,14 @@
     "pop_instruction": "פוצץ את כל הבועות עם המספר {{number}}!",
     "locked": "נעול",
     "play": "שחק",
-    "back": "חזור"
+    "back": "חזור",
+    "n1_3a_title": "סכומי צדפים — חלק א",
+    "n1_3b_title": "עשרות ואחדות — חלק ב",
+    "n2_3a_title": "הארנב הרעב — חלק א",
+    "n2_3b_title": "עצים תאומים — חלק ב",
+    "n4_3a_title": "מערכים בדיונות — חלק א",
+    "n5_1a_title": "שאריות — חלק א",
+    "n5_5a_title": "פירוק עשרת — חלק א"
   },
   "practice": {
     "chooseMode": "בחר/י איך תרצה/י לשחק היום",
@@ -859,5 +881,20 @@
     "popNumber": "פוצצו את הבועה שכתוב עליה {{number}}",
     "solveEquation": "{{equation}} — פוצצו את הבועה עם התשובה",
     "popReady": "פוצצו את הבועות!"
+  },
+  "celebration": {
+    "winHeader": "הישג חדש שנרשם!",
+    "badgeWon": "{{childName}} זכה/תה בתג {{badgeName}}!",
+    "streakMilestone": "{{childName}} הגיע/ה לרצף מרשים של {{streak}} ימים!",
+    "sendCoins": "שלח מטבעות",
+    "sendCheer": "שלח מחיאות כפיים",
+    "coinsSent": "נשלחו {{amount}} מטבעות ל{{childName}}! 🎁",
+    "cheerSent": "נשלחו מחיאות כפיים ל{{childName}}! 👏",
+    "economyPrompt": "שחקו סיבוב קצר, ואז שלחו את המטבעות של היום ל{{childName}}",
+    "coinBalance": "יתרת המטבעות שלך: {{balance}} (עד {{cap}} ליום לילד)",
+    "playNow": "שחקו עכשיו 🎮",
+    "dismiss": "סגור חגיגה",
+    "insufficientCoins": "שחקו סיבוב קצר במשחקי הורים כדי לצבור מטבעות",
+    "dailyCapHit": "הגעת למכסה היומית של {{cap}} מטבעות לילד זה"
   }
 }
