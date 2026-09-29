@@ -8,9 +8,7 @@ interface LevelUpBannerProps {
     show: boolean;
 }
 
-// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
-// like game loop frame count update up to 60fps, which improves performance.
-export const LevelUpBanner = React.memo(function LevelUpBanner({ level, show }: LevelUpBannerProps) {
+export const LevelUpBanner: React.FC<LevelUpBannerProps> = ({ level, show }) => {
     const { t } = useTranslation();
     return (
         <AnimatePresence>
@@ -43,6 +41,4 @@ export const LevelUpBanner = React.memo(function LevelUpBanner({ level, show }: 
             )}
         </AnimatePresence>
     );
-});
-
-LevelUpBanner.displayName = 'LevelUpBanner';
+};
