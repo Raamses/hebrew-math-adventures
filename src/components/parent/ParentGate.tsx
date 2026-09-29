@@ -3,6 +3,7 @@ import { X, Lock, RefreshCw, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import { Mascot, type MascotCharacter } from '../mascot/Mascot';
+import { RandomUtils } from '../../engines/utils/ProblemUtils';
 
 export interface ParentGateProps {
   onSuccess: () => void;
@@ -91,20 +92,10 @@ export const ParentGate: React.FC<ParentGateProps> = ({
     ? 'lion'
     : 'bear';
 
-  const [problem, setProblem] = useState<{ n1: number; n2: number }>(() => {
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      const array = new Uint32Array(2);
-      crypto.getRandomValues(array);
-      return {
-        n1: (array[0] % 40) + 10,
-        n2: (array[1] % 40) + 10,
-      };
-    }
-    return {
-      n1: Math.floor(Math.random() * 40) + 10,
-      n2: Math.floor(Math.random() * 40) + 10,
-    };
-  });
+  const [problem, setProblem] = useState<{ n1: number; n2: number }>(() => ({
+    n1: RandomUtils.secureIntInRange(10, 50),
+    n2: RandomUtils.secureIntInRange(10, 50),
+  }));
 
   const [answer, setAnswer] = useState('');
   const [failedAttempts, setFailedAttempts] = useState(0);
@@ -119,19 +110,10 @@ export const ParentGate: React.FC<ParentGateProps> = ({
   };
 
   const generateProblem = () => {
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      const array = new Uint32Array(2);
-      crypto.getRandomValues(array);
-      setProblem({
-        n1: (array[0] % 40) + 10,
-        n2: (array[1] % 40) + 10,
-      });
-    } else {
-      setProblem({
-        n1: Math.floor(Math.random() * 40) + 10,
-        n2: Math.floor(Math.random() * 40) + 10,
-      });
-    }
+    setProblem({
+      n1: RandomUtils.secureIntInRange(10, 50),
+      n2: RandomUtils.secureIntInRange(10, 50),
+    });
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
