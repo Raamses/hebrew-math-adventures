@@ -467,6 +467,21 @@
         "title": "Streak Saver",
         "desc": "Used streak freeze"
       }
+    },
+    "celebration": {
+      "winHeader": "New Milestone Unlocked!",
+      "badgeWon": "{{childName}} earned the {{badgeName}} badge!",
+      "streakMilestone": "{{childName}} reached an impressive streak of {{streak}} days!",
+      "sendCoins": "Send Coins",
+      "sendCheer": "Send Cheer",
+      "coinsSent": "Sent {{amount}} coins to {{childName}}! 🎁",
+      "cheerSent": "Sent cheers to {{childName}}! 👏",
+      "economyPrompt": "Play a quick round, then send today's coins to {{childName}}",
+      "coinBalance": "Your coin balance: {{balance}} (up to {{cap}}/day per child)",
+      "playNow": "Play Now 🎮",
+      "dismiss": "Close celebration",
+      "insufficientCoins": "Play a quick round in parent games to earn coins",
+      "dailyCapHit": "You reached the daily limit of {{cap}} coins for this child"
     }
   },
   "analytics": {
@@ -747,7 +762,14 @@
     "pop_instruction": "Pop all the bubbles with the number {{number}}!",
     "locked": "Locked",
     "play": "Play",
-    "back": "Back"
+    "back": "Back",
+    "n1_3a_title": "Shell Sums — Part A",
+    "n1_3b_title": "Ten & Ones — Part B",
+    "n2_3a_title": "Hungry Bunny — Part A",
+    "n2_3b_title": "Twin Trees — Part B",
+    "n4_3a_title": "Dune Arrays — Part A",
+    "n5_1a_title": "Leftovers — Part A",
+    "n5_5a_title": "Break a Ten — Part A"
   },
   "practice": {
     "chooseMode": "Choose Your Challenge",
@@ -939,5 +961,20 @@
     "popNumber": "Pop the bubble with {{number}}",
     "solveEquation": "{{equation}} — pop the bubble with the answer",
     "popReady": "Pop the bubbles!"
+  },
+  "celebration": {
+    "winHeader": "New Milestone Unlocked!",
+    "badgeWon": "{{childName}} earned the {{badgeName}} badge!",
+    "streakMilestone": "{{childName}} reached an impressive streak of {{streak}} days!",
+    "sendCoins": "Send Coins",
+    "sendCheer": "Send Cheer",
+    "coinsSent": "Sent {{amount}} coins to {{childName}}! 🎁",
+    "cheerSent": "Sent cheers to {{childName}}! 👏",
+    "economyPrompt": "Play a quick round, then send today's coins to {{childName}}",
+    "coinBalance": "Your coin balance: {{balance}} (up to {{cap}}/day per child)",
+    "playNow": "Play Now 🎮",
+    "dismiss": "Close celebration",
+    "insufficientCoins": "Play a quick round in parent games to earn coins",
+    "dailyCapHit": "You reached the daily limit of {{cap}} coins for this child"
   }
 }
