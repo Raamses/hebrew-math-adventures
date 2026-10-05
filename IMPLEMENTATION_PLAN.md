@@ -2,7 +2,7 @@
 
 **Author:** Claude Opus (Senior Architect)
 **Date:** 2026-07-31
-**Source:** `COUNCIL_REPORT.md` + direct source audit
+**Source:** `archive/counsel-2026-08/COUNCIL_REPORT.md` + direct source audit
 **Scope:** All P0 + P1 fixes, plus top-3 creative features (Math Pet, Boss Knowledge Gates, Combo Fusion + Power-Ups)
 
 ---

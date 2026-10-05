@@ -2,7 +2,7 @@
 
 **Author:** Claude Opus (Lead Game Designer)
 **Date:** 2026-08-01
-**Source:** Codebase audit + COUNCIL_REPORT.md + IMPLEMENTATION_PLAN.md
+**Source:** Codebase audit + `archive/counsel-2026-08/COUNCIL_REPORT.md` + IMPLEMENTATION_PLAN.md
 **Scope:** Top 3 creative features — Math Pet + Daily Quests, Boss Knowledge Gates, Combo Fusion + Power-Ups
 
 ---

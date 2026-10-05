@@ -1,0 +1,254 @@
+{
+  "schema": "hma.feature-list.v1",
+  "generated_by": "scripts/feature_list.py",
+  "generated_at": "2026-10-05T06:59:35Z",
+  "repo": "Raamses/hebrew-math-adventures",
+  "commit": "3ac8f97",
+  "branch": "docs/vault-status-2026-09-29",
+  "authority": {
+    "vault": "vault/",
+    "index": "vault/INDEX.md",
+    "roadmap": "vault/roadmap/current-work.md"
+  },
+  "done_definition": {
+    "command": "./init.sh",
+    "rule": "evidence = command + result + date recorded in the repo; prose 'done' is invalid",
+    "baseline_note": "Known pre-existing red on main: 524 eslint errors + 1 failing unit test (src/lib/__tests__/worldConfig.test.ts). init.sh gates on regression above that baseline, not absolute zero."
+  },
+  "counts": {
+    "backlog": 7,
+    "done": 2,
+    "in_progress": 6,
+    "known_issue": 8,
+    "unverified": 8
+  },
+  "features": [
+    {
+      "id": "hma-d3e1437",
+      "title": "fix(equation): a loss breaks the daily streak (Nerdle semantics)",
+      "status": "done",
+      "commit": "d3e1437",
+      "evidence": "`src/components/parent/games/__tests__/EquationOfTheDay.test.tsx` — `npm run test` — 2026-08-24",
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-0aeaddf",
+      "title": "docs: merge artifact for fix/saga-n…tier → main",
+      "status": "unverified",
+      "commit": "0aeaddf",
+      "evidence": "`docs/merge-artifact-saga-n…tier.md` — `npm run test` — 2026-08-24",
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-7840dc3",
+      "title": "fix(test): apply rotateToNewTarget pattern to zenStateReset.test.ts",
+      "status": "done",
+      "commit": "7840dc3",
+      "evidence": "`src/engines/bubble/__tests__/zenStateReset.test.ts` — `npm run test` — 2026-08-24",
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-8ea214d",
+      "title": "feat: badge collection improvements, bubble/cinematic tweaks, i18n fixes",
+      "status": "unverified",
+      "commit": "8ea214d",
+      "evidence": "⚠️ MISSING — badge work has no unit test (no `Badge*test*` under `src/`, verified 2026-10-05); `npm run test` proves nothing about this entry. E2E coverage exists only as `e2e/badge-unlocks.spec.ts`.",
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-d63896c",
+      "title": "test: e2e suite improvements — 6 new specs, helpers fix, CI workflow",
+      "status": "unverified",
+      "commit": "d63896c",
+      "evidence": "`e2e/badge-unlocks.spec.ts`, `e2e/daily-quests-streaks.spec.ts`, `e2e/dashboard-visualization.spec.ts`, `e2e/fusion-arcade.spec.ts`, `e2e/powerups-frenzy.spec.ts`, `.github/workflows/e2e.yml` — `npm run test:e2e` — specs added 2026-08-24; no green e2e run recorded for them (see E2E status: 53 passed / 40 failed as of 2026-08-20).",
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-6959c71",
+      "title": "feat: parent economy + competitive features (Phase 6)",
+      "status": "unverified",
+      "commit": "6959c71",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-1a692ba",
+      "title": "feat: parent zone redesign, arcade i18n fix, parent games, arcade mode selector, 14 new lessons",
+      "status": "unverified",
+      "commit": "1a692ba",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-97acab6",
+      "title": "fix: bubble game bugs — Pop N i18n, boss bubble unkillable, memoized SensoryProblem",
+      "status": "unverified",
+      "commit": "97acab6",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-e4f0f9f",
+      "title": "fix: wire up 15 new lessons, repair ParentBlitz/hub tests, de-flake bubble test",
+      "status": "unverified",
+      "commit": "e4f0f9f",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-a262011",
+      "title": "fix(bubble): variant-aware spawn-X clamp + correct overflow assertions",
+      "status": "unverified",
+      "commit": "a262011",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md"
+    },
+    {
+      "id": "hma-inflight-deploy-to-firebase-main-is-ready-awaiti",
+      "title": "**Deploy to Firebase** — main is ready, awaiting Ram's go.",
+      "status": "in_progress",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md#in-flight--next"
+    },
+    {
+      "id": "hma-inflight-sdlc-pipeline-world-config-chain-comple",
+      "title": "**SDLC pipeline**: world-config chain complete ✅. Sound-handling: PracticeMode migrated ✅, 3 components remain. Star-rewards: done ✅. E2e-coverage: 6 new specs added, fix cards in progress.",
+      "status": "in_progress",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md#in-flight--next"
+    },
+    {
+      "id": "hma-inflight-challenge-clutter-reduction-challenge-c",
+      "title": "**Challenge clutter reduction** (`CHALLENGE_CLUTTER_PLAN.md`).",
+      "status": "in_progress",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md#in-flight--next"
+    },
+    {
+      "id": "hma-inflight-practicemode-design-review-follow-ups-d",
+      "title": "**PracticeMode design review follow-ups** (`DESIGN_REVIEW_PRACTICEMODE.md`).",
+      "status": "in_progress",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md#in-flight--next"
+    },
+    {
+      "id": "hma-inflight-lesson-node-dead-code-fix-gameorchestra",
+      "title": "**LESSON node dead code fix** — GameOrchestrator `effectiveMode` never returns `'LESSON'`. See [[known-issues]].",
+      "status": "in_progress",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md#in-flight--next"
+    },
+    {
+      "id": "hma-inflight-chunk-size-optimization-add-manualchunk",
+      "title": "**Chunk size optimization** — add `manualChunks` to `vite.config.ts` to split 910 kB bundle. See [[backlog]].",
+      "status": "in_progress",
+      "evidence": null,
+      "source": "vault/roadmap/current-work.md#in-flight--next"
+    },
+    {
+      "id": "hma-backlog-sound-handling-migration-incomplete-pra",
+      "title": "**Sound handling migration (incomplete)**: `PracticeMode.tsx` migrated to `useSound` ✅ (ADR 2026-08-centralize-sound). Raw `soundGarden` ternaries remain in `BubbleGameContainer`, `MathInvadersGame`, `MemoryDuelGame`. **Next step:** migrate these three components to the semantic `useSound` API.",
+      "status": "backlog",
+      "evidence": null,
+      "source": "vault/roadmap/backlog.md"
+    },
+    {
+      "id": "hma-backlog-chunk-size-warning-vite-build-produces",
+      "title": "**Chunk size warning**: Vite build produces a single 910 kB JS chunk (gzip: 265 kB) — exceeds the 500 kB warning threshold. No `manualChunks` or `chunkSizeWarningLimit` config in `vite.config.ts`. **Next step:** add `build.rollupOptions.output.manualChunks` to split vendor (React, Firebase, Framer Motion) from app code.",
+      "status": "backlog",
+      "evidence": null,
+      "source": "vault/roadmap/backlog.md"
+    },
+    {
+      "id": "hma-backlog-lesson-node-dead-code-gameorchestrator",
+      "title": "**LESSON node dead code**: `GameOrchestrator.tsx` `effectiveMode` never returns `'LESSON'` — LESSON-type nodes fall through to PRACTICE. `isLessonOpen` is initialized `false` and never set `true`. Identified as B1 blocker in e2e coverage review. **Next step:** fix `effectiveMode` to return `'LESSON'` for LESSON nodes, wire `isLessonOpen`, render `LessonModal`.",
+      "status": "backlog",
+      "evidence": null,
+      "source": "vault/roadmap/backlog.md"
+    },
+    {
+      "id": "hma-backlog-difficulty-rebalancer-parked-removed-fr",
+      "title": "**Difficulty rebalancer parked**: removed from main (commit `d1b2f79`). GA4 pipeline needs fix before reactivation. See [[decisions/2026-08-park-difficulty-rebalancer]]. **Next step:** fix GA4 data pipeline, then re-evaluate.",
+      "status": "backlog",
+      "evidence": null,
+      "source": "vault/roadmap/backlog.md"
+    },
+    {
+      "id": "hma-backlog-lesson-content-expansion-21-lesson-file",
+      "title": "**Lesson content expansion**: 21 lesson files exist (up from 1 — `lesson1_multiplication`), but curriculum covers Gr 1–6 (ages 5–11) with many more LESSON-type nodes. Content gap remains. **Next step:** audit curriculum for all LESSON-type nodes, create content files for each.",
+      "status": "backlog",
+      "evidence": null,
+      "source": "vault/roadmap/backlog.md"
+    },
+    {
+      "id": "hma-backlog-e2e-coverage-gaps-32-spec-files-exist-6",
+      "title": "**E2E coverage gaps**: 32 spec files exist. 6 new specs added (badge-unlocks, daily-quests-streaks, dashboard-visualization, fusion-arcade, powerups-frenzy, story-scenes). Still untested: hints system, shop/treasure economy flow, pet screen interactions, profile switching, memory duel, invaders. **Next step:** verify new specs pass against deployed site, then write specs for remaining gaps.",
+      "status": "backlog",
+      "evidence": null,
+      "source": "vault/roadmap/backlog.md"
+    },
+    {
+      "id": "hma-backlog-e2e-suite-failures-aug-20-run-53-passed",
+      "title": "**E2E suite failures**: Aug 20 run — 53 passed / 40 failed / 1 skipped / 5 did not run (99 total). Root causes: generic timeout (30 tests), waitForSagaMap (3), GameOrchestrator not found (2), node locked (2), ERR_CONNECTION_REFUSED (1), star tier assertion (1). Fix cards created on workboard. **Next step:** verify fix cards resolved, re-run full suite.",
+      "status": "backlog",
+      "evidence": null,
+      "source": "vault/roadmap/backlog.md"
+    },
+    {
+      "id": "hma-issue-lesson-node-dead-code-bug-gameorchestra",
+      "title": "**LESSON node dead code** (⚠️ bug): `GameOrchestrator.tsx:85-87` — `effectiveMode` never returns `'LESSON'`; LESSON-type nodes fall through to `'PRACTICE'`. `isLessonOpen` initialized `false`, never set `true`. The entire `if (effectiveMode === 'LESSON')` block (lines 207–216) is unreachable. Identified as B1 blocker in e2e coverage review (`vault/reviews/e2e-coverage-review.md`). **Impact:** lesson-node e2e spec cannot pass; `LessonModal` never renders. **Fix:** set `effectiveMode = 'LESSON'` when `node?.type === 'LESSON'`, wire `isLessonOpen`, render `LessonModal` with `isOpen={true}`.",
+      "status": "known_issue",
+      "evidence": null,
+      "source": "vault/roadmap/known-issues.md"
+    },
+    {
+      "id": "hma-issue-bubble-spawn-playability-active-concern",
+      "title": "**Bubble spawn playability** (⚠️ active concern): 94% node-start → node-complete drop-off, 23% of node starters never answer a question (GA4 data, 2026-08-08). Variant-aware spawn-X clamp landed (ADR 2026-08-bubble-spawn-x-overflow-clamp). Real kid playtesting still needed. See [[domain/bubble-spawn-design]] and [[domain/analytics]].",
+      "status": "known_issue",
+      "evidence": null,
+      "source": "vault/roadmap/known-issues.md"
+    },
+    {
+      "id": "hma-issue-chunk-size-warning-build-vite-build-emi",
+      "title": "**Chunk size warning** (⚠️ build): Vite build emits a 910 kB JS chunk (gzip: 265 kB), exceeding the 500 kB threshold. No `manualChunks` config in `vite.config.ts`. Single-bundle load impacts first-paint on mobile. **Fix:** add `build.rollupOptions.output.manualChunks` to split vendor libs.",
+      "status": "known_issue",
+      "evidence": null,
+      "source": "vault/roadmap/known-issues.md"
+    },
+    {
+      "id": "hma-issue-e2e-suite-failures-testing-aug-20-run-5",
+      "title": "**E2E suite failures** (⚠️ testing): Aug 20 run — 53 passed / 40 failed / 1 skipped / 5 did not run (99 total, 58.4 min against deployed Firebase site). Root causes:\n1. **Generic timeout (30 tests)** — 120s Playwright timeout too short for deployed site latency (fix card: increase to 180s — partially applied)\n2. **waitForSagaMap timeout (3 tests)** — local helpers reference arcade-button without opening hamburger menu first (fix card: helpers updated with `openMenu`)\n3. **GameOrchestrator not found (2 tests)** — mode switch via GameOrchestrator fails on deployed site\n4. **Node locked (2 tests)** — `setupFreshProfileWithPracticeAccess` doesn't unlock target nodes\n5. **ERR_CONNECTION_REFUSED (1 test)** — invaders spec targets localhost:5173 instead of deployed site\n6. **Star tier assertion (1 test)** — perfect-run star calculation mismatch (fix card: strip Unicode directional marks)\n**Status:** fix cards created on workboard, some partially applied. **Next step:** re-run full suite to verify.",
+      "status": "known_issue",
+      "evidence": null,
+      "source": "vault/roadmap/known-issues.md"
+    },
+    {
+      "id": "hma-issue-sound-handling-incomplete-debt-practice",
+      "title": "**Sound handling incomplete** (🔧 debt): `PracticeMode` migrated to `useSound` ✅. Raw `soundGarden` ternaries remain in `BubbleGameContainer`, `MathInvadersGame`, `MemoryDuelGame`. See ADR 2026-08-centralize-sound.",
+      "status": "known_issue",
+      "evidence": null,
+      "source": "vault/roadmap/known-issues.md"
+    },
+    {
+      "id": "hma-issue-lesson-coverage-gap-21-lesson-files-exi",
+      "title": "**Lesson coverage** (📏 gap): 21 lesson files exist (up from 1). Curriculum covers Gr 1–6 (ages 5–11) with many more LESSON-type nodes. Nodes without dedicated lesson content fall back to PracticeMode.",
+      "status": "known_issue",
+      "evidence": null,
+      "source": "vault/roadmap/known-issues.md"
+    },
+    {
+      "id": "hma-issue-ga4-custom-dimensions-untested-analytic",
+      "title": "**GA4 custom dimensions untested** (📊 analytics): event params (`profile_id`, `node_id`, `equation`, `response_time_ms`, `age_group`) exist in code but not registered in GA4 Admin or tested as custom dimensions via Data API. See [[domain/analytics]].",
+      "status": "known_issue",
+      "evidence": null,
+      "source": "vault/roadmap/known-issues.md"
+    },
+    {
+      "id": "hma-issue-difficulty-rebalancer-parked-parked-rem",
+      "title": "**Difficulty rebalancer parked** (⏸️ parked): removed from main (commit `d1b2f79`). GA4 data pipeline needs fix before reactivation. See [[decisions/2026-08-park-difficulty-rebalancer]].",
+      "status": "known_issue",
+      "evidence": null,
+      "source": "vault/roadmap/known-issues.md"
+    }
+  ]
+}

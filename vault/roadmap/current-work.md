@@ -1,7 +1,7 @@
 ---
 type: roadmap
 project: hebrew-math-adventures
-updated: 2026-08-24
+updated: 2026-10-05
 status: merged-to-main
 tags: [roadmap, current, work]
 ---
@@ -13,11 +13,23 @@ tags: [roadmap, current, work]
 - **Deploy to Firebase** — not yet deployed (awaiting Ram's go).
 
 ## Recently landed (on main)
+
+> **Evidence discipline (2026-10-05):** every landed entry carries
+> `Evidence: <test file> — <command> — <date>`. An entry without an evidence line is **not done**,
+> regardless of its commit message. No evidence = not done.
+
 - `d3e1437` — fix(equation): a loss breaks the daily streak (Nerdle semantics)
-- `0aeaddf` — docs: merge artifact for fix/saga-node-star-tier → main
+  - Evidence: `src/components/parent/games/__tests__/EquationOfTheDay.test.tsx` — `npm run test` — 2026-08-24
+- `0aeaddf` — docs: merge artifact for fix/saga-n…tier → main
+  - Evidence: `docs/merge-artifact-saga-n…tier.md` — `npm run test` — 2026-08-24
+  - ⚠️ NOT re-verified 2026-10-05: the "1547/1547" figure is the merge artifact's own claim; today's run reports 1618 tests. Re-run before citing.
 - `7840dc3` — fix(test): apply rotateToNewTarget pattern to zenStateReset.test.ts
+  - Evidence: `src/engines/bubble/__tests__/zenStateReset.test.ts` — `npm run test` — 2026-08-24
 - `8ea214d` — feat: badge collection improvements, bubble/cinematic tweaks, i18n fixes
+  - Evidence: ⚠️ **MISSING** — badge work has no unit test (no `Badge*test*` under `src/`, verified 2026-10-05); `npm run test` proves nothing about this entry. E2E coverage exists only as `e2e/badge-unlocks.spec.ts`.
+  - Partial: `e2e/badge-unlocks.spec.ts` — `npm run test:e2e` — added 2026-08-24; **no green e2e run recorded** (last full run 2026-08-20 predates this commit). **Not evidence-complete.**
 - `d63896c` — test: e2e suite improvements — 6 new specs, helpers fix, CI workflow
+  - Evidence: `e2e/badge-unlocks.spec.ts`, `e2e/daily-quests-streaks.spec.ts`, `e2e/dashboard-visualization.spec.ts`, `e2e/fusion-arcade.spec.ts`, `e2e/powerups-frenzy.spec.ts`, `.github/workflows/e2e.yml` — `npm run test:e2e` — specs added 2026-08-24; **no green e2e run recorded for them** (see E2E status: 53 passed / 40 failed as of 2026-08-20).
 - `6959c71` — feat: parent economy + competitive features (Phase 6)
 - `1a692ba` — feat: parent zone redesign, arcade i18n fix, parent games, arcade mode selector, 14 new lessons
 - `97acab6` — fix: bubble game bugs — Pop N i18n, boss bubble unkillable, memoized SensoryProblem

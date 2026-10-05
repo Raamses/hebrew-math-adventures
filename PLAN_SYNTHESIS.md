@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-31
 **Synthesized by:** AmosBot Council Coordinator
-**Sources:** `IMPLEMENTATION_PLAN.md` (Claude Opus) + `DEVILS_ADVOCATE.md` (Gemini Pro)
+**Sources:** `IMPLEMENTATION_PLAN.md` (Claude Opus) + `archive/counsel-2026-08/DEVILS_ADVOCATE.md` (Gemini Pro)
 
 ---
 
