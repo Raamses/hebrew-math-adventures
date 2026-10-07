@@ -244,10 +244,90 @@
       "stub": "המשחק הזה בפיתוח ויהיה זמין כאן בקרוב.",
       "items": {
         "equationOfTheDay": {
+          "instructions": "נחשו את המשוואה של היום ב-6 ניסיונות. כל תו מקבל צבע:",
+          "submit": "בדיקה",
+          "backspace": "מחקו",
+          "done": "סיום",
+          "nextPuzzle": "חידה חדשה מחר!",
+          "puzzleNumber": "חידה #{{number}}",
+          "guessesLeft": "נותרו {{count}} ניסיונות",
+          "cellState": {
+            "correct": "מקום נכון: {{char}}",
+            "present": "מקום שגוי: {{char}}",
+            "absent": "לא במשוואה: {{char}}"
+          },
+          "invalid": {
+            "noEquals": "חייב סימן שוויון (=)",
+            "invalidLeft": "הצד השמאלי אינו תקין",
+            "invalidRight": "הצד הימני חייב להיות מספר",
+            "wrongLength": "אורך שגוי — המשוואה חייבת להיות באורך הנכון",
+            "wrongResult": "המשוואה שגויה מתמטית"
+          },
+          "win": {
+            "title": "כל הכבוד! 🎉",
+            "subtitle": "פתרתם ב-{{count}} ניסיונות"
+          },
+          "lose": {
+            "title": "אולי מחר 🙃",
+            "subtitle": "לא הפעם — נסו שוב מחר!"
+          },
+          "share": {
+            "whatsapp": "שתפו בווטסאפ",
+            "copy": "העתקה"
+          },
+          "stats": {
+            "played": "שוחקו",
+            "winRate": "אחוז הצלחה"
+          },
+          "streak": {
+            "label": "רצף ימים",
+            "best": "רצף שיא"
+          },
           "title": "תרגיל היום",
           "description": "תרגיל אחד בכל יום — פתרו יחד ושמרו על הרצף."
         },
         "parentBlitz": {
+          "start": "התחילו",
+          "skip": "דלגו",
+          "done": "סיום",
+          "replay": "שחקו שוב",
+          "howToPlay": "איך משחקים",
+          "feedback": {
+            "correct": "נכון! ✓",
+            "wrong": "התשובה היא {{answer}}"
+          },
+          "hud": {
+            "score": "ניקוד",
+            "streak": "רצף",
+            "timeRemaining": "{{seconds}} שניות",
+            "timerLabel": "נותרו {{seconds}} שניות"
+          },
+          "keypad": {
+            "digit": "ספרה {{digit}}",
+            "submit": "שלח",
+            "backspace": "מחקו"
+          },
+          "rules": {
+            "time": "60 שניות — ענו על כמה שיותר שאלות",
+            "scoring": "כל תשובה נכונה מזכה בנקודות, תשובות מהירות מקבלות בונוס",
+            "streak": "תשובות נכונות רצופות מכפילות את הניקוד"
+          },
+          "results": {
+            "heading": "הזמן נגמר!",
+            "finalScore": "ניקוד סופי",
+            "accuracy": "דיוק",
+            "bestStreak": "רצף שיא",
+            "newRecord": "שיא חדש! 🏆",
+            "previousBest": "שיא קודם: {{score}}",
+            "noHighScore": "אין עדיין שיא"
+          },
+          "types": {
+            "percentage": "אחוזים",
+            "fraction": "שברים",
+            "orderOfOperations": "סדר פעולות חשבון",
+            "doubleDigitMultiply": "כפל דו-ספרתי",
+            "mixedArithmetic": "חשבון מעורב"
+          },
           "title": "בליץ הורים",
           "description": "דקה של שאלות מהירות. כמה תספיקו לפתור?"
         },
