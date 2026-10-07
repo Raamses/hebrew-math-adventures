@@ -348,7 +348,11 @@ test.describe('Arcade Game-Over flows', () => {
 
   // ─── Test 3: Math Invaders — play → game over → return to saga map ───
   test('Math Invaders — play → game over → return to saga map', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    // Un-quarantined 2026-10-07 (card 9d92cf1c): 'mobile-gap' was a misdiagnosis —
+    // the real entry failure (d757abd dropped enterSagaNodeById('n3_9')) was fixed
+    // by #217 (447df573 on main). Verified green locally vs the deployed site on
+    // main as-shipped (13.4-20.8s, retries=0, 2026-10-07). If CI disagrees,
+    // re-quarantine with the real observed failure + owning card.
     test.setTimeout(300_000); // 5 min — invaders game loop needs headroom beyond 180s global
     await setupFreshProfileWithPracticeAccess(page, 'InvadersBot');
 

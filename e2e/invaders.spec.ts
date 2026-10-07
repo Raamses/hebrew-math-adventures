@@ -9,7 +9,11 @@ test.describe('Math Invaders', () => {
   });
 
   test('Invaders loads with ship, lives, and score', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    // Un-quarantined 2026-10-07: 'mobile-gap' was a misdiagnosis — the real
+    // entry failure (commit d757abd dropped enterSagaNodeById('n3_9')) is
+    // fixed in this PR (fix/invaders-entry-and-blitz-type-parse); verified
+    // green locally under the fixed entry. If CI disagrees, re-quarantine
+    // with the real observed failure + owning card — not 'mobile gap'.
   // Global timeout is 180s — no need for local override
 
     // Navigate to practice mode and select Math Invaders
@@ -40,7 +44,11 @@ test.describe('Math Invaders', () => {
   });
 
   test('Answer bubbles appear and can be tapped', async ({ page }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-23 — mode-card-INVADERS not rendered on mobile');
+    // Un-quarantined 2026-10-07: 'mobile-gap' was a misdiagnosis — the real
+    // entry failure (commit d757abd dropped enterSagaNodeById('n3_9')) is
+    // fixed in this PR (fix/invaders-entry-and-blitz-type-parse); verified
+    // green locally under the fixed entry. If CI disagrees, re-quarantine
+    // with the real observed failure + owning card — not 'mobile gap'.
   // Global timeout is 180s — no need for local override
 
     await selectPracticeMode(page, 'INVADERS');
