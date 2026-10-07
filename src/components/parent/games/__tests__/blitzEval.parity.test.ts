@@ -63,6 +63,10 @@ describe('evalBlitzExpression parity with blitzEngine.generateQuestion', () => {
     // The F-major e2e bug: '7 + 3 × 4' must be 19 (multiply first), not 10.
     expect(evalBlitzExpression('7 + 3 × 4')).toBe(19);
     expect(evalBlitzExpression('19 − 12 × 2')).toBe(-5);
+    // flat4 explicit static vector (agy re-review nit): engine never emits
+    // '+' before the trailing term, but the arm stays live and correct.
+    expect(evalBlitzExpression('10 + 2 × 3 − 4')).toBe(12);
+    expect(evalBlitzExpression('10 + 2 × 3 + 4')).toBe(20);
     expect(evalBlitzExpression('25% × 40')).toBe(10);
     expect(evalBlitzExpression('¾ × 12')).toBe(9);
     expect(evalBlitzExpression('(3 + 4) × 5 − 2')).toBe(33);
