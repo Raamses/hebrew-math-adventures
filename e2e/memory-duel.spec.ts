@@ -21,7 +21,11 @@ test.describe('Memory Duel game', () => {
   // Global timeout is 180s — no need for local override
 
   test('Memory Duel — match all pairs → game complete → return to saga map', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    // Un-quarantined 2026-10-07 (card 9d92cf1c): 'mobile-gap' was a misdiagnosis —
+    // the real entry failure (d757abd dropped enterSagaNodeById('n3_9')) was fixed
+    // by #217 (447df573 on main). Verified green locally vs the deployed site on
+    // main as-shipped (27.6s, retries=0, 2026-10-07). If CI disagrees,
+    // re-quarantine with the real observed failure + owning card.
     await setupFreshProfileWithPracticeAccess(page, 'MemoryTest');
 
     // Use selectPracticeMode to enter MEMORY mode via the mode selector UI
