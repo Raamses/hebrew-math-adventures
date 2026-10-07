@@ -465,21 +465,95 @@ test.describe('Parent Games', () => {
     const questionText = await questionEl.textContent();
     expect(questionText).toBeTruthy();
 
-    // Parse the arithmetic question (e.g., "7 + 5")
-    const match = questionText!.match(/(\d+)\s*([+\-×÷*])\s*(\d+)/);
-    expect(match).toBeTruthy();
+    // Parse the question and compute the answer — handles ALL 5 blitzEngine
+    // question types (see blitzEngine.ts GENERATORS). REGRESSION ROOT CAUSE
+    // (Flake c87e5e58, 3rd occurrence in 4 nights): the old regex
+    // /(\d+)\s*([+\-×÷*])\s*(\d+)/ only parses 3 of the 5 question types.
+    // percentage ("25% × 40" → 40% of questions: '%' breaks the operator
+    // match) and fraction ("¾ × 12" → '¾' is not \d) returned null here →
+    // expect(match).toBeTruthy() failed → the nightly "flake" was really a
+    // deterministic content-dependent failure that passed on retry whenever
+    // the RNG rolled an arithmetic type (60% of the time). Now we parse
+    // every type the way the engine itself computes answers.
+    const text = questionText!.replace(/\u2068|\u2069/g, '').trim(); // strip bidi isolates
 
-    const a = parseInt(match![1]);
-    const op = match![2];
-    const b = parseInt(match![3]);
-    let answer: number;
-    switch (op) {
-      case '+': answer = a + b; break;
-      case '-': answer = a - b; break;
-      case '×': case '*': answer = a * b; break;
-      case '÷': answer = Math.floor(a / b); break;
-      default: answer = a + b;
+    // fraction glyphs → (num, den), e.g. "¾ × 12"
+    const vulgar: Record<string, [number, number]> = {
+      '½': [1, 2], '⅓': [1, 3], '⅔': [2, 3], '¼': [1, 4], '¾': [3, 4],
+      '⅕': [1, 5], '⅖': [2, 5], '⅗': [3, 5], '⅘': [4, 5], '⅙': [1, 6],
+      '⅚': [5, 6], '⅛': [1, 8], '⅜': [3, 8], '⅝': [5, 8], '⅞': [7, 8],
+    };
+
+    let answer: number | null = null;
+
+    // type: percentage — "25% × 40" → (pct * base) / 100
+    const pctMatch = text.match(/(\d+)\s*%\s*×\s*(\d+)/);
+    if (pctMatch) {
+      answer = (parseInt(pctMatch[1]) * parseInt(pctMatch[2])) / 100;
     }
+
+    // type: fraction — "¾ × 12" → (num / den) * n (engine guarantees integer)
+    if (answer === null) {
+      for (const [glyph, [num, den]] of Object.entries(vulgar)) {
+        const fracMatch = text.match(new RegExp(`${glyph}\\s*×\\s*(\\d+)`));
+        if (fracMatch) {
+          answer = (num * parseInt(fracMatch[1])) / den;
+          break;
+        }
+      }
+    }
+
+    // type: orderOfOperations — "a + b × c" (diff 1), "a + b × c − d" (diff 2),
+    // "(a + b) × c − d" (diff 2) → respect precedence
+    if (answer === null) {
+      const parenMatch = text.match(/^\((\d+)\s*([+\-−])\s*(\d+)\)\s*×\s*(\d+)\s*([\-−])\s*(\d+)$/);
+      const flat4Match = text.match(/^(\d+)\s*([+\-−])\s*(\d+)\s*×\s*(\d+)\s*([\-−])\s*(\d+)$/);
+      const flat3Match = text.match(/^(\d+)\s*([+\-−])\s*(\d+)\s*×\s*(\d+)$/);
+      if (parenMatch) {
+        const sub = parenMatch[2] === '+' ? parseInt(parenMatch[1]) + parseInt(parenMatch[3]) : parseInt(parenMatch[1]) - parseInt(parenMatch[3]);
+        answer = sub * parseInt(parenMatch[4]) - parseInt(parenMatch[6]);
+      } else if (flat4Match) {
+        // a ± b × c − d → precedence: multiply first
+        const p1 = parseInt(flat4Match[1]);
+        const p3 = parseInt(flat4Match[3]);
+        const p4 = parseInt(flat4Match[4]);
+        const p6 = parseInt(flat4Match[6]);
+        const sub = flat4Match[2] === '+' ? p1 + p3 * p4 : p1 - p3 * p4;
+        answer = flat4Match[5] === '+' ? sub + p6 : sub - p6;
+      } else if (flat3Match) {
+        // a ± b × c → precedence: multiply first (difficulty 1)
+        const p1 = parseInt(flat3Match[1]);
+        const p3 = parseInt(flat3Match[3]);
+        const p4 = parseInt(flat3Match[4]);
+        answer = flat3Match[2] === '+' ? p1 + p3 * p4 : p1 - p3 * p4;
+      }
+    }
+
+    // 3-term mixedArithmetic: "a + b − c" (pure ±, left-to-right)
+    if (answer === null) {
+      const triMatch = text.match(/^(\d+)\s*([+\-−])\s*(\d+)\s*([+\-−])\s*(\d+)$/);
+      if (triMatch) {
+        const step1 = triMatch[2] === '+' ? parseInt(triMatch[1]) + parseInt(triMatch[3]) : parseInt(triMatch[1]) - parseInt(triMatch[3]);
+        answer = triMatch[4] === '+' ? step1 + parseInt(triMatch[5]) : step1 - parseInt(triMatch[5]);
+      }
+    }
+
+    // simple binary + doubleDigitMultiply — "a op b" (op = + − × ÷)
+    if (answer === null) {
+      const binMatch = text.match(/(\d+)\s*([+\-−×÷])\s*(\d+)/);
+      expect(binMatch, `unparseable blitz question: "${text}"`).toBeTruthy();
+      const a = parseInt(binMatch![1]);
+      const op = binMatch![2];
+      const b = parseInt(binMatch![3]);
+      switch (op) {
+        case '+': answer = a + b; break;
+        case '−': case '-': answer = a - b; break;
+        case '×': answer = a * b; break;
+        case '÷': answer = Math.floor(a / b); break;
+        default: answer = a + b;
+      }
+    }
+    expect(answer).not.toBeNull();
 
     // Read initial score
     const scoreEl = page.locator('[data-testid="parent-blitz-score"]').first();
