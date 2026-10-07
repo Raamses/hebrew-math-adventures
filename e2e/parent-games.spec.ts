@@ -503,21 +503,29 @@ test.describe('Parent Games', () => {
       }
     }
 
-    // type: orderOfOperations — "a + b × c", "(a + b) × c − d" → respect precedence
+    // type: orderOfOperations — "a + b × c" (diff 1), "a + b × c − d" (diff 2),
+    // "(a + b) × c − d" (diff 2) → respect precedence
     if (answer === null) {
       const parenMatch = text.match(/^\((\d+)\s*([+\-−])\s*(\d+)\)\s*×\s*(\d+)\s*([\-−])\s*(\d+)$/);
-      const flatMatch = text.match(/^(\d+)\s*([+\-−])\s*(\d+)\s*×\s*(\d+)\s*([\-−])\s*(\d+)$/);
+      const flat4Match = text.match(/^(\d+)\s*([+\-−])\s*(\d+)\s*×\s*(\d+)\s*([\-−])\s*(\d+)$/);
+      const flat3Match = text.match(/^(\d+)\s*([+\-−])\s*(\d+)\s*×\s*(\d+)$/);
       if (parenMatch) {
         const sub = parenMatch[2] === '+' ? parseInt(parenMatch[1]) + parseInt(parenMatch[3]) : parseInt(parenMatch[1]) - parseInt(parenMatch[3]);
         answer = sub * parseInt(parenMatch[4]) - parseInt(parenMatch[6]);
-      } else if (flatMatch) {
-        // a ± b × c − d → precedence: multiply first, then left-to-right ±
-        const p1 = parseInt(flatMatch[1]);
-        const p3 = parseInt(flatMatch[3]);
-        const p4 = parseInt(flatMatch[4]);
-        const p6 = parseInt(flatMatch[6]);
-        const sub = flatMatch[2] === '+' ? p1 + p3 * p4 : p1 - p3 * p4;
-        answer = flatMatch[5] === '+' ? sub + p6 : sub - p6;
+      } else if (flat4Match) {
+        // a ± b × c − d → precedence: multiply first
+        const p1 = parseInt(flat4Match[1]);
+        const p3 = parseInt(flat4Match[3]);
+        const p4 = parseInt(flat4Match[4]);
+        const p6 = parseInt(flat4Match[6]);
+        const sub = flat4Match[2] === '+' ? p1 + p3 * p4 : p1 - p3 * p4;
+        answer = flat4Match[5] === '+' ? sub + p6 : sub - p6;
+      } else if (flat3Match) {
+        // a ± b × c → precedence: multiply first (difficulty 1)
+        const p1 = parseInt(flat3Match[1]);
+        const p3 = parseInt(flat3Match[3]);
+        const p4 = parseInt(flat3Match[4]);
+        answer = flat3Match[2] === '+' ? p1 + p3 * p4 : p1 - p3 * p4;
       }
     }
 
