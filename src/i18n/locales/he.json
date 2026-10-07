@@ -246,7 +246,7 @@
         "equationOfTheDay": {
           "instructions": "נחשו את המשוואה של היום ב-6 ניסיונות. כל תו מקבל צבע:",
           "submit": "בדיקה",
-          "backspace": "מחק",
+          "backspace": "מחקו",
           "done": "סיום",
           "nextPuzzle": "חידה חדשה מחר!",
           "puzzleNumber": "חידה #{{number}}",
@@ -272,7 +272,7 @@
             "subtitle": "לא הפעם — נסו שוב מחר!"
           },
           "share": {
-            "whatsapp": "שתפו בוואטסאפ",
+            "whatsapp": "שתפו בווטסאפ",
             "copy": "העתקה"
           },
           "stats": {
@@ -283,14 +283,14 @@
             "label": "רצף ימים",
             "best": "רצף שיא"
           },
-          "title": "משוואת היום",
-          "description": "משוואה אחת ביום — פתרו יחד ושמרו על הרצף."
+          "title": "תרגיל היום",
+          "description": "תרגיל אחד בכל יום — פתרו יחד ושמרו על הרצף."
         },
         "parentBlitz": {
-          "start": "התחל",
-          "skip": "דלג",
+          "start": "התחילו",
+          "skip": "דלגו",
           "done": "סיום",
-          "replay": "שחק שוב",
+          "replay": "שחקו שוב",
           "howToPlay": "איך משחקים",
           "feedback": {
             "correct": "נכון! ✓",
@@ -305,7 +305,7 @@
           "keypad": {
             "digit": "ספרה {{digit}}",
             "submit": "שלח",
-            "backspace": "מחק"
+            "backspace": "מחקו"
           },
           "rules": {
             "time": "60 שניות — ענו על כמה שיותר שאלות",
@@ -329,7 +329,7 @@
             "mixedArithmetic": "חשבון מעורב"
           },
           "title": "בליץ הורים",
-          "description": "דקה של שאלות במתח — כמה תספיקו לפתור?"
+          "description": "דקה של שאלות מהירות. כמה תספיקו לפתור?"
         },
         "numberMerge": {
           "title": "מיזוג מספרים",
