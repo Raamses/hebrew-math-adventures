@@ -315,6 +315,13 @@ test.describe('Parent Games', () => {
     await expect(page.locator('[data-testid="eq-backspace"]').first()).toBeVisible({ timeout: 5000 });
     await expect(page.locator('[data-testid="eq-submit"]').first()).toBeVisible({ timeout: 5000 });
 
+    // Card 4052cdd8 item 3: EOTD text is real localized content — instructions
+    // line + submit label from parent.games.items.equationOfTheDay
+    const eotdText = (await page.locator('[data-testid="game-equation-of-the-day"]').first().textContent()) || '';
+    expect(eotdText).toMatch(/נחשו את המשוואה|Guess today's equation|Guess the equation/);
+    expect(eotdText).toMatch(/חידה #|Puzzle #/);
+    expect(eotdText).toMatch(/בדיקה|Check/);
+
     // Verify guesses-left indicator
     await expect(page.locator('[data-testid="eq-guesses-left"]').first()).toBeVisible({ timeout: 5000 });
   });
@@ -431,7 +438,14 @@ test.describe('Parent Games', () => {
 
     // Verify idle screen
     await expect(page.locator('[data-testid="game-parent-blitz"]').first()).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('[data-testid="parent-blitz-start"]').first()).toBeVisible({ timeout: 5000 });
+    const startBtn = page.locator('[data-testid="parent-blitz-start"]').first();
+    await expect(startBtn).toBeVisible({ timeout: 5000 });
+    // Card 4052cdd8 item 3: the label must be REAL localized text (Hebrew or
+    // English), never an empty/fallback placeholder — i18n parity is enforced
+    // in unit tests (locales-parity), this pins the RENDERED side.
+    const startLabel = (await startBtn.textContent())?.trim() || '';
+    expect(startLabel.length).toBeGreaterThan(0);
+    expect(startLabel).toMatch(/התחל|Start/);
 
     // Click start
     await page.locator('[data-testid="parent-blitz-start"]').first().click();
@@ -459,6 +473,14 @@ test.describe('Parent Games', () => {
 
     // Verify streak indicator
     await expect(page.locator('[data-testid="parent-blitz-streak"]').first()).toBeVisible({ timeout: 5000 });
+
+    // Card 4052cdd8 item 3: the playing-HUD timer label is localized text
+    // (hud.timerLabel 'nותרו {{seconds}} שניות' | '{{seconds}} seconds remaining')
+    // via aria-label on the timer span. Score/streak labels live on the RESULTS
+    // screen (hud.score there), not the playing HUD — asserted via the results
+    // screen flow, not here.
+    const timerLabel = await page.locator('[role="timer"]').first().getAttribute('aria-label');
+    expect(timerLabel || '').toMatch(/נותרו \d+ שניות|seconds remaining/);
 
     // Read the timer value — should be counting down
     const timerText = await page.locator('[data-testid="parent-blitz-time-remaining"]').first().textContent();
