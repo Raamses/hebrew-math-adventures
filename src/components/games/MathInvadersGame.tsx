@@ -9,33 +9,6 @@ import { useProfile } from '../../context/ProfileContext';
 import { FrenzyOverlay } from './FrenzyOverlay';
 import type { UserCapabilityProfile } from '../../types/progress';
 
-// ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
-// like game loop frame count update up to 60fps, which improves performance and avoids
-// inline Math.random() causing layout thrashing.
-const Starfield = React.memo(() => {
-    // Generate static positions once on mount to avoid recalculating on every render
-    const stars = React.useMemo(() => Array.from({ length: 30 }).map(() => ({
-        width: `${1 + Math.random() * 2}px`,
-        height: `${1 + Math.random() * 2}px`,
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        opacity: 0.2 + Math.random() * 0.5,
-    })), []);
-
-    return (
-        <div className="absolute inset-0 pointer-events-none">
-            {stars.map((style, i) => (
-                <div
-                    key={i}
-                    className="absolute rounded-full bg-white"
-                    style={style}
-                />
-            ))}
-        </div>
-    );
-});
-Starfield.displayName = 'Starfield';
-
 interface MathInvadersGameProps {
     level: number;
     onExit: () => void;
@@ -146,7 +119,21 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
             className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 flex flex-col items-center justify-start select-none overflow-hidden relative"
         >
             {/* Starfield background */}
-            <Starfield />
+            <div className="absolute inset-0 pointer-events-none">
+                {Array.from({ length: 30 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute rounded-full bg-white"
+                        style={{
+                            width: `${1 + Math.random() * 2}px`,
+                            height: `${1 + Math.random() * 2}px`,
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            opacity: 0.2 + Math.random() * 0.5,
+                        }}
+                    />
+                ))}
+            </div>
 
             {/* HUD */}
             <div className="w-full max-w-3xl flex items-center justify-between p-3 z-40 relative">
