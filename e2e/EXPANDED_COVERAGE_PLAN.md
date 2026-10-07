@@ -54,7 +54,7 @@ performed on 2026-08-08.
 | `solveBubbleProblem(page)` | Parse + solve arithmetic/series bubble problems |
 | `solveCurrentProblem(page)` | Parse + solve input-based practice problems (arithmetic, series, comparison) |
 | `enterSagaNode(page, nodeIndex)` | Click saga map node by positional index |
-| `selectPracticeMode(page, mode)` | Click n3_1 (LESSON) → ModeSelectorOverlay → select mode (STANDARD/TIME_ATTACK/SURVIVAL/MEMORY/INVADERS) |
+| `selectPracticeMode(page, mode)` | Click n3_9 (CHALLENGE, no config) → ModeSelectorOverlay → select mode (STANDARD/TIME_ATTACK/SURVIVAL/MEMORY/INVADERS) |
 | `takeScreenshot(page, name)` | Screenshot utility |
 
 ### 1.3 Unit Test Coverage (for context — not e2e)

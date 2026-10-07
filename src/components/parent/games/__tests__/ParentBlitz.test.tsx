@@ -50,6 +50,7 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 // Import after mocks are set up.
 import { ParentBlitz } from '../ParentBlitz';
+import { evalBlitzExpression } from '../blitzEval';
 import {
   BLITZ_DURATION_MS,
   BLITZ_STORAGE_KEY,
@@ -855,29 +856,11 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 
-/** Parse a blitz display expression and evaluate it. */
+/** Parse a blitz display expression and evaluate it (shared evaluator). */
 function evalExpr(display: string): number {
-  const expr = display
-    .replace(/−/g, '-')
-    .replace(/%/g, '/100*')  // must run BEFORE ×→* to avoid double *
-    .replace(/×/g, '*')
-    .replace(/÷/g, '/')
-    // Handle vulgar fractions
-    .replace(/½/g, '1/2')
-    .replace(/⅓/g, '1/3')
-    .replace(/⅔/g, '2/3')
-    .replace(/¼/g, '1/4')
-    .replace(/¾/g, '3/4')
-    .replace(/⅕/g, '1/5')
-    .replace(/⅖/g, '2/5')
-    .replace(/⅗/g, '3/5')
-    .replace(/⅘/g, '4/5')
-    .replace(/⅙/g, '1/6')
-    .replace(/⅚/g, '5/6')
-    .replace(/⅛/g, '1/8')
-    .replace(/⅜/g, '3/8')
-    .replace(/⅝/g, '5/8')
-    .replace(/⅞/g, '7/8');
-  // eslint-disable-next-line no-eval
-  return eval(expr);
+  const answer = evalBlitzExpression(display);
+  if (answer === null) {
+    throw new Error(`unparseable blitz question: "${display}"`);
+  }
+  return answer;
 }

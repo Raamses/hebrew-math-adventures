@@ -254,7 +254,7 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
 /**
  * Click a saga map node by its flattened index (0-indexed across all units in order).
  * Verifies the node is unlocked before clicking. Use with setupFreshProfileWithPracticeAccess
- * (which unlocks n1_1, n1_2, n1_3, n3_1) to reach a specific node type directly.
+ * (which unlocks n1_1, n1_2, n1_3, n3_9) to reach a specific node type directly.
  */
 export async function enterSagaNode(page: Page, nodeIndex: number) {
   const allNodes = page.locator('[data-testid^="saga-node-"]');
@@ -743,7 +743,7 @@ export async function toggleLanguage(page: Page): Promise<void> {
 /**
  * Create a fresh profile and unlock an arbitrary set of saga nodes.
  *
- * Unlike setupFreshProfileWithPracticeAccess (which hardcodes n1_1/n1_2/n1_3/n3_1),
+ * Unlike setupFreshProfileWithPracticeAccess (which hardcodes n1_1/n1_2/n1_3/n3_9),
  * this helper accepts a list of node IDs to unlock, making it usable for tests
  * that need to access nodes deeper in the saga (subtraction, multiplication,
  * borrowing, division, etc.).
