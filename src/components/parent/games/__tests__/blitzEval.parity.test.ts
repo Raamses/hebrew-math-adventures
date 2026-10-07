@@ -4,9 +4,11 @@
  *
  * Guards the e2e parent-games Blitz answer-computation from silently drifting
  * from the engine: the e2e suite computes "what SHOULD the submitted answer
- * be" via evalBlitzExpression (e2e specs cannot import src modules at CI
- * time), so this unit test is that call site's correctness guarantee — it is
- * the test that would have caught the missed difficulty-1
+ * be" via evalBlitzExpression (parent-games.spec.ts imports this evaluator
+ * directly from src/ by design — it targets the DEPLOYED site and borrows
+ * only this pure, dependency-free module, never the engine itself), so this
+ * unit test is that call site's correctness guarantee — it is the
+ * test that would have caught the missed difficulty-1
  * orderOfOperations shape ('7 + 3 × 4' naively computing 10 instead of 19).
  */
 import { describe, it, expect } from 'vitest';
@@ -63,6 +65,10 @@ describe('evalBlitzExpression parity with blitzEngine.generateQuestion', () => {
     // The F-major e2e bug: '7 + 3 × 4' must be 19 (multiply first), not 10.
     expect(evalBlitzExpression('7 + 3 × 4')).toBe(19);
     expect(evalBlitzExpression('19 − 12 × 2')).toBe(-5);
+    // flat4 explicit static vector (agy re-review nit): engine never emits
+    // '+' before the trailing term, but the arm stays live and correct.
+    expect(evalBlitzExpression('10 + 2 × 3 − 4')).toBe(12);
+    expect(evalBlitzExpression('10 + 2 × 3 + 4')).toBe(20);
     expect(evalBlitzExpression('25% × 40')).toBe(10);
     expect(evalBlitzExpression('¾ × 12')).toBe(9);
     expect(evalBlitzExpression('(3 + 4) × 5 − 2')).toBe(33);

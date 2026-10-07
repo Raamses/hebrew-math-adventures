@@ -3,9 +3,12 @@
  * string exactly the way the engine computes answers.
  *
  * Single source of truth for BOTH suites:
- * - e2e/parent-games.spec.ts uses it to compute submitted answers in the
- *   Blitz E2E flow (e2e specs cannot import src directly in CI runs, so the
- *   parity test below is that call site's guarantee).
+ * - e2e/parent-games.spec.ts imports it directly to compute submitted answers
+ *   in the Blitz E2E flow. The ENGINE itself (blitzEngine.ts) is NOT imported
+ *   there on purpose: the E2E asserts against the DEPLOYED site, which can
+ *   lag the branch — the evaluator travels WITH the spec, and the parity test
+ *   below pins it to current engine behaviour at unit-test time, so engine
+ *   drift fails CI instead of surfacing as an e2e/production mismatch.
  * - src/components/parent/games/__tests__/ParentBlitz.test.tsx recomputes
  *   answers in unit tests (its former local `evalExpr` moved here).
  *
@@ -15,7 +18,8 @@
  * fails a unit test instead of surfacing as an e2e nightly flake.
  */
 
-/** Vulgar fraction glyphs → (num, den). Exported: engine and tests share this set. */
+/** Vulgar fraction glyphs → (num, den). Single copy for both suites;
+ *  the parity test keeps it in lockstep with the engine's glyph map. */
 export const VULGAR_FRACTIONS: Readonly<Record<string, [number, number]>> = {
   '¼': [1, 4], '½': [1, 2], '¾': [3, 4],
   '⅓': [1, 3], '⅔': [2, 3],
@@ -61,8 +65,10 @@ export function evalBlitzExpression(display: string): number | null {
     return sub * parseInt(paren[4]) - parseInt(paren[6]);
   }
 
-  // orderOfOperations d2 / mixedArithmetic d3 — "a ± b × c − d" (multiply first)
-  const flat4 = text.match(/^(\d+)\s*([+\-−])\s*(\d+)\s*×\s*(\d+)\s*([\-−])\s*(\d+)$/);
+  // orderOfOperations d2 / mixedArithmetic d3 — "a ± b × c − d" (multiply first).
+  // Engine only emits '−' before the trailing term, but the group stays
+  // symmetric with the tri branch so no future shape silently dead-codes the '+' arm.
+  const flat4 = text.match(/^(\d+)\s*([+\-−])\s*(\d+)\s*×\s*(\d+)\s*([+\-−])\s*(\d+)$/);
   if (flat4) {
     const p1 = parseInt(flat4[1]);
     const p3 = parseInt(flat4[3]);
