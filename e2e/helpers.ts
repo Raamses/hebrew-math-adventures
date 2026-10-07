@@ -279,6 +279,19 @@ export async function enterSagaNode(page: Page, nodeIndex: number) {
 }
 
 export async function selectPracticeMode(page: Page, mode: 'STANDARD' | 'TIME_ATTACK' | 'SURVIVAL' | 'MEMORY' | 'INVADERS') {
+  // Reach the ModeSelectorOverlay: entering a CHALLENGE node WITHOUT config
+  // opens PracticeMode with the mode selector (LESSON nodes open LessonModal).
+  // n3_9 (CHALLENGE, no config) is unlocked by setupFreshProfileWithPracticeAccess.
+  // Regression note 2026-10-07: d757abd (Aug 21) accidentally dropped this entry
+  // step from the helper, leaving it clicking mode-card-* while the page was
+  // still on the saga map — the 13-night invaders red (nightly rc=2) came from
+  // exactly this navigational gap, not from any RTL/app bug.
+  await enterSagaNodeById(page, 'n3_9');
+
+  // Wait for the mode selector overlay to render before clicking the mode card
+  const modeSelector = page.locator('[data-testid="mode-selector"]').first();
+  await expect(modeSelector).toBeVisible({ timeout: 15000 });
+
   // Click the desired mode card
   const modeCard = page.locator(`[data-testid="mode-card-${mode}"]`).first();
   await expect(modeCard).toBeVisible({ timeout: 10000 });
