@@ -10,3 +10,7 @@
 **Vulnerability:** Weak PRNG (`Math.random()`) used as the fallback implementation for generating UUIDs inside `RandomUtils.generateId()` when `crypto.randomUUID()` is unavailable.
 **Learning:** Even within utility classes meant to provide secure random values, the fallback implementations must also maintain a baseline level of cryptographic security where possible. `Math.random()` provides insufficient entropy and predictability protection for identifiers.
 **Prevention:** Ensure all fallback paths in ID generation utilities utilize `crypto.getRandomValues()` (e.g., via `RandomUtils.secureIntInRange()`) before falling back to `Math.random()`.
+## 2024-10-08 - Reverse Tabnabbing Vulnerability
+**Vulnerability:** Use of `window.open` with `_blank` without `noopener,noreferrer` for WhatsApp sharing.
+**Learning:** Opening external links with `target="_blank"` without specifying `rel="noopener noreferrer"` (or features `'noopener,noreferrer'` in `window.open`) allows the newly opened tab to retain a reference to the `window.opener` object, potentially exposing the original page to malicious manipulation (reverse tabnabbing).
+**Prevention:** Always pass `'noopener,noreferrer'` as the features argument when using `window.open(url, '_blank')`.
