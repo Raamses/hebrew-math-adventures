@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Trophy, Heart, Zap, Star } from 'lucide-react';
@@ -8,6 +8,41 @@ import { useSoundManager } from '../../hooks/useSoundManager';
 import { useProfile } from '../../context/ProfileContext';
 import { FrenzyOverlay } from './FrenzyOverlay';
 import type { UserCapabilityProfile } from '../../types/progress';
+
+// ⚡ Bolt: Extract static randomized background into a memoized component.
+// This prevents recalculating Math.random() on every render (which happens
+// frequently in game loops), avoiding severe layout thrashing and visual jittering.
+const Starfield = React.memo(() => {
+    const stars = useMemo(() => {
+        return Array.from({ length: 30 }).map((_, i) => ({
+            id: i,
+            width: `${1 + Math.random() * 2}px`,
+            height: `${1 + Math.random() * 2}px`,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            opacity: 0.2 + Math.random() * 0.5,
+        }));
+    }, []);
+
+    return (
+        <div className="absolute inset-0 pointer-events-none">
+            {stars.map((star) => (
+                <div
+                    key={star.id}
+                    className="absolute rounded-full bg-white"
+                    style={{
+                        width: star.width,
+                        height: star.height,
+                        left: star.left,
+                        top: star.top,
+                        opacity: star.opacity,
+                    }}
+                />
+            ))}
+        </div>
+    );
+});
+Starfield.displayName = 'Starfield';
 
 interface MathInvadersGameProps {
     level: number;
@@ -119,21 +154,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
             className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 flex flex-col items-center justify-start select-none overflow-hidden relative"
         >
             {/* Starfield background */}
-            <div className="absolute inset-0 pointer-events-none">
-                {Array.from({ length: 30 }).map((_, i) => (
-                    <div
-                        key={i}
-                        className="absolute rounded-full bg-white"
-                        style={{
-                            width: `${1 + Math.random() * 2}px`,
-                            height: `${1 + Math.random() * 2}px`,
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            opacity: 0.2 + Math.random() * 0.5,
-                        }}
-                    />
-                ))}
-            </div>
+            <Starfield />
 
             {/* HUD */}
             <div className="w-full max-w-3xl flex items-center justify-between p-3 z-40 relative">
