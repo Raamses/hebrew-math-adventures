@@ -36,16 +36,13 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { evalBlitzExpression } from '../src/components/parent/games/blitzEval';
+// Locale values loaded DIRECTLY from the producer files so hand-typed
+// literals in these pins can never drift from what the app actually renders
+// (review F1.1 — a literal that misses he.json's real value passes under the
+// default en-US locale and only fails when someone flips to Hebrew).
+import heJson from '../src/i18n/locales/he.json' with { type: 'json' };
+import enJson from '../src/i18n/locales/en.json' with { type: 'json' };
 import { setupFreshProfile, openParentGate } from './helpers';
-
-/** Available game IDs from registry.ts. */
-// Games that are typically available (some may be locked based on progression)
-const AVAILABLE_GAMES = [
-  'equation-of-the-day',
-  'parent-blitz',
-  'sudoku',
-  'number-merge',
-] as const;
 
 // Subset that should be enabled for a fresh profile (no progression)
 const UNLOCKED_GAMES = [
@@ -56,6 +53,46 @@ const UNLOCKED_GAMES = [
 
 /** Coming-soon game (disabled card). */
 const COMING_SOON_GAME = 'math-crossword';
+
+/**
+ * Locale strings pulled from the real JSON producers (typed accessors).
+ * Keeps the rendered-side pins below structurally honest: each expectation is
+ * built from the exact value the app's producer chain emits.
+ */
+type Locale = 'he' | 'en';
+
+/** Look up a dot-path key in a locale file; throws on miss so a renamed key fails loudly here, not silently at runtime. */
+function loc(lng: Locale, key: string): string {
+  let node: unknown = lng === 'he' ? heJson : enJson;
+  for (const part of key.split('.')) {
+    if (node === null || typeof node !== 'object' || !(part in (node as Record<string, unknown>))) {
+      throw new Error(`i18n key "${key}" missing in ${lng}.json — update the pin or restore the key`);
+    }
+    node = (node as Record<string, unknown>)[part];
+  }
+  if (typeof node !== 'string') {
+    throw new Error(`i18n key "${key}" in ${lng}.json is not a string (got ${typeof node})`);
+  }
+  return node;
+}
+
+/** Escape a string for literal use inside a RegExp. */
+function escRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Build a RegExp matching a key's value in BOTH locales (alternation).
+ * Interpolation placeholders ({{seconds}}, {{number}}, …) become \d+, so
+ * values like hud.timerLabel match any rendered countdown/number.
+ * Both branches come from the producer files — a hand-typed literal can no
+ * longer disagree with what the components actually render (review F1.1).
+ */
+function localeRegex(key: string): RegExp {
+  const heVal = escRe(loc('he', key)).replace(/\\\{\\\{\w+\\\}\\\}/g, String.raw`\d+`);
+  const enVal = escRe(loc('en', key)).replace(/\\\{\\\{\w+\\\}\\\}/g, String.raw`\d+`);
+  return new RegExp(`(?:${heVal})|(?:${enVal})`);
+}
 
 /**
  * Navigate from a fresh saga map to the Parent Games Hub.
@@ -318,9 +355,11 @@ test.describe('Parent Games', () => {
     // Card 4052cdd8 item 3: EOTD text is real localized content — instructions
     // line + submit label from parent.games.items.equationOfTheDay
     const eotdText = (await page.locator('[data-testid="game-equation-of-the-day"]').first().textContent()) || '';
-    expect(eotdText).toMatch(/נחשו את המשוואה|Guess today's equation|Guess the equation/);
-    expect(eotdText).toMatch(/חידה #|Puzzle #/);
-    expect(eotdText).toMatch(/בדיקה|Check/);
+    // Expectations built from the PRODUCER locale values (he.json / en.json) —
+    // a hand-typed literal cannot drift from what the app renders (review F1.1).
+    expect(eotdText).toMatch(localeRegex('parent.games.items.equationOfTheDay.instructions'));
+    expect(eotdText).toMatch(localeRegex('parent.games.items.equationOfTheDay.puzzleNumber'));
+    expect(eotdText).toMatch(localeRegex('parent.games.items.equationOfTheDay.submit'));
 
     // Verify guesses-left indicator
     await expect(page.locator('[data-testid="eq-guesses-left"]').first()).toBeVisible({ timeout: 5000 });
@@ -445,7 +484,7 @@ test.describe('Parent Games', () => {
     // in unit tests (locales-parity), this pins the RENDERED side.
     const startLabel = (await startBtn.textContent())?.trim() || '';
     expect(startLabel.length).toBeGreaterThan(0);
-    expect(startLabel).toMatch(/התחל|Start/);
+    expect(startLabel).toMatch(localeRegex('parent.games.items.parentBlitz.start'));
 
     // Click start
     await page.locator('[data-testid="parent-blitz-start"]').first().click();
@@ -475,12 +514,12 @@ test.describe('Parent Games', () => {
     await expect(page.locator('[data-testid="parent-blitz-streak"]').first()).toBeVisible({ timeout: 5000 });
 
     // Card 4052cdd8 item 3: the playing-HUD timer label is localized text
-    // (hud.timerLabel 'nותרו {{seconds}} שניות' | '{{seconds}} seconds remaining')
+    // (hud.timerLabel 'נותרו {{seconds}} שניות' | '{{seconds}} seconds remaining')
     // via aria-label on the timer span. Score/streak labels live on the RESULTS
     // screen (hud.score there), not the playing HUD — asserted via the results
     // screen flow, not here.
     const timerLabel = await page.locator('[role="timer"]').first().getAttribute('aria-label');
-    expect(timerLabel || '').toMatch(/נותרו \d+ שניות|seconds remaining/);
+    expect(timerLabel || '').toMatch(localeRegex('parent.games.items.parentBlitz.hud.timerLabel'));
 
     // Read the timer value — should be counting down
     const timerText = await page.locator('[data-testid="parent-blitz-time-remaining"]').first().textContent();
