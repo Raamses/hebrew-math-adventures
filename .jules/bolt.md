@@ -1,3 +1,6 @@
 ## 2026-09-17 - React.memo Optimization in Game Loops
 **Learning:** In high-frequency game loops where React state updates at up to 60fps (e.g., via `requestAnimationFrame`), unmemoized static or infrequently updating overlay UI components (like `FrenzyOverlay`) cause severe performance degradation from unnecessary component reconciliations.
 **Action:** Wrap such components with `React.memo()` to prevent useless re-renders. Avoid explicitly typing the variable as `React.FC<Props>` when wrapping components to avoid TypeScript `MemoExoticComponent` type mismatch, instead type properties inline and set `displayName`.
+## 2026-09-17 - Memoizing Random Layout Overlays in React Games
+**Learning:** Generating multiple `Math.random()` values dynamically during the render cycle of frequently-updating views (like a 60fps game screen) causes severe layout thrashing and recalculations on every React tick.
+**Action:** Extract large arrays of random-based static visual elements (like `StarfieldBackground`) into a separate component wrapped with `React.memo`, and generate the random properties only once on mount using `useMemo()`. Ensure this component is imported without passing mutating props so it skips the render cycle entirely when the parent re-renders.
