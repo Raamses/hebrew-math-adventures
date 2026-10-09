@@ -2,13 +2,17 @@
 type: moc
 purpose: "Map of Content — single entry point to the whole project"
 project: hebrew-math-adventures
-updated: 2026-08-09
+updated: 2026-09-29
 tags: [index, moc]
 ---
 
 # 🗺 INDEX — Hebrew Math Adventures
 
 Everything about this project, one place. **Start here.**
+
+## 📸 Latest status
+- [[status-2026-09-29]] — parent-gate wave shipped, small-PR queue cleared, nightly runner fixed
+[[status-2026-09-29]]
 
 ## ⚙️ Project at a glance
 - **Project:** [[projects/hebrew-math-adventures]]
