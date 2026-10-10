@@ -201,7 +201,7 @@ export function Sudoku({ onExit }: GameComponentProps) {
 
   const shareToWhatsApp = useCallback(() => {
     const encoded = encodeURIComponent(shareText);
-    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    window.open(`https://wa.me/?text=${encoded}`, '_blank', 'noopener,noreferrer');
   }, [shareText]);
 
   const copyShare = useCallback(() => {
