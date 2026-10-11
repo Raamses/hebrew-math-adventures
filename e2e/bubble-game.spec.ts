@@ -111,6 +111,38 @@ test.describe('Bubble Game Modes', () => {
 
     await takeScreenshot(page, 'blitz-01-initial');
 
+    // --- NEW BLITZ UI ASSERTS ---
+    const titleChip = page.getByText(/בליץ|BLITZ/);
+    await expect(titleChip.first()).toBeVisible();
+
+    expect(await page.locator('h1:visible').count()).toBe(0);
+
+    const progressPill = page.getByText(/◎/);
+    await expect(progressPill.first()).toBeVisible();
+    const progressText = await progressPill.first().textContent();
+    expect(progressText || '').toMatch(/\d+\s*•\s*\d+\s*◎/u);
+
+    const amberBubble = page.locator('[style*="radial-gradient"]').first();
+    await expect(amberBubble).toBeVisible();
+    const amberBox = await amberBubble.boundingBox();
+    expect(amberBox).toBeTruthy();
+    const viewport = page.viewportSize();
+    expect(viewport).toBeTruthy();
+    expect(amberBox!.x + amberBox!.width / 2).toBeGreaterThan(viewport!.width / 2);
+    expect(amberBox!.y + amberBox!.height / 2).toBeGreaterThan(viewport!.height / 2);
+
+    const bubbleNumber = amberBubble.locator('.text-white').first();
+    await expect(bubbleNumber).toBeVisible();
+    await expect(bubbleNumber).toHaveCSS('color', 'rgb(255, 255, 255)');
+    const numberText = await bubbleNumber.textContent();
+    expect(numberText || '').toMatch(/\d+/);
+
+    const equationDisplay = page.locator('div[dir="ltr"].font-mono').first();
+    await expect(equationDisplay).toBeVisible();
+    const equationText = await equationDisplay.textContent();
+    expect(equationText || '').not.toContain('?');
+    // ----------------------------
+
     // Timer: scan body text for Ns pattern (Playwright text selectors can't match partial text in spans with icons)
     const bodyText = await page.textContent('body') || '';
     expect(bodyText).toMatch(/\d+s/);
