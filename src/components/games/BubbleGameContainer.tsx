@@ -7,7 +7,7 @@ import { Explosion } from '../sensory/Explosion';
 import { SessionProgressBar } from '../SessionProgressBar';
 import { FrenzyOverlay } from './FrenzyOverlay';
 import { LevelUpBanner } from './LevelUpBanner';
-import { Zap, Star, Heart } from 'lucide-react';
+import { Zap, Star, Heart, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -625,6 +625,10 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                                 <Zap size={14} className="text-orange-500 fill-orange-500" />
                                 <span className="font-bold text-slate-700 text-xs">{gameState.combo}</span>
                             </div>
+                        <span className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-slate-200">
+                            <Clock size={14} className="text-slate-500" />
+                            <span className="font-bold text-slate-700 text-xs">{gameState.timeLeft ?? 0}s</span>
+                        </span>
                             {/* Fusion streak badge (Combo Fusion mode) */}
                             {fusionState && (
                                 <div data-testid="fusion-hud" className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
@@ -695,6 +699,14 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                             </div>
                         </div>
                     )}
+                    {isTimeLimit && (
+                        <div className="w-full px-2">
+                            <div className="flex justify-between text-xs font-bold text-slate-500">
+                                <span>{t('game.scoreLabel')}: {gameState.score.toLocaleString()}</span>
+                                <span>{t('bubble.targets', 'Targets')}: {gameState.targetsPopped}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -753,7 +765,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             <FrenzyOverlay isActive={gameState.isFrenzy} combo={gameState.combo} variant="bubble" />
 
             {/* (e) Action zone: the amber bubble right-bottom */}
-            {isTimeLimit && (
+            {arcadeMode === 'blitz' && (
                 <div className="absolute pointer-events-none flex items-center justify-center shadow-lg"
                      style={{
                          right: '14px',
