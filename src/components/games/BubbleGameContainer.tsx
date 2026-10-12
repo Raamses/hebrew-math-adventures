@@ -611,7 +611,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                             {t('blitz.instruction')}
                         </span>
                         <div dir="ltr" style={{ unicodeBidi: 'isolate' }} className="font-mono text-[44px] font-bold text-slate-800 leading-none tracking-tight">
-                            {instructionKey?.params?.equation ? (instructionKey.params.equation as string).replace(/\s*\?$/, '').trim() : instructionKey?.params?.number ?? ''}
+                            {instructionKey?.params?.equation ? (instructionKey.params.equation as string).replace(/\s*\?$/, '').replace(/=.*$/, '=').trim() : instructionKey?.params?.number ?? ''}
                         </div>
                     </div>
                 </div>
@@ -625,10 +625,10 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                                 <Zap size={14} className="text-orange-500 fill-orange-500" />
                                 <span className="font-bold text-slate-700 text-xs">{gameState.combo}</span>
                             </div>
-                        <span className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-slate-200">
+                        {isTimeLimit && (<span className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-slate-200">
                             <Clock size={14} className="text-slate-500" />
                             <span className="font-bold text-slate-700 text-xs">{gameState.timeLeft ?? 0}s</span>
-                        </span>
+                        </span>)}
                             {/* Fusion streak badge (Combo Fusion mode) */}
                             {fusionState && (
                                 <div data-testid="fusion-hud" className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
