@@ -10,12 +10,12 @@ interface SettingsMenuProps {
     onOpenSettings: () => void;
 }
 
-export const SettingsMenu: React.FC<SettingsMenuProps> = ({
+export const SettingsMenu = React.memo(function SettingsMenu({
     onPause,
     onToggleMute,
     isMuted,
     onOpenSettings
-}) => {
+}: SettingsMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const { t, i18n } = useTranslation();
@@ -124,4 +124,6 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({
             </AnimatePresence>
         </div>
     );
-};
+});
+
+SettingsMenu.displayName = 'SettingsMenu';
