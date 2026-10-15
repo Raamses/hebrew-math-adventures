@@ -976,5 +976,11 @@
     "dismiss": "Close celebration",
     "insufficientCoins": "Play a quick round in parent games to earn coins",
     "dailyCapHit": "You reached the daily limit of {{cap}} coins for this child"
+  },
+  "blitz": {
+    "progressPill": "Stage {{stage}} • {{current}} ◎",
+    "titleChip": "BLITZ • RAPID",
+    "instruction": "Pop the bubble with the answer",
+    "multiChip": "MULTIPLIER"
   }
 }

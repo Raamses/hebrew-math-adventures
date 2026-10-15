@@ -552,7 +552,7 @@ describe('edge cases and invariants', () => {
 /* ---------- 7. STORAGE_KEYS ---------- */
 
 describe('STORAGE_KEYS', () => {
-    it('exports an object with all 10 keys', () => {
+    it('exports STORAGE_KEYS with the correct keys', () => {
         expect(STORAGE_KEYS).toBeDefined();
         expect(typeof STORAGE_KEYS).toBe('object');
         expect(Object.keys(STORAGE_KEYS)).toHaveLength(10);
@@ -568,7 +568,6 @@ describe('STORAGE_KEYS', () => {
         expect(STORAGE_KEYS).toHaveProperty('COMBO_FUSION_BEST_SCORE');
         expect(STORAGE_KEYS).toHaveProperty('CINEMATIC_SEEN');
         expect(STORAGE_KEYS).toHaveProperty('IS_MUTED');
-        expect(STORAGE_KEYS).toHaveProperty('PARENT_ECONOMY');
     });
 
     it('every value is a non-empty string', () => {

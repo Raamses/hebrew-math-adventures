@@ -7,7 +7,7 @@ import { Explosion } from '../sensory/Explosion';
 import { SessionProgressBar } from '../SessionProgressBar';
 import { FrenzyOverlay } from './FrenzyOverlay';
 import { LevelUpBanner } from './LevelUpBanner';
-import { Zap, Star, Clock, Heart } from 'lucide-react';
+import { Zap, Star, Heart, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -553,108 +553,162 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 </div>
             )}
 
-            {/* Header Area — Clean 3-row layout */}
-            <div className="w-full max-w-md flex flex-col items-center gap-1.5 z-40 px-3 pt-3 pb-1">
-                {/* Row 1: Stats badges (left) + Settings (right) */}
-                <div className="w-full flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                        {/* Combo badge */}
-                        <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-blue-100">
-                            <Zap size={14} className="text-orange-500 fill-orange-500" />
-                            <span className="font-bold text-slate-700 text-xs">{gameState.combo}</span>
+            {/* Header Area */}
+            {arcadeMode === 'blitz' ? (
+                <div className="w-full max-w-md flex flex-col items-center z-40 px-3 pt-3 pb-1">
+                    {/* (a) sticky top HUD bar as ONE single row: gear | hearts/strikes | TIMER CENTER | ONE merged progress pill */}
+                    <div className="w-full flex items-center justify-between relative">
+                        <div className="flex items-center gap-2">
+                            <SettingsMenu
+                                isMuted={isMuted}
+                                onToggleMute={onToggleMute}
+                                onOpenSettings={onOpenSettings}
+                                onPause={onPause}
+                            />
+                            {hasStrikes && (
+                                <div className="flex items-center gap-0.5 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-blue-100">
+                                    {Array.from({ length: maxStrikes }).map((_, i) => (
+                                        <Heart
+                                            key={i}
+                                            size={12}
+                                            className={i < (maxStrikes - gameState.strikes) ? 'fill-rose-500 text-rose-500' : 'fill-slate-200 text-slate-200'}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        {/* Fusion streak badge (Combo Fusion mode) */}
-                        {fusionState && (
-                            <div data-testid="fusion-hud" className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
-                                <span className="text-xs">🌀</span>
-                                <span data-testid="fusion-streak" className={`font-bold text-xs ${fusionState.fusionStreak >= 3 ? 'text-cyan-700' : 'text-slate-700'}`}>{fusionState.fusionStreak}</span>
-                                {fusionState.fusionStreak >= 3 && (
-                                    <span data-testid="fusion-multiplier" className="text-[10px] font-bold text-violet-600">
-                                        {fusionState.fusionStreak >= 10 ? '5×' : fusionState.fusionStreak >= 7 ? '3×' : fusionState.fusionStreak >= 5 ? '2×' : '1.5×'}
-                                    </span>
-                                )}
-                            </div>
-                        )}
-                        {/* Level badge */}
-                        <div className="flex items-center gap-0.5 bg-purple-100/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-purple-200">
-                            <Star size={12} className="text-purple-500 fill-purple-500" />
-                            <span className="font-bold text-purple-700 text-xs">Lv {sessionLevel}</span>
-                        </div>
-                        {/* Blitz timer */}
-                        {isTimeLimit && (
-                            <div className={`flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border ${
-                                (gameState.timeLeft ?? 0) < 10 ? 'border-red-300 animate-pulse' : 'border-blue-100'
+
+                        <div className="absolute left-1/2 -translate-x-1/2">
+                            <div className={`flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border ${
+                                (gameState.timeLeft ?? 0) < 10 ? 'border-red-400' : 'border-slate-200'
                             }`}>
-                                <Clock size={14} className={(gameState.timeLeft ?? 0) < 10 ? 'text-red-500 fill-red-500' : 'text-blue-500'} />
-                                <span className={`font-bold text-xs ${(gameState.timeLeft ?? 0) < 10 ? 'text-red-500' : 'text-slate-700'}`}>
+                                {(gameState.timeLeft ?? 0) < 10 && <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />}
+                                <span className={`font-bold text-sm ${(gameState.timeLeft ?? 0) < 10 ? 'text-red-600' : 'text-slate-800'}`}>
                                     {gameState.timeLeft ?? 0}s
                                 </span>
                             </div>
-                        )}
-                        {/* Survival hearts */}
-                        {hasStrikes && (
-                            <div className="flex items-center gap-0.5 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-blue-100">
-                                {Array.from({ length: maxStrikes }).map((_, i) => (
-                                    <Heart
-                                        key={i}
-                                        size={12}
-                                        className={i < (maxStrikes - gameState.strikes) ? 'fill-rose-500 text-rose-500' : 'fill-slate-200 text-slate-200'}
-                                    />
-                                ))}
+                        </div>
+
+                        <div className="flex items-center">
+                            <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-blue-100">
+                                <span className="font-bold text-slate-700 text-xs tracking-tight">
+                                    {t('blitz.progressPill', { stage: sessionLevel, current: gameState.targetsPopped })}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* (b) thin title-chip row directly below HUD */}
+                    <div className="bg-green-100/80 border border-green-200 px-3 py-0.5 rounded-full mt-2">
+                        <span className="text-[9px] font-bold text-green-700 tracking-widest uppercase">
+                            {t('blitz.titleChip')}
+                        </span>
+                    </div>
+
+                    {/* (c) problem card HERO */}
+                    <div className="w-full max-w-[340px] mt-2 bg-white/85 backdrop-blur-md border border-blue-300 rounded-2xl py-3 px-4 shadow-sm flex flex-col items-center">
+                        <span className="text-[10px] font-bold text-slate-500 mb-1" dir={i18n.dir()}>
+                            {t('blitz.instruction')}
+                        </span>
+                        <div dir="ltr" style={{ unicodeBidi: 'isolate' }} className="font-mono text-[44px] font-bold text-slate-800 leading-none tracking-tight">
+                            {instructionKey?.params?.equation ? (instructionKey.params.equation as string).replace(/\s*\?$/, '').replace(/=.*$/, '=').trim() : instructionKey?.params?.number ?? ''}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full max-w-md flex flex-col items-center gap-1.5 z-40 px-3 pt-3 pb-1">
+                    {/* Row 1: Stats badges (left) + Settings (right) */}
+                    <div className="w-full flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                            {/* Combo badge */}
+                            <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-blue-100">
+                                <Zap size={14} className="text-orange-500 fill-orange-500" />
+                                <span className="font-bold text-slate-700 text-xs">{gameState.combo}</span>
+                            </div>
+                        {isTimeLimit && (<span className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-slate-200">
+                            <Clock size={14} className="text-slate-500" />
+                            <span className="font-bold text-slate-700 text-xs">{gameState.timeLeft ?? 0}s</span>
+                        </span>)}
+                            {/* Fusion streak badge (Combo Fusion mode) */}
+                            {fusionState && (
+                                <div data-testid="fusion-hud" className={`flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm border ${fusionState.fusionStreak >= 3 ? 'bg-cyan-100/90 border-cyan-300' : 'bg-white/90 border-blue-100'}`}>
+                                    <span className="text-xs">🌀</span>
+                                    <span data-testid="fusion-streak" className={`font-bold text-xs ${fusionState.fusionStreak >= 3 ? 'text-cyan-700' : 'text-slate-700'}`}>{fusionState.fusionStreak}</span>
+                                    {fusionState.fusionStreak >= 3 && (
+                                        <span data-testid="fusion-multiplier" className="text-[10px] font-bold text-violet-600">
+                                            {fusionState.fusionStreak >= 10 ? '5×' : fusionState.fusionStreak >= 7 ? '3×' : fusionState.fusionStreak >= 5 ? '2×' : '1.5×'}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                            {/* Level badge */}
+                            <div className="flex items-center gap-0.5 bg-purple-100/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-purple-200">
+                                <Star size={12} className="text-purple-500 fill-purple-500" />
+                                <span className="font-bold text-purple-700 text-xs">Lv {sessionLevel}</span>
+                            </div>
+                            {/* Survival hearts */}
+                            {hasStrikes && (
+                                <div className="flex items-center gap-0.5 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-blue-100">
+                                    {Array.from({ length: maxStrikes }).map((_, i) => (
+                                        <Heart
+                                            key={i}
+                                            size={12}
+                                            className={i < (maxStrikes - gameState.strikes) ? 'fill-rose-500 text-rose-500' : 'fill-slate-200 text-slate-200'}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        {/* Settings */}
+                        <SettingsMenu
+                            isMuted={isMuted}
+                            onToggleMute={onToggleMute}
+                            onOpenSettings={onOpenSettings}
+                            onPause={onPause}
+                        />
+                    </div>
+
+                    {/* Row 2: Title + Instruction (centered, own row) */}
+                    <div className="flex flex-col items-center gap-0.5 w-full">
+                        <h1 className={`text-lg font-bold ${theme.accent} whitespace-nowrap drop-shadow-sm leading-tight`}>
+                            {title || 'Blast Off'}
+                        </h1>
+                        {instruction && (
+                            <div dir={i18n.dir()} style={{ unicodeBidi: 'isolate' }} className="bg-white/85 backdrop-blur-md px-4 py-1 rounded-xl shadow-sm border border-blue-100">
+                                <span className={`text-lg font-bold ${theme.accent} tracking-wide font-mono leading-tight`}>
+                                    {instruction}
+                                </span>
                             </div>
                         )}
                     </div>
-                    {/* Settings */}
-                    <SettingsMenu
-                        isMuted={isMuted}
-                        onToggleMute={onToggleMute}
-                        onOpenSettings={onOpenSettings}
-                        onPause={onPause}
-                    />
-                </div>
 
-                {/* Row 2: Title + Instruction (centered, own row) */}
-                <div className="flex flex-col items-center gap-0.5 w-full">
-                    <h1 className={`text-lg font-bold ${theme.accent} whitespace-nowrap drop-shadow-sm leading-tight`}>
-                        {title || 'Blast Off'}
-                    </h1>
-                    {instruction && (
-                        <div dir={i18n.dir()} style={{ unicodeBidi: 'isolate' }} className="bg-white/85 backdrop-blur-md px-4 py-1 rounded-xl shadow-sm border border-blue-100">
-                            <span className={`text-lg font-bold ${theme.accent} tracking-wide font-mono leading-tight`}>
-                                {instruction}
-                            </span>
+                    {/* Row 3: Progress bar (target_count mode) */}
+                    {config.winCondition.type === 'target_count' && (
+                        <SessionProgressBar
+                            current={gameState.targetsPopped}
+                            total={config.winCondition.value}
+                        />
+                    )}
+
+                    {/* Zen/Endless score strip */}
+                    {isEndless && (
+                        <div className="w-full px-2">
+                            <div className="flex justify-between text-xs font-bold text-slate-400">
+                                <span>🎯 {t('bubble.targets', 'Targets')}: {gameState.targetsPopped}</span>
+                                <span>⭐ {t('game.scoreLabel')}: {gameState.score.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    )}
+                    {isTimeLimit && (
+                        <div className="w-full px-2">
+                            <div className="flex justify-between text-xs font-bold text-slate-500">
+                                <span>{t('game.scoreLabel')}: {gameState.score.toLocaleString()}</span>
+                                <span>{t('bubble.targets', 'Targets')}: {gameState.targetsPopped}</span>
+                            </div>
                         </div>
                     )}
                 </div>
-
-                {/* Row 3: Progress bar (target_count mode) */}
-                {config.winCondition.type === 'target_count' && (
-                    <SessionProgressBar
-                        current={gameState.targetsPopped}
-                        total={config.winCondition.value}
-                    />
-                )}
-
-                {/* Blitz score strip */}
-                {isTimeLimit && (
-                    <div className="w-full px-2">
-                        <div className="flex justify-between text-xs font-bold text-slate-500">
-                            <span>{t('game.scoreLabel')}: {gameState.score.toLocaleString()}</span>
-                            <span>{t('bubble.targets', 'Targets')}: {gameState.targetsPopped}</span>
-                        </div>
-                    </div>
-                )}
-
-                {/* Zen/Endless score strip */}
-                {isEndless && (
-                    <div className="w-full px-2">
-                        <div className="flex justify-between text-xs font-bold text-slate-400">
-                            <span>🎯 {t('bubble.targets', 'Targets')}: {gameState.targetsPopped}</span>
-                            <span>⭐ {t('game.scoreLabel')}: {gameState.score.toLocaleString()}</span>
-                        </div>
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* Game Area & Entities */}
             <div className="flex-grow w-full relative z-0 mt-2 overflow-hidden"
@@ -709,6 +763,32 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 </motion.div>
             ))}
             <FrenzyOverlay isActive={gameState.isFrenzy} combo={gameState.combo} variant="bubble" />
+
+            {/* (e) Action zone: the amber bubble right-bottom */}
+            {arcadeMode === 'blitz' && (
+                <div className="absolute pointer-events-none flex items-center justify-center shadow-lg"
+                     style={{
+                         right: '14px',
+                         bottom: '24px',
+                         width: '92px',
+                         height: '92px',
+                         borderRadius: '50%',
+                         background: 'radial-gradient(circle at 30% 30%, #fbbf24, #f59e0b, #d97706)',
+                         border: '2px solid rgba(255,255,255,0.4)',
+                         zIndex: 45
+                     }}>
+                    <span className="sr-only">{t('game.scoreLabel')}</span>
+                    <span className="text-white font-bold text-3xl drop-shadow-md">
+                        {gameState.score}
+                    </span>
+                    {/* multi-chip positioned ON the bubble's rim */}
+                    {gameState.combo > 1 && (
+                        <div className="absolute -top-1 -left-2 bg-violet-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white shadow-sm whitespace-nowrap">
+                            {gameState.combo}x {t('blitz.multiChip')}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
