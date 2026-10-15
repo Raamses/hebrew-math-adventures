@@ -193,7 +193,7 @@ export function NumberMerge({ onExit }: GameComponentProps) {
   const handleShare = useCallback(() => {
     const text = generateShareText(state.score, state.bestTile, state.won);
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(url, '_blank');
   }, [state.score, state.bestTile, state.won]);
 
   const handleCopy = useCallback(() => {
