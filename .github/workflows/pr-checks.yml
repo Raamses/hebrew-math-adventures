@@ -1,0 +1,52 @@
+name: PR checks
+# The PR gate: typecheck, unit, build, lint (non-blocking) and an e2e smoke against THIS PR's own build
+# (vite preview of dist/), all through scripts/verify.sh, the same script the agent fleet runs.
+# e2e.yml's "E2E Smoke (Deployed Site)" tests the production URL, so it cannot judge a PR's code.
+# Keep the job name stable: it is the name a required status check matches on.
+on:
+  pull_request:
+    branches: [main]
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  verify:
+    name: PR gate (verify.sh)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci --cpu x64 --os linux --no-audit --no-fund
+      - name: Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium
+      - name: Install Playwright chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright system deps (browser cached)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - name: scripts/verify.sh
+        run: bash scripts/verify.sh
+        env:
+          CI: 'true'
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

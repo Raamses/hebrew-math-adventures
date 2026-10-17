@@ -1,0 +1,10 @@
+# PR gate e2e smoke: the critical flows, run by scripts/verify.sh against the PR's own build
+# (vite preview of dist/, project mobile-chrome). One spec path per line; '#' starts a comment.
+# Budget: the whole smoke should stay around 5 minutes. The full suite (e2e/) runs post-merge.
+e2e/profile-creation-smoke.spec.ts      # new player -> profile persisted -> saga map; survives reload
+e2e/saga-node-completion.spec.ts        # SENSORY node: pop bubbles -> stars -> next node unlocks
+e2e/practice-mode-core-loop.spec.ts     # PRACTICE node: answer -> stars -> progress persisted
+e2e/wrong-answer-feedback.spec.ts       # wrong answer -> feedback -> session continues
+e2e/spawn-overhaul-smoke.spec.ts        # arcade Zen + Blitz: bubbles keep spawning, no crash
+e2e/parent-zone-redesign.spec.ts        # parent gate opens the dashboard; exit returns
+e2e/language-toggle.spec.ts             # Hebrew -> English UI switch
