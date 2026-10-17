@@ -1,11 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RotateCcw, Home, Star } from 'lucide-react';
+import { RotateCcw, Home, Star, Coins } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
 
 interface SessionSummaryProps {
     isOpen: boolean;
     starsGained?: number; // Optional until standardized
+    coinsEarned?: number;
+    coins?: number;
     correctCount: number;
     totalCount: number;
     totalScore: number;
@@ -16,6 +18,8 @@ interface SessionSummaryProps {
 export const SessionSummary: React.FC<SessionSummaryProps> = ({
     isOpen,
     starsGained = 0,
+    coinsEarned,
+    coins,
     correctCount,
     totalCount,
     totalScore,
@@ -26,6 +30,8 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
 
     if (!isOpen) return null;
 
+    const sessionCoins = coinsEarned ?? coins ?? 0;
+    const hasCoins = sessionCoins > 0;
     const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
 
     return (
@@ -66,7 +72,14 @@ export const SessionSummary: React.FC<SessionSummaryProps> = ({
                                 <span className="text-2xl font-bold text-slate-700">{accuracy}%</span>
                                 <span className="text-xs text-slate-500">{t('summary.accuracy')}</span>
                             </div>
-                            <div className="bg-purple-50 p-3 rounded-2xl border-2 border-purple-100 flex flex-col items-center col-span-2">
+                            {hasCoins && (
+                                <div data-testid="summary-coins" className="bg-amber-50 p-3 rounded-2xl border-2 border-amber-100 flex flex-col items-center">
+                                    <Coins className="text-amber-500 mb-1" size={24} />
+                                    <span className="text-2xl font-bold text-slate-700">+{sessionCoins}</span>
+                                    <span className="text-xs text-slate-500">{t('summary.coins')}</span>
+                                </div>
+                            )}
+                            <div className={`bg-purple-50 p-3 rounded-2xl border-2 border-purple-100 flex flex-col items-center ${hasCoins ? '' : 'col-span-2'}`}>
                                 <span className="text-2xl font-bold text-purple-700">{totalScore}</span>
                                 <span className="text-xs text-slate-500">{t('summary.totalScore')}</span>
                             </div>

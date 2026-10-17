@@ -15,6 +15,7 @@ import { computeStarsByTier } from '../lib/stars';
 import { MemoryDuelGame } from './games/MemoryDuelGame';
 import { MathInvadersGame } from './games/MathInvadersGame';
 import type { ArcadeMode } from '../engines/bubble/types';
+import { awardSessionCoins } from '../lib/sessionCoins';
 
 interface GameOrchestratorProps {
     targetLevel: number;
@@ -34,7 +35,8 @@ import { useAnalytics } from '../hooks/useAnalytics';
 export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node, arcadeMode, dailyChallengeMode, dailyChallengeTarget }) => {
     const { t } = useTranslation();
     const { logEvent } = useAnalytics();
-    const { profile } = useProfile();
+    const { profile, addCoins } = useProfile();
+    const sessionIdRef = useRef<string | null>(null);
     const { todayChallenge, addDailyChallengeCorrect, completeDailyChallenge, dailyChallengeCorrect } = useQuest();
 
     // --- Daily Challenge tracking for arcade (SENSORY) modes ---
@@ -102,6 +104,7 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
     // Reset internal mode when node changes
     useEffect(() => {
         setInternalMode(null);
+        sessionIdRef.current = null;
     }, [node]);
 
     // Open lesson modal when effective mode is LESSON (node-driven, not internal mode override)
@@ -200,6 +203,16 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
                 arcadeMode={arcadeMode as ArcadeMode | undefined}
                 profile={profile?.capabilities || undefined}
                 onComplete={(success, correct, attempts) => {
+                    if (!sessionIdRef.current) {
+                        sessionIdRef.current = `orch-${node?.id || arcadeMode || 'sensory'}-${Date.now()}`;
+                    }
+                    awardSessionCoins({
+                        profileId: profile?.id,
+                        sessionId: sessionIdRef.current,
+                        stats: { correct: correct || 0, attempts: attempts || 0, success },
+                        isDailyChallenge: Boolean(dailyChallengeMode),
+                        addCoins,
+                    });
                     // Track daily challenge progress for arcade modes
                     if (arcadeMode && !node) {
                         checkArcadeDailyChallenge(correct || 0);

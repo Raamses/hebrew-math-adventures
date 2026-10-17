@@ -18,6 +18,7 @@ import { SessionProgressBar } from './SessionProgressBar';
 import { GameMenuModal } from './GameMenuModal';
 import { SessionSummary } from './SessionSummary';
 import { computeStarsByTier } from '../lib/stars';
+import { awardSessionCoins } from '../lib/sessionCoins';
 import { SettingsModal } from './SettingsModal';
 import { ModeSelectorOverlay } from './games/ModeSelectorOverlay';
 import { ArcadeHUD } from './games/ArcadeHUD';
@@ -43,7 +44,7 @@ interface PracticeModeProps {
 
 export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit, problemConfig, onComplete, onMemoryMode, onInvadersMode, dailyChallengeMode, dailyChallengeTarget }) => {
     const { t, i18n } = useTranslation();
-    const { profile, incrementStreak, resetStreak, updateArcadeBestScore, recordSession } = useProfile();
+    const { profile, incrementStreak, resetStreak, updateArcadeBestScore, recordSession, addCoins } = useProfile();
     const soundManager = useSoundManager({ soundGardenEnabled: profile?.settings?.soundGarden ?? false });
     const { logEvent } = useAnalytics();
     const { completeDailyChallenge, todayChallenge, addDailyChallengeCorrect, dailyChallengeCorrect } = useQuest();
@@ -101,6 +102,20 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
 
     // Summary State
     const [showSummary, setShowSummary] = useState(false);
+    const [coinsEarned, setCoinsEarned] = useState(0);
+
+    const awardCoinsForCurrentSession = useCallback((success: boolean, correct: number, attempts: number) => {
+        const sessionId = `practice-${sessionStartTime.current}`;
+        const awarded = awardSessionCoins({
+            profileId: profile?.id,
+            sessionId,
+            stats: { correct, attempts, success },
+            isDailyChallenge: Boolean(dailyChallengeMode),
+            addCoins,
+        });
+        setCoinsEarned(awarded);
+        return awarded;
+    }, [profile?.id, dailyChallengeMode, addCoins]);
 
     // Daily challenge: check completion at session end.
     // Progress accumulates across sessions via QuestContext (for when target > session length).
@@ -169,6 +184,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 });
                 // Check daily challenge completion
                 checkDailyChallenge(currentSession.correct);
+                awardCoinsForCurrentSession(true, currentSession.correct, currentSession.attempts);
                 setShowSummary(true);
                 if (onComplete) onComplete(true, currentSession.correct, currentSession.attempts);
             } else {
@@ -217,10 +233,11 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             });
             // Check daily challenge completion on Game Over
             checkDailyChallenge(session.correct);
+            awardCoinsForCurrentSession(false, session.correct, session.attempts);
             setShowSummary(true);
             if (onComplete) onComplete(false, session.correct, session.attempts); // Game Over isn't necessarily a "Win"
         }
-    }, [session, showSummary, onComplete, isProcessing, updateArcadeBestScore]);
+    }, [session, showSummary, onComplete, isProcessing, updateArcadeBestScore, awardCoinsForCurrentSession]);
 
     // Micro-checkpoint banner trigger — fires at Q3 and Q6 in STANDARD mode
     useEffect(() => {
@@ -262,6 +279,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         sessionStartTime.current = Date.now();
         sessionAddedCorrectRef.current = 0; // reset for new session
         lastCheckpointRef.current = null; // reset checkpoints for new session
+        setCoinsEarned(0);
         initSession(mode);
     };
 
@@ -318,6 +336,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         sessionStartTime.current = Date.now();
         sessionAddedCorrectRef.current = 0; // reset daily challenge tracking for new session
         lastCheckpointRef.current = null; // reset checkpoints for new session
+        setCoinsEarned(0);
         // If it was Free Play, show selector again. If Saga, just restart Standard.
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
@@ -331,6 +350,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
         sessionStartTime.current = Date.now();
         sessionAddedCorrectRef.current = 0; // reset daily challenge tracking for new session
         lastCheckpointRef.current = null; // reset checkpoints for new session
+        setCoinsEarned(0);
         if (!problemConfig) {
             setIsModeSelectorOpen(true);
         } else {
@@ -423,6 +443,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             <SessionSummary
                 isOpen={showSummary}
                 starsGained={computeStarsByTier(session.correct, session.attempts)}
+                coinsEarned={coinsEarned}
                 correctCount={session.correct}
                 totalCount={session.attempts}
                 totalScore={session.score}
