@@ -15,6 +15,7 @@ import { computeStarsByTier } from '../lib/stars';
 import { MemoryDuelGame } from './games/MemoryDuelGame';
 import { MathInvadersGame } from './games/MathInvadersGame';
 import type { ArcadeMode } from '../engines/bubble/types';
+import type { BaseProblemConfig } from '../engines/ProblemFactory';
 
 interface GameOrchestratorProps {
     targetLevel: number;
@@ -23,6 +24,7 @@ interface GameOrchestratorProps {
     arcadeMode?: string;
     dailyChallengeMode?: string;
     dailyChallengeTarget?: number;
+    practiceConfig?: BaseProblemConfig | null;
 }
 
 type GameMode = 'LESSON' | 'PRACTICE' | 'SENSORY' | 'MEMORY' | 'INVADERS';
@@ -31,7 +33,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAnalytics } from '../hooks/useAnalytics';
 
-export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node, arcadeMode, dailyChallengeMode, dailyChallengeTarget }) => {
+export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel, onExit, node, arcadeMode, dailyChallengeMode, dailyChallengeTarget, practiceConfig }) => {
     const { t } = useTranslation();
     const { logEvent } = useAnalytics();
     const { profile } = useProfile();
@@ -297,7 +299,7 @@ export const GameOrchestrator: React.FC<GameOrchestratorProps> = ({ targetLevel,
         <PracticeMode
             targetLevel={targetLevel}
             onExit={onExit}
-            problemConfig={node?.config}
+            problemConfig={node?.config || practiceConfig || undefined}
             dailyChallengeMode={dailyChallengeMode}
             dailyChallengeTarget={dailyChallengeTarget}
             onMemoryMode={() => setInternalMode('MEMORY')}
