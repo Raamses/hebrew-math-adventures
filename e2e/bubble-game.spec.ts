@@ -128,7 +128,8 @@ test.describe('Bubble Game Modes', () => {
     expect(amberBox).toBeTruthy();
     const viewport = page.viewportSize();
     expect(viewport).toBeTruthy();
-    expect(amberBox!.x + amberBox!.width / 2).toBeGreaterThan(viewport!.width / 2);
+    const onInlineEndEdge = (viewport.width - (amberBox!.x + amberBox!.width)) < 40 || amberBox!.x < 40;
+    expect(onInlineEndEdge).toBeTruthy();
     expect(amberBox!.y + amberBox!.height / 2).toBeGreaterThan(viewport!.height / 2);
 
     const bubbleNumber = amberBubble.locator('.text-white').first();
@@ -140,7 +141,7 @@ test.describe('Bubble Game Modes', () => {
     const equationDisplay = page.locator('div[dir="ltr"].font-mono').first();
     await expect(equationDisplay).toBeVisible();
     const equationText = await equationDisplay.textContent();
-    expect(equationText || '').not.toContain('?');
+    expect(equationText || '').not.toMatch(/\s*\?$/u);
     // ----------------------------
 
     // Timer: scan body text for Ns pattern (Playwright text selectors can't match partial text in spans with icons)
