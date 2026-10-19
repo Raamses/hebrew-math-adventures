@@ -26,6 +26,7 @@ import { validateGift, getTodayISO } from './games/parentEconomyEngine';
 import { ScoreToast } from '../ScoreToast';
 import type { ParentEconomyState } from '../../types/parent';
 import type { UserProfile } from '../../types/user';
+import { RandomUtils } from '../../engines/utils/ProblemUtils';
 
 // ================================================================
 //  Constants & Storage Keys
@@ -203,7 +204,7 @@ export function getPendingKidCelebrations(childId: string): KidCelebration[] {
 export function queueKidCelebration(celebration: Omit<KidCelebration, 'id' | 'createdAt' | 'delivered'>): KidCelebration {
     const item: KidCelebration = {
         ...celebration,
-        id: `cel-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        id: `cel-${Date.now()}-${RandomUtils.generateId()}`,
         createdAt: Date.now(),
         delivered: false,
     };
