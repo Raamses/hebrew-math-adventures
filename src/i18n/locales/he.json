@@ -976,5 +976,11 @@
     "dismiss": "סגור חגיגה",
     "insufficientCoins": "שחקו סיבוב קצר במשחקי הורים כדי לצבור מטבעות",
     "dailyCapHit": "הגעת למכסה היומית של {{cap}} מטבעות לילד זה"
+  },
+  "blitz": {
+    "progressPill": "שלב {{stage}} • {{current}} ◎",
+    "titleChip": "בליץ • מהיר",
+    "instruction": "פוצצו את הבועה עם התשובה",
+    "multiChip": "הכפל"
   }
 }

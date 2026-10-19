@@ -10,6 +10,7 @@ import { LevelUpBanner } from './LevelUpBanner';
 import { Zap, Star, Clock, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { blitzEquationDisplay } from '../../lib/equationDisplay';
 
 // SESSION_THEMES now imported from worldConfig
 // ADR 2026-08-zen-answer-race (Fix 1): lock window to drop cross-entity
@@ -553,8 +554,70 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 </div>
             )}
 
-            {/* Header Area — Clean 3-row layout */}
-            <div className="w-full max-w-md flex flex-col items-center gap-1.5 z-40 px-3 pt-3 pb-1">
+            {/* Header Area */}
+            {arcadeMode === 'blitz' ? (
+                <div className="w-full max-w-md flex flex-col items-center z-40 px-3 pt-3 pb-1">
+                    {/* (a) sticky top HUD bar as ONE single row: gear | hearts/strikes | TIMER CENTER | ONE merged progress pill */}
+                    <div className="w-full flex items-center justify-between relative">
+                        <div className="flex items-center gap-2">
+                            <SettingsMenu
+                                isMuted={isMuted}
+                                onToggleMute={onToggleMute}
+                                onOpenSettings={onOpenSettings}
+                                onPause={onPause}
+                            />
+                            {hasStrikes && (
+                                <div className="flex items-center gap-0.5 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm border border-blue-100">
+                                    {Array.from({ length: maxStrikes }).map((_, i) => (
+                                        <Heart
+                                            key={i}
+                                            size={12}
+                                            className={i < (maxStrikes - gameState.strikes) ? 'fill-rose-500 text-rose-500' : 'fill-slate-200 text-slate-200'}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="absolute left-1/2 -translate-x-1/2">
+                            <div className={`flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border ${
+                                (gameState.timeLeft ?? 0) < 10 ? 'border-red-400' : 'border-slate-200'
+                            }`}>
+                                {(gameState.timeLeft ?? 0) < 10 && <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />}
+                                <span className={`font-bold text-sm ${(gameState.timeLeft ?? 0) < 10 ? 'text-red-600' : 'text-slate-800'}`}>
+                                    {gameState.timeLeft ?? 0}s
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center">
+                            <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-blue-100">
+                                <span className="font-bold text-slate-700 text-xs tracking-tight">
+                                    {t('blitz.progressPill', { stage: sessionLevel, current: gameState.targetsPopped })}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* (b) thin title-chip row directly below HUD */}
+                    <div className="bg-green-100/80 border border-green-200 px-3 py-0.5 rounded-full mt-2">
+                        <span className="text-[9px] font-bold text-green-700 tracking-widest uppercase">
+                            {t('blitz.titleChip')}
+                        </span>
+                    </div>
+
+                    {/* (c) problem card HERO */}
+                    <div className="w-full max-w-[340px] mt-2 bg-white/85 backdrop-blur-md border border-blue-300 rounded-2xl py-3 px-4 shadow-sm flex flex-col items-center">
+                        <span className="text-[10px] font-bold text-slate-500 mb-1" dir={i18n.dir()}>
+                            {t('blitz.instruction')}
+                        </span>
+                        <div dir="ltr" style={{ unicodeBidi: 'isolate' }} className="font-mono text-[44px] font-bold text-slate-800 leading-none tracking-tight">
+                            {instructionKey?.params?.equation ? blitzEquationDisplay(instructionKey.params.equation as string) : instructionKey?.params?.number ?? ''}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+<div className="w-full max-w-md flex flex-col items-center gap-1.5 z-40 px-3 pt-3 pb-1">
                 {/* Row 1: Stats badges (left) + Settings (right) */}
                 <div className="w-full flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
@@ -656,6 +719,8 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 )}
             </div>
 
+            )}
+
             {/* Game Area & Entities */}
             <div className="flex-grow w-full relative z-0 mt-2 overflow-hidden"
                 style={{ perspective: '1000px' }}>
@@ -709,6 +774,32 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                 </motion.div>
             ))}
             <FrenzyOverlay isActive={gameState.isFrenzy} combo={gameState.combo} variant="bubble" />
+
+            {/* (e) Action zone: the amber bubble right-bottom */}
+            {arcadeMode === 'blitz' && (
+                <div className="absolute pointer-events-none flex items-center justify-center shadow-lg"
+                     style={{
+                         insetInlineEnd: '14px',
+                         bottom: '24px',
+                         width: '92px',
+                         height: '92px',
+                         borderRadius: '50%',
+                         background: 'radial-gradient(circle at 30% 30%, #fbbf24, #f59e0b, #d97706)',
+                         border: '2px solid rgba(255,255,255,0.4)',
+                         zIndex: 45
+                     }}>
+                    <span className="sr-only">{t('game.scoreLabel')}</span>
+                    <span className="text-white font-bold text-3xl drop-shadow-md">
+                        {gameState.score}
+                    </span>
+                    {/* multi-chip positioned ON the bubble's rim */}
+                    {gameState.combo > 1 && (
+                        <div className="absolute bg-violet-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white shadow-sm whitespace-nowrap" style={{ insetBlockStart: '-0.25rem', insetInlineStart: '-0.5rem' }}>
+                            {gameState.combo}x {t('blitz.multiChip')}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
