@@ -1,10 +1,12 @@
-import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfileWithPracticeAccess } from './helpers';
+import { test, expect } from '@playwright/test';
+import { setupWithUnlockedNodes } from './helpers';
+import { CURRICULUM } from '../src/data/learningPath';
 
 /**
  * All-lessons open coverage — parametrized over every LESSON node in the saga map.
  *
- * For each LESSON node: seed full progression (all nodes unlocked), open the node,
+ * For each LESSON node: seed full progression via setupWithUnlockedNodes using
+ * validation-safe names (all nodes unlocked), open the node,
  * assert the LessonModal renders, extract the LessonEngine via the React fiber tree,
  * then drive engine.nextStep() through the dialog prefix. Lessons finish if they
  * advance the dialog prefix. Note: engine.nextStep() bypasses isStepComplete() gating
@@ -13,35 +15,22 @@ import { setupFreshProfileWithPracticeAccess } from './helpers';
  * remain in lesson-node-completion.spec.ts (n3_1).
  */
 
-const LESSON_NODES = ['n1_2', 'n1_3a', 'n1_3b', 'n1_7', 'n2_3', 'n2_3a', 'n2_3b', 'n2_6', 'unit_3', 'n3_3', 'n3_5', 'unit_4', 'n4_2', 'n4_3a', 'n4_5', 'n5_1a', 'n5_2', 'n5_5a', 'n5_8'];
+const LESSON_NODES = CURRICULUM.flatMap(u => u.nodes)
+  .filter(n => n.type === 'LESSON')
+  .map(n => n.id);
 
 const ALL_NODE_IDS = ['n1_1', 'n1_10', 'n1_2', 'n1_3', 'n1_3a', 'n1_3b', 'n1_4', 'n1_5', 'n1_6', 'n1_7', 'n1_8', 'n1_9', 'n2_1', 'n2_10', 'n2_2', 'n2_3', 'n2_3a', 'n2_3b', 'n2_4', 'n2_5', 'n2_6', 'n2_7', 'n2_8', 'n2_9', 'n3_1', 'n3_10', 'n3_2', 'n3_3', 'n3_4', 'n3_5', 'n3_6', 'n3_7', 'n3_8', 'n3_9', 'n4_1', 'n4_10', 'n4_2', 'n4_3', 'n4_3a', 'n4_4', 'n4_5', 'n4_6', 'n4_7', 'n4_8', 'n4_9', 'n5_1', 'n5_10', 'n5_1a', 'n5_2', 'n5_3', 'n5_4', 'n5_5', 'n5_5a', 'n5_6', 'n5_7', 'n5_8', 'n5_9', 'unit_1', 'unit_2', 'unit_3', 'unit_4', 'unit_5'];
 
 test.describe('All lessons open and initialize', () => {
   for (const nodeId of LESSON_NODES) {
     test(`LESSON node (${nodeId}) — opens, engine initializes, advances`, async ({ page }) => {
-      test.skip(true, 'all-lessons spec unverified — setup timeout on deployed site, needs rework (env-002)');
-      await setupFreshProfileWithPracticeAccess(page, 'LessonOpen-' + nodeId);
-
-      // Seed full progression so the target node is unlocked (stars=3 for all, then reload)
-      await page.evaluate(({ nodeIds }) => {
-        const profilesRaw = localStorage.getItem('hebrew-math-profiles');
-        const profiles = profilesRaw ? JSON.parse(profilesRaw) : {};
-        const profile = Object.values(profiles).find((p: any) => p.name && p.id);
-        if (!profile) throw new Error('profile not found after setup');
-        const progressKey = `hebrew_game_saga_progress_v1_${(profile as any).id}`;
-        const progress: Record<string, { stars: number; isLocked: boolean }> = {};
-        for (const id of nodeIds) progress[id] = { stars: 3, isLocked: false };
-        localStorage.setItem(progressKey, JSON.stringify(progress));
-      }, { nodeIds: ALL_NODE_IDS });
-
-      await page.reload({ waitUntil: 'domcontentloaded' });
-      // Reload resets the active profile (no persisted active-profile key) — re-select by name
-      await page.locator(`button:has-text('LessonOpen-${nodeId}')`).first().click({ timeout: 15000 });
+      const profileName = ('LessonOpen ' + nodeId).replace(/[^a-zA-Z0-9 ]/g, '');
+      await setupWithUnlockedNodes(page, profileName, ALL_NODE_IDS);
       const node = page.locator(`[data-testid="saga-node-${nodeId}"]`).first();
       await expect(node).toBeVisible({ timeout: 30000 });
 
       await node.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(500);
       await node.click();
       await page.waitForTimeout(2000);
 
@@ -53,7 +42,7 @@ test.describe('All lessons open and initialize', () => {
       const engineResult = await page.evaluate(() => {
         const modal = document.querySelector('[data-testid="lesson-modal"]');
         if (!modal) return { error: 'modal not found' };
-        const fiberKey = Object.keys(modal).find(k => k.startsWith('__reactFiber$'));
+        const fiberKey = Object.keys(modal).find(k => k.startsWith('__reactFiber$') || k.startsWith('__reactInternalInstance$'));
         if (!fiberKey) return { error: 'no fiber key' };
         const visited = new Set();
         const queue = [(modal as any)[fiberKey]];
