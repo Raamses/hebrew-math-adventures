@@ -617,7 +617,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     </div>
                 </div>
             ) : (
-<div className="w-full max-w-md flex flex-col items-center gap-1.5 z-40 px-3 pt-3 pb-1">
+                <div className="w-full max-w-md flex flex-col items-center gap-1.5 z-40 px-3 pt-3 pb-1">
                 {/* Row 1: Stats badges (left) + Settings (right) */}
                 <div className="w-full flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
@@ -643,7 +643,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                             <Star size={12} className="text-purple-500 fill-purple-500" />
                             <span className="font-bold text-purple-700 text-xs">Lv {sessionLevel}</span>
                         </div>
-                        {/* Blitz timer */}
+                        {/* Timer badge (time_limit modes only) */}
                         {isTimeLimit && (
                             <div className={`flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border ${
                                 (gameState.timeLeft ?? 0) < 10 ? 'border-red-300 animate-pulse' : 'border-blue-100'
@@ -698,7 +698,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
                     />
                 )}
 
-                {/* Blitz score strip */}
+                {/* Timed mode score strip */}
                 {isTimeLimit && (
                     <div className="w-full px-2">
                         <div className="flex justify-between text-xs font-bold text-slate-500">
