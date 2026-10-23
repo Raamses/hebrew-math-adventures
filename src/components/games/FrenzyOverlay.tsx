@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useTranslation } from 'react-i18next';
@@ -96,15 +96,6 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
     const tier = getFrenzyTier(combo);
     const config = tier ? TIER_CONFIG[tier] : null;
     const layout = VARIANT_LAYOUT[variant];
-
-    // Pre-calculate random particle attributes to avoid layout thrashing on re-renders
-    const maxParticles = PARTICLE_COUNT * 3;
-    const particleConfigs = useMemo(() => {
-        return Array.from({ length: maxParticles }, () => ({
-            x: Math.random() * 50 - 25,
-            duration: 1 + Math.random(),
-        }));
-    }, []);
 
     // Burst state: transient announcement that shows on activation / tier upgrade
     const [showBurst, setShowBurst] = useState(false);
@@ -210,7 +201,7 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                     </motion.div>
 
                     {/* Ember Particles (Lightweight) — more particles for higher tiers */}
-                    {particleConfigs.slice(0, PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1)).map((config, i) => (
+                    {Array.from({ length: PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1) }, (_, i) => (
                         <motion.div
                             key={i}
                             className={`absolute bottom-0 w-2 h-2 rounded-full ${
@@ -225,10 +216,10 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                             animate={{
                                 y: -500,
                                 opacity: 0,
-                                x: config.x
+                                x: Math.random() * 50 - 25
                             }}
                             transition={{
-                                duration: config.duration,
+                                duration: 1 + Math.random(),
                                 repeat: Infinity,
                                 delay: (i * 0.1) % 1.5,
                                 ease: "easeOut"
