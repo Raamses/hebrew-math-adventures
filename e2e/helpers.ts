@@ -223,7 +223,7 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
     const allBtns = page.locator('button, [role="button"]');
     const btnCount = await allBtns.count();
     for (let i = 0; i < btnCount; i++) {
-      const text = await allBtns.nth(i).textContent();
+      const text = await allBtns.nth(i).textContent({ timeout: 1500 }).catch(() => null);
       if (text && text.trim() === String(answer)) {
         const box = await allBtns.nth(i).boundingBox();
         if (box) {
