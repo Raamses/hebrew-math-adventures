@@ -8,6 +8,7 @@ import {
     UI_CONFIG,
     SCORING_CONFIG,
     BUBBLE_ENGINE_CONFIG,
+    ARCADE_CONFIGS,
 } from '../worldConfig';
 
 /* ------------------------------------------------------------------ *
@@ -907,5 +908,51 @@ describe('BUBBLE_ENGINE_CONFIG', () => {
         expect(BUBBLE_ENGINE_CONFIG.STALE_FRAME_THRESHOLD_MS).toBe(2000);
         expect(BUBBLE_ENGINE_CONFIG.TARGET_LIFESPAN_MS).toBe(20000);
         expect(BUBBLE_ENGINE_CONFIG.DISTRACTOR_LIFESPAN_MS).toBe(15000);
+    });
+});
+
+/* ---------- 12. ARCADE_CONFIGS Mode Matrix (Header Guard Contract) ---------- */
+
+describe('ARCADE_CONFIGS mode matrix', () => {
+    it('defines all five arcade modes with valid winCondition configurations', () => {
+        expect(ARCADE_CONFIGS).toHaveProperty('zen');
+        expect(ARCADE_CONFIGS).toHaveProperty('blitz');
+        expect(ARCADE_CONFIGS).toHaveProperty('survival');
+        expect(ARCADE_CONFIGS).toHaveProperty('classic');
+        expect(ARCADE_CONFIGS).toHaveProperty('fusion');
+    });
+
+    describe('winCondition types drive the isTimeLimit header guard', () => {
+        it('zen mode is endless and does not trigger isTimeLimit guard', () => {
+            expect(ARCADE_CONFIGS.zen.winCondition.type).toBe('endless');
+            const isTimeLimit = ARCADE_CONFIGS.zen.winCondition.type === 'time_limit';
+            expect(isTimeLimit).toBe(false);
+        });
+
+        it('survival mode is endless and does not trigger isTimeLimit guard', () => {
+            expect(ARCADE_CONFIGS.survival.winCondition.type).toBe('endless');
+            const isTimeLimit = ARCADE_CONFIGS.survival.winCondition.type === 'time_limit';
+            expect(isTimeLimit).toBe(false);
+        });
+
+        it('classic mode is target_count and does not trigger isTimeLimit guard', () => {
+            expect(ARCADE_CONFIGS.classic.winCondition.type).toBe('target_count');
+            const isTimeLimit = ARCADE_CONFIGS.classic.winCondition.type === 'time_limit';
+            expect(isTimeLimit).toBe(false);
+        });
+
+        it('blitz mode is time_limit (60s) and triggers isTimeLimit guard', () => {
+            expect(ARCADE_CONFIGS.blitz.winCondition.type).toBe('time_limit');
+            expect(ARCADE_CONFIGS.blitz.winCondition.value).toBe(60);
+            const isTimeLimit = ARCADE_CONFIGS.blitz.winCondition.type === 'time_limit';
+            expect(isTimeLimit).toBe(true);
+        });
+
+        it('fusion mode is time_limit (120s) and triggers isTimeLimit guard', () => {
+            expect(ARCADE_CONFIGS.fusion.winCondition.type).toBe('time_limit');
+            expect(ARCADE_CONFIGS.fusion.winCondition.value).toBe(120);
+            const isTimeLimit = ARCADE_CONFIGS.fusion.winCondition.type === 'time_limit';
+            expect(isTimeLimit).toBe(true);
+        });
     });
 });
