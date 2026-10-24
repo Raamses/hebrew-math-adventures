@@ -6,7 +6,10 @@ import { cn } from '../../lib/utils';
 import { useMemoryGame } from '../../hooks/useMemoryGame';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useProfile } from '../../context/ProfileContext';
+import { useQuest } from '../../context/QuestContext';
 import type { UserCapabilityProfile } from '../../types/progress';
+
+const NOOP_QUEST = () => {};
 
 interface MemoryDuelGameProps {
     level: number;
@@ -30,8 +33,16 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
     const gameConfig = useMemo(() => ({ level, cardCount, problemTypes: [] }), [level, cardCount]);
 
     const { profile: contextProfile, recordSession } = useProfile();
+    let recordQuestEvent: ReturnType<typeof useQuest>['recordQuestEvent'] = NOOP_QUEST;
+    try {
+        const questCtx = useQuest();
+        recordQuestEvent = questCtx.recordQuestEvent;
+    } catch {
+        // Fallback for tests rendered without QuestProvider
+    }
     const soundManager = useSoundManager({ soundGardenEnabled: contextProfile?.settings?.soundGarden ?? false });
     const sessionStartTimeRef = useRef(Date.now());
+    const hasRecordedCompletionRef = useRef(false);
 
     const {
         cards,
@@ -56,18 +67,23 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
 
     // Notify on completion
     useEffect(() => {
-        if (status === 'complete' && onComplete) {
-            recordSession({
-                date: new Date().toISOString().slice(0, 10),
-                durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
-                correct: matchedCount,
-                attempts: moves,
-                skillFocus: 'memory',
-                gameMode: 'memory',
-            });
-            onComplete({ time: elapsedTime, moves, matchedCount });
+        if (status === 'complete' && !hasRecordedCompletionRef.current) {
+            hasRecordedCompletionRef.current = true;
+            recordQuestEvent('games_finished', 1);
+            recordQuestEvent('correct_answers', matchedCount);
+            if (onComplete) {
+                recordSession({
+                    date: new Date().toISOString().slice(0, 10),
+                    durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
+                    correct: matchedCount,
+                    attempts: moves,
+                    skillFocus: 'memory',
+                    gameMode: 'memory',
+                });
+                onComplete({ time: elapsedTime, moves, matchedCount });
+            }
         }
-    }, [status, onComplete, elapsedTime, moves, matchedCount, recordSession]);
+    }, [status, onComplete, elapsedTime, moves, matchedCount, recordSession, recordQuestEvent]);
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
@@ -76,6 +92,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
     };
 
     const handlePlayAgain = useCallback(() => {
+        hasRecordedCompletionRef.current = false;
         sessionStartTimeRef.current = Date.now();
         initGame();
     }, [initGame]);

@@ -347,12 +347,27 @@ export function executeGift(
 // ================================================================
 
 /** Get the ISO date of the most recent Sunday (start of week) */
-export function getWeekStartISO(date: Date = new Date()): string {
-    const d = new Date(date);
-    const day = d.getDay(); // 0 = Sunday
-    d.setDate(d.getDate() - day);
-    d.setHours(0, 0, 0, 0);
-    return d.toISOString().slice(0, 10);
+export function getWeekStartISO(date: Date = new Date(), weekStartDay: number = 0): string {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Jerusalem',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+    });
+    const parts = formatter.formatToParts(date);
+    let year = 0;
+    let month = 0;
+    let day = 0;
+    for (const p of parts) {
+        if (p.type === 'year') year = parseInt(p.value, 10);
+        if (p.type === 'month') month = parseInt(p.value, 10);
+        if (p.type === 'day') day = parseInt(p.value, 10);
+    }
+    const utcDate = new Date(Date.UTC(year, month - 1, day));
+    const jerusalemWeekday = utcDate.getUTCDay();
+    const diff = (jerusalemWeekday - weekStartDay + 7) % 7;
+    utcDate.setUTCDate(utcDate.getUTCDate() - diff);
+    return utcDate.toISOString().slice(0, 10);
 }
 
 // ================================================================
