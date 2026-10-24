@@ -494,8 +494,9 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
 
       if (!bossAppeared) {
         console.log('No boss appeared. Verifying instruction stability in regular play.');
-        const instruction = page.locator('div[dir] span.font-mono');
+        const instruction = page.locator('div[dir] span.font-mono').first();
         await expect(instruction).toBeVisible({ timeout: 10000 });
+        await expect(instruction).not.toBeEmpty();
         const text = await instruction.textContent();
         expect(text).toBeTruthy();
         expect(text!.trim().length).toBeGreaterThan(0);
@@ -506,8 +507,9 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
       await takeScreenshot(page, 'memo-02-boss-instruction');
 
       // During boss fight, instruction must not vanish
-      const instruction = page.locator('div[dir] span.font-mono');
+      const instruction = page.locator('div[dir] span.font-mono').first();
       await expect(instruction).toBeVisible({ timeout: 10000 });
+      await expect(instruction).not.toBeEmpty();
       const bossText = await instruction.textContent();
       expect(bossText).toBeTruthy();
       expect(bossText!.trim().length).toBeGreaterThan(0);
