@@ -62,10 +62,19 @@ export default defineConfig({
         reuseExistingServer: true,
         timeout: 30000,
       },
+  // Two engines. Only the Mac's full runs (the nightly, and the run of every merged sha on main) run both: they call
+  // `playwright test` without --project. Everything else pins --project=mobile-chrome: the PR gate (scripts/verify.sh),
+  // GitHub's E2E workflow, `npm run test:e2e`, run_tests.sh and the stability check.
   projects: [
     {
       name: 'mobile-chrome',
       use: { ...devices['Pixel 5'] },
+    },
+    {
+      // WebKit (Safari's engine) on an iPhone profile. The launch args above are Chromium flags that WebKit
+      // does not accept, so this project starts WebKit with none.
+      name: 'mobile-safari',
+      use: { ...devices['iPhone 13'], launchOptions: { args: [] } },
     },
   ],
 });

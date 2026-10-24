@@ -15,6 +15,7 @@ for i in 1 2 3; do
 
   START=$(date +%s)
   npx playwright test \
+    --project=mobile-chrome \
     --workers=3 \
     --reporter=json \
     > "$OUT/run$i.json" 2> "$OUT/run$i.stderr"
