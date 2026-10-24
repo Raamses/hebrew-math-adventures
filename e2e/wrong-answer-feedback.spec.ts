@@ -49,11 +49,11 @@ test.describe('Wrong Answer Feedback', () => {
     await submitWrongAnswer(page);
 
     // --- Assert wrong feedback overlay appears ---
-    // The MathCard renders a feedback overlay with ❌ icon and <h3> text.
-    // The overlay is absolute-positioned inside the MathCard and appears
-    // immediately after the wrong answer is submitted.
-    const feedbackHeading = page.locator('h3.text-4xl.font-bold.text-primary').first();
-    await expect(feedbackHeading).toBeVisible({ timeout: 3000 });
+    // The MathCard renders a feedback overlay with ❌ icon and heading text.
+    // Scoped inside MathCard's overlay container (.max-w-md .absolute.inset-0).
+    const overlay = page.locator('.max-w-md .absolute.inset-0').first();
+    const feedbackHeading = overlay.getByRole('heading');
+    await expect(feedbackHeading).toBeVisible({ timeout: 1500 });
     const feedbackText = await feedbackHeading.textContent();
     console.log('[Wrong Feedback] Feedback text:', feedbackText);
     expect(feedbackText).toBeTruthy();
@@ -62,19 +62,17 @@ test.describe('Wrong Answer Feedback', () => {
       feedbackText!.includes('Try again') || feedbackText!.includes('נסה שוב')
     ).toBe(true);
 
-    // Assert the ❌ emoji is visible in the feedback overlay
-    const feedbackIcon = page.locator('div.text-6xl.mb-4').first();
-    await expect(feedbackIcon).toBeVisible({ timeout: 2000 });
+    // Assert the ❌ emoji is visible in the feedback overlay (scoped to overlay)
+    const feedbackIcon = overlay.locator('.text-6xl').first();
+    await expect(feedbackIcon).toBeVisible({ timeout: 1500 });
     const iconText = await feedbackIcon.textContent();
     console.log('[Wrong Feedback] Feedback icon:', iconText);
     expect(iconText).toContain('❌');
 
     // --- Assert mascot speech bubble appears with encouraging phrase ---
-    // The mascot peeks from the right edge and shows a speech bubble with
-    // a gentle phrase from t('feedback.gentle') array.
-    // The speech bubble is in a div with class containing "rounded-2xl" inside
-    // the PracticeFeedback component's fixed-position container.
-    const speechBubble = page.locator('div.bg-white.rounded-2xl.p-3.shadow-lg').first();
+    // Scoped inside the PracticeFeedback peeking mascot container (.fixed.bottom-2.right-0)
+    const mascotContainer = page.locator('div.fixed.bottom-2.right-0').first();
+    const speechBubble = mascotContainer.locator('.rounded-2xl').first();
     await expect(speechBubble).toBeVisible({ timeout: 3000 });
     const bubbleText = await speechBubble.textContent();
     console.log('[Wrong Feedback] Mascot speech bubble:', bubbleText);

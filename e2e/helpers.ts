@@ -190,42 +190,68 @@ export async function clickBubble(page: Page, bubbleSelector: string) {
  * Uses page.mouse.click for coordinate-based clicking to bypass the header overlay.
  */
 export async function solveBubbleProblem(page: Page): Promise<boolean> {
-  // Strip Unicode bidi isolation characters (U+2068 ⁨, U+2069 ⁩) that wrap numbers in RTL text
-  const rawText = await page.textContent('body') || '';
+  // Read instruction/equation from stable display element, falling back to body
+  const instructionEl = page.locator('div[dir] span.font-mono').first();
+  const rawText = (await instructionEl.isVisible().catch(() => false))
+    ? (await instructionEl.textContent().catch(() => '')) || ''
+    : (await page.textContent('body')) || '';
   const bodyText = rawText.replace(/[⁦⁧⁨⁩]/g, '');
 
-  // Look for arithmetic instruction like "N + N = ?"
-  const eqMatch = bodyText.match(/(\d+)\s*([+\-−×÷*])\s*(\d+)\s*=\s*\?/);
+  // Look for arithmetic instruction like "N + N = ?", "? + N = N", "N - ? = N"
+  const eqMatch = bodyText.match(/(\d+|\?)\s*([+\-−×÷*])\s*(\d+|\?)\s*=\s*(\d+|\?)/);
   if (eqMatch) {
-    const a = parseInt(eqMatch[1]);
-    const op = eqMatch[2];
-    const b = parseInt(eqMatch[3]);
-    let answer: number;
-    switch (op) {
-      case '+': answer = a + b; break;
-      case '-': case '−': answer = a - b; break;
-      case '*': case '×': answer = a * b; break;
-      case '÷': case '/': answer = Math.floor(a / b); break;
-      default: answer = a + b;
-    }
-
-    // Find a bubble containing the answer number via aria-label
-    const bubble = page.locator(`[data-testid="bubble-${answer}"], [data-testid="fusion-bubble-${answer}"]`).first();
-    if (await bubble.count() > 0) {
-      const box = await bubble.boundingBox();
-      if (box) {
-        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-        return true;
+    const [, left, op, right, result] = eqMatch;
+    let answer: number | null = null;
+    if (result === '?') {
+      const a = parseInt(left!);
+      const b = parseInt(right!);
+      switch (op) {
+        case '+': answer = a + b; break;
+        case '-': case '−': answer = a - b; break;
+        case '*': case '×': answer = a * b; break;
+        case '÷': case '/': answer = Math.floor(a / b); break;
+        default: answer = a + b;
+      }
+    } else if (left === '?') {
+      const b = parseInt(right!);
+      const r = parseInt(result!);
+      switch (op) {
+        case '+': answer = r - b; break;
+        case '-': case '−': answer = r + b; break;
+        case '*': case '×': answer = Math.floor(r / b); break;
+        case '÷': case '/': answer = r * b; break;
+        default: answer = r - b;
+      }
+    } else if (right === '?') {
+      const a = parseInt(left!);
+      const r = parseInt(result!);
+      switch (op) {
+        case '+': answer = r - a; break;
+        case '-': case '−': answer = a - r; break;
+        case '*': case '×': answer = Math.floor(r / a); break;
+        case '÷': case '/': answer = Math.floor(a / r); break;
+        default: answer = r - a;
       }
     }
 
-    // Fallback: look for any element with the answer as its text
-    const allBtns = page.locator('button, [role="button"]');
-    const btnCount = await allBtns.count();
-    for (let i = 0; i < btnCount; i++) {
-      const text = await allBtns.nth(i).textContent();
-      if (text && text.trim() === String(answer)) {
-        const box = await allBtns.nth(i).boundingBox();
+    if (answer !== null) {
+      // Find a bubble containing the answer number via testid or text filter (no index-based nth).
+      // F1.1: Dropped substring aria-label*= clause which over-matches (e.g. "value 1" matches 12, 15, 19).
+      // Test-ids are always present on bubbles per EXPANDED_COVERAGE_PLAN.md:401.
+      const bubble = page.locator(
+        `[data-testid="bubble-${answer}"], [data-testid="fusion-bubble-${answer}"]`
+      ).first();
+      if (await bubble.count() > 0) {
+        const box = await bubble.boundingBox();
+        if (box) {
+          await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+          return true;
+        }
+      }
+
+      const textBtn = page.locator('button').filter({ hasText: new RegExp(`^\\s*${answer}\\s*$`) }).first();
+      if (await textBtn.count() > 0) {
+        const box = await textBtn.boundingBox();
         if (box) {
           await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
           return true;
@@ -238,9 +264,21 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
   const popMatch = bodyText.match(/Pop the bubble with (\d+)|Pop\s+(\d+)|פוצצו\s+את\s+הבועה\s+שכתוב\s+עליה\s+(\d+)/i);
   if (popMatch) {
     const target = popMatch[1] || popMatch[2] || popMatch[3];
-    const bubble = page.locator(`[data-testid="bubble-${target}"], [data-testid="fusion-bubble-${target}"]`).first();
+    // F1.1: Exact test-id selector only; drop substring aria-label*= which over-matches
+    const bubble = page.locator(
+      `[data-testid="bubble-${target}"], [data-testid="fusion-bubble-${target}"]`
+    ).first();
     if (await bubble.count() > 0) {
       const box = await bubble.boundingBox();
+      if (box) {
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+        return true;
+      }
+    }
+
+    const textBtn = page.locator('button').filter({ hasText: new RegExp(`^\\s*${target}\\s*$`) }).first();
+    if (await textBtn.count() > 0) {
+      const box = await textBtn.boundingBox();
       if (box) {
         await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
         return true;
@@ -514,12 +552,16 @@ export async function enterSagaNodeById(page: Page, nodeId: string): Promise<voi
  * Submit a wrong answer in PracticeMode.
  * Fills math-input with '0' and submits. '0' is wrong for all problem types
  * (arithmetic, series, comparison) in the curriculum.
+ *
+ * Contract (F1.2): submitWrongAnswer fills and submits immediately and does
+ * NOT wait for the wrong-answer feedback flow (the 600 ms ANSWER_LOCK_WRONG_MS
+ * lock, src/lib/worldConfig.ts:610) to settle; callers issuing back-to-back
+ * submissions must wait for the flow to settle between calls.
  */
 export async function submitWrongAnswer(page: Page): Promise<void> {
   const input = page.locator('[data-testid="math-input"]').first();
   await expect(input).toBeVisible({ timeout: 5000 });
   await input.fill('0');
-  await page.waitForTimeout(200);
 
   const submitBtn = page.locator('[data-testid="math-submit"]').first();
   if (await submitBtn.count() > 0) {
@@ -527,7 +569,6 @@ export async function submitWrongAnswer(page: Page): Promise<void> {
   } else {
     await page.keyboard.press('Enter');
   }
-  await page.waitForTimeout(500);
 }
 
 /**
