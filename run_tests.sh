@@ -15,7 +15,7 @@ for spec in e2e/*.spec.ts; do
     name=$(basename "$spec")
     echo -n "Running $name ... "
     
-    timeout 120 npx playwright test "$spec" --reporter=dot 2>&1 | tail -3 > "/tmp/test_out.txt"
+    timeout 120 npx playwright test --project=mobile-chrome "$spec" --reporter=dot 2>&1 | tail -3 > "/tmp/test_out.txt"
     exit_code=$?
     
     if grep -q "passed" /tmp/test_out.txt && ! grep -q "failed" /tmp/test_out.txt; then
