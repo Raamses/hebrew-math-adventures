@@ -235,9 +235,11 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
     }
 
     if (answer !== null) {
-      // Find a bubble containing the answer number via testid, aria-label, or text filter (no index-based nth)
+      // Find a bubble containing the answer number via testid or text filter (no index-based nth).
+      // F1.1: Dropped substring aria-label*= clause which over-matches (e.g. "value 1" matches 12, 15, 19).
+      // Test-ids are always present on bubbles per EXPANDED_COVERAGE_PLAN.md:401.
       const bubble = page.locator(
-        `[data-testid="bubble-${answer}"], [data-testid="fusion-bubble-${answer}"], button[aria-label*="value ${answer}"]`
+        `[data-testid="bubble-${answer}"], [data-testid="fusion-bubble-${answer}"]`
       ).first();
       if (await bubble.count() > 0) {
         const box = await bubble.boundingBox();
@@ -262,8 +264,9 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
   const popMatch = bodyText.match(/Pop the bubble with (\d+)|Pop\s+(\d+)|פוצצו\s+את\s+הבועה\s+שכתוב\s+עליה\s+(\d+)/i);
   if (popMatch) {
     const target = popMatch[1] || popMatch[2] || popMatch[3];
+    // F1.1: Exact test-id selector only; drop substring aria-label*= which over-matches
     const bubble = page.locator(
-      `[data-testid="bubble-${target}"], [data-testid="fusion-bubble-${target}"], button[aria-label*="value ${target}"]`
+      `[data-testid="bubble-${target}"], [data-testid="fusion-bubble-${target}"]`
     ).first();
     if (await bubble.count() > 0) {
       const box = await bubble.boundingBox();
@@ -549,6 +552,11 @@ export async function enterSagaNodeById(page: Page, nodeId: string): Promise<voi
  * Submit a wrong answer in PracticeMode.
  * Fills math-input with '0' and submits. '0' is wrong for all problem types
  * (arithmetic, series, comparison) in the curriculum.
+ *
+ * Contract (F1.2): submitWrongAnswer fills and submits immediately and does
+ * NOT wait for the wrong-answer feedback flow (the 600 ms ANSWER_LOCK_WRONG_MS
+ * lock, src/lib/worldConfig.ts:610) to settle; callers issuing back-to-back
+ * submissions must wait for the flow to settle between calls.
  */
 export async function submitWrongAnswer(page: Page): Promise<void> {
   const input = page.locator('[data-testid="math-input"]').first();

@@ -132,6 +132,9 @@ test.describe('hint button visibility', () => {
   test('stays available after a second wrong attempt', async ({ page }) => {
     await enterSagaNodeById(page, NODES.additionSimple);
     await submitWrongAnswer(page);
+    // F1.2: Wait for wrong-answer feedback flow to settle between attempts
+    await expect(page.locator('.max-w-md .absolute.inset-0')).toBeVisible();   // lock began (overlay mounted)
+    await expect(page.locator('.max-w-md .absolute.inset-0')).toBeHidden();    // lock over (overlay unmounted, problem rotated)
     await submitWrongAnswer(page);
     await expect(hintButton(page)).toBeVisible();
   });
