@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfileWithPracticeAccess } from './helpers';
+import { setupWithUnlockedNodes } from './helpers';
 
 /**
  * Lesson Node Completion — LESSON node flow (n3_1)
@@ -11,8 +11,7 @@ test.describe('Lesson node completion', () => {
   // Global timeout is 180s — no need for local override
 
   test('LESSON node (n3_1) — step through lesson → complete → stars → unlock n3_2', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
-    await setupFreshProfileWithPracticeAccess(page, 'LessonTest');
+    await setupWithUnlockedNodes(page, 'LessonTest', ['n3_1']);
 
     // --- Navigate to the LESSON node (n3_1) ---
     const lessonNode = page.locator('[data-testid="saga-node-n3_1"]').first();
@@ -182,15 +181,19 @@ test.describe('Lesson node completion', () => {
 });
 
 /**
- * Advance the lesson by calling engine.nextStep() directly.
- * On the deployed site the lesson-next button can be disabled due to React state lag,
- * so we bypass the button and call the engine method directly.
+ * Click the lesson-next button via DOM .click() to bypass mascot overlay interception.
+ * On completion (final dialog step), clicking the button triggers LessonModal's
+ * onComplete() handler which awards stars and navigates back to the saga map.
  */
 async function clickLessonNext(page: Page) {
+  const nextBtn = page.locator('[data-testid="lesson-next"]').first();
+  await expect(nextBtn).toBeVisible({ timeout: 5000 });
+  await expect(nextBtn).toBeEnabled({ timeout: 30000 });
   await page.evaluate(() => {
-    const engine = (window as any).__lessonEngine;
-    if (!engine) throw new Error('LessonEngine not found on window');
-    engine.nextStep();
+    const btn = document.querySelector('[data-testid="lesson-next"]') as HTMLButtonElement;
+    if (!btn) throw new Error('lesson-next button not found');
+    if (btn.disabled) throw new Error('lesson-next button is disabled');
+    btn.click();
   });
   await page.waitForTimeout(1000);
 }
