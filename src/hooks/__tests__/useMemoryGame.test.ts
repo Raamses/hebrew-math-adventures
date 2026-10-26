@@ -119,19 +119,25 @@ describe('useMemoryGame', () => {
             result.current.initGame();
         });
 
+        // Find two cards that do NOT match
+        const cards = result.current.cards;
+        const card0 = cards[0];
+        const nonMatchingIndex = cards.findIndex(c => c.pairId !== card0.pairId);
+
         // Flip first card
         act(() => {
             result.current.flipCard(0);
         });
 
-        // Flip second card
+        // Flip second card (guaranteed not to match)
         act(() => {
-            result.current.flipCard(1);
+            result.current.flipCard(nonMatchingIndex);
         });
 
-        // Try to flip third — should be ignored because 2 already flipped
+        // Try to flip third — should be ignored because 2 already flipped and they haven't flipped back yet
+        const thirdCardIndex = cards.findIndex((c, i) => i !== 0 && i !== nonMatchingIndex);
         act(() => {
-            result.current.flipCard(2);
+            result.current.flipCard(thirdCardIndex);
         });
 
         const flipped = result.current.cards.filter(c => c.isFlipped);
