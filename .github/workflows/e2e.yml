@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * *'
+  # Not on pull_request (Ram, 2026-10-16): this workflow tests the DEPLOYED site, not the PR's code, so it runs after
+  # the merge. A PR is judged by pr-checks.yml's "PR gate (verify.sh)", the required check.
   push:
-    branches: [main]
-  pull_request:
     branches: [main]
 env:
   E2E_BASE_URL: https://hebrew-math-adventures-2025.web.app
@@ -14,7 +14,7 @@ jobs:
     name: E2E Smoke (Deployed Site)
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
