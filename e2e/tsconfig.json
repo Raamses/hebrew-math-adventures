@@ -1,3 +1,7 @@
+// IDE-only helper: gives editors typings for e2e/*.ts. Deliberately NOT
+// referenced from the root tsconfig and NOT part of the typecheck/lint gates
+// (PR #220 review round 2, F2.2: documented rather than wired in).
+// Owner: workboard card a10f7e85-46e9-493f-b06c-41359e3f6077.
 {
   "extends": "../tsconfig.app.json",
   "compilerOptions": {
