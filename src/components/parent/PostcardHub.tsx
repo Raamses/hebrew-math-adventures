@@ -120,6 +120,7 @@ export const PostcardHub: React.FC<PostcardHubProps> = ({
 
     // 7-day compact presence strip (ending today)
     const last7Days = useMemo(() => {
+        // Hardcoded Hebrew day-labels: intentional (Hebrew-letter chart labels render in both locales) — owner: workboard card a10f7e85-46e9-493f-b06c-41359e3f6077 (accept decision, R13).
         const dayLabels = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
         const dailyStamps = activeProfile?.dailyStamps || [];
 

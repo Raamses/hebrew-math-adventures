@@ -111,31 +111,84 @@ describe('useMemoryGame', () => {
     });
 
     it('does not flip more than 2 cards at once', () => {
-        const { result } = renderHook(() => useMemoryGame({
-            config: { level: 1, cardCount: 12, problemTypes: [] },
-        }));
+        // Deterministic Math.random pin (fixed-seed LCG stream, restored after): the real
+        // shuffle dealt a pair at cards 0/1 on ~1/11 of runs, where the synchronous match
+        // keeps 2 matched cards face up and a 3rd flip is legal — that is correct duel
+        // design, so the invariant here is on UNMATCHED face-up cards. Cards are built in
+        // pair order (eq-0, ans-0, eq-1, ans-1, ...) before the Fisher-Yates shuffle, so
+        // the pinned stream fully determines where each pair lands.
+        const LCG_A = 1103515245;
+        const pinMathRandom = (seed: number): void => {
+            let state = seed >>> 0;
+            vi.spyOn(Math, 'random').mockImplementation(() => {
+                state = (Math.imul(state, LCG_A) + 12345) & 0x7fffffff;
+                return state / 0x80000000;
+            });
+        };
 
-        act(() => {
-            result.current.initGame();
-        });
+        try {
+            // Sub-scenario 1 — pinned deal with a PAIR at indices 0/1 (seed 47514):
+            // flipCard(0) + flipCard(1) match synchronously (both stay face up and
+            // matched), so flipCard(2) is legal and 3 cards are face up in total; the
+            // unmatched face-up count stays <= 2.
+            pinMathRandom(47514);
+            const pairDeal = renderHook(() => useMemoryGame({
+                config: { level: 1, cardCount: 12, problemTypes: [] },
+            }));
+            act(() => {
+                pairDeal.result.current.initGame();
+            });
+            expect(pairDeal.result.current.cards[0].pairId)
+                .toBe(pairDeal.result.current.cards[1].pairId); // pin premise: pair at 0/1
 
-        // Flip first card
-        act(() => {
-            result.current.flipCard(0);
-        });
+            act(() => {
+                pairDeal.result.current.flipCard(0);
+            });
+            act(() => {
+                pairDeal.result.current.flipCard(1);
+            });
+            expect(pairDeal.result.current.cards[0].isMatched).toBe(true);
+            expect(pairDeal.result.current.cards[1].isMatched).toBe(true);
+            expect(pairDeal.result.current.matchedCount).toBe(1);
 
-        // Flip second card
-        act(() => {
-            result.current.flipCard(1);
-        });
+            act(() => {
+                pairDeal.result.current.flipCard(2);
+            });
+            expect(pairDeal.result.current.cards.filter(c => c.isFlipped)).toHaveLength(3);
+            expect(pairDeal.result.current.cards.filter(c => c.isFlipped && !c.isMatched).length)
+                .toBeLessThanOrEqual(2);
+            pairDeal.unmount();
 
-        // Try to flip third — should be ignored because 2 already flipped
-        act(() => {
-            result.current.flipCard(2);
-        });
+            // Sub-scenario 2 — pinned deal with a NON-pair at indices 0/1 (seed 42),
+            // fresh renderHook: the wrong-pair guard must ignore the 3rd flip while the
+            // miss is pending, leaving exactly 2 unmatched face-up cards and the 3rd
+            // card face-down. Covers the old "2 already flipped" path deterministically.
+            pinMathRandom(42);
+            const missDeal = renderHook(() => useMemoryGame({
+                config: { level: 1, cardCount: 12, problemTypes: [] },
+            }));
+            act(() => {
+                missDeal.result.current.initGame();
+            });
+            expect(missDeal.result.current.cards[0].pairId)
+                .not.toBe(missDeal.result.current.cards[1].pairId); // pin premise: non-pair at 0/1
 
-        const flipped = result.current.cards.filter(c => c.isFlipped);
-        expect(flipped.length).toBeLessThanOrEqual(2);
+            act(() => {
+                missDeal.result.current.flipCard(0);
+            });
+            act(() => {
+                missDeal.result.current.flipCard(1);
+            });
+            act(() => {
+                missDeal.result.current.flipCard(2); // ignored: wrong-pair flip-back pending
+            });
+            expect(missDeal.result.current.cards.filter(c => c.isFlipped && !c.isMatched).length)
+                .toBe(2);
+            expect(missDeal.result.current.cards[2].isFlipped).toBe(false);
+            missDeal.unmount();
+        } finally {
+            vi.restoreAllMocks();
+        }
     });
 
     it('matches a correct pair and marks them as matched', () => {

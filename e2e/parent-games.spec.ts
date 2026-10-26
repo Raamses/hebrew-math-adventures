@@ -257,8 +257,8 @@ test.describe('Parent Games', () => {
     // deterministically on mobile-chrome vs the deployed site — cell never
     // attained its expected attribute within 15s (first try + retry, both red).
     // Unrelated to the blitz evaluator / invaders entry fixes in this PR.
-    // Owning card: investigation requested (amosbot board, pending).
-    test.skip(true, 're-quarantined 2026-10-07 — cell-attribute in-game assert fails deterministically on mobile-chrome (deployed site), NOT a mobile-gap; owning card pending');
+    // Owning card: a10f7e85-46e9-493f-b06c-41359e3f6077 (kept quarantined — the documented 2026-10-07 deployed-site reason stands; investigation is owned on that card).
+    test.skip(true, 're-quarantined 2026-10-07 — cell-attribute in-game assert fails deterministically on mobile-chrome (deployed site), NOT a mobile-gap; owning card a10f7e85-46e9-493f-b06c-41359e3f6077');
     await openGame(page, 'sudoku');
 
     // Select easy difficulty
@@ -372,8 +372,8 @@ test.describe('Parent Games', () => {
     // assert fails deterministically on mobile-chrome vs the deployed site —
     // eq-cell-0-0 data-state is null after submit (first try + retry, both red).
     // Unrelated to the blitz evaluator / invaders entry fixes in this PR.
-    // Owning card: investigation requested (amosbot board, pending).
-    test.skip(true, 're-quarantined 2026-10-07 — scored-cell data-state null after submit on mobile-chrome (deployed site), NOT a mobile-gap; owning card pending');
+    // Owning card: a10f7e85-46e9-493f-b06c-41359e3f6077 (kept quarantined — the documented 2026-10-07 deployed-site reason stands; investigation is owned on that card).
+    test.skip(true, 're-quarantined 2026-10-07 — scored-cell data-state null after submit on mobile-chrome (deployed site), NOT a mobile-gap; owning card a10f7e85-46e9-493f-b06c-41359e3f6077');
     await openGame(page, 'equation-of-the-day');
 
     // Wait for keyboard

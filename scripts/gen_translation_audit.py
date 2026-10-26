@@ -35,7 +35,7 @@ def flat(obj, prefix=''):
                 out.update(flat(v, key))
             else:
                 for i, item in enumerate(v):
-                    out.update(flat({str(i): item}, f'{key}.{i}'))
+                    out.update(flat({str(i): item}, key))
         else:
             out[key] = v
     return out
@@ -44,8 +44,8 @@ def flat(obj, prefix=''):
 fe, fh = flat(en), flat(he)
 missing_he = sorted(set(fe) - set(fh))
 missing_en = sorted(set(fh) - set(fe))
-empty_he = sorted(k for k, v in fh.items() if not str(v).strip())
-empty_en = sorted(k for k, v in fe.items() if not str(v).strip())
+empty_he = sorted(k for k, v in fh.items() if not isinstance(v, str) or not v.strip())
+empty_en = sorted(k for k, v in fe.items() if not isinstance(v, str) or not v.strip())
 
 ph = re.compile(r'\{\{(\w+)\}\}')
 ph_drift = []
@@ -111,7 +111,7 @@ lines.append('**Scope note:** this file covers key parity only. The old hand-wri
              'audit also recorded hardcoded Hebrew day-label arrays that are still live '
              'in code (src/lib/skillAnalysis.ts getWeeklyData, '
              'src/components/parent/PostcardHub.tsx) — tracked separately on the '
-             'AmosBot workboard (owning card pending).')
+             'AmosBot workboard; owner: workboard card a10f7e85-46e9-493f-b06c-41359e3f6077 — decision 2026-10-16: accept the hardcoded Hebrew day-labels as-is (Hebrew-letter chart labels are intentional in both locales); extract to locale keys only if a locale-aware chart is requested (R13 owner stamp).')
 
 OUT_PATH.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 print('AUDIT regenerated:', status, '| clusters:', len(clusters),
