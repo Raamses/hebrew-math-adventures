@@ -1,3 +1,7 @@
 ## 2026-09-17 - React.memo Optimization in Game Loops
 **Learning:** In high-frequency game loops where React state updates at up to 60fps (e.g., via `requestAnimationFrame`), unmemoized static or infrequently updating overlay UI components (like `FrenzyOverlay`) cause severe performance degradation from unnecessary component reconciliations.
 **Action:** Wrap such components with `React.memo()` to prevent useless re-renders. Avoid explicitly typing the variable as `React.FC<Props>` when wrapping components to avoid TypeScript `MemoExoticComponent` type mismatch, instead type properties inline and set `displayName`.
+
+## 2026-10-26 - React.memo Optimization inside FrenzyOverlay
+**Learning:** Even when `FrenzyOverlay` is wrapped in `React.memo()`, internal inline arrays generated via `Array.from()` that rely on `Math.random()` will still trigger re-calculations during any re-render caused by valid prop changes (such as the `combo` counter updating). In FrenzyOverlay's case, generating random `x` and `duration` values directly inside Framer Motion's `animate` and `transition` props causes all ember particles to completely restart their animations every time the combo increments, leading to severe visual stuttering.
+**Action:** Always pre-calculate random properties for animations using `useMemo` with an empty dependency array (or relevant dependencies) so the animation values remain stable across re-renders, preventing layout thrashing and animation resets.
