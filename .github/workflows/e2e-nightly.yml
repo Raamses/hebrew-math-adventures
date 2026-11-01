@@ -4,6 +4,9 @@ name: E2E Nightly (local build)
 # pushed the 16 GB machine into out-of-memory kills. Here it is sharded across free runners and finishes in minutes.
 # e2e.yml still tests the DEPLOYED site; this one tests the code on main.
 # VITE_FIREBASE_* are deliberately not set: without them getAnalytics() never starts, so runs send no GA4 events.
+# The Mac's RUN-TESTS handler (hma-e2e-pr) also dispatches it for a PR head: it checks the PR's eligibility and that
+# the sha is on a branch of this repo, then passes ref=<sha> and tag=<its run id>, finds the run by that tag in the
+# run name, and downloads e2e-nightly-report for its EVIDENCE reply.
 on:
   schedule:
     - cron: '12 1 * * *'   # 03:12 Israel winter time (04:12 summer)
@@ -13,8 +16,14 @@ on:
         description: 'Branch, tag or sha to test'
         required: false
         default: 'main'
+      tag:
+        description: 'Request id shown in the run name (set by the RUN-TESTS handler)'
+        required: false
+        default: ''
+run-name: ${{ inputs.tag && format('E2E full {0} [{1}]', inputs.ref, inputs.tag) || 'E2E Nightly' }}
 concurrency:
-  group: e2e-nightly
+  # one run per ref at a time; distinct refs (the nightly's main, PR heads) run side by side
+  group: e2e-full-${{ inputs.ref || 'main' }}
   cancel-in-progress: false
 permissions:
   contents: read
