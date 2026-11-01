@@ -323,8 +323,12 @@ export function executeGift(
     const error = validateGift(state, childProfileId, amount, today, maxDailyPerChild);
     if (error) return null;
 
+    const transactionId = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `gift-${Date.now()}-${childProfileId}`;
+
     const transaction: GiftTransaction = {
-        id: `gift-${Date.now()}-${childProfileId}`,
+        id: transactionId,
         childProfileId,
         childName,
         amount,
