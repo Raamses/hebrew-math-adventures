@@ -1,0 +1,123 @@
+name: E2E Nightly (local build)
+# The full two-engine suite (mobile-chrome + mobile-safari) against main's own code on a local vite server, the job
+# the Mac's com.hma.e2e.nightly used to run. Moved here (Ram, 2026-11-01): at 412 tests the Mac run took ~5 h and
+# pushed the 16 GB machine into out-of-memory kills. Here it is sharded across free runners and finishes in minutes.
+# e2e.yml still tests the DEPLOYED site; this one tests the code on main.
+# VITE_FIREBASE_* are deliberately not set: without them getAnalytics() never starts, so runs send no GA4 events.
+on:
+  schedule:
+    - cron: '12 1 * * *'   # 03:12 Israel winter time (04:12 summer)
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag or sha to test'
+        required: false
+        default: 'main'
+concurrency:
+  group: e2e-nightly
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  test:
+    name: ${{ matrix.project }} ${{ matrix.shard }}/4
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [mobile-chrome, mobile-safari]
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || 'main' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci --cpu x64 --os linux --no-audit --no-fund
+      - name: Pick browser
+        id: pw
+        run: |
+          echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+          if [ "${{ matrix.project }}" = "mobile-safari" ]; then echo "browser=webkit"; else echo "browser=chromium"; fi >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-${{ steps.pw.outputs.browser }}
+      - name: Install Playwright browser
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps ${{ steps.pw.outputs.browser }}
+      - name: Install Playwright system deps (browser cached)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps ${{ steps.pw.outputs.browser }}
+      # 2 workers on the runner's 4 vCPUs: the spawn specs are timing-sensitive and skew under CPU contention.
+      - name: Playwright ${{ matrix.project }} shard ${{ matrix.shard }}/4
+        run: >
+          npx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }}/4
+          --workers=2 --retries=1 --max-failures=25 --reporter=blob,list
+        env:
+          CI: 'true'
+          PLAYWRIGHT_BLOB_OUTPUT_FILE: blob-report/${{ matrix.project }}-${{ matrix.shard }}.zip
+      - name: Upload blob report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-${{ matrix.project }}-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 3
+          if-no-files-found: ignore
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.project }}-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  report:
+    name: Merge report
+    needs: test
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || 'main' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci --cpu x64 --os linux --no-audit --no-fund
+      - uses: actions/download-artifact@v4
+        with:
+          path: all-blob-reports
+          pattern: blob-*
+          merge-multiple: true
+      # One HTML report plus results.json (the shape the Mac runner's parse_results reads), for pulling to the Pi.
+      - name: Merge shard reports
+        run: npx playwright merge-reports --reporter=html,json ./all-blob-reports
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: results.json
+          PW_TEST_HTML_REPORT_OPEN: never
+      - name: Summary
+        if: ${{ !cancelled() }}
+        run: |
+          node -e '
+            const s = require("./results.json").stats;
+            const line = `passed ${s.expected} · failed ${s.unexpected} · flaky ${s.flaky} · skipped ${s.skipped} · ${Math.round(s.duration/60000)} min`;
+            console.log(line);
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### E2E nightly\n${line}\n`);
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-nightly-report
+          path: |
+            playwright-report/
+            results.json
+          retention-days: 14
