@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useTranslation } from 'react-i18next';
@@ -120,6 +120,15 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
         }
     }, [isActive, tier]);
 
+    // ⚡ Bolt: Calculate random properties once on mount to prevent layout thrashing
+    // on every re-render in game loops.
+    const particles = useMemo(() => {
+        return Array.from({ length: PARTICLE_COUNT * 3 }).map(() => ({
+            x: Math.random() * 50 - 25,
+            duration: 1 + Math.random(),
+        }));
+    }, []);
+
     return (
         <AnimatePresence>
             {isActive && config && (
@@ -216,10 +225,10 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                             animate={{
                                 y: -500,
                                 opacity: 0,
-                                x: Math.random() * 50 - 25
+                                x: particles[i].x
                             }}
                             transition={{
-                                duration: 1 + Math.random(),
+                                duration: particles[i].duration,
                                 repeat: Infinity,
                                 delay: (i * 0.1) % 1.5,
                                 ease: "easeOut"
