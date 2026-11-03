@@ -22,6 +22,7 @@ import type {
     GiftTransaction,
     GameResult,
     CoinEarningResult,
+    GameResultOutcome,
 } from '../../../types/parent';
 
 // ================================================================
@@ -359,9 +360,13 @@ export function getWeekStartISO(date: Date = new Date()): string {
 //  State Helpers
 // ================================================================
 
+/** Current schema version for parent economy persistence */
+export const SCHEMA_VERSION = 1;
+
 /** Create the initial/default parent economy state */
 export function createInitialState(): ParentEconomyState {
     return {
+        schemaVersion: SCHEMA_VERSION,
         coins: 0,
         totalCoinsEarned: 0,
         totalGamesPlayed: 0,
@@ -378,6 +383,57 @@ export function createInitialState(): ParentEconomyState {
 }
 
 /**
+ * Migrate persisted state to the current schema version.
+ * - Missing schemaVersion (legacy v0): normalize/fill defaults and tag current version (1).
+ * - Current version (1): merge with initial state defaults.
+ * - Unknown/future version (> 1): keep parsed values and existing schemaVersion intact, do not corrupt.
+ */
+export function migratePersistedState(raw: unknown): ParentEconomyState {
+    const initial = createInitialState();
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+        return initial;
+    }
+
+    const parsed = raw as Record<string, unknown>;
+    const version = typeof parsed.schemaVersion === 'number' ? parsed.schemaVersion : undefined;
+
+    // Unknown or future schema version: keep parsed values intact without downgrading version
+    if (version !== undefined && version > SCHEMA_VERSION) {
+        return {
+            ...initial,
+            ...parsed,
+        } as ParentEconomyState;
+    }
+
+    const coerceNumber = (val: unknown, fallback: number): number =>
+        typeof val === 'number' && Number.isFinite(val) ? val : fallback;
+
+    // Legacy v0 (missing schemaVersion) or current version:
+    return {
+        ...initial,
+        ...parsed,
+        schemaVersion: SCHEMA_VERSION,
+        coins: coerceNumber(parsed.coins, initial.coins),
+        totalCoinsEarned: coerceNumber(parsed.totalCoinsEarned, initial.totalCoinsEarned),
+        totalGamesPlayed: coerceNumber(parsed.totalGamesPlayed, initial.totalGamesPlayed),
+        streak: coerceNumber(parsed.streak, initial.streak),
+        bestStreak: coerceNumber(parsed.bestStreak, initial.bestStreak),
+        totalGiftedCoins: coerceNumber(parsed.totalGiftedCoins, initial.totalGiftedCoins),
+        unlockedBadges: Array.isArray(parsed.unlockedBadges) ? (parsed.unlockedBadges as ParentBadgeId[]) : initial.unlockedBadges,
+        giftHistory: Array.isArray(parsed.giftHistory) ? (parsed.giftHistory as GiftTransaction[]) : initial.giftHistory,
+        gameHighScores: (parsed.gameHighScores && typeof parsed.gameHighScores === 'object' && !Array.isArray(parsed.gameHighScores))
+            ? (parsed.gameHighScores as Record<string, number>)
+            : initial.gameHighScores,
+        gameWinCounts: (parsed.gameWinCounts && typeof parsed.gameWinCounts === 'object' && !Array.isArray(parsed.gameWinCounts))
+            ? (parsed.gameWinCounts as Record<string, number>)
+            : initial.gameWinCounts,
+        streakFreezeHistory: Array.isArray(parsed.streakFreezeHistory)
+            ? (parsed.streakFreezeHistory as string[])
+            : initial.streakFreezeHistory,
+    };
+}
+
+/**
  * Apply a game result to the parent economy state.
  * This is the main integration function — call it when a parent game finishes.
  */
@@ -385,12 +441,7 @@ export function applyGameResult(
     state: ParentEconomyState,
     result: GameResult,
     today: string = getTodayISO(),
-): {
-    state: ParentEconomyState;
-    coinsEarned: CoinEarningResult;
-    newBadges: ParentBadgeId[];
-    streakUpdate: { streak: number; bestStreak: number; streakChanged: boolean };
-} {
+): GameResultOutcome {
     const coinsEarned = calculateCoinsEarned(result);
     const streakUpdate = updateParentStreak(state, today);
 
