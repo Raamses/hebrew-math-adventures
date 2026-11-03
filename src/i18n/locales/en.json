@@ -370,7 +370,14 @@
         },
         "mathCrossword": {
           "title": "Math Crossword",
-          "description": "Fill in the missing equations across the grid."
+          "description": "Fill in the missing equations across the grid.",
+          "modeDaily": "Daily",
+          "modeFree": "Free play",
+          "check": "Check",
+          "clear": "Clear",
+          "solved": "Crossword solved! 🎉",
+          "newPuzzle": "New puzzle",
+          "howTo": "Fill the cells so every row and column forms a correct equation"
         },
         "sudoku": {
           "title": "Sudoku",

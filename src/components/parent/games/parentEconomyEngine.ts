@@ -52,6 +52,7 @@ export const MAX_STREAK_FREEZE_PER_MONTH = 3;
  * - EquationOfTheDay: 20 for win, 5 for loss, +5 bonus for streak (max +25)
  * - NumberMerge: floor(score / 50) + (won ? 30 : 0), min 2 for playing
  * - Sudoku: 15 for win, 5 for partial, 2 for start
+ * - MathCrossword: 10 for win, 2 for loss
  */
 export function calculateCoinsEarned(result: GameResult): CoinEarningResult {
     let coins = 0;
@@ -78,6 +79,10 @@ export function calculateCoinsEarned(result: GameResult): CoinEarningResult {
         }
         case 'sudoku': {
             coins = result.won ? 15 : result.score > 0 ? 5 : 2;
+            break;
+        }
+        case 'math-crossword': {
+            coins = result.won ? 10 : 2;
             break;
         }
         default: {

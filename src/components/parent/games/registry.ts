@@ -7,6 +7,7 @@ import { EquationOfTheDay } from './EquationOfTheDay';
 import { ParentBlitz } from './ParentBlitz';
 import { Sudoku } from './Sudoku';
 import { NumberMerge } from './NumberMerge';
+import { MathCrossword } from './MathCrossword';
 
 /** Stable, URL-safe identifiers. Never localise or reuse these. */
 export type GameId =
@@ -108,9 +109,10 @@ export const GAMES: readonly GameDefinition[] = [
   {
     id: 'math-crossword',
     i18nKey: 'mathCrossword',
-    status: 'coming_soon',
+    status: 'available',
     icon: Puzzle,
     accentClass: 'bg-rose-100 text-rose-600',
+    component: MathCrossword,
   },
 ] as const;
 

@@ -28,7 +28,7 @@ export interface ParentBadge {
 
 /** Game result passed to the economy engine */
 export interface GameResult {
-    gameId: string;        // 'parent-blitz' | 'equation-of-the-day' | 'number-merge' | 'sudoku'
+    gameId: string;        // 'parent-blitz' | 'equation-of-the-day' | 'number-merge' | 'sudoku' | 'math-crossword'
     score: number;         // game-specific score
     won: boolean;          // whether the game was won
     currentStreak?: number; // current EoD streak (for bonus calculation)
