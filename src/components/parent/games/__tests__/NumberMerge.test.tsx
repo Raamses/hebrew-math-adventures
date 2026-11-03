@@ -29,13 +29,14 @@ vi.mock('framer-motion', () => ({
 }));
 
 // Mock lucide-react icons as simple spans.
-vi.mock('lucide-react', () => {
-  const icons = ['Layers', 'Play', 'RotateCcw', 'Trophy', 'CalendarDays', 'Zap', 'Puzzle', 'Grid3x3', 'Check', 'Copy', 'Share2', 'Eraser', 'Flame'];
-  const mock: Record<string, () => any> = {};
-  for (const name of icons) {
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  const mock: Record<string, unknown> = {};
+  for (const name of Object.keys(actual)) {
+    if (name === 'default') continue; // keep default untouched
     mock[name] = () => <span data-testid={`icon-${name}`} />;
   }
-  return mock;
+  return { ...actual, ...mock };
 });
 
 // Mock localStorage.
@@ -182,5 +183,34 @@ describe('NumberMerge', () => {
     // But the game card itself is rendered, and onExit is used by the hub.
     render(<NumberMerge onExit={() => {}} />);
     expect(screen.getByTestId('game-number-merge')).toBeInTheDocument();
+  });
+
+  it('records parent economy exactly once on a win', async () => {
+    const mergeEngine = await import('../mergeEngine');
+    const spy = vi.spyOn(mergeEngine, 'applyMove').mockImplementation((state: any) => ({
+      ...state,
+      phase: 'won' as const,
+      won: true,
+      score: 2048,
+      bestTile: 2048,
+    }));
+
+    const user = userEvent.setup({ writeToClipboard: false });
+    render(<NumberMerge onExit={() => {}} />);
+
+    await user.click(screen.getByTestId('number-merge-start'));
+    await user.keyboard('{ArrowLeft}');
+
+    expect(screen.getByTestId('number-merge-win-overlay')).toBeInTheDocument();
+
+    const stored = JSON.parse(store['hebrew-math-parent-economy'] ?? 'null');
+    expect(stored).not.toBeNull();
+    expect(stored.totalGamesPlayed).toBe(1);
+    expect(stored.coins).toBeGreaterThan(0);
+    expect(typeof stored.lastPlayedDate).toBe('string');
+    expect(stored.lastPlayedDate).not.toBeNull();
+    expect(stored.gameWinCounts?.['number-merge']).toBe(1);
+
+    spy.mockRestore();
   });
 });

@@ -242,6 +242,10 @@
       "play": "Play",
       "back": "Back",
       "stub": "This game is still in development and will be available here soon.",
+      "coinToast": {
+        "earned": "coins earned 🪙",
+        "zero": "Good try — next round earns coins 🪙"
+      },
       "items": {
         "equationOfTheDay": {
           "title": "Equation of the Day",
