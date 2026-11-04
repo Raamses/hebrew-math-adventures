@@ -201,7 +201,7 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                     </motion.div>
 
                     {/* Ember Particles (Lightweight) — more particles for higher tiers */}
-                    <EmberParticles tier={tier} />
+                    <EmberParticles tier={tier!} />
 
                     {/* Mega Frenzy screen shake effect */}
                     {tier === 'mega' && (
