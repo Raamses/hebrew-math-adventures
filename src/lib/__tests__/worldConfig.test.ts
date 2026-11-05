@@ -553,10 +553,10 @@ describe('edge cases and invariants', () => {
 /* ---------- 7. STORAGE_KEYS ---------- */
 
 describe('STORAGE_KEYS', () => {
-    it('exports an object with all 10 keys', () => {
+    it('exports an object with all 11 keys', () => {
         expect(STORAGE_KEYS).toBeDefined();
         expect(typeof STORAGE_KEYS).toBe('object');
-        expect(Object.keys(STORAGE_KEYS)).toHaveLength(10);
+        expect(Object.keys(STORAGE_KEYS)).toHaveLength(11);
     });
 
     it('has all expected key names', () => {
@@ -570,6 +570,7 @@ describe('STORAGE_KEYS', () => {
         expect(STORAGE_KEYS).toHaveProperty('CINEMATIC_SEEN');
         expect(STORAGE_KEYS).toHaveProperty('IS_MUTED');
         expect(STORAGE_KEYS).toHaveProperty('PARENT_ECONOMY');
+        expect(STORAGE_KEYS).toHaveProperty('SESSION_COINS_LEDGER');
     });
 
     it('every value is a non-empty string', () => {
@@ -607,6 +608,8 @@ describe('STORAGE_KEYS', () => {
         expect(STORAGE_KEYS.INVADERS_BEST_SCORE).toBe('hebrew-math-invaders-best');
         expect(STORAGE_KEYS.CINEMATIC_SEEN).toBe('cinematic_seen_units');
         expect(STORAGE_KEYS.IS_MUTED).toBe('isMuted');
+        expect(STORAGE_KEYS.PARENT_ECONOMY).toBe('hebrew-math-parent-economy');
+        expect(STORAGE_KEYS.SESSION_COINS_LEDGER).toBe('hebrew-math-session-coins-ledger');
     });
 
     it('keys follow a consistent naming convention (alphanumeric, hyphen or underscore separated)', () => {

@@ -568,6 +568,7 @@
     "title": "!סיימנו",
     "subtitle": "כל הכבוד על המאמץ",
     "points": "נקודות",
+    "coins": "מטבעות",
     "accuracy": "דיוק",
     "totalScore": "ניקוד כולל",
     "result": "ענית נכון על <c>{{correct}}</c> מתוך <t>{{total}}</t> שאלות",

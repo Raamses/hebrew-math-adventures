@@ -568,6 +568,7 @@
     "title": "Finished!",
     "subtitle": "Great effort!",
     "points": "Points",
+    "coins": "Coins",
     "accuracy": "Accuracy",
     "totalScore": "Total Score",
     "result": "You answered <c>{{correct}}</c> out of <t>{{total}}</t> questions correctly",
