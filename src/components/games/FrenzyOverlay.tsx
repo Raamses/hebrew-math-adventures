@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useTranslation } from 'react-i18next';
@@ -82,6 +82,46 @@ const TIER_EMOJI: Record<FrenzyTier, string> = {
     super: '⚡',
     mega: '🔥',
 };
+
+// ⚡ Bolt: Extracted presentational particle to prevent layout thrashing from
+// inline Math.random() calls on every re-render of FrenzyOverlay.
+const FrenzyParticle = React.memo(function FrenzyParticle({
+    index,
+    tier
+}: {
+    index: number;
+    tier: FrenzyTier;
+}) {
+    // Calculate random properties once on mount
+    const randomX = useMemo(() => Math.random() * 50 - 25, []);
+    const randomDuration = useMemo(() => 1 + Math.random(), []);
+
+    return (
+        <motion.div
+            className={`absolute bottom-0 w-2 h-2 rounded-full ${
+                tier === 'mega' ? 'bg-rose-400' :
+                tier === 'super' ? 'bg-purple-400' :
+                'bg-orange-400'
+            }`}
+            style={{
+                left: `${10 + (index * 7) % 80}%`,
+            }}
+            initial={{ y: 0, opacity: 1 }}
+            animate={{
+                y: -500,
+                opacity: 0,
+                x: randomX
+            }}
+            transition={{
+                duration: randomDuration,
+                repeat: Infinity,
+                delay: (index * 0.1) % 1.5,
+                ease: "easeOut"
+            }}
+        />
+    );
+});
+FrenzyParticle.displayName = 'FrenzyParticle';
 
 // ⚡ Bolt: Wrapped in React.memo to prevent unnecessary re-renders when parent states
 // like game loop frame count update up to 60fps, which improves performance.
@@ -202,29 +242,7 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
 
                     {/* Ember Particles (Lightweight) — more particles for higher tiers */}
                     {Array.from({ length: PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1) }, (_, i) => (
-                        <motion.div
-                            key={i}
-                            className={`absolute bottom-0 w-2 h-2 rounded-full ${
-                                tier === 'mega' ? 'bg-rose-400' :
-                                tier === 'super' ? 'bg-purple-400' :
-                                'bg-orange-400'
-                            }`}
-                            style={{
-                                left: `${10 + (i * 7) % 80}%`,
-                            }}
-                            initial={{ y: 0, opacity: 1 }}
-                            animate={{
-                                y: -500,
-                                opacity: 0,
-                                x: Math.random() * 50 - 25
-                            }}
-                            transition={{
-                                duration: 1 + Math.random(),
-                                repeat: Infinity,
-                                delay: (i * 0.1) % 1.5,
-                                ease: "easeOut"
-                            }}
-                        />
+                        <FrenzyParticle key={i} index={i} tier={tier!} />
                     ))}
 
                     {/* Mega Frenzy screen shake effect */}
