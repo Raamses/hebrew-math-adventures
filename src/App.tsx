@@ -14,6 +14,7 @@ import { MascotGreeting } from './components/mascot/MascotGreeting'
 import { PetScreen } from './components/pet/PetScreen'
 import type { LearningNode } from './types/learningPath'
 import type { ArcadeMode } from './engines/bubble/types'
+import type { BaseProblemConfig } from './engines/ProblemFactory'
 
 import { useAnalytics } from './hooks/useAnalytics';
 
@@ -34,6 +35,7 @@ const AppContent = () => {
   const [arcadeMode, setArcadeMode] = useState<ArcadeMode | undefined>(undefined);
   const [dailyChallengeMode, setDailyChallengeMode] = useState<string | undefined>(undefined);
   const [dailyChallengeTarget, setDailyChallengeTarget] = useState<number | undefined>(undefined);
+  const [practiceSkillConfig, setPracticeSkillConfig] = useState<BaseProblemConfig | null>(null);
   const [showGreeting, setShowGreeting] = useState(false);
 
   console.log('App Render:', { view, profileId: profile?.id, selectedNode });
@@ -65,12 +67,22 @@ const AppContent = () => {
     setView('game');
   };
 
+  const handlePracticeSkill = (config: BaseProblemConfig) => {
+    setPracticeSkillConfig(config);
+    setSelectedNode(null);
+    setArcadeMode(undefined);
+    setDailyChallengeMode(undefined);
+    setDailyChallengeTarget(undefined);
+    setView('game');
+  };
+
   const handleGameExit = () => {
     setView('map');
     setSelectedNode(null);
     setArcadeMode(undefined);
     setDailyChallengeMode(undefined);
     setDailyChallengeTarget(undefined);
+    setPracticeSkillConfig(null);
   };
 
   const handleLogout = () => {
@@ -78,6 +90,7 @@ const AppContent = () => {
     setView('select');
     setSelectedNode(null);
     setShowGreeting(false);
+    setPracticeSkillConfig(null);
   };
 
   // Parent gate access from ProfileSelector (onboarding)
@@ -108,7 +121,7 @@ const AppContent = () => {
   };
 
   if (effectiveView === 'parent') {
-    return <ParentDashboard onExit={handleParentExit} />;
+    return <ParentDashboard onExit={handleParentExit} onPracticeSkill={handlePracticeSkill} />;
   }
 
   if (effectiveView === 'pet') {
@@ -180,6 +193,7 @@ const AppContent = () => {
         arcadeMode={arcadeMode}
         dailyChallengeMode={dailyChallengeMode}
         dailyChallengeTarget={dailyChallengeTarget}
+        practiceConfig={practiceSkillConfig}
       />
     );
   }

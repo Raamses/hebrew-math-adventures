@@ -6,8 +6,11 @@ import { cn } from '../../lib/utils';
 import { useInvaderEngine } from '../../engines/invader/useInvaderEngine';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useProfile } from '../../context/ProfileContext';
+import { useQuest } from '../../context/QuestContext';
 import { FrenzyOverlay } from './FrenzyOverlay';
 import type { UserCapabilityProfile } from '../../types/progress';
+
+const NOOP_QUEST = () => {};
 
 const Starfield = React.memo(() => {
     // ⚡ Bolt: Pre-calculate random properties once to prevent layout thrashing
@@ -51,12 +54,26 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
 }) => {
     const { t } = useTranslation();
     const { profile: contextProfile, updateArcadeBestScore, recordSession } = useProfile();
+    let recordQuestEvent: ReturnType<typeof useQuest>['recordQuestEvent'] = NOOP_QUEST;
+    try {
+        const questCtx = useQuest();
+        recordQuestEvent = questCtx.recordQuestEvent;
+    } catch {
+        // Fallback for tests rendered without QuestProvider
+    }
     const soundManager = useSoundManager({ soundGardenEnabled: contextProfile?.settings?.soundGarden ?? false });
     const sessionStartTimeRef = useRef(Date.now());
     const sessionCorrectRef = useRef(0);
     const sessionAttemptsRef = useRef(0);
+    const sessionRecordedRef = useRef(false);
+    const prevBossWaveRef = useRef(false);
 
     const onGameOver = useCallback((score: number, _lives: number) => {
+        if (!sessionRecordedRef.current) {
+            sessionRecordedRef.current = true;
+            recordQuestEvent('games_finished', 1);
+            recordQuestEvent('correct_answers', sessionCorrectRef.current);
+        }
         if (contextProfile) {
             updateArcadeBestScore('INVADERS', score);
         }
@@ -68,9 +85,14 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
             skillFocus: 'mixed',
             gameMode: 'invaders',
         });
-    }, [contextProfile, updateArcadeBestScore, recordSession]);
+    }, [contextProfile, updateArcadeBestScore, recordSession, recordQuestEvent]);
 
     const onVictory = useCallback((score: number, lives: number) => {
+        if (!sessionRecordedRef.current) {
+            sessionRecordedRef.current = true;
+            recordQuestEvent('games_finished', 1);
+            recordQuestEvent('correct_answers', sessionCorrectRef.current);
+        }
         if (contextProfile) {
             updateArcadeBestScore('INVADERS', score);
         }
@@ -83,7 +105,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
             gameMode: 'invaders',
         });
         if (onComplete) onComplete({ score, lives, victory: true });
-    }, [contextProfile, updateArcadeBestScore, recordSession, onComplete]);
+    }, [contextProfile, updateArcadeBestScore, recordSession, onComplete, recordQuestEvent]);
 
     const { state, handleAnswerTap, reset } = useInvaderEngine({
         targetLevel: level,
@@ -109,6 +131,13 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
         }
     }, [state.isVictory]);
 
+    useEffect(() => {
+        if (prevBossWaveRef.current && !state.isBossWave && state.bossHP === 0) {
+            recordQuestEvent('boss_defeated', 1);
+        }
+        prevBossWaveRef.current = state.isBossWave;
+    }, [state.isBossWave, state.bossHP, recordQuestEvent]);
+
     const handleTap = useCallback((answerId: string) => {
         const result = handleAnswerTap(answerId);
         sessionAttemptsRef.current++;
@@ -125,6 +154,8 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
     const handlePlayAgain = useCallback(() => {
         gameOverFiredRef.current = false;
         victoryFiredRef.current = false;
+        sessionRecordedRef.current = false;
+        prevBossWaveRef.current = false;
         sessionStartTimeRef.current = Date.now();
         sessionCorrectRef.current = 0;
         sessionAttemptsRef.current = 0;

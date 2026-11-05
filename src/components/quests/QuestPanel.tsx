@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuest } from '../../context/QuestContext';
 import { useProfile } from '../../context/ProfileContext';
 import { ARCADE_MODE_LABELS } from '../../lib/arcadeModes';
+import { getSkillLabel } from '../../lib/skillFocus';
 import { KidCelebrationDelivery } from '../parent/CelebrationTray';
 
 interface QuestPanelProps {
@@ -12,7 +13,17 @@ interface QuestPanelProps {
 
 export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
   const { t } = useTranslation();
-  const { todayChallenge, hasCompletedToday, dailyStreak, stampAlbumProgress, dailyChallengeCorrect } = useQuest();
+  const {
+    todayChallenge,
+    hasCompletedToday,
+    dailyStreak,
+    stampAlbumProgress,
+    dailyChallengeCorrect,
+    weeklyGoalQuest,
+    questProgress,
+    questClaimed,
+    claimQuest,
+  } = useQuest();
   const { profile } = useProfile();
 
   const modeInfo = ARCADE_MODE_LABELS[todayChallenge.mode] || {
@@ -24,6 +35,79 @@ export const QuestPanel: React.FC<QuestPanelProps> = ({ onStartChallenge }) => {
   return (
     <>
       {profile?.id && <KidCelebrationDelivery childId={profile.id} />}
+      {weeklyGoalQuest && (() => {
+        const mascotKey = profile?.mascotId || 'bear';
+        const mascotName = t(`quest.weekly.mascot_${mascotKey}`, mascotKey);
+        const skillLabel = profile?.weeklyGoal ? getSkillLabel(profile.weeklyGoal.skillKey) : '';
+        const progress = questProgress[weeklyGoalQuest.id] || 0;
+        const target = weeklyGoalQuest.target;
+        const isClaimed = questClaimed.includes(weeklyGoalQuest.id);
+        const isComplete = progress >= target;
+        const percent = Math.min(100, Math.round((progress / target) * 100));
+
+        return (
+          <motion.div
+            data-testid="weekly-quest-strip"
+            className="bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-indigo-500/20 backdrop-blur-md rounded-3xl p-3.5 mx-3 mb-1 shadow-lg border border-amber-300/30 text-white relative overflow-hidden"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="text-2xl shrink-0" role="img" aria-label={mascotName}>
+                  {weeklyGoalQuest.icon || '🎯'}
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-black leading-tight truncate">
+                    {t('quest.weekly.title', { mascot: mascotName })}
+                  </h3>
+                  <p className="text-xs text-white/80 font-medium truncate mt-0.5">
+                    {t('quest.weekly.desc', { target, skill: skillLabel })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 bg-amber-400/20 px-2 py-0.5 rounded-full border border-amber-300/30 text-amber-200 text-xs font-black shrink-0">
+                <span>💎</span>
+                <span>+{weeklyGoalQuest.gemReward}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 bg-white/10 rounded-full h-2.5 overflow-hidden p-0.5">
+                <motion.div
+                  className="bg-gradient-to-r from-amber-400 to-yellow-300 h-full rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${percent}%` }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                />
+              </div>
+              <span className="text-xs font-bold text-amber-200 shrink-0">
+                {progress} / {target}
+              </span>
+            </div>
+
+            {(isComplete || isClaimed) && (
+              <div className="mt-2.5 pt-2 border-t border-white/10 flex justify-end">
+                {isClaimed ? (
+                  <span className="text-xs font-black text-emerald-300 flex items-center gap-1 bg-emerald-500/20 px-3 py-1 rounded-xl border border-emerald-400/30">
+                    <span>✓</span> {t('quest.weekly.claimed')}
+                  </span>
+                ) : (
+                  <motion.button
+                    onClick={() => claimQuest(weeklyGoalQuest.id)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-400 text-amber-950 px-3.5 py-1.5 rounded-xl shadow-md hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+                  >
+                    {t('quest.weekly.claim')}
+                  </motion.button>
+                )}
+              </div>
+            )}
+          </motion.div>
+        );
+      })()}
       <motion.div
         className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white rounded-3xl p-3.5 mx-3 my-3 shadow-xl border border-white/20 relative overflow-hidden"
         initial={{ opacity: 0, y: -10 }}

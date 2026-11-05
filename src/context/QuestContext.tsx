@@ -5,16 +5,9 @@ import { useProfile } from './ProfileContext';
 import { STORAGE_KEYS } from '../lib/worldConfig';
 import { getSkillLabel } from '../lib/skillFocus';
 import { getWeekStartISO } from '../components/parent/games/parentEconomyEngine';
+import { rolloverQuests, type DailyProgress } from '../lib/questRollover';
 
-interface DailyProgress {
-  dailyStamps: string[]; // dates completed (YYYY-MM-DD)
-  totalCoinsEarned: number;
-  dailyChallengeCorrect: number; // accumulated correct answers for today's challenge
-  dailyChallengeDate: string; // date of current challenge progress (resets daily)
-  questProgress?: Record<string, number>;  // questId → progress count
-  questClaimed?: string[];                  // claimed quest IDs
-  questDate?: string;                       // date of current quest progress (resets daily)
-}
+export type { DailyProgress };
 
 interface QuestContextType {
   todayChallenge: DailyChallenge;
@@ -108,7 +101,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Weekly Goal as in-fiction quest in mascot's voice (Card PG-3)
   const weeklyGoal = profile?.weeklyGoal;
-  const currentWeekStart = getWeekStartISO();
+  const currentWeekStart = getWeekStartISO(new Date(), 0);
   const isGoalActive = Boolean(weeklyGoal && weeklyGoal.weekStart === currentWeekStart);
 
   const weeklyGoalQuest: DailyQuest | null = useMemo(() => {
@@ -153,14 +146,9 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       loaded.dailyChallengeCorrect = 0;
       loaded.dailyChallengeDate = todayStr;
     }
-    // Reset quest progress if it's from a different day
-    if (loaded.questDate !== todayStr) {
-      loaded.questProgress = {};
-      loaded.questClaimed = [];
-      loaded.questDate = todayStr;
-    }
-    saveProgress(profile.id, loaded);
-    return loaded;
+    const rolled = rolloverQuests(loaded, todayStr, currentWeekStart);
+    saveProgress(profile.id, rolled);
+    return rolled;
   });
 
   // Reload when profile changes
@@ -172,14 +160,9 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loaded.dailyChallengeCorrect = 0;
         loaded.dailyChallengeDate = todayStr;
       }
-      // Reset quest progress if it's from a different day
-      if (loaded.questDate !== todayStr) {
-        loaded.questProgress = {};
-        loaded.questClaimed = [];
-        loaded.questDate = todayStr;
-      }
-      saveProgress(profile.id, loaded);
-      setDailyProgress(loaded);
+      const rolled = rolloverQuests(loaded, todayStr, currentWeekStart);
+      saveProgress(profile.id, rolled);
+      setDailyProgress(rolled);
     } else {
       setDailyProgress({ ...EMPTY_PROGRESS });
     }

@@ -941,7 +941,17 @@
     "boss1": "Defeat a boss",
     "boss1_d": "Defeat one boss",
     "daily": "Daily challenge",
-    "daily_d": "Complete the daily challenge"
+    "daily_d": "Complete the daily challenge",
+    "weekly": {
+      "title": "{{mascot}}'s Weekly Challenge",
+      "desc": "Let's solve {{target}} {{skill}} exercises together this week!",
+      "claim": "Claim reward",
+      "claimed": "Reward claimed!",
+      "mascot_owl": "Owl",
+      "mascot_bear": "Bear",
+      "mascot_ant": "Ant",
+      "mascot_lion": "Lion"
+    }
   },
   "common": {
     "close": "Close",

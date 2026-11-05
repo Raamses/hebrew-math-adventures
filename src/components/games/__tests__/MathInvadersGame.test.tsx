@@ -82,6 +82,10 @@ vi.mock('lucide-react', () => ({
     Heart: () => <span>♥</span>,
     Zap: () => <span>⚡</span>,
     Star: () => <span>★</span>,
+    Sparkles: () => <span>✨</span>,
+    Palmtree: () => <span>🌴</span>,
+    Trees: () => <span>🌲</span>,
+    Mountain: () => <span>⛰️</span>,
 }));
 
 const m: Record<string, string> = {};

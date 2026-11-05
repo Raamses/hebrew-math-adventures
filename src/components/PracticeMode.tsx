@@ -46,7 +46,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
     const { profile, incrementStreak, resetStreak, updateArcadeBestScore, recordSession } = useProfile();
     const soundManager = useSoundManager({ soundGardenEnabled: profile?.settings?.soundGarden ?? false });
     const { logEvent } = useAnalytics();
-    const { completeDailyChallenge, todayChallenge, addDailyChallengeCorrect, dailyChallengeCorrect } = useQuest();
+    const { completeDailyChallenge, todayChallenge, addDailyChallengeCorrect, dailyChallengeCorrect, recordQuestEvent } = useQuest();
     // Track daily challenge completion to avoid double-calling
     const dailyChallengeClaimedRef = useRef(false);
     // Track accumulated correct in a ref to avoid stale closures
@@ -167,6 +167,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                     skillFocus: problemConfig?.type || 'mixed',
                     gameMode: 'practice',
                 });
+                recordQuestEvent('correct_answers', currentSession.correct);
+                recordQuestEvent('games_finished', 1);
                 // Check daily challenge completion
                 checkDailyChallenge(currentSession.correct);
                 setShowSummary(true);
@@ -215,6 +217,8 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 skillFocus: problemConfig?.type || 'mixed',
                 gameMode: 'practice',
             });
+            recordQuestEvent('correct_answers', session.correct);
+            recordQuestEvent('games_finished', 1);
             // Check daily challenge completion on Game Over
             checkDailyChallenge(session.correct);
             setShowSummary(true);

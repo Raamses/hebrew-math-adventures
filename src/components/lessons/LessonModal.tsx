@@ -7,6 +7,7 @@ import { SpeechBubble } from '../mascot/SpeechBubble';
 import { LessonEngine } from '../../engines/LessonEngine';
 import { InteractiveStoryScene } from './InteractiveStoryScene';
 import { useAnalytics } from '../../hooks/useAnalytics';
+import { useQuest } from '../../context/QuestContext';
 import type { LessonDefinition } from '../../types/lesson';
 
 interface LessonModalProps {
@@ -22,6 +23,7 @@ interface LessonModalProps {
 export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClose, onComplete, nodeId }) => {
     const { t } = useTranslation();
     const { logEvent } = useAnalytics();
+    const { recordQuestEvent } = useQuest();
     const [engine] = useState(() => new LessonEngine(lesson));
     const [state, setState] = useState(engine.getCurrentState());
 
@@ -69,6 +71,8 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
         });
 
         if (isLastStep) {
+            recordQuestEvent('correct_answers', performance.correct);
+            recordQuestEvent('games_finished', 1);
             logEvent('lesson_complete', {
                 lesson_id: lesson.id,
                 node_id: nodeId,
