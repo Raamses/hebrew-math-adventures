@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useTranslation } from 'react-i18next';
@@ -120,6 +120,16 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
         }
     }, [isActive, tier]);
 
+    // ⚡ Bolt: Pre-calculate random particle attributes once to avoid layout thrashing and
+    // animation restarts on combo updates, which trigger component re-renders.
+    const maxParticles = PARTICLE_COUNT * 3;
+    const particleAttributes = useMemo(() => {
+        return Array.from({ length: maxParticles }).map(() => ({
+            x: Math.random() * 50 - 25,
+            duration: 1 + Math.random(),
+        }));
+    }, [maxParticles]);
+
     return (
         <AnimatePresence>
             {isActive && config && (
@@ -216,10 +226,10 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                             animate={{
                                 y: -500,
                                 opacity: 0,
-                                x: Math.random() * 50 - 25
+                                x: particleAttributes[i].x
                             }}
                             transition={{
-                                duration: 1 + Math.random(),
+                                duration: particleAttributes[i].duration,
                                 repeat: Infinity,
                                 delay: (i * 0.1) % 1.5,
                                 ease: "easeOut"
