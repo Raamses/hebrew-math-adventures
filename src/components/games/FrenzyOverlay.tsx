@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,45 @@ interface FrenzyOverlayProps {
 }
 
 const PARTICLE_COUNT = 5;
+
+// ⚡ Bolt: Extracted EmberParticles into a React.memo component and memoized random values
+// to prevent layout thrashing and animation jittering when FrenzyOverlay re-renders.
+const EmberParticles = React.memo(({ count, colorClass }: { count: number; colorClass: string }) => {
+    const particles = useMemo(() => {
+        return Array.from({ length: 15 }).map((_, i) => ({
+            id: i,
+            left: `${10 + (i * 7) % 80}%`,
+            x: Math.random() * 50 - 25,
+            duration: 1 + Math.random(),
+            delay: (i * 0.1) % 1.5,
+        }));
+    }, []);
+
+    return (
+        <>
+            {particles.slice(0, count).map((p) => (
+                <motion.div
+                    key={p.id}
+                    className={`absolute bottom-0 w-2 h-2 rounded-full ${colorClass}`}
+                    style={{ left: p.left }}
+                    initial={{ y: 0, opacity: 1 }}
+                    animate={{
+                        y: -500,
+                        opacity: 0,
+                        x: p.x
+                    }}
+                    transition={{
+                        duration: p.duration,
+                        repeat: Infinity,
+                        delay: p.delay,
+                        ease: "easeOut"
+                    }}
+                />
+            ))}
+        </>
+    );
+});
+EmberParticles.displayName = 'EmberParticles';
 
 // Combo milestone tiers
 type FrenzyTier = 'frenzy' | 'super' | 'mega';
@@ -201,31 +240,14 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                     </motion.div>
 
                     {/* Ember Particles (Lightweight) — more particles for higher tiers */}
-                    {Array.from({ length: PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1) }, (_, i) => (
-                        <motion.div
-                            key={i}
-                            className={`absolute bottom-0 w-2 h-2 rounded-full ${
-                                tier === 'mega' ? 'bg-rose-400' :
-                                tier === 'super' ? 'bg-purple-400' :
-                                'bg-orange-400'
-                            }`}
-                            style={{
-                                left: `${10 + (i * 7) % 80}%`,
-                            }}
-                            initial={{ y: 0, opacity: 1 }}
-                            animate={{
-                                y: -500,
-                                opacity: 0,
-                                x: Math.random() * 50 - 25
-                            }}
-                            transition={{
-                                duration: 1 + Math.random(),
-                                repeat: Infinity,
-                                delay: (i * 0.1) % 1.5,
-                                ease: "easeOut"
-                            }}
-                        />
-                    ))}
+                    <EmberParticles
+                        count={PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1)}
+                        colorClass={
+                            tier === 'mega' ? 'bg-rose-400' :
+                            tier === 'super' ? 'bg-purple-400' :
+                            'bg-orange-400'
+                        }
+                    />
 
                     {/* Mega Frenzy screen shake effect */}
                     {tier === 'mega' && (
