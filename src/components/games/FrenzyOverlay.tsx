@@ -120,6 +120,14 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
         }
     }, [isActive, tier]);
 
+    const particles = React.useMemo(() => {
+        return Array.from({ length: PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1) }).map((_, i) => ({
+            id: i,
+            xOffset: Math.random() * 50 - 25,
+            duration: 1 + Math.random(),
+        }));
+    }, [tier]);
+
     return (
         <AnimatePresence>
             {isActive && config && (
@@ -201,9 +209,9 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                     </motion.div>
 
                     {/* Ember Particles (Lightweight) — more particles for higher tiers */}
-                    {Array.from({ length: PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1) }, (_, i) => (
+                    {particles.map((p, i) => (
                         <motion.div
-                            key={i}
+                            key={p.id}
                             className={`absolute bottom-0 w-2 h-2 rounded-full ${
                                 tier === 'mega' ? 'bg-rose-400' :
                                 tier === 'super' ? 'bg-purple-400' :
@@ -216,10 +224,10 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                             animate={{
                                 y: -500,
                                 opacity: 0,
-                                x: Math.random() * 50 - 25
+                                x: p.xOffset
                             }}
                             transition={{
-                                duration: 1 + Math.random(),
+                                duration: p.duration,
                                 repeat: Infinity,
                                 delay: (i * 0.1) % 1.5,
                                 ease: "easeOut"
