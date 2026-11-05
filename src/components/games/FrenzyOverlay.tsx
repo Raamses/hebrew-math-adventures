@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useTranslation } from 'react-i18next';
@@ -101,6 +101,16 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
     const [showBurst, setShowBurst] = useState(false);
     const prevTierRef = useRef<FrenzyTier | null>(null);
 
+    // ⚡ Bolt: Pre-calculate random properties once to prevent layout thrashing
+    // on every frame update during the game loop.
+    const particlesData = useMemo(() => {
+        return Array.from({ length: PARTICLE_COUNT * 3 }).map((_, i) => ({
+            id: i,
+            x: Math.random() * 50 - 25,
+            duration: 1 + Math.random(),
+        }));
+    }, []);
+
     useEffect(() => {
         if (isActive && tier) {
             play('frenzy');
@@ -201,9 +211,9 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                     </motion.div>
 
                     {/* Ember Particles (Lightweight) — more particles for higher tiers */}
-                    {Array.from({ length: PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1) }, (_, i) => (
+                    {particlesData.slice(0, PARTICLE_COUNT * (tier === 'mega' ? 3 : tier === 'super' ? 2 : 1)).map((p, i) => (
                         <motion.div
-                            key={i}
+                            key={p.id}
                             className={`absolute bottom-0 w-2 h-2 rounded-full ${
                                 tier === 'mega' ? 'bg-rose-400' :
                                 tier === 'super' ? 'bg-purple-400' :
@@ -216,10 +226,10 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                             animate={{
                                 y: -500,
                                 opacity: 0,
-                                x: Math.random() * 50 - 25
+                                x: p.x
                             }}
                             transition={{
-                                duration: 1 + Math.random(),
+                                duration: p.duration,
                                 repeat: Infinity,
                                 delay: (i * 0.1) % 1.5,
                                 ease: "easeOut"
