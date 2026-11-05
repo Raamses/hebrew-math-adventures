@@ -1,47 +1,38 @@
 /**
  * useParentEconomy.ts — React hook for managing parent economy state.
  *
- * Handles localStorage persistence, game result application, gift execution,
- * and streak freeze.
+ * Consumes ParentEconomyContext when available (within ParentEconomyProvider).
+ * Falls back to a legacy local instance when rendered without a provider,
+ * preserving compatibility with existing unit tests.
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { ParentEconomyState, GameResult } from '../types/parent';
 import {
-    createInitialState,
     applyGameResult,
     executeGift,
     applyStreakFreeze,
     getTodayISO,
 } from '../components/parent/games/parentEconomyEngine';
+import {
+    useParentEconomyContext,
+    loadParentEconomyState,
+    type ParentEconomyContextType,
+} from '../context/ParentEconomyContext';
+import { STORAGE_KEYS } from '../lib/worldConfig';
 
-const STORAGE_KEY = 'hebrew-math-parent-economy';
-
-function loadState(): ParentEconomyState {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            return { ...createInitialState(), ...parsed };
-        }
-    } catch {
-        // ignore
-    }
-    return createInitialState();
-}
-
-export function useParentEconomy() {
-    const [state, setState] = useState<ParentEconomyState>(loadState);
+function useLegacyParentEconomy(): ParentEconomyContextType {
+    const [state, setState] = useState<ParentEconomyState>(loadParentEconomyState);
     const isInitialMount = useRef(true);
 
-    // Persist state to localStorage on change
+    // Persist state to localStorage on change (legacy skip on mount)
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
             return;
         }
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            localStorage.setItem(STORAGE_KEYS.PARENT_ECONOMY, JSON.stringify(state));
         } catch {
             // ignore
         }
@@ -80,4 +71,21 @@ export function useParentEconomy() {
         giftToChild,
         useStreakFreeze,
     };
+}
+
+export function useParentEconomy(): ParentEconomyContextType {
+    let context: ParentEconomyContextType | null = null;
+    try {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        context = useParentEconomyContext();
+    } catch {
+        // Fallback when rendered without ParentEconomyProvider
+    }
+
+    if (context) {
+        return context;
+    }
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useLegacyParentEconomy();
 }

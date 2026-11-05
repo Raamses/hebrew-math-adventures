@@ -32,6 +32,7 @@ export interface GameResult {
     score: number;         // game-specific score
     won: boolean;          // whether the game was won
     currentStreak?: number; // current EoD streak (for bonus calculation)
+    sessionId?: string;    // unique session ID for idempotency guard
 }
 
 /** Result of coin earning calculation */
@@ -54,6 +55,7 @@ export interface GiftTransaction {
 
 /** Full parent economy state, persisted to localStorage */
 export interface ParentEconomyState {
+    schemaVersion?: number;           // schema version for migration (1 = current)
     coins: number;                    // current spendable parent coins
     totalCoinsEarned: number;         // lifetime coins earned (for badges)
     totalGamesPlayed: number;         // lifetime games played
@@ -66,4 +68,12 @@ export interface ParentEconomyState {
     gameHighScores: Record<string, number>;  // gameId → best score
     gameWinCounts: Record<string, number>;   // gameId → win count
     streakFreezeHistory: string[];    // dates streak freeze was used (YYYY-MM-DD)
+}
+
+/** Outcome of applying a game result */
+export interface GameResultOutcome {
+    state: ParentEconomyState;
+    coinsEarned: CoinEarningResult;
+    newBadges: ParentBadgeId[];
+    streakUpdate: { streak: number; bestStreak: number; streakChanged: boolean };
 }
