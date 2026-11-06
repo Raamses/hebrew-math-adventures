@@ -10,6 +10,11 @@ import { useParentEconomy } from '../../../../hooks/useParentEconomy';
 import { getTodayISO } from '../parentEconomyEngine';
 import { STORAGE_KEYS } from '../../../../lib/worldConfig';
 import type { GameResult, ParentEconomyState } from '../../../../types/parent';
+import { ParentBlitz } from '../ParentBlitz';
+import { ParentGamesHub, ParentGamesEconomyToast } from '../../ParentGamesHub';
+import { BLITZ_DURATION_MS, BLITZ_TICK_MS } from '../blitzEngine';
+import enJson from '../../../../i18n/locales/en.json';
+import heJson from '../../../../i18n/locales/he.json';
 
 describe('parentGamesEconomyWiring — State Core', () => {
     beforeEach(() => {
@@ -566,6 +571,170 @@ describe('parentGamesEconomyWiring — State Core', () => {
 
             expect(result.current.state.coins).toBe(6);
             expect(result.current.state.totalGamesPlayed).toBe(1);
+        });
+    });
+
+    // ================================================================
+    //  W1A-b game wiring
+    // ================================================================
+    describe('W1A-b game wiring', () => {
+        beforeEach(() => {
+            vi.clearAllMocks();
+            localStorage.clear();
+            recentSessionIds.clear();
+        });
+
+        afterEach(() => {
+            localStorage.clear();
+            recentSessionIds.clear();
+            vi.useRealTimers();
+        });
+
+        it('T1: ParentBlitz under ParentEconomyProvider records session on finish via fake timers', () => {
+            vi.useFakeTimers();
+            try {
+                const onExit = vi.fn();
+                render(
+                    <ParentEconomyProvider>
+                        <ParentBlitz onExit={onExit} />
+                    </ParentEconomyProvider>,
+                );
+
+                const startBtn = screen.getByTestId('parent-blitz-start');
+                act(() => {
+                    fireEvent.click(startBtn);
+                });
+
+                act(() => {
+                    vi.advanceTimersByTime(BLITZ_DURATION_MS + BLITZ_TICK_MS * 2);
+                });
+
+                const raw = localStorage.getItem(STORAGE_KEYS.PARENT_ECONOMY);
+                expect(raw).not.toBeNull();
+                const stored: ParentEconomyState = JSON.parse(raw!);
+                expect(stored.totalGamesPlayed).toBe(1);
+                expect(stored.coins).toBeGreaterThanOrEqual(1);
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it('T2: same render replays (Start again after finish) -> totalGamesPlayed === 2, coins accumulate', () => {
+            vi.useFakeTimers();
+            try {
+                const onExit = vi.fn();
+                render(
+                    <ParentEconomyProvider>
+                        <ParentBlitz onExit={onExit} />
+                    </ParentEconomyProvider>,
+                );
+
+                // Session 1
+                act(() => {
+                    fireEvent.click(screen.getByTestId('parent-blitz-start'));
+                });
+                act(() => {
+                    vi.advanceTimersByTime(BLITZ_DURATION_MS + BLITZ_TICK_MS * 2);
+                });
+
+                let stored: ParentEconomyState = JSON.parse(
+                    localStorage.getItem(STORAGE_KEYS.PARENT_ECONOMY)!,
+                );
+                expect(stored.totalGamesPlayed).toBe(1);
+                const firstCoins = stored.coins;
+                expect(firstCoins).toBeGreaterThanOrEqual(1);
+
+                // Session 2: replay
+                const replayBtn = screen.getByTestId('parent-blitz-replay');
+                act(() => {
+                    fireEvent.click(replayBtn);
+                });
+                act(() => {
+                    vi.advanceTimersByTime(BLITZ_DURATION_MS + BLITZ_TICK_MS * 2);
+                });
+
+                stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.PARENT_ECONOMY)!);
+                expect(stored.totalGamesPlayed).toBe(2);
+                expect(stored.coins).toBeGreaterThanOrEqual(firstCoins + 1);
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it('T3: legacy WITHOUT provider still works: bare ParentBlitz finishes, records via fallback, no toast', () => {
+            vi.useFakeTimers();
+            try {
+                const onExit = vi.fn();
+                render(<ParentBlitz onExit={onExit} />);
+
+                act(() => {
+                    fireEvent.click(screen.getByTestId('parent-blitz-start'));
+                });
+                act(() => {
+                    vi.advanceTimersByTime(BLITZ_DURATION_MS + BLITZ_TICK_MS * 2);
+                });
+
+                const raw = localStorage.getItem(STORAGE_KEYS.PARENT_ECONOMY);
+                expect(raw).not.toBeNull();
+                const stored: ParentEconomyState = JSON.parse(raw!);
+                expect(stored.totalGamesPlayed).toBe(1);
+                expect(stored.coins).toBeGreaterThanOrEqual(1);
+
+                expect(screen.queryByTestId('parent-games-coin-toast')).not.toBeInTheDocument();
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it('T4: toast: appears with earned amount, disappears after ~2.5s, handles 0 coins, and locale keys exist', () => {
+            // Direct JSON import check
+            expect(enJson.parent.games.coinToast.earned).toBeTruthy();
+            expect(enJson.parent.games.coinToast.earned).not.toContain('{{coins}}');
+            expect(enJson.parent.games.coinToast.zero).toBeTruthy();
+            expect(heJson.parent.games.coinToast.earned).toBeTruthy();
+            expect(heJson.parent.games.coinToast.earned).not.toContain('{{coins}}');
+            expect(heJson.parent.games.coinToast.zero).toBeTruthy();
+
+            vi.useFakeTimers();
+            try {
+                // Provider-mounted blitz flow under ParentGamesHub
+                const { unmount } = render(<ParentGamesHub />);
+
+                fireEvent.click(screen.getByTestId('game-card-parent-blitz'));
+                fireEvent.click(screen.getByTestId('parent-blitz-start'));
+
+                act(() => {
+                    vi.advanceTimersByTime(BLITZ_DURATION_MS + BLITZ_TICK_MS * 2);
+                });
+
+                // Toast appears with earned amount
+                const toast = screen.getByTestId('parent-games-coin-toast');
+                expect(toast).toBeInTheDocument();
+                const amountEl = screen.getByTestId('parent-games-coin-toast-amount');
+                expect(amountEl.textContent).toMatch(/^\+\d+$/);
+
+                // Auto-clear after ~2.5s of fake timers
+                act(() => {
+                    vi.advanceTimersByTime(2500);
+                });
+                expect(screen.queryByTestId('parent-games-coin-toast')).not.toBeInTheDocument();
+
+                unmount();
+
+                // Direct toast test with 0 coins
+                const onClear = vi.fn();
+                render(
+                    <ParentEconomyProvider>
+                        <ParentGamesEconomyToast toast={{ coins: 0, session: 999 }} onClear={onClear} />
+                    </ParentEconomyProvider>,
+                );
+
+                expect(screen.getByTestId('parent-games-coin-toast')).toBeInTheDocument();
+                expect(screen.getByTestId('parent-games-coin-toast-zero')).toBeInTheDocument();
+                expect(screen.queryByTestId('parent-games-coin-toast-amount')).not.toBeInTheDocument();
+            } finally {
+                vi.useRealTimers();
+            }
         });
     });
 });

@@ -29,13 +29,14 @@ vi.mock('framer-motion', () => ({
 }));
 
 // Mock lucide-react icons as simple spans.
-vi.mock('lucide-react', () => {
-  const icons = ['CalendarDays', 'Check', 'Copy', 'Eraser', 'Flame', 'Share2', 'Trophy', 'Zap', 'Layers', 'Puzzle', 'Grid3x3'];
-  const mock: Record<string, () => any> = {};
-  for (const name of icons) {
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  const mock: Record<string, unknown> = {};
+  for (const name of Object.keys(actual)) {
+    if (name === 'default') continue; // keep default untouched
     mock[name] = () => <span data-testid={`icon-${name}`} />;
   }
-  return mock;
+  return { ...actual, ...mock };
 });
 
 // Mock localStorage.
@@ -386,5 +387,32 @@ describe('Sudoku component', () => {
     const resultExit = exitButtons[exitButtons.length - 1];
     await user.click(resultExit);
     expect(onExit).toHaveBeenCalled();
+  });
+
+  it('records parent economy exactly once on a win', async () => {
+    const user = userEvent.setup();
+    render(<Sudoku onExit={onExit} />);
+
+    await user.click(screen.getByTestId('sudoku-difficulty-easy'));
+
+    const puzzle = generatePuzzle('easy', new Date());
+
+    for (let i = 0; i < 81; i++) {
+      if (puzzle.puzzle[i] === 0) {
+        const cell = screen.getByTestId(`sudoku-cell-${i}`);
+        await user.click(cell);
+        await user.click(screen.getByTestId(`sudoku-key-${puzzle.solution[i]}`));
+      }
+    }
+
+    expect(screen.getByTestId('sudoku-result')).toBeInTheDocument();
+
+    const stored = JSON.parse(store['hebrew-math-parent-economy'] ?? 'null');
+    expect(stored).not.toBeNull();
+    expect(stored.totalGamesPlayed).toBe(1);
+    expect(stored.coins).toBeGreaterThan(0);
+    expect(typeof stored.lastPlayedDate).toBe('string');
+    expect(stored.lastPlayedDate).not.toBeNull();
+    expect(stored.gameWinCounts?.['sudoku']).toBe(1);
   });
 });

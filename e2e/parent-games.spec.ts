@@ -697,4 +697,17 @@ test.describe('Parent Games', () => {
     const score = parseInt(scoreText?.trim() || '0');
     expect(score).toBeGreaterThanOrEqual(0);
   });
+
+  test('Math Crossword: renders 5×5 grid, keypad and check button', async ({ page }) => {
+    await openGame(page, 'math-crossword');
+
+    await expect(page.locator('[data-testid="crossword-cell-0-0"]').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="crossword-check"]').first()).toBeVisible({ timeout: 5000 });
+
+    await page.locator('[data-testid="crossword-digit-1"]').first().click();
+    await page.locator('[data-testid="crossword-digit-2"]').first().click();
+
+    const cells = page.locator('[data-testid^="crossword-cell-"]');
+    expect(await cells.count()).toBe(25);
+  });
 });

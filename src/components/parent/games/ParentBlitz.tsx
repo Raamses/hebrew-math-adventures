@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Clock, Flame, Play, RotateCcw, SkipForward, Trophy, Zap } from 'lucide-react';
 
-import type { GameComponentProps } from './registry';
+import { createGameResult, type GameComponentProps } from './registry';
+import { useParentEconomy } from '../../../hooks/useParentEconomy';
 import {
   appendDigit,
   BLITZ_DURATION_MS,
@@ -27,8 +28,9 @@ const KEYPAD_KEYS: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 
 /* ── Component ───────────────────────────────────────────────────── */
 
-export function ParentBlitz({ onExit }: GameComponentProps) {
+export function ParentBlitz({ onExit, onCoinsEarned }: GameComponentProps) {
   const { t } = useTranslation();
+  const { recordGameResult } = useParentEconomy();
   const [state, setState] = useState<BlitzState>(createInitialState);
   const [highScore, setHighScore] = useState<BlitzHighScore | null>(null);
   const rngRef = useRef<Rng>(Math.random);
@@ -66,8 +68,15 @@ export function ParentBlitz({ onExit }: GameComponentProps) {
         saveHighScore(result);
         setHighScore(result);
       }
+      const outcome = recordGameResult(
+        createGameResult('parent-blitz', {
+          score: state.score,
+          won: state.correct > 0 && state.score > 0,
+        }),
+      );
+      onCoinsEarned?.(outcome.coinsEarned.coins);
     }
-  }, [state.phase, state.score, state.correct, state.attempted, state.bestStreak, highScore]);
+  }, [state.phase, state.score, state.correct, state.attempted, state.bestStreak, highScore, recordGameResult, onCoinsEarned]);
 
   /* ── Physical keyboard support ──────────────────────────────────── */
 

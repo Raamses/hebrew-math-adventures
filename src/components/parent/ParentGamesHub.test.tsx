@@ -13,6 +13,23 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+vi.mock('./games/registry', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./games/registry')>();
+  const mockComingSoon = {
+    id: 'upcoming-game' as any,
+    i18nKey: 'upcomingGame',
+    status: 'coming_soon' as const,
+    icon: actual.GAMES[0].icon,
+    accentClass: 'bg-slate-100 text-slate-600',
+  };
+  const games = [...actual.GAMES, mockComingSoon];
+  return {
+    ...actual,
+    GAMES: games,
+    getGameById: (id: any) => games.find((g) => g.id === id),
+  };
+});
+
 describe('ParentGamesHub', () => {
   it('renders the game list with available and coming-soon games', () => {
     render(<ParentGamesHub />);
@@ -21,8 +38,10 @@ describe('ParentGamesHub', () => {
 
     expect(screen.getByTestId('game-card-equation-of-the-day')).toBeEnabled();
     expect(screen.getByTestId('game-card-parent-blitz')).toBeEnabled();
+    expect(screen.getByTestId('game-card-sudoku')).toBeEnabled();
     expect(screen.getByTestId('game-card-number-merge')).toBeEnabled();
-    expect(screen.getByTestId('game-card-math-crossword')).toBeDisabled();
+    expect(screen.getByTestId('game-card-math-crossword')).toBeEnabled();
+    expect(screen.getByTestId('game-card-upcoming-game')).toBeDisabled();
 
     expect(
       screen.getByText('parent.games.items.equationOfTheDay.title'),
@@ -68,7 +87,7 @@ describe('ParentGamesHub', () => {
     const user = userEvent.setup();
     render(<ParentGamesHub />);
 
-    await user.click(screen.getByTestId('game-card-math-crossword'));
+    await user.click(screen.getByTestId('game-card-upcoming-game'));
 
     expect(screen.getByTestId('games-list')).toBeInTheDocument();
     expect(screen.queryByTestId('game-view')).not.toBeInTheDocument();

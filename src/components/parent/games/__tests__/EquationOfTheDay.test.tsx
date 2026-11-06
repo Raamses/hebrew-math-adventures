@@ -30,13 +30,14 @@ vi.mock('framer-motion', () => ({
 }));
 
 // Mock lucide-react icons as simple spans.
-vi.mock('lucide-react', () => {
-  const icons = ['CalendarDays', 'Check', 'Copy', 'Delete', 'Flame', 'Share2'];
-  const mock: Record<string, () => any> = {};
-  for (const name of icons) {
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  const mock: Record<string, unknown> = {};
+  for (const name of Object.keys(actual)) {
+    if (name === 'default') continue; // keep default untouched
     mock[name] = () => <span data-testid={`icon-${name}`} />;
   }
-  return mock;
+  return { ...actual, ...mock };
 });
 
 // Mock localStorage.
@@ -443,5 +444,27 @@ describe('EquationOfTheDay component', () => {
   it('shows guesses left message', () => {
     render(<EquationOfTheDay onExit={onExit} />);
     expect(screen.getByTestId('eq-guesses-left')).toBeInTheDocument();
+  });
+
+  it('records parent economy exactly once on a win', async () => {
+    delete store['hebrew-math-parent-economy'];
+    const user = userEvent.setup();
+    render(<EquationOfTheDay onExit={onExit} />);
+
+    const puzzle = generatePuzzle(new Date());
+    for (let i = 0; i < puzzle.length; i++) {
+      await user.click(screen.getByTestId(`eq-key-${puzzle.solution[i]}`));
+    }
+    await user.click(screen.getByTestId('eq-submit'));
+
+    expect(screen.getByTestId('eq-result')).toBeInTheDocument();
+
+    const stored = JSON.parse(store['hebrew-math-parent-economy'] ?? 'null');
+    expect(stored).not.toBeNull();
+    expect(stored.totalGamesPlayed).toBe(1);
+    expect(stored.coins).toBeGreaterThan(0);
+    expect(typeof stored.lastPlayedDate).toBe('string');
+    expect(stored.lastPlayedDate).not.toBeNull();
+    expect(stored.gameWinCounts?.['equation-of-the-day']).toBe(1);
   });
 });

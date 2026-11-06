@@ -73,6 +73,11 @@ describe('parentEconomyEngine', () => {
             expect(calculateCoinsEarned({ gameId: 'sudoku', score: 0, won: false }).coins).toBe(2);
         });
 
+        it('math-crossword: 10 for win, 2 for loss', () => {
+            expect(calculateCoinsEarned({ gameId: 'math-crossword', score: 50, won: true }).coins).toBe(10);
+            expect(calculateCoinsEarned({ gameId: 'math-crossword', score: 0, won: false }).coins).toBe(2);
+        });
+
         it('unknown game: 1 coin', () => {
             expect(calculateCoinsEarned({ gameId: 'unknown', score: 0, won: false }).coins).toBe(1);
         });
