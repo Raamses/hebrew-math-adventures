@@ -14,3 +14,7 @@
 **Vulnerability:** External links opened using `window.open(url, '_blank')` did not include the `'noopener,noreferrer'` features argument.
 **Learning:** Opening external links without `noopener` allows the newly opened tab to access the original tab's `window` object via `window.opener`, potentially enabling reverse tabnabbing attacks where the external site navigates the original tab to a malicious page.
 **Prevention:** Always pass `'noopener,noreferrer'` as the features argument when using `window.open(url, '_blank')` to prevent the new tab from accessing the `window.opener` object.
+## 2024-11-07 - [Insecure Random ID Generation]
+**Vulnerability:** Weak randomness from Math.random() used for generating unique IDs in src/components/parent/CelebrationTray.tsx.
+**Learning:** Randomness needs to be cryptographically secure to avoid collisions or predictability.
+**Prevention:** Always use RandomUtils.generateId() to ensure secure ID generation.
