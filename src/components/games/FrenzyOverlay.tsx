@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useTranslation } from 'react-i18next';
@@ -100,6 +100,16 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
     // Burst state: transient announcement that shows on activation / tier upgrade
     const [showBurst, setShowBurst] = useState(false);
     const prevTierRef = useRef<FrenzyTier | null>(null);
+
+    // ⚡ Bolt: Pre-calculate random properties once to prevent layout thrashing
+    // on every frame update during the game loop.
+    const maxParticles = PARTICLE_COUNT * 3; // Max multiplier is 3 for 'mega' tier
+    const particleProps = useMemo(() => {
+        return Array.from({ length: maxParticles }, () => ({
+            xOffset: Math.random() * 50 - 25,
+            duration: 1 + Math.random(),
+        }));
+    }, [maxParticles]);
 
     useEffect(() => {
         if (isActive && tier) {
@@ -216,10 +226,10 @@ export const FrenzyOverlay = React.memo(function FrenzyOverlay({
                             animate={{
                                 y: -500,
                                 opacity: 0,
-                                x: Math.random() * 50 - 25
+                                x: particleProps[i]?.xOffset ?? (Math.random() * 50 - 25)
                             }}
                             transition={{
-                                duration: 1 + Math.random(),
+                                duration: particleProps[i]?.duration ?? (1 + Math.random()),
                                 repeat: Infinity,
                                 delay: (i * 0.1) % 1.5,
                                 ease: "easeOut"
