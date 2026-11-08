@@ -13,8 +13,11 @@ interface FrenzyOverlayProps {
 
 const PARTICLE_COUNT = 5;
 
+// Combo milestone tiers
+type FrenzyTier = 'frenzy' | 'super' | 'mega';
+
 // ⚡ Bolt: Extract particles to prevent layout thrashing and unnecessary re-renders on game loops.
-const EmberParticles = React.memo(function EmberParticles({ tier }: { tier: 'frenzy' | 'super' | 'mega' }) {
+const EmberParticles = React.memo(function EmberParticles({ tier }: { tier: FrenzyTier | null | undefined }) {
     const particles = useMemo(() => {
         return Array.from({ length: PARTICLE_COUNT * 3 }, (_, i) => ({
             id: i,
@@ -58,9 +61,6 @@ const EmberParticles = React.memo(function EmberParticles({ tier }: { tier: 'fre
     );
 });
 EmberParticles.displayName = 'EmberParticles';
-
-// Combo milestone tiers
-type FrenzyTier = 'frenzy' | 'super' | 'mega';
 
 const getFrenzyTier = (combo: number): FrenzyTier | null => {
     if (combo >= 15) return 'mega';
