@@ -6,6 +6,13 @@ import { defineConfig, devices } from '@playwright/test';
 const baseURL = process.env.E2E_BASE_URL || 'http://localhost:5173';
 const isDeployed = !!process.env.E2E_BASE_URL;
 
+// Allow trace mode override via PW_TRACE env var. Default to 'on-first-retry'
+// to avoid recording traces on passing first attempts and --retries=0 runs.
+const traceMode = (process.env.PW_TRACE as 'on-first-retry' | 'retain-on-failure' | 'off' | 'on' | undefined) || 'on-first-retry';
+
+// Allow worker count override via PW_WORKERS env var.
+const workersEnv = process.env.PW_WORKERS ? Number(process.env.PW_WORKERS) : undefined;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -23,7 +30,7 @@ export default defineConfig({
   // drought net) skew under CPU contention, so we deliberately stay
   // below the 6-worker default.
   // Deployed-site runs (CDN cold-start) stay at 1 worker for stability.
-  workers: isDeployed ? 1 : 3,
+  workers: workersEnv && Number.isFinite(workersEnv) && workersEnv > 0 ? workersEnv : (isDeployed ? 1 : 3),
   reporter: 'list',
   timeout: 180000,
   expect: {
@@ -38,7 +45,7 @@ export default defineConfig({
     headless: true,
     viewport: { width: 390, height: 844 },
     screenshot: 'only-on-failure',
-    trace: 'retain-on-failure',
+    trace: traceMode,
     // Action timeout: 20s for clicks/fills on deployed site
     actionTimeout: 20000,
     // Navigation timeout: 45s for deployed Firebase cold loads
