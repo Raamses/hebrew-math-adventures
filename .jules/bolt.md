@@ -1,3 +1,3 @@
-## 2026-09-17 - React.memo Optimization in Game Loops
-**Learning:** In high-frequency game loops where React state updates at up to 60fps (e.g., via `requestAnimationFrame`), unmemoized static or infrequently updating overlay UI components (like `FrenzyOverlay`) cause severe performance degradation from unnecessary component reconciliations.
-**Action:** Wrap such components with `React.memo()` to prevent useless re-renders. Avoid explicitly typing the variable as `React.FC<Props>` when wrapping components to avoid TypeScript `MemoExoticComponent` type mismatch, instead type properties inline and set `displayName`.
+## 2024-03-24 - Math.random() in Render Path Anti-Pattern
+**Learning:** Using `Math.random()` directly in `animate` or `transition` properties in Framer Motion causes animations to jitter, reset, or layout thrash on every re-render, especially for components that re-render frequently (like overlays with internal state `showBurst`).
+**Action:** Always pre-calculate random properties for visual elements using `useMemo` or extract them into separate `React.memo` components with static initial values.
