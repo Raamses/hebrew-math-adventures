@@ -982,5 +982,25 @@
     "titleChip": "בליץ • מהיר",
     "instruction": "פוצצו את הבועה עם התשובה",
     "multiChip": "הכפל"
+  },
+  "familyRelay": {
+    "title": "שליחות משפחתית",
+    "subtitle": "העבירו את המכשיר וענו יחד!",
+    "kidTurn": "התור של הילד",
+    "parentTurn": "התור של ההורה",
+    "questionProgress": "שאלה {{current}} מתוך {{total}}",
+    "handoffTitle": "העבירו את המכשיר להורה",
+    "handoffDesc": "כל הכבוד! העבירו את המכשיר להורה כדי לענות על אותן השאלות.",
+    "handoffButton": "אני ההורה — מתחילים",
+    "submit": "בדיקה",
+    "answerPlaceholder": "התשובה שלכם",
+    "resultsTitle": "השליחות הושלמה!",
+    "kidScore": "הילד: {{score}} / {{total}}",
+    "parentScore": "ההורה: {{score}} / {{total}}",
+    "coinsEarned": "{{count}} מטבעות התקבלו!",
+    "playAgain": "שחקו שוב",
+    "close": "סגור",
+    "correct": "נכון!",
+    "wrong": "כמעט"
   }
 }
