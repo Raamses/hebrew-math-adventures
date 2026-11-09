@@ -185,9 +185,50 @@ export async function clickBubble(page: Page, bubbleSelector: string) {
   return true;
 }
 
+function parseAnswer(text: string): number | null {
+  const bodyText = text.replace(/[⁦⁧⁨⁩]/g, '');
+  // Look for arithmetic instruction like "N + N = ?", "? + N = N", "N - ? = N"
+  const eqMatch = bodyText.match(/(\d+|\?)\s*([+\-−×÷*])\s*(\d+|\?)\s*=\s*(\d+|\?)/);
+  if (!eqMatch) return null;
+  const [, left, op, right, result] = eqMatch;
+  let answer: number | null = null;
+  if (result === '?') {
+    const a = parseInt(left!);
+    const b = parseInt(right!);
+    switch (op) {
+      case '+': answer = a + b; break;
+      case '-': case '−': answer = a - b; break;
+      case '*': case '×': answer = a * b; break;
+      case '÷': case '/': answer = Math.floor(a / b); break;
+      default: answer = a + b;
+    }
+  } else if (left === '?') {
+    const b = parseInt(right!);
+    const r = parseInt(result!);
+    switch (op) {
+      case '+': answer = r - b; break;
+      case '-': case '−': answer = r + b; break;
+      case '*': case '×': answer = Math.floor(r / b); break;
+      case '÷': case '/': answer = r * b; break;
+      default: answer = r - b;
+    }
+  } else if (right === '?') {
+    const a = parseInt(left!);
+    const r = parseInt(result!);
+    switch (op) {
+      case '+': answer = r - a; break;
+      case '-': case '−': answer = a - r; break;
+      case '*': case '×': answer = Math.floor(r / a); break;
+      case '÷': case '/': answer = Math.floor(a / r); break;
+      default: answer = r - a;
+    }
+  }
+  return answer;
+}
+
 /**
  * Solve a bubble-game problem by reading the instruction and clicking the correct bubble.
- * Uses page.mouse.click for coordinate-based clicking to bypass the header overlay.
+ * Uses dispatchEvent for element-targeted clicking, independent of position.
  */
 export async function solveBubbleProblem(page: Page): Promise<boolean> {
   // Read instruction/equation from stable display element, falling back to body
@@ -197,66 +238,23 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
     : (await page.textContent('body')) || '';
   const bodyText = rawText.replace(/[⁦⁧⁨⁩]/g, '');
 
-  // Look for arithmetic instruction like "N + N = ?", "? + N = N", "N - ? = N"
-  const eqMatch = bodyText.match(/(\d+|\?)\s*([+\-−×÷*])\s*(\d+|\?)\s*=\s*(\d+|\?)/);
-  if (eqMatch) {
-    const [, left, op, right, result] = eqMatch;
-    let answer: number | null = null;
-    if (result === '?') {
-      const a = parseInt(left!);
-      const b = parseInt(right!);
-      switch (op) {
-        case '+': answer = a + b; break;
-        case '-': case '−': answer = a - b; break;
-        case '*': case '×': answer = a * b; break;
-        case '÷': case '/': answer = Math.floor(a / b); break;
-        default: answer = a + b;
-      }
-    } else if (left === '?') {
-      const b = parseInt(right!);
-      const r = parseInt(result!);
-      switch (op) {
-        case '+': answer = r - b; break;
-        case '-': case '−': answer = r + b; break;
-        case '*': case '×': answer = Math.floor(r / b); break;
-        case '÷': case '/': answer = r * b; break;
-        default: answer = r - b;
-      }
-    } else if (right === '?') {
-      const a = parseInt(left!);
-      const r = parseInt(result!);
-      switch (op) {
-        case '+': answer = r - a; break;
-        case '-': case '−': answer = a - r; break;
-        case '*': case '×': answer = Math.floor(r / a); break;
-        case '÷': case '/': answer = Math.floor(a / r); break;
-        default: answer = r - a;
-      }
+  const answer = parseAnswer(rawText);
+  if (answer !== null) {
+    // Find a bubble containing the answer number via testid or text filter (no index-based nth).
+    // F1.1: Dropped substring aria-label*= clause which over-matches (e.g. "value 1" matches 12, 15, 19).
+    // Test-ids are always present on bubbles per EXPANDED_COVERAGE_PLAN.md:401.
+    const bubble = page.locator(
+      `[data-testid="bubble-${answer}"], [data-testid="fusion-bubble-${answer}"]`
+    ).first();
+    if (await bubble.count() > 0) {
+      await bubble.dispatchEvent('click');
+      return true;
     }
 
-    if (answer !== null) {
-      // Find a bubble containing the answer number via testid or text filter (no index-based nth).
-      // F1.1: Dropped substring aria-label*= clause which over-matches (e.g. "value 1" matches 12, 15, 19).
-      // Test-ids are always present on bubbles per EXPANDED_COVERAGE_PLAN.md:401.
-      const bubble = page.locator(
-        `[data-testid="bubble-${answer}"], [data-testid="fusion-bubble-${answer}"]`
-      ).first();
-      if (await bubble.count() > 0) {
-        const box = await bubble.boundingBox();
-        if (box) {
-          await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-          return true;
-        }
-      }
-
-      const textBtn = page.locator('button').filter({ hasText: new RegExp(`^\\s*${answer}\\s*$`) }).first();
-      if (await textBtn.count() > 0) {
-        const box = await textBtn.boundingBox();
-        if (box) {
-          await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-          return true;
-        }
-      }
+    const textBtn = page.locator('button').filter({ hasText: new RegExp(`^\\s*${answer}\\s*$`) }).first();
+    if (await textBtn.count() > 0) {
+      await textBtn.dispatchEvent('click');
+      return true;
     }
   }
 
@@ -269,24 +267,71 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
       `[data-testid="bubble-${target}"], [data-testid="fusion-bubble-${target}"]`
     ).first();
     if (await bubble.count() > 0) {
-      const box = await bubble.boundingBox();
-      if (box) {
-        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-        return true;
-      }
+      await bubble.dispatchEvent('click');
+      return true;
     }
 
     const textBtn = page.locator('button').filter({ hasText: new RegExp(`^\\s*${target}\\s*$`) }).first();
     if (await textBtn.count() > 0) {
-      const box = await textBtn.boundingBox();
-      if (box) {
-        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-        return true;
-      }
+      await textBtn.dispatchEvent('click');
+      return true;
     }
   }
 
   return false;
+}
+
+/** Answer for the instruction now on screen (same parse as solveBubbleProblem; factor lines 193-240 into parseAnswer). */
+export async function readAnswer(page: Page): Promise<number | null> {
+  const instruction = page.locator('div[dir] span.font-mono').first();
+  await expect(instruction).not.toBeEmpty();
+  return parseAnswer((await instruction.textContent()) ?? '');
+}
+
+export const bossBubble = (page: Page) =>
+  page.getByRole('button', { name: /^Pop boss bubble with value / });
+
+/** Pop correct regular bubbles until the level-3 boss is in the DOM. dispatchEvent hits the element itself:
+ *  no viewport, HUD or motion dependency. Each round waits on game state; the 150 ms poll interval is above
+ *  ANSWER_LOCK_MS (worldConfig.ts:296), so no pop is swallowed by the answer lock. */
+export async function reachBoss(page: Page): Promise<void> {
+  await expect(async () => {
+    const answer = await readAnswer(page);
+    expect(answer).not.toBeNull();
+    await page.getByRole('button', { name: `Pop bubble with value ${answer}`, exact: true }).first()
+      .dispatchEvent('click', undefined, { timeout: 1000 });
+    await expect(bossBubble(page)).toHaveCount(1, { timeout: 300 });
+  }).toPass({ timeout: 120_000, intervals: [150] });
+}
+
+/** Land gate hit k (1..3) on the boss and wait until the game registered it.
+ *  The current instruction is re-read and the boss locator rebuilt on every retry (same pattern as
+ *  reachBoss): once a hit is registered the boss's accessible name advances to the next gate answer,
+ *  so a locator captured before the first dispatch matches zero elements from then on and every later
+ *  attempt would burn the budget on a stale locator even though the hit landed (F1.1).
+ *  The retry only dispatches a click when the boss's accessible name (answer) is still the initial
+ *  gate-k answer — i.e. the hit has NOT yet registered. Once the answer changes (next gate or boss
+ *  popped), the retry stops dispatching and the assertion on problem text passes. */
+export async function hitBoss(page: Page, k: 1 | 2 | 3): Promise<void> {
+  // updateBossTarget has committed this gate answer (checked once, before any dispatch).
+  const initialAnswer = await readAnswer(page);
+  expect(initialAnswer).not.toBeNull();
+  const initialBoss = page.getByRole('button', { name: `Pop boss bubble with value ${initialAnswer}`, exact: true });
+  await expect(initialBoss).toHaveCount(1);
+  await expect(async () => {
+    // Re-read on each attempt so the locator always targets the boss's *current* accessible name.
+    const answer = await readAnswer(page);
+    expect(answer).not.toBeNull();
+    const boss = page.getByRole('button', { name: `Pop boss bubble with value ${answer}`, exact: true });
+    // Only dispatch if the hit has NOT yet registered: the boss's accessible name (answer)
+    // is still the initial gate-k answer. Once a hit registers, the name advances to the
+    // next gate's answer (or the boss disappears), so a changed answer means success.
+    if (answer === initialAnswer) {
+      await boss.dispatchEvent('click', undefined, { timeout: 1000 });
+    }
+    if (k < 3) await expect(page.getByText(`Problem ${k + 1}/3`)).toBeVisible({ timeout: 500 });
+    else await expect(page.getByText(/^Problem \d\/3$/)).toHaveCount(0, { timeout: 500 });
+  }).toPass({ timeout: 15_000, intervals: [150] });
 }
 
 /**
