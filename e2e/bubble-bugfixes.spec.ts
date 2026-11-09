@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupFreshProfile, selectArcadeMode, solveBubbleProblem, toggleLanguage, takeScreenshot } from './helpers';
+import { setupFreshProfile, selectArcadeMode, solveBubbleProblem, toggleLanguage, takeScreenshot, reachBoss, hitBoss, bossBubble } from './helpers';
 
 /**
  * Bubble Game Bugfix Regression Tests
@@ -180,47 +180,13 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
   // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'BossAppear');
       await selectArcadeMode(page, 'survival');
-      await page.waitForTimeout(3000);
-
-      await takeScreenshot(page, 'boss-01-survival-start');
-
-      // Need 10 correct answers to reach level 3 (5 for L1→L2, 5 for L2→L3)
-      let correctCount = 0;
-      let bossAppeared = false;
-      const maxAttempts = 40;
-
-      for (let attempt = 0; attempt < maxAttempts && !bossAppeared; attempt++) {
-        // Check if boss has appeared
-        const bossBubble = page.locator('button[aria-label*="boss bubble"]').first();
-        if (await bossBubble.isVisible().catch(() => false)) {
-          bossAppeared = true;
-          await takeScreenshot(page, 'boss-02-appeared');
-          break;
-        }
-
-        const solved = await solveBubbleProblem(page);
-        if (solved) {
-          correctCount++;
-          await page.waitForTimeout(1000);
-        } else {
-          await page.waitForTimeout(2000);
-        }
-      }
-
-      // If boss appeared, verify it's interactive
-      if (bossAppeared) {
-        const bossBubble = page.locator('button[aria-label*="boss bubble"]').first();
-        await expect(bossBubble).toBeEnabled();
-        const box = await bossBubble.boundingBox();
-        expect(box).toBeTruthy();
-        expect(box!.width).toBeGreaterThan(50); // Boss should be larger than normal
-      } else {
-        // Game ran 40 rounds without crashing — acceptable for CI environments
-        console.log(`No boss appeared after ${correctCount} correct in ${maxAttempts} attempts`);
-        const bubbles = page.locator('button[aria-label*="Pop bubble"]');
-        const hasBubbles = await bubbles.first().isVisible().catch(() => false);
-        expect(hasBubbles).toBe(true);
-      }
+      await reachBoss(page);
+      await takeScreenshot(page, 'boss-02-appeared');
+      const boss = bossBubble(page);
+      await expect(boss).toBeEnabled();
+      await expect(page.getByText('Lv 3')).toBeVisible();
+      // the boss scales in from 0.5x; poll instead of sampling the box once (old :214-216)
+      await expect.poll(async () => (await boss.boundingBox())?.width ?? 0).toBeGreaterThan(50);
     });
 
     test('Boss bubble is damaged by correct answers and persists', async ({ page }) => {
@@ -347,77 +313,22 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
   // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'BossPostGame');
       await selectArcadeMode(page, 'survival');
-      await page.waitForTimeout(3000);
+      await reachBoss(page);
 
-      // Progress to boss encounter
-      let bossAppeared = false;
-      for (let attempt = 0; attempt < 40 && !bossAppeared; attempt++) {
-        const bossBubble = page.locator('button[aria-label*="boss bubble"]').first();
-        if (await bossBubble.isVisible().catch(() => false)) {
-          bossAppeared = true;
-          break;
-        }
-        if (await solveBubbleProblem(page)) {
-          await page.waitForTimeout(1000);
-        } else {
-          await page.waitForTimeout(2000);
-        }
-      }
+      await expect(page.locator('body')).not.toContainText(/Pop\s+N\b/i);
 
-      if (!bossAppeared) {
-        console.log('No boss appeared. Verifying game stability instead.');
-        const bubbles = page.locator('button[aria-label*="Pop bubble"]');
-        await expect(bubbles.first()).toBeVisible({ timeout: 10000 });
-        return;
-      }
-
-      // During boss fight, instruction should not show raw "Pop N"
-      const bodyText = await page.textContent('body') || '';
-      expect(bodyText).not.toMatch(/Pop\s+N\b/i);
-
-      // Instruction should be visible and non-empty (equation not vanished)
-      const instruction = page.locator('div[dir] span.font-mono');
-      await expect(instruction).toBeVisible({ timeout: 10000 });
-      const bossInstruction = await instruction.textContent();
-      expect(bossInstruction).toBeTruthy();
-      expect(bossInstruction!.trim().length).toBeGreaterThan(0);
+      const instruction = page.locator('div[dir] span.font-mono').first();
+      await expect(instruction).not.toBeEmpty();
 
       await takeScreenshot(page, 'boss-09-instruction-during-fight');
 
-      // Destroy boss
-      for (let hit = 0; hit < 8; hit++) {
-        const bossBubble = page.locator('button[aria-label*="boss bubble"]').first();
-        if (!(await bossBubble.isVisible().catch(() => false))) break;
-
-        const solved = await solveBubbleProblem(page);
-        if (!solved) {
-          const box = await bossBubble.boundingBox();
-          if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-        }
-        await page.waitForTimeout(1500);
-      }
-
-      // Boss gone
-      const bossGone = page.locator('button[aria-label*="boss bubble"]').first();
-      await expect(bossGone).toHaveCount(0, { timeout: 10000 });
-
-      await page.waitForTimeout(2000);
+      for (const k of [1, 2, 3] as const) await hitBoss(page, k);
+      await expect(bossBubble(page)).toHaveCount(0);           // popped boss is removed ~1 s later (useGameEngine.ts:448)
       await takeScreenshot(page, 'boss-10-post-boss');
 
-      // Game should continue: regular bubbles should be spawning
-      const regularBubbles = page.locator('button[aria-label*="Pop bubble"]');
-      await expect(regularBubbles.first()).toBeVisible({ timeout: 15000 });
-
-      // Instruction should be visible and non-empty (post-boss regeneration works)
-      await expect(instruction).toBeVisible({ timeout: 10000 });
-      const postBossInstruction = await instruction.textContent();
-      expect(postBossInstruction).toBeTruthy();
-      expect(postBossInstruction!.trim().length).toBeGreaterThan(0);
-
-      // Still no raw "Pop N"
-      expect(postBossInstruction!).not.toMatch(/Pop\s+N\b/i);
-
-      await takeScreenshot(page, 'boss-11-post-boss-play');
+      await expect(page.getByRole('button', { name: /^Pop bubble with value / })).not.toHaveCount(0);
+      await expect(instruction).not.toBeEmpty();
+      await expect(instruction).not.toHaveText(/Pop\s+N\b/i);
     });
   });
 
