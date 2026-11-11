@@ -14,3 +14,7 @@
 **Vulnerability:** External links opened using `window.open(url, '_blank')` did not include the `'noopener,noreferrer'` features argument.
 **Learning:** Opening external links without `noopener` allows the newly opened tab to access the original tab's `window` object via `window.opener`, potentially enabling reverse tabnabbing attacks where the external site navigates the original tab to a malicious page.
 **Prevention:** Always pass `'noopener,noreferrer'` as the features argument when using `window.open(url, '_blank')` to prevent the new tab from accessing the `window.opener` object.
+## 2024-05-24 - Weak Cryptography in Kid Celebration ID Generation
+**Vulnerability:** Weak PRNG (`Math.random()`) used for generating IDs for kid celebration events (`CelebrationTray.tsx`), which handle parent-to-child coin gifting and economy mechanics.
+**Learning:** Even for contextual or UI-initiated events, IDs that intersect with user profiles, mailboxes, or economy states should not rely on predictable PRNGs like `Math.random()`. This ensures uniqueness and prevents potential prediction or manipulation of event records.
+**Prevention:** Use standard utility `RandomUtils.generateId()` for generating all identifiers related to user activity, rewards, or economy state, avoiding ad-hoc inline PRNG generation.
