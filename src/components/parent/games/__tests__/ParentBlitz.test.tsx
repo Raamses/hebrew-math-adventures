@@ -29,13 +29,14 @@ vi.mock('framer-motion', () => ({
 }));
 
 // Mock lucide-react icons as simple spans.
-vi.mock('lucide-react', () => {
-  const icons = ['Clock', 'Flame', 'Play', 'RotateCcw', 'SkipForward', 'Trophy', 'Zap'];
-  const mock: Record<string, () => any> = {};
-  for (const name of icons) {
+vi.mock('lucide-react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lucide-react')>();
+  const mock: Record<string, unknown> = {};
+  for (const name of Object.keys(actual)) {
+    if (name === 'default') continue; // keep default untouched
     mock[name] = () => <span data-testid={`icon-${name}`} />;
   }
-  return mock;
+  return { ...actual, ...mock };
 });
 
 // Mock localStorage.

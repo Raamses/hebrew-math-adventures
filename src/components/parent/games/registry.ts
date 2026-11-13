@@ -2,10 +2,12 @@ import type { ComponentType } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { CalendarDays, Zap, Layers, Puzzle, Grid3x3 } from 'lucide-react';
 
+import type { GameResult } from '../../../types/parent';
 import { EquationOfTheDay } from './EquationOfTheDay';
 import { ParentBlitz } from './ParentBlitz';
 import { Sudoku } from './Sudoku';
 import { NumberMerge } from './NumberMerge';
+import { MathCrossword } from './MathCrossword';
 
 /** Stable, URL-safe identifiers. Never localise or reuse these. */
 export type GameId =
@@ -21,6 +23,26 @@ export type GameStatus = 'available' | 'coming_soon';
 export interface GameComponentProps {
   /** Return to the game list. The hub also renders its own back button. */
   onExit: () => void;
+  /** Optional callback fired when parent coins are earned upon completing a game session. */
+  onCoinsEarned?: (earnedCoins: number) => void;
+}
+
+export function createGameResult(
+  gameId: GameId,
+  opts: { score: number; won: boolean; currentStreak?: number },
+): GameResult {
+  const seed = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const sessionId =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${gameId}-${seed}`;
+  return {
+    gameId,
+    score: opts.score,
+    won: opts.won,
+    ...(opts.currentStreak !== undefined ? { currentStreak: opts.currentStreak } : {}),
+    sessionId,
+  };
 }
 
 interface GameBase {
@@ -87,9 +109,10 @@ export const GAMES: readonly GameDefinition[] = [
   {
     id: 'math-crossword',
     i18nKey: 'mathCrossword',
-    status: 'coming_soon',
+    status: 'available',
     icon: Puzzle,
     accentClass: 'bg-rose-100 text-rose-600',
+    component: MathCrossword,
   },
 ] as const;
 

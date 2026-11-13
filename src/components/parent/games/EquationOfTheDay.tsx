@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Copy, Delete, Flame, Share2 } from 'lucide-react';
 
-import type { GameComponentProps } from './registry';
+import { createGameResult, type GameComponentProps } from './registry';
+import { useParentEconomy } from '../../../hooks/useParentEconomy';
 import {
   generatePuzzle,
   generateShareText,
@@ -47,8 +48,9 @@ function keyTestId(char: string): string {
 
 /* ── Component ───────────────────────────────────────────────────── */
 
-export function EquationOfTheDay({ onExit }: GameComponentProps) {
+export function EquationOfTheDay({ onExit, onCoinsEarned }: GameComponentProps) {
   const { t } = useTranslation();
+  const { recordGameResult } = useParentEconomy();
 
   const puzzle: Puzzle = useMemo(() => generatePuzzle(), []);
   const [progress, setProgress] = useState<GameProgress>(() => loadProgress());
@@ -146,8 +148,18 @@ export function EquationOfTheDay({ onExit }: GameComponentProps) {
     setProgress(newProgress);
     setStreak(newStreak);
     saveProgress(newProgress, newStreak, today);
+    if (newStatus !== 'playing') {
+      const outcome = recordGameResult(
+        createGameResult('equation-of-the-day', {
+          score: newStreak,
+          won: isWin,
+          currentStreak: newStreak,
+        }),
+      );
+      onCoinsEarned?.(outcome.coinsEarned.coins);
+    }
     setCurrent([]);
-  }, [current, progress, puzzle.solution, puzzle.puzzleNumber]);
+  }, [current, progress, puzzle.solution, puzzle.puzzleNumber, recordGameResult, onCoinsEarned]);
 
   const shareToWhatsApp = useCallback(() => {
     const encoded = encodeURIComponent(shareText);

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Layers, Play, RotateCcw, Trophy } from 'lucide-react';
 
-import type { GameComponentProps } from './registry';
+import { createGameResult, type GameComponentProps } from './registry';
+import { useParentEconomy } from '../../../hooks/useParentEconomy';
 import {
   applyMove,
   calculateCoinReward,
@@ -89,8 +90,9 @@ function getDirection(
 
 /* ── Component ───────────────────────────────────────────────────── */
 
-export function NumberMerge({ onExit }: GameComponentProps) {
+export function NumberMerge({ onExit, onCoinsEarned }: GameComponentProps) {
   const { t } = useTranslation();
+  const { recordGameResult } = useParentEconomy();
   const [state, setState] = useState<GameState>(createInitialState);
   const [highScore, setHighScore] = useState<HighScore | null>(null);
   const [coinReward, setCoinReward] = useState(0);
@@ -121,8 +123,15 @@ export function NumberMerge({ onExit }: GameComponentProps) {
         setHighScore(result);
       }
       setCoinReward(calculateCoinReward(state.bestTile));
+      const outcome = recordGameResult(
+        createGameResult('number-merge', {
+          score: state.score,
+          won: state.phase === 'won',
+        }),
+      );
+      onCoinsEarned?.(outcome.coinsEarned.coins);
     }
-  }, [state.phase, state.score, state.bestTile, highScore]);
+  }, [state.phase, state.score, state.bestTile, highScore, recordGameResult, onCoinsEarned]);
 
   /* ── Keyboard support ──────────────────────────────────────────── */
 

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Copy, Eraser, Share2, Trophy } from 'lucide-react';
 
-import type { GameComponentProps } from './registry';
+import { createGameResult, type GameComponentProps } from './registry';
+import { useParentEconomy } from '../../../hooks/useParentEconomy';
 import {
   COIN_REWARDS,
   checkWin,
@@ -33,8 +34,9 @@ const DIFFICULTY_ACCENT: Record<Difficulty, string> = {
 
 /* ── Component ───────────────────────────────────────────────────── */
 
-export function Sudoku({ onExit }: GameComponentProps) {
+export function Sudoku({ onExit, onCoinsEarned }: GameComponentProps) {
   const { t } = useTranslation();
+  const { recordGameResult } = useParentEconomy();
 
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [puzzle, setPuzzle] = useState<SudokuPuzzle | null>(null);
@@ -146,10 +148,18 @@ export function Sudoku({ onExit }: GameComponentProps) {
       if (won) {
         setSelectedCell(null);
         setElapsedMs(now - progress.startedAt);
-        setCoinReward(COIN_REWARDS[difficulty]);
+        const reward = COIN_REWARDS[difficulty];
+        setCoinReward(reward);
+        const outcome = recordGameResult(
+          createGameResult('sudoku', {
+            score: reward,
+            won: true,
+          }),
+        );
+        onCoinsEarned?.(outcome.coinsEarned.coins);
       }
     },
-    [board, puzzle, progress, selectedCell, difficulty],
+    [board, puzzle, progress, selectedCell, difficulty, recordGameResult, onCoinsEarned],
   );
 
   /* ── Erase cell ──────────────────────────────────────────────────── */

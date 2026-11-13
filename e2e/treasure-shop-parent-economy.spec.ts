@@ -15,18 +15,17 @@
  *  9. Close + reopen the shop → owned/equipped/coins survive
  * 10. Coin badge reflects the exact balance before and after a purchase
  *
- * ── Parent gifting economy — 1 runnable + 4 scaffolded ────────────────────
- * 11. Integration gap guard: ParentDashboard exposes 4 tabs and NO economy
- *     tab, and no ParentEconomyPanel content is reachable. (runnable)
- * 12-15. Gift modal / validation / gift execution / history — test.fixme().
- *     ParentEconomyPanel, GiftToChildModal and useParentEconomy have ZERO
- *     import sites in src/ as of this commit; they are unmounted dead code,
- *     so there is no UI to drive. These bodies are written against the
- *     data-testids listed in NEEDED_TESTIDS below and are UNVERIFIED — they
- *     have never executed. Un-fixme them only after wiring the panel into
- *     ParentDashboard and adding those hooks.
- *     The pure gift logic (validateGift/executeGift) is better covered by a
- *     vitest unit test than by Playwright — see the note at the bottom.
+ * ── Parent games economy wiring — 5 runnable tests ───────────────────────
+ * 11. Child flow invisibility guard: parent mechanics stay 100% invisible to
+ *     the child flow; no toast on saga map, child lesson does not write parent
+ *     economy storage, child coins unchanged.
+ * 12. Coin toast: completing Parent Blitz renders parent-games-coin-toast with
+ *     parent-games-coin-toast-amount matching /^\+\d+$/.
+ * 13. Idempotent replay: playing Blitz twice accumulates games and coins
+ *     matching the calculation without double counting.
+ * 14. Fresh mount: reopening games list and game does not create phantom records
+ *     or toasts.
+ * 15. Child visibility guard: coin toast is never present in the saga map subtree.
  *
  * Selector strategy: TreasureShop has no data-testid attributes, so the shop
  * is located by its heading and item cards are located by their (unique)
@@ -38,7 +37,9 @@
  */
 
 import { test, expect, type Page, type Locator } from '@playwright/test';
-import { setupFreshProfile, openMenu, solveParentGate } from './helpers';
+import { setupFreshProfile, openMenu, solveParentGate, selectArcadeMode } from './helpers';
+import { evalBlitzExpression } from '../src/components/parent/games/blitzEval';
+import { calculateCoinsEarned } from '../src/components/parent/games/parentEconomyEngine';
 
   // Global timeout is 180s — no need for local override
 
@@ -51,10 +52,7 @@ const PARENT_ECONOMY_KEY = 'hebrew-math-parent-economy';
  *   TreasureShop        → treasure-shop, shop-coin-balance,
  *                         shop-item-<id>, shop-buy-<id>, shop-equip-<id>,
  *                         shop-close
- *   ParentEconomyPanel  → parent-economy-panel, economy-coins, gift-to-child
- *   GiftToChildModal    → gift-modal, gift-child-select, gift-amount,
- *                         gift-error, gift-confirm
- *   ParentDashboard     → an 'economy' tab in the tabs array
+ *   Parent economy      → parent-games-coin-toast, parent-games-coin-toast-amount
  */
 
 // ─── Shop item catalogue (mirrors src/data/shopItems.ts) ──────────────────
@@ -505,10 +503,10 @@ test.describe('Treasure Shop (child flow)', () => {
 });
 
 // =========================================================================
-//  Parent gifting economy
+//  Parent games economy wiring
 // =========================================================================
 
-test.describe('Parent gifting economy', () => {
+test.describe('Parent games economy wiring', () => {
   /**
    * Injected parent economy state. Written before the app boots so it is in
    * place for whatever eventually reads PARENT_ECONOMY_KEY.
@@ -517,6 +515,7 @@ test.describe('Parent gifting economy', () => {
     return {
       coins: 120,
       totalCoinsEarned: 300,
+      totalGamesPlayed: 0,
       streak: 5,
       bestStreak: 9,
       lastPlayedDate: '2026-08-20',
@@ -547,8 +546,6 @@ test.describe('Parent gifting economy', () => {
 
   /**
    * Open the parent gate from the saga map hamburger menu and solve it.
-   * Mirrors openParentGateFromMap in parent-dashboard.spec.ts — avoids a
-   * logout round-trip, so seeded localStorage survives (no navigation).
    */
   async function openParentGateFromMap(page: Page) {
     await openMenu(page);
@@ -561,7 +558,6 @@ test.describe('Parent gifting economy', () => {
     await expect(gate).toBeVisible({ timeout: 5000 });
     await page.waitForTimeout(300);
 
-    // Read the math problem from the clipboard (PG-1 keypad rework)
     const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
     await expect(problemEl).toBeVisible({ timeout: 5000 });
     const problemText = (await problemEl.textContent()) || '';
@@ -579,138 +575,249 @@ test.describe('Parent gifting economy', () => {
   }
 
   /**
-   * 11. Documents the integration gap. ParentEconomyPanel / GiftToChildModal /
-   * useParentEconomy are never imported outside their own files, so injected
-   * economy state is inert and no economy UI is reachable.
-   *
-   * When the panel is wired into ParentDashboard this test SHOULD fail —
-   * that failure is the signal to un-fixme tests 12-15 and delete this one.
+   * Play blitz until finished (results screen visible) and return final score.
    */
-  test('11. parent dashboard has no economy tab yet (integration gap)', async ({ page }) => {
-    await setupFreshProfile(page, 'EconomyChild');
+  async function playBlitzSession(page: Page): Promise<number> {
+    const startBtn = page.locator('[data-testid="parent-blitz-start"], [data-testid="parent-blitz-replay"]').first();
+    await expect(startBtn).toBeVisible({ timeout: 5000 });
+    await startBtn.click();
+    await page.waitForTimeout(500);
 
-    // Seed AFTER setup: setupFreshProfile clears localStorage and reloads.
-    await seedParentEconomy(page, parentEconomyState());
+    const maxWaitMs = 120_000;
+    const startTime = Date.now();
 
-    // Reach the gate from the map — no navigation, so the seed survives.
-    await openParentGateFromMap(page);
+    while (Date.now() - startTime < maxWaitMs) {
+      const results = page.locator('[data-testid="parent-blitz-results"]').first();
+      if (await results.isVisible().catch(() => false)) {
+        break;
+      }
 
-    const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
-    await expect(dashboard).toBeVisible();
+      const questionEl = page.locator('[data-testid="parent-blitz-question"]').first();
+      if (await questionEl.isVisible().catch(() => false)) {
+        const qText = (await questionEl.textContent()) || '';
+        const ans = evalBlitzExpression(qText);
+        if (ans !== null && ans >= 0) {
+          const digits = String(ans);
+          for (const d of digits) {
+            const keyBtn = page.locator(`[data-testid="parent-blitz-key-${d}"]`).first();
+            if (await keyBtn.isVisible().catch(() => false)) {
+              await keyBtn.click().catch(() => {});
+            }
+          }
+          const submitBtn = page.locator('[data-testid="parent-blitz-key-submit"]').first();
+          if (await submitBtn.isVisible().catch(() => false)) {
+            await submitBtn.click().catch(() => {});
+          }
+        } else {
+          const skipBtn = page.locator('[data-testid="parent-blitz-skip"]').first();
+          if (await skipBtn.isVisible().catch(() => false)) {
+            await skipBtn.click().catch(() => {});
+          }
+        }
+      }
+      await page.waitForTimeout(600);
+    }
 
-    // Exactly the four existing tabs — no economy tab.
-    const tabs = dashboard.locator('nav button[role="tab"]');
-    await expect(tabs).toHaveCount(4);
+    const results = page.locator('[data-testid="parent-blitz-results"]').first();
+    await expect(results).toBeVisible({ timeout: 15000 });
 
-    // No ParentEconomyPanel content is rendered anywhere.
-    await expect(dashboard).not.toContainText('Parent Coins');
-    await expect(dashboard).not.toContainText('מטבעות הורים');
-    await expect(dashboard).not.toContainText('Gift to Child');
-    await expect(dashboard).not.toContainText('תרום לילד');
-    await expect(page.getByRole('button', { name: /^Send Gift$|^שלחו מתנה$/ })).toHaveCount(0);
+    const finalScoreEl = page.locator('[data-testid="parent-blitz-final-score"]').first();
+    const scoreText = (await finalScoreEl.textContent())?.trim() || '0';
+    return parseInt(scoreText, 10);
+  }
 
-    // The injected state is untouched: nothing reads or writes it.
-    const stored = await page.evaluate(
+  test('11. child-invisibility guard: parent mechanics stay 100% invisible to child flow', async ({ page }) => {
+    await setupFreshProfile(page, 'ChildFlowGuard');
+
+    // Fresh profile on saga map: assert NO element with data-testid="parent-games-coin-toast" anywhere
+    await expect(page.locator('[data-testid="parent-games-coin-toast"]')).toHaveCount(0);
+
+    const profileBefore = await readProfile(page, 'ChildFlowGuard');
+    const childCoinsBefore = profileBefore?.coins ?? 0;
+
+    // Play ONE real child lesson through saga map (openMenu / arcade)
+    await selectArcadeMode(page, 'zen');
+    await page.waitForTimeout(1000);
+
+    // Exit back to map via settings -> pause -> exit to map
+    const settingsBtn = page.locator('button[aria-label*="Settings"], button[aria-label*="הגדרות"]').first();
+    if (await settingsBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await settingsBtn.click();
+      await page.waitForTimeout(300);
+      const pauseBtn = page.locator('button[aria-label*="Pause"], button[aria-label*="השהה"]').first();
+      if (await pauseBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await pauseBtn.click();
+        await page.waitForTimeout(500);
+        const exitBtn = page.locator('button[aria-label*="Exit to Map"], button[aria-label*="חזרה למפה"]').first();
+        if (await exitBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+          await exitBtn.click();
+          await page.waitForTimeout(1000);
+        }
+      }
+    }
+
+    // Back on saga map
+    await expect(page.locator('[data-testid="saga-node-n1_1"]').first()).toBeVisible({ timeout: 15000 });
+
+    // Assert localStorage hebrew-math-parent-economy is STILL absent
+    const parentEconomy = await page.evaluate(
       (key) => localStorage.getItem(key),
       PARENT_ECONOMY_KEY,
     );
-    expect(stored, 'seeded economy state should still be present').not.toBeNull();
-    expect(JSON.parse(stored!).coins, 'no code path spends parent coins').toBe(120);
+    expect(parentEconomy, 'parent economy storage should be absent in child flow').toBeNull();
+
+    // Child coin balance unchanged by parent economy code
+    const profileAfter = await readProfile(page, 'ChildFlowGuard');
+    expect(profileAfter?.coins ?? 0).toBe(childCoinsBefore);
+
+    // Toast still absent
+    await expect(page.locator('[data-testid="parent-games-coin-toast"]')).toHaveCount(0);
   });
 
-  // ── Scaffolds — UNVERIFIED, never executed. See header note. ────────────
-  // Un-fixme these only after ParentEconomyPanel + GiftToChildModal are
-  // mounted in ParentDashboard behind an 'economy' tab and the testids in
-  // NEEDED_TESTIDS are added. Until then there is no UI for them to drive.
-
-  test.fixme('12. gift modal opens with child selector and amount input', async ({ page }) => {
-    await setupFreshProfile(page, 'GiftKid');
-    await seedParentEconomy(page, parentEconomyState());
+  test('12. coin toast appears with earned amount after completing parent blitz', async ({ page }) => {
+    await setupFreshProfile(page, 'ParentToast');
     await openParentGateFromMap(page);
 
-    await page.locator('[aria-label*="economy"], button[role="tab"]').last().click();
-    await expect(page.locator('[data-testid="parent-economy-panel"]')).toBeVisible();
-    await expect(page.locator('[data-testid="economy-coins"]')).toHaveText('120');
+    // Click Games tab
+    const gamesTab = page.locator('[data-testid="parent-dashboard"] button').filter({ hasText: /משחקים|Games/ }).first();
+    await expect(gamesTab).toBeVisible({ timeout: 5000 });
+    await gamesTab.click();
+    await page.waitForTimeout(500);
 
-    await page.locator('[data-testid="gift-to-child"]').click();
-    const modal = page.locator('[data-testid="gift-modal"]');
-    await expect(modal).toBeVisible();
+    // Open Blitz
+    const blitzCard = page.locator('[data-testid="game-card-parent-blitz"]').first();
+    await expect(blitzCard).toBeVisible({ timeout: 5000 });
+    await blitzCard.click();
+    await page.waitForTimeout(500);
 
-    // Child selector is populated from the real profile list.
-    const select = modal.locator('[data-testid="gift-child-select"]');
-    await expect(select.locator('option')).toHaveCount(2); // placeholder + GiftKid
-    await expect(modal.locator('[data-testid="gift-amount"]')).toHaveValue('10');
+    // Start blitz & play
+    await playBlitzSession(page);
 
-    // Send is gated until a child is chosen.
-    await expect(modal.locator('[data-testid="gift-confirm"]')).toBeDisabled();
+    // Toast becomes visible
+    const toast = page.locator('[data-testid="parent-games-coin-toast"]');
+    await expect(toast).toBeVisible({ timeout: 10000 });
+
+    const toastAmount = page.locator('[data-testid="parent-games-coin-toast-amount"]');
+    await expect(toastAmount).toBeVisible({ timeout: 5000 });
+    const amountText = (await toastAmount.textContent())?.trim() || '';
+    expect(amountText).toMatch(/^\+\d+$/);
   });
 
-  test.fixme('13. gift validation surfaces each error case', async ({ page }) => {
-    // MAX_DAILY_GIFT_PER_CHILD = 50, MAX_DAILY_GIFT_TOTAL = 100.
-    // Note: GiftToChildModal computes `today` with new Date(), so seeded
-    // giftHistory dates must match the machine's local date at run time.
-    await setupFreshProfile(page, 'GiftKid');
-    await seedParentEconomy(page, parentEconomyState({ coins: 30 }));
+  test('13. idempotent replay: playing Blitz twice accumulates games and coins matching calculation without double counting', async ({ page }) => {
+    await setupFreshProfile(page, 'IdempotentReplay');
+    const initialSeed = parentEconomyState({ coins: 50, totalGamesPlayed: 0 });
+    await seedParentEconomy(page, initialSeed);
+
     await openParentGateFromMap(page);
 
-    await page.locator('[data-testid="gift-to-child"]').click();
-    const modal = page.locator('[data-testid="gift-modal"]');
-    const amount = modal.locator('[data-testid="gift-amount"]');
-    const error = modal.locator('[data-testid="gift-error"]');
+    const gamesTab = page.locator('[data-testid="parent-dashboard"] button').filter({ hasText: /משחקים|Games/ }).first();
+    await expect(gamesTab).toBeVisible({ timeout: 5000 });
+    await gamesTab.click();
+    await page.waitForTimeout(500);
 
-    await modal.locator('[data-testid="gift-child-select"]').selectOption({ index: 1 });
+    const blitzCard = page.locator('[data-testid="game-card-parent-blitz"]').first();
+    await expect(blitzCard).toBeVisible({ timeout: 5000 });
+    await blitzCard.click();
+    await page.waitForTimeout(500);
 
-    await amount.fill('0');
-    await expect(error).toHaveText('סכום לא תקין'); // invalid_amount
+    // First session
+    const score1 = await playBlitzSession(page);
+    await expect(page.locator('[data-testid="parent-games-coin-toast"]')).toBeVisible({ timeout: 10000 });
 
-    await amount.fill('40'); // > 30 coins held
-    await expect(error).toHaveText('אין מספיק מטבעות'); // insufficient_coins
-    await expect(modal.locator('[data-testid="gift-confirm"]')).toBeDisabled();
-  });
+    // Replay session
+    const score2 = await playBlitzSession(page);
+    await expect(page.locator('[data-testid="parent-games-coin-toast"]')).toBeVisible({ timeout: 10000 });
 
-  test.fixme('14. a successful gift moves coins from parent to child', async ({ page }) => {
-    await setupFreshProfile(page, 'GiftKid');
-    await seedParentEconomy(page, parentEconomyState());
-    await openParentGateFromMap(page);
-
-    await page.locator('[data-testid="gift-to-child"]').click();
-    const modal = page.locator('[data-testid="gift-modal"]');
-    await modal.locator('[data-testid="gift-child-select"]').selectOption({ index: 1 });
-    await modal.locator('[data-testid="gift-amount"]').fill('20');
-    await modal.locator('[data-testid="gift-confirm"]').click();
-
-    await expect(modal).toBeHidden();
-    await expect(page.locator('[data-testid="economy-coins"]')).toHaveText('100');
-    expect((await readProfile(page, 'GiftKid'))?.coins).toBe(20);
-  });
-
-  test.fixme('15. gift transactions persist to history', async ({ page }) => {
-    await setupFreshProfile(page, 'GiftKid');
-    await seedParentEconomy(page, parentEconomyState());
-    await openParentGateFromMap(page);
-
-    await page.locator('[data-testid="gift-to-child"]').click();
-    const modal = page.locator('[data-testid="gift-modal"]');
-    await modal.locator('[data-testid="gift-child-select"]').selectOption({ index: 1 });
-    await modal.locator('[data-testid="gift-amount"]').fill('15');
-    await modal.locator('[data-testid="gift-confirm"]').click();
+    const earned1 = calculateCoinsEarned({ gameId: 'parent-blitz', score: score1, won: score1 > 0 }).coins;
+    const earned2 = calculateCoinsEarned({ gameId: 'parent-blitz', score: score2, won: score2 > 0 }).coins;
+    const expectedCoins = initialSeed.coins + earned1 + earned2;
 
     const state = await page.evaluate(
       (key) => JSON.parse(localStorage.getItem(key) || '{}'),
       PARENT_ECONOMY_KEY,
     );
-    expect(state.giftHistory).toHaveLength(1);
-    expect(state.giftHistory[0]).toMatchObject({ amount: 15, childName: 'GiftKid' });
-    expect(state.totalGiftedCoins).toBe(15);
-    expect(state.coins).toBe(105);
+    expect(state.totalGamesPlayed).toBe(2);
+    expect(state.coins).toBe(expectedCoins);
+  });
+
+  test('14. re-entering the games list and reopening the same game (fresh mount, no replay click) does NOT add a phantom record', async ({ page }) => {
+    await setupFreshProfile(page, 'NoPhantomRecord');
+    const seeded = parentEconomyState({ coins: 40, totalGamesPlayed: 3 });
+    await seedParentEconomy(page, seeded);
+
+    await openParentGateFromMap(page);
+
+    const gamesTab = page.locator('[data-testid="parent-dashboard"] button').filter({ hasText: /משחקים|Games/ }).first();
+    await expect(gamesTab).toBeVisible({ timeout: 5000 });
+    await gamesTab.click();
+    await page.waitForTimeout(500);
+
+    // Toast is absent on games list
+    await expect(page.locator('[data-testid="parent-games-coin-toast"]')).toHaveCount(0);
+
+    // Open Blitz (fresh mount)
+    const blitzCard = page.locator('[data-testid="game-card-parent-blitz"]').first();
+    await expect(blitzCard).toBeVisible({ timeout: 5000 });
+    await blitzCard.click();
+    await page.waitForTimeout(500);
+
+    // Toast is absent on game mount (no play click)
+    await expect(page.locator('[data-testid="parent-games-coin-toast"]')).toHaveCount(0);
+
+    // Go back to hub
+    const backBtn = page.locator('[data-testid="back-button"]').first();
+    await expect(backBtn).toBeVisible({ timeout: 5000 });
+    await backBtn.click();
+    await page.waitForTimeout(500);
+
+    // Reopen Blitz (fresh remount)
+    await blitzCard.click();
+    await page.waitForTimeout(500);
+    await expect(page.locator('[data-testid="parent-blitz-start"]')).toBeVisible({ timeout: 5000 });
+
+    // Toast still absent
+    await expect(page.locator('[data-testid="parent-games-coin-toast"]')).toHaveCount(0);
+
+    // totalGamesPlayed and coins unchanged
+    const state = await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key) || '{}'),
+      PARENT_ECONOMY_KEY,
+    );
+    expect(state.totalGamesPlayed).toBe(3);
+    expect(state.coins).toBe(40);
+  });
+
+  test('15. child-visibility guard: coin toast is absent on saga map after child lesson', async ({ page }) => {
+    await setupFreshProfile(page, 'ChildVisibilityGuard');
+
+    // Toast absent on initial saga map
+    await expect(page.locator('[data-testid="parent-games-coin-toast"]')).toHaveCount(0);
+
+    // Play child lesson / game via arcade
+    await selectArcadeMode(page, 'zen');
+    await page.waitForTimeout(1000);
+
+    // Exit back to map
+    const settingsBtn = page.locator('button[aria-label*="Settings"], button[aria-label*="הגדרות"]').first();
+    if (await settingsBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await settingsBtn.click();
+      await page.waitForTimeout(300);
+      const pauseBtn = page.locator('button[aria-label*="Pause"], button[aria-label*="השהה"]').first();
+      if (await pauseBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await pauseBtn.click();
+        await page.waitForTimeout(500);
+        const exitBtn = page.locator('button[aria-label*="Exit to Map"], button[aria-label*="חזרה למפה"]').first();
+        if (await exitBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+          await exitBtn.click();
+          await page.waitForTimeout(1000);
+        }
+      }
+    }
+
+    // Wait for saga map
+    await expect(page.locator('[data-testid="saga-node-n1_1"]').first()).toBeVisible({ timeout: 15000 });
+
+    // Toast element is NOT inside the saga map subtree
+    expect(await page.locator('[data-testid="parent-games-coin-toast"]').count()).toBe(0);
   });
 });
-
-/**
- * Follow-up: validateGift / executeGift / calculateCoinsEarned in
- * src/components/parent/games/parentEconomyEngine.ts are pure functions with
- * no DOM dependency. The daily/per-child limit matrix (tests 13-15) belongs in
- * src/components/parent/games/__tests__/parentEconomyEngine.test.ts under
- * vitest, where it runs today without any UI integration. Playwright should
- * only cover the wiring once the panel is actually mounted.
- */
