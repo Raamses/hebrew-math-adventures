@@ -80,6 +80,10 @@ export function calculateCoinsEarned(result: GameResult): CoinEarningResult {
             coins = result.won ? 15 : result.score > 0 ? 5 : 2;
             break;
         }
+        case 'family-relay': {
+            coins = result.won ? 15 : 0;
+            break;
+        }
         default: {
             coins = 1;
         }

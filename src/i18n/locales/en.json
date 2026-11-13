@@ -982,5 +982,25 @@
     "titleChip": "BLITZ • RAPID",
     "instruction": "Pop the bubble with the answer",
     "multiChip": "MULTIPLIER"
+  },
+  "familyRelay": {
+    "title": "Family Relay",
+    "subtitle": "Pass the device and answer together!",
+    "kidTurn": "Kid's turn",
+    "parentTurn": "Grown-up's turn",
+    "questionProgress": "Question {{current}} of {{total}}",
+    "handoffTitle": "Pass the device to a grown-up",
+    "handoffDesc": "Great job! Hand the device to a parent to answer the same questions.",
+    "handoffButton": "I'm the grown-up — start",
+    "submit": "Check",
+    "answerPlaceholder": "Your answer",
+    "resultsTitle": "Relay complete!",
+    "kidScore": "Kid: {{score}} / {{total}}",
+    "parentScore": "Grown-up: {{score}} / {{total}}",
+    "coinsEarned": "{{count}} coins earned!",
+    "playAgain": "Play again",
+    "close": "Close",
+    "correct": "Correct!",
+    "wrong": "Not quite"
   }
 }
