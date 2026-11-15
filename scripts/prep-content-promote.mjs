@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Promote reviewed gifted-prep items from content-drafts/ into the shipped bank (ADR 2026-11-gifted-prep-stage-a §8).
 //
 // Usage: node scripts/prep-content-promote.mjs <decisions.json> [--reviewer Ram]
