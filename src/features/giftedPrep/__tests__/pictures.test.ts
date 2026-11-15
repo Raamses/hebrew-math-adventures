@@ -39,7 +39,7 @@ describe('Stage-A picture puzzles (seed sweep)', () => {
             expect(item.options).toHaveLength(4);
             expect(new Set(item.options).size).toBe(4);
             item.options.forEach(o => expect(Number(o)).toBeGreaterThanOrEqual(0));
-            lines.forEach(l => expect(Number(l.split(' = ')[1])).toBeLessThanOrEqual(30));
+            lines.forEach(l => expect(Number(l.split(' = ')[1]), l).toBeLessThanOrEqual(20));
         }
     });
 

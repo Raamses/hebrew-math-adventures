@@ -52,12 +52,16 @@ function puzzle(rng: Rng, shape: Shape, x: string, y: string): Puzzle {
                 explanation: `מהשורה הראשונה ${ltr(`${x} = ${a}`)}, כי ${ltr(`${a} + ${a} = ${2 * a}`)}. `
                     + `בשורה השנייה ${ltr(`${a} + ${y} = ${a + b}`)}, אז ${ltr(`${y} = ${a + b} − ${a} = ${b}`)}.`,
             };
-        case 'chain':
+        case 'chain': {
+            // Numbers stay within 20: 2·a2 <= 14, so b2 = min(b, 20 - 2·a2) is always >= 6 and 2·a2 + b2 <= 20
+            const a2 = Math.min(a, 7);
+            const b2 = Math.min(b, 20 - 2 * a2);
             return {
-                lines: [`${x} + ${x} = ${2 * a}`, `${x} + ${x} + ${y} = ${2 * a + b}`], ask: y, answer: b, slip: a + b,
-                explanation: `בשורה השנייה יש את אותם שני ${x} מהשורה הראשונה, והם ${2 * a}. `
-                    + `${ltr(`${2 * a} + ${y} = ${2 * a + b}`)}, אז ${ltr(`${y} = ${2 * a + b} − ${2 * a} = ${b}`)}.`,
+                lines: [`${x} + ${x} = ${2 * a2}`, `${x} + ${x} + ${y} = ${2 * a2 + b2}`], ask: y, answer: b2, slip: a2 + b2,
+                explanation: `בשורה השנייה יש את אותם שני ${x} מהשורה הראשונה, והם ${2 * a2}. `
+                    + `${ltr(`${2 * a2} + ${y} = ${2 * a2 + b2}`)}, אז ${ltr(`${y} = ${2 * a2 + b2} − ${2 * a2} = ${b2}`)}.`,
             };
+        }
         case 'back':
             return {
                 lines: [`${y} + ${y} = ${2 * b}`, `${x} + ${y} = ${a + b}`], ask: x, answer: a, slip: b,
