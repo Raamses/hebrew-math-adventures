@@ -282,10 +282,20 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
 }
 
 /** Answer for the instruction now on screen (same parse as solveBubbleProblem; factor lines 193-240 into parseAnswer). */
+/** Target of a sensory instruction ("Pop the bubble with N" / Hebrew), the same regex solveBubbleProblem uses. */
+function parsePopTarget(text: string): number | null {
+  const bodyText = text.replace(/[⁦-⁩]/g, '');
+  const m = bodyText.match(/Pop the bubble with (\d+)|Pop\s+(\d+)|פוצצו\s+את\s+הבועה\s+שכתוב\s+עליה\s+(\d+)/i);
+  return m ? parseInt(m[1] || m[2] || m[3]!, 10) : null;
+}
+
+/** Answer for the instruction on screen. Survival opens on sensory levels ("Pop the bubble with 3"), so an
+ *  equation-only parse returns null there and reachBoss could never pop a bubble (nightly red since #275). */
 export async function readAnswer(page: Page): Promise<number | null> {
   const instruction = page.locator('div[dir] span.font-mono').first();
   await expect(instruction).not.toBeEmpty();
-  return parseAnswer((await instruction.textContent()) ?? '');
+  const text = (await instruction.textContent()) ?? '';
+  return parseAnswer(text) ?? parsePopTarget(text);
 }
 
 export const bossBubble = (page: Page) =>
