@@ -5,24 +5,29 @@
  * ProgressOverview, WeeklyChart (SVG bars), and StreakHeatmap (7×5 grid).
  *
  * ── Parent Dashboard access — 2 tests ────────────────────────────────────
- *  1. Navigate to parent dashboard via openParentGate → visible
- *  2. Four tabs render with correct icons (👥 📈 🎮 📋)
+ *  1. Navigate to parent dashboard via the saga-map parent zone → visible
+ *  2. Four tabs render with correct icons (💌 🎯 🎮 ⚙️)
  *
- * ── Progress Overview tab — 6 tests ──────────────────────────────────────
- *  3. Click 'progress' tab → ProgressOverview renders
+ * ── Progress Overview widgets — 6 tests ──────────────────────────────────
+ *  3. ProgressOverview renders (on whichever dashboard tab hosts it)
  *  4. Stat cards render (stars, badges, coins, streak, time)
  *  5. WeeklyChart renders SVG with 7 bar <rect> elements
  *  6. StreakHeatmap renders a grid of 35 cells (7×5)
  *  7. Accuracy bar shows a percentage
  *  8. Fresh profile shows zero/empty stats across all cards
  *
- * Selector strategy: ParentDashboard HAS data-testid="parent-dashboard".
- * Tab buttons have role="tab" and aria-label matching i18n keys.
- * ProgressOverview, WeeklyChart, and StreakHeatmap have NO data-testid.
- * WeeklyChart is an SVG with <rect> bars. StreakHeatmap is a CSS grid of divs.
- *
- * NEEDED_TESTIDS: progress-overview, weekly-chart, streak-heatmap,
- *                 stat-card-{name}, accuracy-bar
+ * Selector strategy (current app truth):
+ *  - Dashboard:    data-testid="parent-dashboard" (ParentDashboard.tsx).
+ *  - Parent entry: saga-map hamburger menu → data-testid="parent-zone-button"
+ *                  → data-testid="parent-gate" → keypad → dashboard.
+ *                  ([data-testid="parent-access"] only exists on the
+ *                  profile-select screen, not on the saga map.)
+ *  - Tabs:         data-testid="tab-{postcard|goals|games|settings}" + role="tab"
+ *                  (ParentDashboard.tsx: PARENT_TABS).
+ *  - ProgressOverview widgets have NO data-testid and are located structurally:
+ *                  WeeklyChart = svg[viewBox="0 0 100 120"] with one <rect> per day,
+ *                  StreakHeatmap = 35 cells carrying an inline aspect-ratio,
+ *                  accuracy = "<n>%" text next to the progress bar.
  *
  * Model: ask-claude --escalate --card e751ea10-535a-4909-9974-45c02f35e1d0
  *   — FAILED: "You've hit your session limit · resets 1:40am (Asia/Jerusalem)"
@@ -33,27 +38,75 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfile, openParentGate } from './helpers';
+import { setupFreshProfile, openMenu, solveParentGate } from './helpers';
 
-// ─── i18n tab labels (Hebrew | English) ───────────────────────────────────
+// ─── Dashboard tabs & helpers ─────────────────────────────────────────────
 
-const TAB_LABELS = {
-  profiles: /ניהול פרופילים|Manage Profiles/i,
-  progress: /התקדמות|Progress/i,
-  games: /משחקים|Games/i,
-  skills: /ניתוח מיומנויות|Skill Analysis/i,
+/** Real tab ids — ParentDashboard.tsx: PARENT_TABS. */
+const DASHBOARD_TABS = ['postcard', 'goals', 'games', 'settings'] as const;
+
+/** Real tab icons — ParentDashboard.tsx: PARENT_TABS. */
+const TAB_ICONS: Record<(typeof DASHBOARD_TABS)[number], string> = {
+  postcard: '💌',
+  goals: '🎯',
+  games: '🎮',
+  settings: '⚙️',
 };
 
-const TAB_ICONS = ['👥', '📈', '🎮', '📋'];
+/**
+ * Open the parent dashboard from the saga map.
+ * The map exposes the parent zone through the hamburger menu
+ * ([data-testid="parent-zone-button"]); [data-testid="parent-access"] only
+ * exists on the profile-select screen, so we drive the map flow and solve the
+ * clipboard problem on the real keypad.
+ */
+async function openParentDashboard(page: Page): Promise<void> {
+  await openMenu(page);
 
-// ─── Helpers ──────────────────────────────────────────────────────────────
+  const parentZoneBtn = page.locator('[data-testid="parent-zone-button"]').first();
+  await expect(parentZoneBtn).toBeVisible({ timeout: 15000 });
+  await parentZoneBtn.click();
 
-/** Click a specific tab in the parent dashboard by its aria-label. */
-async function clickDashboardTab(page: Page, tabName: keyof typeof TAB_LABELS): Promise<void> {
-  const tab = page.locator('[role="tab"]', { hasText: TAB_LABELS[tabName] }).first();
-  await expect(tab).toBeVisible({ timeout: 5000 });
-  await tab.click();
-  await page.waitForTimeout(500);
+  const gate = page.locator('[data-testid="parent-gate"]').first();
+  await expect(gate).toBeVisible({ timeout: 5000 });
+
+  const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
+  await expect(problemEl).toBeVisible({ timeout: 5000 });
+  const problemText = (await problemEl.textContent()) || '';
+  const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
+  if (!problemMatch) {
+    throw new Error(`Unexpected parent gate problem: "${problemText}"`);
+  }
+  const n1 = parseInt(problemMatch[1] as string, 10);
+  const n2 = parseInt(problemMatch[2] as string, 10);
+  await solveParentGate(page, n1 + n2);
+
+  await expect(page.getByTestId('parent-dashboard')).toBeVisible({ timeout: 15000 });
+}
+
+/**
+ * ProgressOverview is not a tab of its own in the redesigned dashboard, so land
+ * on the tab that actually renders it (stat cards + WeeklyChart + StreakHeatmap
+ * + accuracy bar) by probing the real tabs for the WeeklyChart SVG.
+ */
+async function openProgressOverviewTab(page: Page): Promise<void> {
+  await openParentDashboard(page);
+
+  const weeklyChart = page
+    .getByTestId('parent-dashboard')
+    .locator('svg[viewBox="0 0 100 120"]');
+
+  for (const tabId of DASHBOARD_TABS) {
+    const tab = page.getByTestId(`tab-${tabId}`).first();
+    await expect(tab).toBeVisible({ timeout: 5000 });
+    if ((await tab.getAttribute('aria-selected')) !== 'true') {
+      await tab.click();
+      await page.waitForTimeout(500);
+    }
+    if ((await weeklyChart.count()) > 0) {
+      return;
+    }
+  }
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────
@@ -62,27 +115,26 @@ test.describe('Parent Dashboard Data Visualization', () => {
 
   test.describe('Dashboard access', () => {
 
-    test('1. Navigate to parent dashboard via openParentGate', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    test('1. Navigate to parent dashboard via the saga-map parent zone', async ({ page  }) => {
       await setupFreshProfile(page, 'DashTester');
-      await openParentGate(page);
+      await openParentDashboard(page);
       // Parent dashboard should be visible
       await expect(page.getByTestId('parent-dashboard')).toBeVisible({ timeout: 10000 });
     });
 
     test('2. Four tabs render with correct icons', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfile(page, 'DashTester');
-      await openParentGate(page);
-      await expect(page.getByTestId('parent-dashboard')).toBeVisible({ timeout: 10000 });
-      // Verify all 4 tab buttons exist
-      const tabs = page.locator('[role="tab"]');
-      const count = await tabs.count();
-      expect(count).toBe(4);
-      // Verify each tab has the expected icon
-      for (const icon of TAB_ICONS) {
-        const tabWithIcon = page.locator('[role="tab"]', { hasText: icon });
-        expect(await tabWithIcon.count()).toBe(1);
+      await openParentDashboard(page);
+
+      // Verify all 4 tab buttons exist (ParentDashboard.tsx: PARENT_TABS)
+      const tabs = page.getByTestId('parent-dashboard').locator('[role="tab"]');
+      await expect(tabs).toHaveCount(4);
+
+      // Verify each tab renders with its configured icon
+      for (const tabId of DASHBOARD_TABS) {
+        const tab = page.getByTestId(`tab-${tabId}`).first();
+        await expect(tab).toBeVisible();
+        await expect(tab).toContainText(TAB_ICONS[tabId]);
       }
     });
 
@@ -90,124 +142,76 @@ test.describe('Parent Dashboard Data Visualization', () => {
 
   test.describe('Progress Overview tab', () => {
 
-    test('3. Click progress tab → ProgressOverview renders', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    test('3. ProgressOverview renders on the dashboard', async ({ page  }) => {
       await setupFreshProfile(page, 'DashTester');
-      await openParentGate(page);
-      await expect(page.getByTestId('parent-dashboard')).toBeVisible({ timeout: 10000 });
-      await clickDashboardTab(page, 'progress');
-      // ProgressOverview should render content — look for stat cards or chart elements
-      // The progress tab content area should have stat cards or SVG chart
+      await openProgressOverviewTab(page);
+
       const dashboard = page.getByTestId('parent-dashboard');
-      // Wait for content to load
-      await page.waitForTimeout(1000);
-      // Look for SVG (WeeklyChart) or grid (StreakHeatmap) or stat text
-      const svg = dashboard.locator('svg');
-      const grid = dashboard.locator('[class*="grid"]');
-      const statText = dashboard.locator('text=/⭐|🏆|💎|🔥|⏰|stars|badges|coins|streak|time/i');
-      const hasContent = (await svg.count()) > 0 || (await grid.count()) > 0 || (await statText.count()) > 0;
-      expect(hasContent).toBe(true);
+      // WeeklyChart SVG renders its frame + one <rect> bar per weekday
+      const weeklyChart = dashboard.locator('svg[viewBox="0 0 100 120"]').first();
+      await expect(weeklyChart).toBeVisible({ timeout: 10000 });
+      expect(await weeklyChart.locator('rect').count()).toBeGreaterThanOrEqual(7);
+      // StreakHeatmap renders 5 weeks × 7 days = 35 day cells
+      await expect(dashboard.locator('div[style*="aspect-ratio"]')).toHaveCount(35);
     });
 
     test('4. Stat cards render with expected labels', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfile(page, 'DashTester');
-      await openParentGate(page);
-      await clickDashboardTab(page, 'progress');
-      await page.waitForTimeout(1000);
-      // Stat cards show labels like stars, badges, coins, streak, time
-      // Look for these labels in the dashboard content
+      await openProgressOverviewTab(page);
+
       const dashboard = page.getByTestId('parent-dashboard');
-      // Check for at least some stat-related content
-      const stats = dashboard.locator('text=/⭐|🏆|💎|🔥|⏰|stars|badges|coins|streak|time|כוכבים|תגים|מטבעות|רצף|זמן/i');
-      const count = await stats.count();
-      expect(count).toBeGreaterThan(0);
+      // ProgressOverview stat cards: stars, badges, coins, streak, time played
+      for (const icon of ['⭐', '🏅', '🪙', '⚡', '⏱️']) {
+        await expect(dashboard.getByText(icon).first()).toBeVisible({ timeout: 5000 });
+      }
     });
 
     test('5. WeeklyChart renders SVG with 7 bar <rect> elements', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfile(page, 'DashTester');
-      await openParentGate(page);
-      await clickDashboardTab(page, 'progress');
-      await page.waitForTimeout(1500);
-      // WeeklyChart is an SVG with <rect> elements for bars
+      await openProgressOverviewTab(page);
+
       const dashboard = page.getByTestId('parent-dashboard');
-      const svgs = dashboard.locator('svg');
-      const svgCount = await svgs.count();
-      if (svgCount === 0) {
-        // Chart may not render for fresh profile with no data — check if there's a placeholder
-        test.fixme(true, 'WeeklyChart SVG not found. May not render for fresh profile with no ' +
-          'session history. Try injecting session data before checking.');
-        return;
-      }
-      // Look for <rect> elements in the SVG (bars)
-      const rects = svgs.first().locator('rect');
-      const rectCount = await rects.count();
+      // WeeklyChart is the 100×120 SVG holding one <rect> bar per weekday
+      const weeklyChart = dashboard.locator('svg[viewBox="0 0 100 120"]').first();
+      await expect(weeklyChart).toBeVisible({ timeout: 10000 });
+      const rectCount = await weeklyChart.locator('rect').count();
       // Should have at least 7 bars (one per day)
       expect(rectCount).toBeGreaterThanOrEqual(7);
     });
 
     test('6. StreakHeatmap renders a grid of 35 cells (7×5)', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfile(page, 'DashTester');
-      await openParentGate(page);
-      await clickDashboardTab(page, 'progress');
-      await page.waitForTimeout(1500);
-      // StreakHeatmap is a CSS grid with 7 columns × 5 rows = 35 cells
-      // Each cell is a div with a background color (green for active, slate for inactive)
+      await openProgressOverviewTab(page);
+
       const dashboard = page.getByTestId('parent-dashboard');
-      // Look for grid containers
-      const grids = dashboard.locator('[class*="grid"]');
-      const gridCount = await grids.count();
-      if (gridCount === 0) {
-        test.fixme(true, 'StreakHeatmap grid not found. May not render for fresh profile. ' +
-          'Need data-testid="streak-heatmap" for reliable targeting.');
-        return;
-      }
-      // Try to find the heatmap grid by looking for a grid with many cell divs
-      let heatmapFound = false;
-      for (let i = 0; i < gridCount; i++) {
-        const cells = grids.nth(i).locator('div');
-        const cellCount = await cells.count();
-        if (cellCount >= 30 && cellCount <= 40) {
-          heatmapFound = true;
-          break;
-        }
-      }
-      expect(heatmapFound).toBe(true);
+      // StreakHeatmap: 5 weeks × 7 days, each cell carries an inline aspect-ratio
+      const heatmapCells = dashboard.locator('div[style*="aspect-ratio"]');
+      await expect(heatmapCells).toHaveCount(35);
+      await expect(heatmapCells.first()).toBeVisible();
     });
 
     test('7. Accuracy bar shows a percentage', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfile(page, 'DashTester');
-      await openParentGate(page);
-      await clickDashboardTab(page, 'progress');
-      await page.waitForTimeout(1500);
-      // Accuracy bar shows a percentage like "0%" or "85%"
+      await openProgressOverviewTab(page);
+
       const dashboard = page.getByTestId('parent-dashboard');
-      const accuracyText = dashboard.locator('text=/\\d+%|דיוק|accuracy/i');
-      const count = await accuracyText.count();
-      if (count === 0) {
-        // Accuracy bar may not render for fresh profile
-        test.fixme(true, 'Accuracy bar not found for fresh profile. May need session ' +
-          'history to display. Try injecting profile stats with accuracy data.');
-        return;
-      }
-      expect(count).toBeGreaterThan(0);
+      // Overall accuracy renders as "<n>%" beside the progress bar
+      const accuracyValue = dashboard.getByText(/^\d+%$/).first();
+      await expect(accuracyValue).toBeVisible({ timeout: 5000 });
+      await expect(accuracyValue).toHaveText(/^\d+%$/);
     });
 
     test('8. Fresh profile shows zero/empty stats across all cards', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
       await setupFreshProfile(page, 'DashTester');
-      await openParentGate(page);
-      await clickDashboardTab(page, 'progress');
-      await page.waitForTimeout(1500);
-      // For a fresh profile, stat values should show 0 or empty
+      await openProgressOverviewTab(page);
+
       const dashboard = page.getByTestId('parent-dashboard');
-      // Look for "0" values in stat cards
-      const zeroValues = dashboard.locator('text=/\\b0\\b/');
-      const count = await zeroValues.count();
-      expect(count).toBeGreaterThan(0);
+      // Brand-new profile: the accuracy bar sits at 0%
+      await expect(dashboard.getByText(/^0%$/).first()).toBeVisible({ timeout: 5000 });
+      // Stat values fall back to zero (coins, streak, stars)
+      await expect(dashboard.getByText('0', { exact: true }).first()).toBeVisible();
+      const zeroValues = dashboard.getByText(/\b0\b/);
+      expect(await zeroValues.count()).toBeGreaterThan(0);
     });
 
   });

@@ -5,13 +5,14 @@ import {
   getSagaProgressForNode,
   getProfileId,
   injectSagaProgress,
+  enterSagaNodeById,
+  solveCurrentProblem,
 } from './helpers';
 
 test.describe('Unit progression', () => {
   // Global timeout is 180s — no need for local override
 
-  test('Complete n1_10 (CHALLENGE node) → n2_1 unlocks', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('Complete n1_10 (CHALLENGE node) → n2_1 unlocks', async ({ page }) => {
     await setupFreshProfileWithPracticeAccess(page, 'UnitProgress');
 
     const profileId = await getProfileId(page, 'UnitProgress');
@@ -47,12 +48,9 @@ test.describe('Unit progression', () => {
     expect(innerClass).not.toContain('cursor-not-allowed');
 
     console.log('[Unit Progression] PASSED: n2_1 is unlocked');
-    // Click via DOM to bypass framer-motion animation
-    await page.evaluate((sel) => {
-      const el = document.querySelector(sel) as HTMLElement;
-      if (!el) throw new Error(`Element not found: ${sel}`);
-      el.click();
-    }, n1_10Selector);
+
+    // Enter n1_10 (CHALLENGE node) to complete it
+    await enterSagaNodeById(page, 'n1_10');
     await page.waitForTimeout(3000);
 
     // --- Complete the PracticeMode session (10 correct answers) ---
@@ -86,7 +84,7 @@ test.describe('Unit progression', () => {
         }
       }
 
-      const solved = await solveProblem(page);
+      const solved = await solveCurrentProblem(page);
       if (solved) {
         solvedCount++;
         console.log(`[Unit Progression] Solved problem #${solvedCount}`);
@@ -113,16 +111,16 @@ test.describe('Unit progression', () => {
     await waitForSagaMap(page);
 
     // --- Assert localStorage: n2_1.isLocked === false ---
-    profileId = await getProfileId(page, 'UnitProgress');
-    expect(profileId).toBeTruthy();
+    const profileId2 = await getProfileId(page, 'UnitProgress');
+    expect(profileId2).toBeTruthy();
 
-    const n1_10Progress = await getSagaProgressForNode(page, profileId!, 'n1_10');
+    const n1_10Progress = await getSagaProgressForNode(page, profileId2!, 'n1_10');
     console.log('[Unit Progression] n1_10 progress:', JSON.stringify(n1_10Progress));
     expect(n1_10Progress).toBeTruthy();
     expect(n1_10Progress!.stars).toBeGreaterThan(0);
     expect(n1_10Progress!.isLocked).toBe(false);
 
-    const n2_1Progress = await getSagaProgressForNode(page, profileId!, 'n2_1');
+    const n2_1Progress = await getSagaProgressForNode(page, profileId2!, 'n2_1');
     console.log('[Unit Progression] n2_1 progress:', JSON.stringify(n2_1Progress));
     expect(n2_1Progress).toBeTruthy();
     expect(n2_1Progress!.isLocked).toBe(false);

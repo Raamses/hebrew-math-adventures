@@ -56,7 +56,7 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
       await takeScreenshot(page, 'i18n-02-hebrew-instruction');
     });
 
-    test.skip('Instruction renders in English after language toggle', async ({ page }) => {
+    test('Instruction renders in English after language toggle', async ({ page }) => {
   // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'I18nEnglish');
       await selectArcadeMode(page, 'zen');
@@ -73,10 +73,15 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
       const instructionContainer = page.locator('div[dir]').first();
       await expect(instructionContainer).toBeVisible({ timeout: 10000 });
 
-      // For English, dir should eventually become "ltr"
+      // For English, dir should eventually become "ltr".
+      // Pin the container to the element that actually renders the instruction
+      // (it owns the span.font-mono). A bare div[dir].first() can resolve to the
+      // app shell after the i18n re-render, whose dir attribute never flips to ltr.
+      const englishContainer = page.locator('div[dir]:has(span.font-mono)').first();
+      await expect(englishContainer).toBeVisible({ timeout: 10000 });
       // Wait for the dir attribute to change from rtl to ltr
       await expect.poll(async () => {
-        return await instructionContainer.getAttribute('dir');
+        return await englishContainer.getAttribute('dir');
       }, { timeout: 15000, intervals: [500] }).toBe('ltr');
 
       const instruction = instructionContainer.locator('span.font-mono');
@@ -248,63 +253,26 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
       }
     });
 
-    test('Boss bubble is destroyed after solving all gate problems', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    test('Boss bubble is destroyed after solving all gate problems', async ({ page }) => {
   // Global timeout is 180s — no need for local override
       await setupFreshProfile(page, 'BossKill');
       await selectArcadeMode(page, 'survival');
-      await page.waitForTimeout(3000);
-
-      // Progress to boss encounter
-      let bossAppeared = false;
-      for (let attempt = 0; attempt < 40 && !bossAppeared; attempt++) {
-        const bossBubble = page.locator('button[aria-label*="boss bubble"]').first();
-        if (await bossBubble.isVisible().catch(() => false)) {
-          bossAppeared = true;
-          break;
-        }
-        if (await solveBubbleProblem(page)) {
-          await page.waitForTimeout(1000);
-        } else {
-          await page.waitForTimeout(2000);
-        }
-      }
-
-      if (!bossAppeared) {
-        console.log('No boss appeared. Verifying game stability instead.');
-        const bubbles = page.locator('button[aria-label*="Pop bubble"]');
-        await expect(bubbles.first()).toBeVisible({ timeout: 10000 });
-        return;
-      }
-
+      // Progress to the level-3 boss with the shared, mobile-safe helper. It
+      // dispatches by exact accessible name and polls game state instead of the
+      // stale `aria-label*="boss bubble"` substring selector that never matched
+      // on the mobile project (the original quarantine reason).
+      await reachBoss(page);
       await takeScreenshot(page, 'boss-06-before-kill-attempt');
 
-      // Keep solving until boss is gone (up to 5 boss hits + retries)
-      let bossDestroyed = false;
-      for (let hit = 0; hit < 8; hit++) {
-        const bossBubble = page.locator('button[aria-label*="boss bubble"]').first();
-        if (!(await bossBubble.isVisible().catch(() => false))) {
-          bossDestroyed = true;
-          break;
-        }
-
-        // Try to solve the current boss problem
-        const solved = await solveBubbleProblem(page);
-        if (!solved) {
-          // Fallback: click the boss bubble directly
-          const box = await bossBubble.boundingBox();
-          if (box) {
-            await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-          }
-        }
-        await page.waitForTimeout(1500);
-      }
+      // Land all three gate hits. hitBoss re-reads the current instruction on
+      // every retry, so a locator captured before a hit is never reused against
+      // the next gate — the cause of the previous quarantine.
+      for (const k of [1, 2, 3] as const) await hitBoss(page, k);
 
       await takeScreenshot(page, 'boss-07-after-kill-attempt');
 
       // Verify boss is gone
-      const bossGone = page.locator('button[aria-label*="boss bubble"]').first();
-      await expect(bossGone).toHaveCount(0, { timeout: 10000 });
+      await expect(bossBubble(page)).toHaveCount(0, { timeout: 10000 });
 
       await takeScreenshot(page, 'boss-08-boss-destroyed');
     });

@@ -71,17 +71,81 @@ function fusionMultiplier(page: Page): Locator {
 }
 
 /**
- * solveBubbleProblem(page) reads the math prompt from body text, computes the
- * answer, and clicks the matching bubble via mouse coordinates. Wrapped so a
- * mid-run failure reports how far the streak actually got.
+ * Read the numeric fusion streak from the HUD. data-testid="fusion-streak"
+ * holds the bare count (BubbleGameContainer renders `{fusionState.fusionStreak}`),
+ * so the HUD wrapper's text ("🌀2 1.5×") is only a fallback for the frame
+ * before the counter mounts — its first number is still the streak.
  */
-async function buildStreak(page: Page, n: number): Promise<void> {
-  for (let i = 0; i < n; i++) {
+async function readFusionStreak(page: Page): Promise<number> {
+  const streakEl = page.getByTestId('fusion-streak').first();
+  let text = '';
+  if ((await streakEl.count()) > 0) {
+    text = (await streakEl.textContent({ timeout: 2_000 }).catch(() => '')) ?? '';
+  }
+  if (!text) {
+    const hud = page.getByTestId('fusion-hud').first();
+    if ((await hud.count()) > 0) {
+      text = (await hud.textContent({ timeout: 2_000 }).catch(() => '')) ?? '';
+    }
+  }
+  const match = /\d+/.exec(text);
+  return match ? parseInt(match[0], 10) : 0;
+}
+
+/** Poll until the HUD's streak counter moves off `previous` (or the beat ends). */
+async function waitForStreakChange(page: Page, previous: number, timeoutMs = 2_000): Promise<number> {
+  const deadline = Date.now() + timeoutMs;
+  let current = previous;
+  while (Date.now() < deadline) {
+    current = await readFusionStreak(page);
+    if (current !== previous) return current;
+    await page.waitForTimeout(100);
+  }
+  return current;
+}
+
+/**
+ * Drive real correct answers until the engine's fusion streak reaches
+ * `targetStreak` (absolute, not a delta).
+ *
+ * The engine (setFusionStreak) advances the counter only for answers it
+ * actually processes. solveBubbleProblem is a single best-effort shot: if it
+ * runs before the next round's target bubble has spawned, it returns false and
+ * the streak does not move — so firing a fixed number of solves under-counts
+ * (e2e/w4a1-verify-e2e.md: three solves left the HUD reading "🌀2"). Poll the
+ * HUD counter instead and keep answering until it reaches the target; this also
+ * carries on correctly if the streak is reset mid-climb.
+ */
+async function buildStreak(page: Page, targetStreak: number): Promise<void> {
+  const deadline = Date.now() + Math.max(20_000, targetStreak * 8_000);
+  let observed = await readFusionStreak(page);
+
+  while (observed < targetStreak) {
+    if (Date.now() > deadline) {
+      throw new Error(
+        `buildStreak(${targetStreak}) timed out with fusion-streak reading "${observed}". ` +
+        `The counter only advances on pops the engine processes, so the solves are not landing.`,
+      );
+    }
+
+    let solved = false;
     try {
-      await solveBubbleProblem(page);
-      await page.waitForTimeout(200);
+      solved = await solveBubbleProblem(page);
     } catch (error) {
-      throw new Error(`solveBubbleProblem failed on answer ${i + 1} of ${n}: ${String(error)}`);
+      throw new Error(
+        `solveBubbleProblem failed while driving fusion streak ${observed}→${targetStreak}: ${String(error)}`,
+      );
+    }
+
+    if (solved) {
+      // Give the HUD a beat to reflect the pop before deciding to answer again;
+      // otherwise one lagging frame makes us solve twice for one target.
+      observed = await waitForStreakChange(page, observed);
+    } else {
+      // Target bubble had not spawned yet (or the prompt was mid-rotation):
+      // wait out a spawn cycle and retry instead of silently skipping an answer.
+      await page.waitForTimeout(300);
+      observed = await readFusionStreak(page);
     }
   }
 }
@@ -89,6 +153,9 @@ async function buildStreak(page: Page, n: number): Promise<void> {
 async function startFusion(page: Page): Promise<void> {
   await selectArcadeMode(page, 'fusion');
   await expect(page.locator('[data-testid^="bubble-"]').first()).toBeVisible(APPEAR);
+  // The HUD mounts with the fusion state; waiting for the counter means the
+  // first buildStreak poll reads a real streak instead of a missing element.
+  await expect(page.getByTestId('fusion-streak')).toBeVisible(APPEAR);
 }
 
 let profileSeq = 0;
@@ -125,7 +192,6 @@ test.describe('entering fusion mode', () => {
 
 test.describe('streak progression', () => {
   test('correct answers advance the streak', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await startFusion(page);
     await buildStreak(page, 1);
 
@@ -135,7 +201,6 @@ test.describe('streak progression', () => {
   });
 
   test('the first multiplier tier lands at streak three', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await startFusion(page);
     await buildStreak(page, TIERS[0].streak);
 
@@ -154,15 +219,14 @@ test.describe('streak progression', () => {
   });
 
   test('each tier replaces the last as the streak climbs', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await startFusion(page);
 
     const hud = fusionHud(page);
-    let solved = 0;
 
     for (const tier of TIERS) {
-      await buildStreak(page, tier.streak - solved);
-      solved = tier.streak;
+      // buildStreak takes the absolute streak target and polls the HUD, so each
+      // tier is driven to its own threshold rather than by a per-step delta.
+      await buildStreak(page, tier.streak);
 
       await expect(hud).toContainText(tier.label, APPEAR);
     }
@@ -174,7 +238,6 @@ test.describe('streak progression', () => {
   });
 
   test('the streak counter matches the tier it unlocked', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await startFusion(page);
     await buildStreak(page, TIERS[1].streak);
 
@@ -189,7 +252,6 @@ test.describe('streak progression', () => {
 
 test.describe('fusion bubbles', () => {
   test('a fusion bubble spawns once the streak reaches three', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     // Fusion bubbles now have data-testid="fusion-bubble-{value}" (added in
     // this commit). ComboFusionStrategy.shouldSpawnFusion() returns true at
     // streak >= MIN_FUSION_STREAK (3). The next target bubble generated after
@@ -204,7 +266,6 @@ test.describe('fusion bubbles', () => {
   });
 
   test('merging a fusion bubble records a merge event', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     // When a fusion bubble is popped, the engine triggers a merge: nearby
     // bubbles within MERGE_RADIUS_PERCENT (25%) are consumed, and mergeEvents
     // gets a new entry with points scaled by the multiplier. The merge
@@ -238,7 +299,6 @@ test.describe('fusion bubbles', () => {
 
 test.describe('breaking the streak', () => {
   test('a wrong answer resets the fusion streak to zero', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     // Build a streak, then click a wrong bubble. solveBubbleProblem reads the
     // math prompt and clicks the correct answer. To click wrong, we need to
     // find a bubble with a different value than the answer.

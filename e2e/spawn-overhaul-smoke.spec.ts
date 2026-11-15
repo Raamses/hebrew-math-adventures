@@ -70,7 +70,6 @@ test.describe('Spawn Overhaul — smoke test', () => {
   });
 
   test('Classic mode: targets visible within 6s, no crashes', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     await setupFreshProfile(page, 'SmokeClassic');
     await selectArcadeMode(page, 'classic');
     await page.waitForTimeout(3000);

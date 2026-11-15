@@ -188,8 +188,7 @@ test.describe('Parent Zone — Redesign', () => {
 
   // ── Tab Navigation ─────────────────────────────────────────────
 
-  test('3. All 4 tabs render correct content', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('3. All 4 tabs render correct content', async ({ page }) => {
     await navigateToDashboardFromSelector(page, 'TabTest');
 
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
@@ -238,8 +237,7 @@ test.describe('Parent Zone — Redesign', () => {
     console.log('[Test 3] PASSED: All 4 tabs render correct content');
   });
 
-  test('4. Games tab → ParentGamesHub renders, game cards visible, click game → game view', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('4. Games tab → ParentGamesHub renders, game cards visible, click game → game view', async ({ page }) => {
     await navigateToDashboardFromSelector(page, 'GamesTabTest');
 
     // Navigate to games tab
@@ -427,8 +425,7 @@ test.describe('Parent Zone — Redesign', () => {
 
   // ── Layout & RTL ────────────────────────────────────────────────
 
-  test('8. Mobile-first layout — viewport 390px, max-w-md content, fixed bottom nav', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('8. Mobile-first layout — viewport 390px, max-w-md content, fixed bottom nav', async ({ page }) => {
     await navigateToDashboardFromSelector(page, 'LayoutTest');
 
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
@@ -469,8 +466,7 @@ test.describe('Parent Zone — Redesign', () => {
     console.log('[Test 8] PASSED: Mobile-first layout verified');
   });
 
-  test('9. RTL layout — dir=rtl on dashboard, Hebrew text visible, tabs render', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('9. RTL layout — dir=rtl on dashboard, Hebrew text visible, tabs render', async ({ page }) => {
     await navigateToDashboardFromSelector(page, 'RtlTest');
 
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
