@@ -24,12 +24,12 @@ export function difficultyAt(i: number, count: number): Difficulty {
 
 /** All numbers an item shows (operands and result), used by the repetition guard. */
 export function itemNumbers(item: PrepItem): number[] {
-    const text = `${item.stem.equation ?? ''} ${item.stem.text ?? ''} ${item.options[item.answerIndex]}`;
+    const text = `${item.stem.equation ?? ''} ${(item.stem.pictureLines ?? []).join(' ')} ${item.stem.text ?? ''} ${item.options[item.answerIndex]}`;
     return (text.match(/\d+/g) ?? []).map(Number);
 }
 
 const GUARD = 3;
-const stemKey = (item: PrepItem) => item.stem.equation ?? item.stem.text ?? item.id;
+const stemKey = (item: PrepItem) => item.stem.equation ?? item.stem.pictureLines?.join('|') ?? item.stem.text ?? item.id;
 const MAX_TRIES = 30;
 
 /**

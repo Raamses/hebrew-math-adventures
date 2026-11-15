@@ -107,7 +107,7 @@ describe('math sessions: repetition guard (math-curriculum.md)', () => {
         for (let seed = 1; seed <= 300; seed++) {
             const items = buildMath(mulberry32(seed), 12, new Set());
             expect(items).toHaveLength(12);
-            expect(new Set(items.map(i => i.stem.equation ?? i.stem.text)).size).toBe(12);
+            expect(new Set(items.map(i => i.stem.equation ?? i.stem.pictureLines?.join('|') ?? i.stem.text)).size).toBe(12);
             items.forEach((item, i) => {
                 const recent = new Set(items.slice(Math.max(0, i - 3), i).flatMap(itemNumbers));
                 if (itemNumbers(item).some(n => recent.has(n))) collisions++;

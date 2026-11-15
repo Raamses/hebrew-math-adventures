@@ -25,6 +25,15 @@ export function ItemStem({ stem, niqqud = false }: ItemStemProps) {
             {stem.text && (
                 <p className="text-xl font-bold text-slate-800 leading-snug" data-testid="prep-question">{pick(stem.text, stem.textNiqqud)}</p>
             )}
+            {stem.pictureLines && (
+                <div className="rounded-2xl bg-white border border-slate-200 py-3 space-y-2" data-testid="prep-picture-lines">
+                    {stem.pictureLines.map(line => (
+                        <div key={line} dir="ltr" className="unicode-bidi-isolate font-rubik text-3xl font-bold text-center text-slate-800 tracking-wide">
+                            {line}
+                        </div>
+                    ))}
+                </div>
+            )}
             {stem.equation && (
                 <div
                     dir="ltr"
