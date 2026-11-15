@@ -5,6 +5,10 @@ import { numericDistractors } from './distractors';
 import { intBetween, mulberry32, pick, shuffleOptions, type Rng } from './prng';
 import { pictureItem } from './pictures';
 import { addExplanation, missingExplanation, subExplanation, wordExplanation } from './arithmeticExplain';
+import { balanceItem, compareItem } from './mathCompare';
+import { doubleHalfItem, placeValueItem } from './mathNumberSense';
+import { oddOneOutItem, sequenceItem } from './mathPatterns';
+import { moneyItem, storyItem } from './mathWorld';
 
 /**
  * Stage-A style arithmetic (grade 2, numbers to 100; vault/rules/math-curriculum.md level 3):
@@ -96,9 +100,17 @@ export function wordItem(seed: number, difficulty: Difficulty): PrepItem {
         wordExplanation(n1, n2, tpl.op, answer));
 }
 
-const MAKERS = [exerciseItem, exerciseItem, missingItem, wordItem, pictureItem] as const;
+/**
+ * The mix (16 slots): the Stage-A key's task types keep 10 — exercises 3, missing number 2 (one balance),
+ * word problems 3, picture puzzles 2 — and number sense gets 6: sequence, compare, odd one out,
+ * tens and ones, double/half, money.
+ */
+export const MAKERS = [
+    exerciseItem, exerciseItem, exerciseItem, missingItem, balanceItem,
+    wordItem, storyItem, storyItem, pictureItem, pictureItem,
+    sequenceItem, compareItem, oddOneOutItem, placeValueItem, doubleHalfItem, moneyItem,
+] as const;
 
-/** A balanced mix: 2/5 exercises, 1/5 each missing number, word problems and picture puzzles (Stage-A task types). */
 export function mathItem(seed: number, difficulty: Difficulty): PrepItem {
     return MAKERS[seed % MAKERS.length](seed, difficulty);
 }

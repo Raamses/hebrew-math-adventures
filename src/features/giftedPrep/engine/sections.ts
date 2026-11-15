@@ -29,7 +29,10 @@ export function itemNumbers(item: PrepItem): number[] {
 }
 
 const GUARD = 3;
-const stemKey = (item: PrepItem) => item.stem.equation ?? item.stem.pictureLines?.join('|') ?? item.stem.text ?? item.id;
+/** What makes two items "the same question": the equation or picture, else the text plus its options
+ * (compare / odd-one-out items share one stem text, so the options tell them apart). */
+export const stemKey = (item: PrepItem) => item.stem.equation ?? item.stem.pictureLines?.join('|')
+    ?? `${item.stem.text ?? item.id}|${[...item.options].sort().join(',')}`;
 const MAX_TRIES = 30;
 
 /**

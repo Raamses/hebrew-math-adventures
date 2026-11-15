@@ -12,6 +12,12 @@ export type PrepKind =
     | 'math-missing'         // "? + 8 = 23"
     | 'math-word'            // short word problem
     | 'math-picture'         // picture puzzle: "🍎 + 🍎 = 8", how much is 🍎?
+    | 'math-sequence'        // "3, 5, 7, 9, ?"
+    | 'math-compare'         // which exercise has the biggest result?
+    | 'math-odd-one-out'     // which number does not belong?
+    | 'math-place-value'     // "4 tens and 7 ones"
+    | 'math-double-half'     // double 16, half of 30
+    | 'math-money'           // coins and change, in shekels
     | 'reading'              // question about a passage
     | 'word-meaning'
     | 'sentence-completion';
@@ -19,6 +25,7 @@ export type PrepKind =
 /** Every skill tag; bank JSON is validated against this list at load (engine/bank.ts). */
 export const SKILL_TAGS = [
     'add', 'sub', 'missing-number', 'word-problem', 'picture-puzzle',
+    'number-pattern', 'compare', 'odd-one-out', 'place-value', 'double-half', 'money',
     'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
     'word-meaning', 'sentence-completion',
 ] as const;

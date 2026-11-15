@@ -16,7 +16,8 @@ interface OptionListProps {
     readonly figures?: readonly Figure[];
 }
 
-const isNumeric = (s: string) => /^\d+$/.test(s);
+/** Numbers and short exercises ("23 + 15") render LTR-isolated, or RTL bidi would flip them to "15 + 23". */
+const isMath = (s: string) => /^\d+( [+\-−] \d+)*$/.test(s);
 
 /** Four answer buttons, RTL-ordered with Hebrew labels א–ד; numbers are LTR-isolated. */
 export function OptionList({ options, chosen, reveal, answerIndex, onChoose, figures }: OptionListProps) {
@@ -52,7 +53,7 @@ export function OptionList({ options, chosen, reveal, answerIndex, onChoose, fig
                         </span>
                         {figures?.[i] ? (
                             <PrepFigure fig={figures[i]} px={44} />
-                        ) : isNumeric(opt) ? (
+                        ) : isMath(opt) ? (
                             <span dir="ltr" className="unicode-bidi-isolate font-rubik text-2xl font-bold text-slate-800">{opt}</span>
                         ) : (
                             <span className="text-lg text-slate-800 leading-snug">{opt}</span>
