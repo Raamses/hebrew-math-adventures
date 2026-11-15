@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import './i18n'; // Initialize translations
 
 import { ProfileProvider, useProfile } from './context/ProfileContext'
@@ -17,6 +17,9 @@ import type { ArcadeMode } from './engines/bubble/types'
 
 import { useAnalytics } from './hooks/useAnalytics';
 
+// Gifted-prep section loads on demand (own chunk + content JSON)
+const PrepScreen = lazy(() => import('./features/giftedPrep/components/PrepScreen'));
+
 const AppContent = () => {
   const { logEvent } = useAnalytics();
 
@@ -26,7 +29,7 @@ const AppContent = () => {
   }, [logEvent]);
 
   const { profile, logout } = useProfile();
-  const [view, setView] = useState<'select' | 'map' | 'game' | 'parent' | 'pet'>('select');
+  const [view, setView] = useState<'select' | 'map' | 'game' | 'parent' | 'pet' | 'prep'>('select');
   const [showParentGate, setShowParentGate] = useState(false);
   // Track which screen opened the parent gate so we can return there on exit
   const [parentGateOrigin, setParentGateOrigin] = useState<'select' | 'map'>('select');
@@ -115,6 +118,14 @@ const AppContent = () => {
     return <PetScreen onBack={() => setView('map')} />;
   }
 
+  if (effectiveView === 'prep' && profile?.giftedPrepEnabled) {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-teal-50" />}>
+        <PrepScreen onExit={() => setView('map')} />
+      </Suspense>
+    );
+  }
+
   if (!profile) {
     return (
       <>
@@ -145,6 +156,7 @@ const AppContent = () => {
           onLogout={handleLogout}
           onArcadeMode={handleArcadeMode}
           onOpenPet={() => setView('pet')}
+          onOpenPrep={() => setView('prep')}
           onParentAccess={handleParentAccessFromMap}
         />
         {showParentGate && (

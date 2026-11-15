@@ -14,12 +14,14 @@ import { PetAvatar } from '../pet/PetAvatar';
 import { useProfile } from '../../context/ProfileContext';
 import { useAnalytics } from '../../hooks/useAnalytics';
 import { useQuest } from '../../context/QuestContext';
+import { PrepTile } from '../../features/giftedPrep/components/PrepTile';
 
 interface SagaMapProps {
     onNodeSelect: (node: LearningNode) => void;
     onLogout: () => void;
     onArcadeMode: (mode?: ArcadeMode, dailyMode?: string, dailyTarget?: number) => void;
     onOpenPet: () => void;
+    onOpenPrep?: () => void;
     onParentAccess?: () => void;
 }
 
@@ -47,7 +49,7 @@ const nodeVariants: Variants = {
     }
 };
 
-export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode, onOpenPet, onParentAccess }) => {
+export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArcadeMode, onOpenPet, onOpenPrep, onParentAccess }) => {
     const { isNodeLocked, getStars } = useProgress();
     const { t, i18n } = useTranslation();
     const { logEvent } = useAnalytics();
@@ -314,6 +316,9 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
 
             {/* Quest Panel banner */}
             <QuestPanel onStartChallenge={() => onArcadeMode(todayChallenge.mode as ArcadeMode, todayChallenge.mode, todayChallenge.target)} />
+
+            {/* Gifted-prep entry: only when a parent enabled it for this profile */}
+            {profile?.giftedPrepEnabled && onOpenPrep && <PrepTile onOpen={onOpenPrep} />}
 
             {/* Arcade Mode Selector Modal */}
             <AnimatePresence>

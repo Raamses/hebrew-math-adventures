@@ -142,6 +142,14 @@ const validateProfileUpdate = (updates: Partial<UserProfile>): Partial<UserProfi
         }
     }
 
+    if (updates.giftedPrepEnabled !== undefined) {
+        if (typeof updates.giftedPrepEnabled === 'boolean') {
+            sanitized.giftedPrepEnabled = updates.giftedPrepEnabled;
+        } else {
+            console.warn('Attempted to update profile with invalid giftedPrepEnabled, skipping update');
+        }
+    }
+
     if (updates.sessionHistory !== undefined) {
         if (Array.isArray(updates.sessionHistory)) {
             sanitized.sessionHistory = updates.sessionHistory;

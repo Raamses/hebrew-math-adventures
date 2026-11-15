@@ -3,6 +3,7 @@ import { Trash2, AlertTriangle, Edit } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
 import { useTranslation } from 'react-i18next';
 import { EditProfileModal } from './EditProfileModal';
+import { PrepToggle } from '../../features/giftedPrep/components/PrepToggle';
 import type { UserProfile } from '../../types/user';
 
 export const ProfileManager: React.FC = () => {
@@ -33,8 +34,9 @@ export const ProfileManager: React.FC = () => {
                     {allProfiles.map(profile => (
                         <div
                             key={profile.id}
-                            className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm border border-slate-100"
+                            className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                         >
+                            <div className="flex items-center gap-3">
                             {/* Avatar */}
                             <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-2xl shadow-sm border border-indigo-100 shrink-0">
                                 {profile.avatarId}
@@ -72,6 +74,8 @@ export const ProfileManager: React.FC = () => {
                                     <Trash2 size={18} />
                                 </button>
                             </div>
+                            </div>
+                            <PrepToggle profile={profile} onChange={updateProfile} />
                         </div>
                     ))}
 

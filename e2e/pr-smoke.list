@@ -8,3 +8,4 @@ e2e/wrong-answer-feedback.spec.ts       # wrong answer -> feedback -> session co
 e2e/spawn-overhaul-smoke.spec.ts        # arcade Zen + Blitz: bubbles keep spawning, no crash
 e2e/parent-zone-redesign.spec.ts        # parent gate opens the dashboard; exit returns
 e2e/language-toggle.spec.ts             # Hebrew -> English UI switch
+e2e/gifted-prep-smoke.spec.ts           # gifted prep: parent toggle -> tile -> hub (RTL) -> back
