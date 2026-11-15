@@ -6,11 +6,12 @@ import { PrepProgressProvider } from '../context/PrepProgressContext';
 import { usePrepAnalytics } from '../hooks/usePrepAnalytics';
 import { PrepHub } from './PrepHub';
 import { LearnRoute } from './LearnRoute';
+import { MockRoute } from './MockRoute';
 
 type Route =
     | { readonly name: 'hub' }
     | { readonly name: 'learn'; readonly section: PrepSection; readonly run: number }
-    | { readonly name: 'mock' };
+    | { readonly name: 'mock'; readonly run: number };
 
 interface PrepScreenProps {
     readonly onExit: () => void;
@@ -38,7 +39,7 @@ export default function PrepScreen({ onExit }: PrepScreenProps) {
                     <PrepHub
                         onBack={onExit}
                         onLearn={section => setRoute({ name: 'learn', section, run: Date.now() })}
-                        onMock={() => setRoute({ name: 'mock' })}
+                        onMock={() => setRoute({ name: 'mock', run: Date.now() })}
                     />
                 )}
                 {route.name === 'learn' && (
@@ -48,6 +49,9 @@ export default function PrepScreen({ onExit }: PrepScreenProps) {
                         onAgain={() => setRoute({ ...route, run: Date.now() })}
                         onExit={hub}
                     />
+                )}
+                {route.name === 'mock' && (
+                    <MockRoute key={route.run} onAgain={() => setRoute({ name: 'mock', run: Date.now() })} onExit={hub} />
                 )}
             </div>
         </PrepProgressProvider>

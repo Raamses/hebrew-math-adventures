@@ -14,8 +14,8 @@ interface PrepHubProps {
 export function PrepHub({ onBack, onLearn, onMock }: PrepHubProps) {
     const { t } = usePrepT();
     const { niqqud, setNiqqud } = usePrepProgress();
-    // The practice test lands in its own PR (#285); until then the button stays disabled, so no route is missing
-    const mockReady = false;
+    // The mock runs the parts that have content (math always; reading once reviewed items exist)
+    const mockReady = getSectionBuilder('math') !== undefined;
 
     return (
         <div className="max-w-xl mx-auto px-4 py-4 space-y-4">

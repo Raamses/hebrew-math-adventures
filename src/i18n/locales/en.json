@@ -1046,7 +1046,8 @@
       "nextSection": "Next part",
       "noBack": "In the test you can't go back to a previous question",
       "skipped": "You skipped {{n}} questions. Next time, guess",
-      "sectionScore": "{{name}}: {{correct}} of {{total}}"
+      "sectionScore": "{{name}}: {{correct}} of {{total}}",
+      "partLine": "{{n}} questions · {{min}} min"
     }
   }
 }

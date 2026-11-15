@@ -1046,7 +1046,8 @@
       "nextSection": "לחלק הבא",
       "noBack": "במבחן לא חוזרים לשאלה קודמת",
       "skipped": "דילגת על {{n}} שאלות – בפעם הבאה כדאי לנחש",
-      "sectionScore": "{{name}}: {{correct}} מתוך {{total}}"
+      "sectionScore": "{{name}}: {{correct}} מתוך {{total}}",
+      "partLine": "{{n}} שאלות · {{min}} דקות"
     }
   }
 }
