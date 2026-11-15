@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import type { PrepItem } from '../types';
 
@@ -36,5 +36,8 @@ export function usePrepAnalytics() {
         void logEvent('prep_toggle', { enabled });
     }, [logEvent]);
 
-    return { open, sessionStart, sessionEnd, itemAnswered, toggled };
+    return useMemo(
+        () => ({ open, sessionStart, sessionEnd, itemAnswered, toggled }),
+        [open, sessionStart, sessionEnd, itemAnswered, toggled],
+    );
 }
