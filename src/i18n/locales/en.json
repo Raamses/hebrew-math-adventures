@@ -996,7 +996,9 @@
       "mock": "Practice test",
       "mockHint": "Like test day: a timer for each part",
       "comingSoon": "Soon",
-      "hebrewOnly": "This area is in Hebrew, like the test"
+      "hebrewOnly": "This area is in Hebrew, like the test",
+      "niqqudOn": "Reading with niqqud",
+      "niqqudOff": "Reading without niqqud"
     },
     "sections": {
       "reading": "Reading",

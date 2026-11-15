@@ -7,6 +7,9 @@ interface PrepProgressValue {
     readonly progress: PrepProgressState;
     readonly addAttempt: (attempt: PrepAttempt) => void;
     readonly addMock: (mock: PrepMockResult) => void;
+    /** Vocalized text on/off for this profile (default on). */
+    readonly niqqud: boolean;
+    readonly setNiqqud: (on: boolean) => void;
 }
 
 const PrepProgressContext = createContext<PrepProgressValue | null>(null);
@@ -30,8 +33,13 @@ export function PrepProgressProvider({ profileId, children }: PrepProgressProvid
 
     const addAttempt = useCallback((a: PrepAttempt) => update(s => recordAttempt(s, a)), [update]);
     const addMock = useCallback((m: PrepMockResult) => update(s => recordMock(s, m)), [update]);
+    const setNiqqud = useCallback((on: boolean) => update(s => ({ ...s, niqqud: on })), [update]);
+    const niqqud = progress.niqqud ?? true;
 
-    const value = useMemo(() => ({ progress, addAttempt, addMock }), [progress, addAttempt, addMock]);
+    const value = useMemo(
+        () => ({ progress, addAttempt, addMock, niqqud, setNiqqud }),
+        [progress, addAttempt, addMock, niqqud, setNiqqud],
+    );
     return <PrepProgressContext value={value}>{children}</PrepProgressContext>;
 }
 

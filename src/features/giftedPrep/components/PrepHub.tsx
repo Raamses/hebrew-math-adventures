@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import type { PrepSection } from '../types';
 import { SECTION_EMOJI, SECTION_ORDER, getSectionBuilder } from '../engine/sections';
 import { usePrepT } from '../hooks/usePrepT';
+import { usePrepProgress } from '../context/PrepProgressContext';
 
 interface PrepHubProps {
     readonly onBack: () => void;
@@ -12,7 +13,9 @@ interface PrepHubProps {
 
 export function PrepHub({ onBack, onLearn, onMock }: PrepHubProps) {
     const { t } = usePrepT();
-    const mockReady = getSectionBuilder('reading') !== undefined && getSectionBuilder('math') !== undefined;
+    const { niqqud, setNiqqud } = usePrepProgress();
+    // The practice test lands in its own PR (#285); until then the button stays disabled, so no route is missing
+    const mockReady = false;
 
     return (
         <div className="max-w-xl mx-auto px-4 py-4 space-y-4">
@@ -74,6 +77,17 @@ export function PrepHub({ onBack, onLearn, onMock }: PrepHubProps) {
                 </span>
             </button>
 
+            <button
+                type="button"
+                role="switch"
+                aria-checked={niqqud}
+                onClick={() => setNiqqud(!niqqud)}
+                data-testid="prep-niqqud-toggle"
+                className="mx-auto flex items-center gap-2 rounded-full bg-white border border-slate-200 px-4 py-2 text-slate-700 min-h-[44px]"
+            >
+                <span className={cn('w-3 h-3 rounded-full', niqqud ? 'bg-emerald-500' : 'bg-slate-300')} aria-hidden="true" />
+                {niqqud ? t($ => $.prep.hub.niqqudOn) : t($ => $.prep.hub.niqqudOff)}
+            </button>
             <p className="text-center text-xs text-slate-400">{t($ => $.prep.hub.hebrewOnly)}</p>
         </div>
     );
