@@ -47,6 +47,8 @@ export interface UserProfile {
     gems?: number;
     // Card PG-3: Weekly Goals
     weeklyGoal?: WeeklyGoal;
+    // Gifted-prep section (vault/decisions/2026-11-gifted-prep-stage-a.md): parent turns it on per profile
+    giftedPrepEnabled?: boolean;
 }
 
 export interface WeeklyGoal {

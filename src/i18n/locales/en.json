@@ -982,5 +982,69 @@
     "titleChip": "BLITZ • RAPID",
     "instruction": "Pop the bubble with the answer",
     "multiChip": "MULTIPLIER"
+  },
+  "prep": {
+    "tile": {
+      "title": "Thinking Academy",
+      "subtitle": "Reading and math practice"
+    },
+    "hub": {
+      "title": "Thinking Academy",
+      "subtitle": "What shall we practice today?",
+      "back": "Back to map",
+      "learn": "Practice",
+      "mock": "Practice test",
+      "mockHint": "Like test day: a timer for each part",
+      "comingSoon": "Soon",
+      "hebrewOnly": "This area is in Hebrew, like the test"
+    },
+    "sections": {
+      "reading": "Reading",
+      "language": "Language",
+      "math": "Math"
+    },
+    "toggle": {
+      "label": "Thinking Academy",
+      "hint": "Practice area for the Stage A screening (grade 2)",
+      "on": "On",
+      "off": "Off"
+    },
+    "player": {
+      "question": "Question {{n}} of {{total}}",
+      "check": "Check",
+      "next": "Next",
+      "finish": "Finish",
+      "correct": "Correct! Well done",
+      "wrong": "Almost! The right answer is marked",
+      "explain": "Why?",
+      "readAgain": "You can read the passage again",
+      "quit": "Quit",
+      "pause": "Pause",
+      "resume": "Resume",
+      "quitConfirm": "Quit? This practice will not be saved",
+      "stay": "Stay"
+    },
+    "summary": {
+      "title": "All done!",
+      "score": "You got {{correct}} of {{total}} right",
+      "again": "Practice more",
+      "home": "Back",
+      "great": "Excellent work!",
+      "good": "Very nice! Keep practicing",
+      "keep": "Every practice helps! Try again?"
+    },
+    "mock": {
+      "introTitle": "Practice test",
+      "intro": "Three short parts. Each part has a timer. When time is up, we move to the next part.",
+      "tipTitle": "Important tip",
+      "tip": "Never leave a question blank! If unsure, rule out answers that don't fit and guess. Wrong answers don't lose points.",
+      "start": "Start",
+      "timeLeft": "{{min}}:{{sec}} left",
+      "sectionDone": "Part finished",
+      "nextSection": "Next part",
+      "noBack": "In the test you can't go back to a previous question",
+      "skipped": "You skipped {{n}} questions. Next time, guess",
+      "sectionScore": "{{name}}: {{correct}} of {{total}}"
+    }
   }
 }

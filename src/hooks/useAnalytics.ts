@@ -97,6 +97,12 @@ export type AnalyticsEvent =
     | 'weekly_engagement_summary'
     // Anomaly detection
     | 'anomaly_detected'
+    // Gifted-prep section
+    | 'prep_open'
+    | 'prep_toggle'
+    | 'prep_session_start'
+    | 'prep_session_end'
+    | 'prep_item_answered'
     // Legacy/Generic
     | 'page_view'
     | 'level_start'

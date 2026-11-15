@@ -24,6 +24,9 @@ tags: [roadmap, current, work]
 - `e4f0f9f` — fix: wire up 15 new lessons, repair ParentBlitz/hub tests, de-flake bubble test
 - `a262011` — fix(bubble): variant-aware spawn-X clamp + correct overflow assertions
 
+## Gifted-prep Stage-A blitz (2026-11-15 → 11-17, hand-built, target Stage A ~30.11)
+- PR order: main-red e2e fix → scaffold → arithmetic → reading + language (Ram reviews content) → learning mode + mock. ADR [[decisions/2026-11-gifted-prep-stage-a]].
+
 ## Active Plan
 - [[plans/game-ideation-2026-08-23]] — comprehensive feature plan from ideation session (P0/P1/P2 priorities)
 - Monetization parked → see [[backlog/monetization-and-growth]]
