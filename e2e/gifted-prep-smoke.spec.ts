@@ -49,6 +49,21 @@ test.describe('Gifted prep section', () => {
         await page.getByTestId('prep-quit').click();
         await expect(page.getByTestId('prep-learn-math')).toBeVisible();
 
+        // Niqqud: on by default (reading question is vocalized); flip the switch -> plain text
+        const NIQQUD = /[ְ-ׇֽׁׂ]/;
+        const readingQuestion = async () => {
+            await page.getByTestId('prep-learn-reading').click();
+            const text = (await page.getByTestId('prep-question').textContent()) ?? '';
+            await page.getByTestId('prep-pause').click();
+            await page.getByTestId('prep-quit').click();
+            return text;
+        };
+        await expect(page.getByTestId('prep-niqqud-toggle')).toHaveAttribute('aria-checked', 'true');
+        expect(await readingQuestion()).toMatch(NIQQUD);
+        await page.getByTestId('prep-niqqud-toggle').click();
+        await expect(page.getByTestId('prep-niqqud-toggle')).toHaveAttribute('aria-checked', 'false');
+        expect(await readingQuestion()).not.toMatch(NIQQUD);
+
         await page.getByTestId('prep-back').click();
         await expect(page.getByTestId('prep-tile')).toBeVisible();
 

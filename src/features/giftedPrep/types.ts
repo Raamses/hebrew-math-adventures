@@ -15,19 +15,30 @@ export type PrepKind =
     | 'word-meaning'
     | 'sentence-completion';
 
-export type SkillTag =
-    | 'add' | 'sub' | 'missing-number' | 'word-problem'
-    | 'literal' | 'inference' | 'vocabulary' | 'main-idea' | 'sequence'
-    | 'word-meaning' | 'sentence-completion';
+/** Every skill tag; bank JSON is validated against this list at load (engine/bank.ts). */
+export const SKILL_TAGS = [
+    'add', 'sub', 'missing-number', 'word-problem',
+    'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
+    'word-meaning', 'sentence-completion',
+] as const;
+export type SkillTag = typeof SKILL_TAGS[number];
 
 export type Difficulty = 1 | 2 | 3;
 
 /** The stem is data, never JSX. `equation` is rendered inside <div dir="ltr">. */
 export interface PrepStem {
     readonly text?: string;
+    /** Fully vocalized twin of `text` (bank items); shown when niqqud is on. */
+    readonly textNiqqud?: string;
     readonly equation?: string;
     /** Reading items carry their passage so the player can show it above the question. */
-    readonly passage?: { readonly id: string; readonly title: string; readonly text: string };
+    readonly passage?: {
+        readonly id: string;
+        readonly title: string;
+        readonly text: string;
+        readonly titleNiqqud?: string;
+        readonly textNiqqud?: string;
+    };
 }
 
 export interface PrepItem {
@@ -40,8 +51,10 @@ export interface PrepItem {
     /** Always 4 options, already shuffled by seed. Numeric options render LTR. */
     readonly options: readonly string[];
     readonly answerIndex: number;
+    readonly optionsNiqqud?: readonly string[];
     /** Kid-language Hebrew explanation shown after answering in learning mode. */
     readonly explanation: string;
+    readonly explanationNiqqud?: string;
     readonly source: 'procedural' | 'bank';
     readonly seed?: number;
 }
@@ -63,7 +76,8 @@ export interface PrepSkillStat {
 
 export interface PrepMockResult {
     readonly at: number;
-    readonly sections: Readonly<Record<PrepSection, { readonly answered: number; readonly correct: number; readonly total: number }>>;
+    /** Only the parts that ran (language is never in the mock; reading only once it has reviewed content). */
+    readonly sections: Readonly<Partial<Record<PrepSection, { readonly answered: number; readonly correct: number; readonly total: number }>>>;
 }
 
 export const PREP_SCHEMA_VERSION = 1;
@@ -75,4 +89,6 @@ export interface PrepProgressState {
     readonly mocks: readonly PrepMockResult[];
     /** Bank item ids seen recently, so sessions prefer unseen items. */
     readonly seenIds: readonly string[];
+    /** Show vocalized text (ניקוד). Optional in schema v1; absent means on (grade-2 readers). */
+    readonly niqqud?: boolean;
 }

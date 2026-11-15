@@ -36,6 +36,7 @@ export function migratePrepProgress(raw: unknown): PrepProgressState {
         attempts: Array.isArray(obj.attempts) ? obj.attempts.slice(-MAX_ATTEMPTS) : [],
         mocks: Array.isArray(obj.mocks) ? obj.mocks.slice(-MAX_MOCKS) : [],
         seenIds: Array.isArray(obj.seenIds) ? obj.seenIds.slice(-MAX_SEEN) : [],
+        ...(typeof obj.niqqud === 'boolean' ? { niqqud: obj.niqqud } : {}),
     };
 }
 

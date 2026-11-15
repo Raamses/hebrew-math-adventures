@@ -5,6 +5,8 @@ import type { PrepItem, PrepSection } from '../types';
 import { usePrepSession } from '../hooks/usePrepSession';
 import { usePrepAnalytics } from '../hooks/usePrepAnalytics';
 import { usePrepT } from '../hooks/usePrepT';
+import { usePrepProgress } from '../context/PrepProgressContext';
+import { pickOptions, pickText } from '../engine/niqqud';
 import { ItemStem } from './ItemStem';
 import { OptionList } from './OptionList';
 import { PrepSummary } from './PrepSummary';
@@ -22,6 +24,7 @@ export function LearnSession({ section, items, onAgain, onExit }: LearnSessionPr
     const { t } = usePrepT();
     const analytics = usePrepAnalytics();
     const s = usePrepSession(items, 'learn');
+    const { niqqud } = usePrepProgress();
     const [startedAt] = useState(() => Date.now());
     const ended = useRef(false);
 
@@ -53,9 +56,9 @@ export function LearnSession({ section, items, onAgain, onExit }: LearnSessionPr
                 </div>
             </header>
 
-            <ItemStem stem={item.stem} />
+            <ItemStem stem={item.stem} niqqud={niqqud} />
             <OptionList
-                options={item.options}
+                options={pickOptions(niqqud, item.options, item.optionsNiqqud)}
                 chosen={s.currentAnswer?.chosen ?? undefined}
                 reveal
                 answerIndex={item.answerIndex}
@@ -69,7 +72,7 @@ export function LearnSession({ section, items, onAgain, onExit }: LearnSessionPr
                     aria-live="polite"
                 >
                     <p className="font-bold text-lg">{s.currentAnswer?.correct ? `✅ ${t($ => $.prep.player.correct)}` : `💡 ${t($ => $.prep.player.wrong)}`}</p>
-                    <p className="text-slate-700 leading-relaxed" data-testid="prep-explanation">{item.explanation}</p>
+                    <p className="text-slate-700 leading-relaxed" data-testid="prep-explanation">{pickText(niqqud, item.explanation, item.explanationNiqqud)}</p>
                     <button
                         type="button"
                         onClick={s.next}

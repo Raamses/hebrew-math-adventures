@@ -1,8 +1,5 @@
 import { intBetween, type Rng } from './prng';
 
-/** The typical slips a 7-year-old makes; each wrong option is exactly one of these. */
-export type Slip = 'off-by-one' | 'off-by-ten' | 'wrong-operation' | 'digit-swap' | 'near';
-
 export interface DistractorInput {
     readonly answer: number;
     /** The result of doing the other operation (a - b instead of a + b), when it applies. */

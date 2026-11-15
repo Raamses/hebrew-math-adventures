@@ -996,7 +996,9 @@
       "mock": "מבחן ניסיון",
       "mockHint": "כמו ביום המבחן: זמן לכל חלק",
       "comingSoon": "בקרוב",
-      "hebrewOnly": "האזור הזה בעברית, כמו המבחן"
+      "hebrewOnly": "האזור הזה בעברית, כמו המבחן",
+      "niqqudOn": "קריאה עם ניקוד",
+      "niqqudOff": "קריאה בלי ניקוד"
     },
     "sections": {
       "reading": "הבנת הנקרא",
@@ -1044,7 +1046,8 @@
       "nextSection": "לחלק הבא",
       "noBack": "במבחן לא חוזרים לשאלה קודמת",
       "skipped": "דילגת על {{n}} שאלות – בפעם הבאה כדאי לנחש",
-      "sectionScore": "{{name}}: {{correct}} מתוך {{total}}"
+      "sectionScore": "{{name}}: {{correct}} מתוך {{total}}",
+      "partLine": "{{n}} שאלות · {{min}} דקות"
     }
   }
 }

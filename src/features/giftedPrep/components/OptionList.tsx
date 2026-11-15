@@ -16,7 +16,8 @@ const isNumeric = (s: string) => /^\d+$/.test(s);
 
 /** Four answer buttons, RTL-ordered with Hebrew labels א–ד; numbers are LTR-isolated. */
 export function OptionList({ options, chosen, reveal, answerIndex, onChoose }: OptionListProps) {
-    const locked = chosen !== undefined;
+    // Learning mode locks after the first tap (feedback shown); in the mock a choice can change until Next
+    const locked = reveal && chosen !== undefined && chosen !== null;
     return (
         <div className="grid grid-cols-1 gap-2 @container" role="radiogroup">
             {options.map((opt, i) => {
