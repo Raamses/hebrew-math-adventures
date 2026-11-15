@@ -1,14 +1,18 @@
 // Promote reviewed gifted-prep items from content-drafts/ into the shipped bank (ADR 2026-11-gifted-prep-stage-a §8).
 //
-// Usage: node scripts/prep-content-promote.mjs <decisions.json> [--reviewer Ram]
+// Usage: node scripts/prep-content-promote.mjs <decisions.json> [<more-decisions.json> ...] [--reviewer Ram]
+// The shipped bank is rebuilt from ALL decisions given, so pass every review round's export (round 1 + round 2 ...):
+// an id missing from every file is not promoted.
 // decisions.json: { "<id>": { "status": "approve" | "edit" | "drop", "note"?: string }, ... } — exported from the
 // review page's store. Reading decisions are per passage (rc-NNN), language decisions per item (wm-NNN / sc-NNN).
 // Only "approve" is promoted. "edit" stays in drafts until fixed and approved again; "drop" never ships.
+// Round 2 adds passages with 6-7 questions; readingItems() keeps passages whole, so once they ship the mock's
+// reading part (MOCK_PLAN: 10 questions, 12 min) can reach ~13-14 questions. Check MOCK_PLAN seconds when promoting.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-/** Review-only annotations that must never reach the bundle. */
-const REVIEW_ONLY = ['flag', 'note'];
+/** Review-only annotations that must never reach the bundle (`genre` only labels passages on the review page). */
+const REVIEW_ONLY = ['flag', 'note', 'genre'];
 const strip = obj => Object.fromEntries(Object.entries(obj).filter(([k]) => !REVIEW_ONLY.includes(k)));
 
 /** Pure core (tested in src/features/giftedPrep/__tests__/promote.test.ts). */
@@ -26,15 +30,24 @@ export function promote({ reading, language }, decisions, { reviewer = 'Ram', to
     };
 }
 
+/** CLI args -> decisions file paths (in order) and reviewer; `--reviewer X` may sit anywhere. Tested. */
+export function parseArgs(args) {
+    const ri = args.indexOf('--reviewer');
+    const reviewer = ri >= 0 && args[ri + 1] ? args[ri + 1] : 'Ram';
+    const paths = args.filter((_, i) => ri < 0 || (i !== ri && i !== ri + 1));
+    return { paths, reviewer };
+}
+
+/** One decisions map from every review round; a later round wins for an id decided twice. Tested. */
+export const mergeDecisions = rounds => Object.assign({}, ...rounds);
+
 function main() {
-    const [, , decisionsPath, ...rest] = process.argv;
-    if (!decisionsPath) {
-        console.error('usage: node scripts/prep-content-promote.mjs <decisions.json> [--reviewer Ram]');
+    const { paths, reviewer } = parseArgs(process.argv.slice(2));
+    if (paths.length === 0) {
+        console.error('usage: node scripts/prep-content-promote.mjs <decisions.json> [<more-decisions.json> ...] [--reviewer Ram]');
         process.exit(2);
     }
-    const ri = rest.indexOf('--reviewer');
-    const reviewer = ri >= 0 && rest[ri + 1] ? rest[ri + 1] : 'Ram';
-    const decisions = JSON.parse(readFileSync(decisionsPath, 'utf8'));
+    const decisions = mergeDecisions(paths.map(p => JSON.parse(readFileSync(p, 'utf8'))));
     const DRAFTS = 'content-drafts/gifted-prep/he';
     const SHIPPED = 'src/features/giftedPrep/content/he';
     const drafts = {
