@@ -3,6 +3,9 @@ import { numericDistractors } from './distractors';
 import { intBetween, mulberry32, pick, shuffleOptions, shuffled, type Rng } from './prng';
 import { ltr } from './arithmeticExplain';
 import mathNiqqud from '../content/he/math-niqqud.json';
+import { canon, label } from './figures';
+import { matrixPuzzle, oddPuzzle } from './figureGrid';
+import { seriesPuzzle } from './figureSeries';
 
 /**
  * Stage-A "picture puzzles" (חידות בציורים, on the Ministry's grade-2 key): every picture stands for a number;
@@ -71,7 +74,37 @@ function puzzle(rng: Rng, shape: Shape, x: string, y: string): Puzzle {
     }
 }
 
+const FIGURE_STEM = { rotation: 'series', size: 'series', count: 'series', matrix: 'matrix', odd: 'odd' } as const;
+
+/** Shape puzzles (series, matrix, odd one out): options are drawn figures, labelled by their Hebrew description. */
+export function figureItem(seed: number, difficulty: Difficulty): PrepItem {
+    const rng = mulberry32(seed);
+    const make = pick(rng, [seriesPuzzle, seriesPuzzle, matrixPuzzle, oddPuzzle]);
+    const p = make(rng, difficulty);
+    const order = shuffled(rng, [0, 1, 2, 3]);
+    const [text, textNiqqud] = mathNiqqud.figureStems[FIGURE_STEM[p.kind]];
+    return {
+        id: `math-figure:${difficulty}:${seed}`,
+        kind: 'math-picture',
+        section: 'math',
+        skill: 'picture-puzzle',
+        difficulty,
+        stem: { text, textNiqqud, ...(p.board.cells.length ? { figures: p.board } : {}) },
+        options: order.map(i => label(p.options[i])),
+        optionFigures: order.map(i => canon(p.options[i])),
+        answerIndex: order.indexOf(0),
+        explanation: p.explanation,
+        source: 'procedural',
+        seed,
+    };
+}
+
+/** Half number puzzles (the Stage-A key's type), half shape puzzles for variety. */
 export function pictureItem(seed: number, difficulty: Difficulty): PrepItem {
+    return seed % 2 === 0 ? figureItem(seed, difficulty) : numberPictureItem(seed, difficulty);
+}
+
+export function numberPictureItem(seed: number, difficulty: Difficulty): PrepItem {
     const rng = mulberry32(seed);
     const [x, y] = shuffled(rng, ICONS);
     const p = puzzle(rng, pick(rng, SHAPES[difficulty]), x, y);

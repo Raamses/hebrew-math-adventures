@@ -59,6 +59,7 @@ export function LearnSession({ section, items, onAgain, onExit }: LearnSessionPr
             <ItemStem stem={item.stem} niqqud={niqqud} />
             <OptionList
                 options={pickOptions(niqqud, item.options, item.optionsNiqqud)}
+                figures={item.optionFigures}
                 chosen={s.currentAnswer?.chosen ?? undefined}
                 reveal
                 answerIndex={item.answerIndex}

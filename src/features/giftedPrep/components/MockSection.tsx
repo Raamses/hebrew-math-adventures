@@ -61,6 +61,7 @@ export function MockSection({ part, partIndex, partCount, onDone, onQuit }: Mock
             <ItemStem stem={item.stem} niqqud={niqqud} />
             <OptionList
                 options={pickOptions(niqqud, item.options, item.optionsNiqqud)}
+                figures={item.optionFigures}
                 chosen={choice}
                 reveal={false}
                 answerIndex={item.answerIndex}
