@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New drafts rc-041..rc-080, wm-021..wm-040 and sc-021..sc-040 (2026-11-16): vocalized by Claude only, no Dicta cross-check; their niqqud has not been human-reviewed either.",
+ "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New drafts wm-021..wm-040 and sc-021..sc-040 (2026-11-16): vocalized by Claude only, no Dicta cross-check; their niqqud has not been human-reviewed either.",
  "items": [
   {
    "id": "wm-001",
