@@ -1,0 +1,686 @@
+{
+ "schemaVersion": 1,
+ "items": [
+  {
+   "id": "wm-001",
+   "kind": "word-meaning",
+   "stem": "אורי נכנס לחדר בשקט כדי לא להעיר את התינוק. מה פירוש המילה 'בשקט'?",
+   "options": [
+    "בלי לעשות רעש",
+    "בריצה מהירה",
+    "בקול רם מאוד",
+    "עם הרבה חברים"
+   ],
+   "answerIndex": 0,
+   "explanation": "כשעושים משהו בשקט, לא עושים רעש. אורי לא רצה להעיר את התינוק.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-002",
+   "kind": "word-meaning",
+   "stem": "מה ההפך של המילה 'חם'?",
+   "options": [
+    "קר",
+    "רטוב",
+    "כבד",
+    "גדול"
+   ],
+   "answerIndex": 0,
+   "explanation": "ההפך מחם הוא קר. למשל, תה חם וגלידה קרה.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-003",
+   "kind": "word-meaning",
+   "stem": "נועה נעלה את הדלת בעזרת מפתח. מה פירוש המילה 'נעלה'?",
+   "options": [
+    "סגרה כך שאי אפשר לפתוח",
+    "צבעה",
+    "פתחה לרווחה",
+    "ניקתה"
+   ],
+   "answerIndex": 0,
+   "explanation": "כשנועלים דלת, סוגרים אותה עם מפתח ואי אפשר לפתוח אותה בלי המפתח.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-004",
+   "kind": "word-meaning",
+   "stem": "איזו מילה דומה במשמעותה ל'שמח'?",
+   "options": [
+    "עליז",
+    "עצוב",
+    "כועס",
+    "מפוחד"
+   ],
+   "answerIndex": 0,
+   "explanation": "עליז וגם שמח אומרים שטוב ונעים לב. שאר המילים מתארות רגשות אחרים.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-005",
+   "kind": "word-meaning",
+   "stem": "יובל הוא ילד אמיץ, והוא לא פחד להיכנס למים העמוקים. מה פירוש המילה 'אמיץ'?",
+   "options": [
+    "לא מפחד",
+    "אוהב לישון",
+    "מדבר בקול נמוך",
+    "גבוה מאוד"
+   ],
+   "answerIndex": 0,
+   "explanation": "אמיץ הוא מי שלא מפחד לעשות דברים קשים או מפחידים, כמו יובל.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-006",
+   "kind": "word-meaning",
+   "stem": "מה ההפך של המילה 'מלא'?",
+   "options": [
+    "ריק",
+    "כבד",
+    "עגול",
+    "חדש"
+   ],
+   "answerIndex": 0,
+   "explanation": "כוס מלאה יש בה הרבה מים, וכוס ריקה אין בה כלום. ריק הוא ההפך ממלא.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-007",
+   "kind": "word-meaning",
+   "stem": "סבתא אפתה עוגה, והבית התמלא בריח נעים. מה פירוש המילה 'אפתה'?",
+   "options": [
+    "הכינה בתנור",
+    "קנתה בחנות",
+    "חתכה לחתיכות",
+    "שטפה במים"
+   ],
+   "answerIndex": 0,
+   "explanation": "אופים עוגה בתנור. סבתא הכינה אותה בבית והריח התפשט.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-008",
+   "kind": "word-meaning",
+   "stem": "הכלב קפץ מעל הגדר בזריזות. מה פירוש המילה 'בזריזות'?",
+   "options": [
+    "מהר ובקלות",
+    "לאט מאוד",
+    "בפחד גדול",
+    "בלי סיבה"
+   ],
+   "answerIndex": 0,
+   "explanation": "מי שעושה משהו בזריזות עושה אותו מהר ובקלות, בלי להתעכב.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-009",
+   "kind": "word-meaning",
+   "stem": "איזו מילה דומה במשמעותה ל'גדול מאוד'?",
+   "options": [
+    "ענקי",
+    "זעיר",
+    "צר",
+    "נמוך"
+   ],
+   "answerIndex": 0,
+   "explanation": "ענקי פירושו גדול מאוד, כמו פיל. זעיר הוא ההפך, קטן מאוד.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-010",
+   "kind": "word-meaning",
+   "stem": "אחרי הגשם הרחוב היה רטוב. מה פירוש המילה 'רטוב'?",
+   "options": [
+    "מלא במים",
+    "מלא באור",
+    "מלא באבק",
+    "מלא בשמחה"
+   ],
+   "answerIndex": 0,
+   "explanation": "כשיורד גשם, הרחוב מתמלא במים והוא נהיה רטוב.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-011",
+   "kind": "word-meaning",
+   "stem": "מה ההפך של המילה 'להתקרב'?",
+   "options": [
+    "להתרחק",
+    "להתיישב",
+    "להתלבש",
+    "להתעורר"
+   ],
+   "answerIndex": 0,
+   "explanation": "מי שמתקרב נהיה קרוב יותר, ומי שמתרחק נהיה רחוק יותר. אלה הפכים.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-012",
+   "kind": "word-meaning",
+   "stem": "גיא הודה לחבר שלו שעזר לו. מה פירוש המילה 'הודה'?",
+   "options": [
+    "אמר תודה",
+    "ביקש סליחה",
+    "אמר שלום",
+    "שאל שאלה"
+   ],
+   "answerIndex": 0,
+   "explanation": "כשמודים למישהו, אומרים לו תודה. גיא אמר תודה לחבר שעזר.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-013",
+   "kind": "word-meaning",
+   "stem": "האורחים הגיעו לחתונה בבגדים חגיגיים. מה פירוש המילה 'חגיגיים'?",
+   "options": [
+    "יפים ומיוחדים לאירוע שמח",
+    "ישנים וקרועים",
+    "קטנים וצפופים",
+    "חמים וכבדים"
+   ],
+   "answerIndex": 0,
+   "explanation": "בגדים חגיגיים הם בגדים יפים שלובשים בחג או באירוע שמח, כמו חתונה.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-014",
+   "kind": "word-meaning",
+   "stem": "מיכל חיפשה את המשקפיים בכל הבית עד שמצאה אותם. מה פירוש המילה 'חיפשה'?",
+   "options": [
+    "ניסתה למצוא",
+    "ניסתה לשבור",
+    "ניסתה להחביא",
+    "ניסתה לצייר"
+   ],
+   "answerIndex": 0,
+   "explanation": "מי שמחפש משהו מנסה למצוא אותו. בסוף מיכל אכן מצאה את המשקפיים.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-015",
+   "kind": "word-meaning",
+   "stem": "איזו מילה דומה במשמעותה ל'להסתכל'?",
+   "options": [
+    "להביט",
+    "לשמוע",
+    "לטעום",
+    "להריח"
+   ],
+   "answerIndex": 0,
+   "explanation": "להסתכל ולהביט הן מילים דומות: משתמשים בהן כשרואים משהו בעיניים.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-016",
+   "kind": "word-meaning",
+   "stem": "החדר היה חשוך, ולכן אבא הדליק פנס. מה פירוש המילה 'חשוך'?",
+   "options": [
+    "בלי אור",
+    "מלא אור",
+    "קר מאוד",
+    "ארוך מאוד"
+   ],
+   "answerIndex": 0,
+   "explanation": "כשחשוך אין אור ולא רואים טוב, ולכן אבא הדליק פנס.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-017",
+   "kind": "word-meaning",
+   "stem": "תמר התביישה לדבר מול כל הכיתה. מה פירוש המילה 'התביישה'?",
+   "options": [
+    "הרגישה לא נעים ופחדה שיסתכלו עליה",
+    "הרגישה גאה מאוד",
+    "הרגישה רעבה",
+    "הרגישה עייפה"
+   ],
+   "answerIndex": 0,
+   "explanation": "מי שמתביישת מרגישה לא נעים כשכולם מסתכלים עליה, ולכן לא רצתה לדבר.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-018",
+   "kind": "word-meaning",
+   "stem": "מה ההפך של המילה 'מוקדם'?",
+   "options": [
+    "מאוחר",
+    "קרוב",
+    "חדש",
+    "קצר"
+   ],
+   "answerIndex": 0,
+   "explanation": "מוקדם אומר לפני הזמן הרגיל, ומאוחר אומר אחרי הזמן הרגיל. אלה הפכים.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-019",
+   "kind": "word-meaning",
+   "stem": "הדוור מביא מכתבים וחבילות לבתים. מה פירוש המילה 'דוור'?",
+   "options": [
+    "אדם שמחלק מכתבים וחבילות",
+    "אדם שמתקן מכוניות",
+    "אדם שמלמד בבית הספר",
+    "אדם שמכין לחם"
+   ],
+   "answerIndex": 0,
+   "explanation": "דוור הוא העובד שמחלק לנו מכתבים וחבילות שנשלחו בדואר.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "wm-020",
+   "kind": "word-meaning",
+   "stem": "נדב הצטער מאוד כששבר את הצעצוע של אחותו. מה פירוש המילה 'הצטער'?",
+   "options": [
+    "הרגיש עצוב וחבל לו",
+    "הרגיש שמח ונהנה",
+    "הרגיש רעב",
+    "הרגיש חזק"
+   ],
+   "answerIndex": 0,
+   "explanation": "מי שמצטער מרגיש עצוב וחבל לו על משהו שקרה, כמו נדב שהצעצוע נשבר.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-001",
+   "kind": "sentence-completion",
+   "stem": "ביום חם אנחנו שותים הרבה ___.",
+   "options": [
+    "מים",
+    "נעליים",
+    "ספרים",
+    "כפות"
+   ],
+   "answerIndex": 0,
+   "explanation": "שותים מים, במיוחד כשחם. את נעליים, ספרים וכפות לא שותים.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-002",
+   "kind": "sentence-completion",
+   "stem": "הילדים הלכו לים כי הם רצו ___ במים.",
+   "options": [
+    "לשחות",
+    "לישון",
+    "לכתוב",
+    "לתפור"
+   ],
+   "answerIndex": 0,
+   "explanation": "בים אפשר לשחות במים. לישון, לכתוב ולתפור לא עושים בתוך המים.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-003",
+   "kind": "sentence-completion",
+   "stem": "דני שטף את הידיים בסבון כי הן היו ___.",
+   "options": [
+    "מלוכלכות",
+    "קטנות",
+    "חדשות",
+    "עגולות"
+   ],
+   "answerIndex": 0,
+   "explanation": "שוטפים ידיים בסבון כדי לנקות אותן, כשהן מלוכלכות.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-004",
+   "kind": "sentence-completion",
+   "stem": "ירד גשם חזק, ___ לקחנו מטרייה.",
+   "options": [
+    "לכן",
+    "אבל",
+    "או",
+    "גם"
+   ],
+   "answerIndex": 0,
+   "explanation": "הגשם הוא הסיבה שלקחנו מטרייה, ולכן המילה שמתאימה היא 'לכן'.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-005",
+   "kind": "sentence-completion",
+   "stem": "רציתי לשחק בחוץ, ___ ירד גשם.",
+   "options": [
+    "אבל",
+    "לכן",
+    "כי",
+    "או"
+   ],
+   "answerIndex": 0,
+   "explanation": "רציתי לשחק, אך קרה משהו שמנע זאת. כשיש הפתעה כזאת משתמשים במילה 'אבל'.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-006",
+   "kind": "sentence-completion",
+   "stem": "אפשר לראות כוכבים בשמיים רק ___.",
+   "options": [
+    "בלילה",
+    "בצהריים",
+    "בבוקר",
+    "אחרי הצהריים"
+   ],
+   "answerIndex": 0,
+   "explanation": "כוכבים רואים כשחשוך, כלומר בלילה. כשיש שמש בשמיים לא רואים אותם.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-007",
+   "kind": "sentence-completion",
+   "stem": "___ היה קר מאוד, יוסי יצא לשחק בחוץ.",
+   "options": [
+    "למרות ש",
+    "בגלל ש",
+    "מפני ש",
+    "כיוון ש"
+   ],
+   "answerIndex": 0,
+   "explanation": "היה קר, ובכל זאת יוסי יצא. כשמשהו קורה למרות הקושי משתמשים ב'למרות ש'.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-008",
+   "kind": "sentence-completion",
+   "stem": "הציפור בנתה קן על ___.",
+   "options": [
+    "העץ",
+    "הים",
+    "הענן",
+    "הכוס"
+   ],
+   "answerIndex": 0,
+   "explanation": "ציפורים בונות קן על עץ, גבוה וקרוב לענפים.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-009",
+   "kind": "sentence-completion",
+   "stem": "הגננת סיפרה לילדים ___ יפה לפני השינה.",
+   "options": [
+    "סיפור",
+    "כדור",
+    "שולחן",
+    "מעיל"
+   ],
+   "answerIndex": 0,
+   "explanation": "מספרים סיפור. כדור, שולחן ומעיל אי אפשר לספר.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-010",
+   "kind": "sentence-completion",
+   "stem": "מיכאל חזר הביתה מוקדם ___ הוא לא הרגיש טוב.",
+   "options": [
+    "כי",
+    "אבל",
+    "לכן",
+    "או"
+   ],
+   "answerIndex": 0,
+   "explanation": "מיכאל לא הרגיש טוב, וזאת הסיבה שחזר מוקדם, ולכן מתאימה המילה 'כי'.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-011",
+   "kind": "sentence-completion",
+   "stem": "כשרעבים אוכלים, וכשצמאים ___.",
+   "options": [
+    "שותים",
+    "ישנים",
+    "רצים",
+    "קוראים"
+   ],
+   "answerIndex": 0,
+   "explanation": "כשצמאים שותים, כמו שכשרעבים אוכלים.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-012",
+   "kind": "sentence-completion",
+   "stem": "העוגה יצאה מהתנור לפני רגע, ולכן היא עדיין ___.",
+   "options": [
+    "חמה",
+    "קפואה",
+    "שקופה",
+    "צרה"
+   ],
+   "answerIndex": 0,
+   "explanation": "עוגה שיצאה זה עתה מהתנור עדיין חמה.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-013",
+   "kind": "sentence-completion",
+   "stem": "המורה שמחה כי כל התלמידים ___ את שיעורי הבית.",
+   "options": [
+    "הכינו",
+    "שברו",
+    "אכלו",
+    "שתו"
+   ],
+   "answerIndex": 0,
+   "explanation": "תלמידים מכינים שיעורי בית, וזה מה ששימח את המורה.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-014",
+   "kind": "sentence-completion",
+   "stem": "כשחשוך בחדר, מדליקים ___.",
+   "options": [
+    "אור",
+    "מים",
+    "לחם",
+    "ספר"
+   ],
+   "answerIndex": 0,
+   "explanation": "כשחשוך מדליקים אור כדי לראות.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-015",
+   "kind": "sentence-completion",
+   "stem": "___ ירד גשם מחר, ניקח איתנו מטרייה.",
+   "options": [
+    "אם",
+    "כי",
+    "אבל",
+    "או"
+   ],
+   "answerIndex": 0,
+   "explanation": "עוד לא ידוע אם ירד גשם, ולכן מתאימה המילה 'אם'.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-016",
+   "kind": "sentence-completion",
+   "stem": "יעל קמה מוקדם ___ לא תאחר לבית הספר.",
+   "options": [
+    "כדי ש",
+    "למרות ש",
+    "בגלל ש",
+    "אחרי ש"
+   ],
+   "answerIndex": 0,
+   "explanation": "יעל קמה מוקדם במטרה לא לאחר. כשאומרים למה עושים משהו משתמשים ב'כדי ש'.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-017",
+   "kind": "sentence-completion",
+   "stem": "דג חי במים, וגמל חי ___.",
+   "options": [
+    "במדבר",
+    "בנהר",
+    "באגם",
+    "בבריכה"
+   ],
+   "answerIndex": 0,
+   "explanation": "גמלים חיים במדבר החם והיבש. נהר, אגם ובריכה הם מקומות של מים.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-018",
+   "kind": "sentence-completion",
+   "stem": "אחרי שהכנו עוגה, ___ אותה לאורחים.",
+   "options": [
+    "הגשנו",
+    "קרענו",
+    "חפרנו",
+    "צבענו"
+   ],
+   "answerIndex": 0,
+   "explanation": "עוגה מגישים לאורחים כדי שיאכלו אותה.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-019",
+   "kind": "sentence-completion",
+   "stem": "הספר היה כל כך ___ שלא יכולנו להפסיק לקרוא אותו.",
+   "options": [
+    "מעניין",
+    "משעמם",
+    "ישן",
+    "קצר"
+   ],
+   "answerIndex": 0,
+   "explanation": "רק ספר מעניין גורם לנו להמשיך לקרוא ולא להפסיק.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original"
+  },
+  {
+   "id": "sc-020",
+   "kind": "sentence-completion",
+   "stem": "כשהגענו לפסגת ההר, ראינו נוף ___.",
+   "options": [
+    "מרהיב",
+    "מלוכלך",
+    "עצוב",
+    "חלש"
+   ],
+   "answerIndex": 0,
+   "explanation": "מרהיב פירושו יפה מאוד. מהפסגה רואים נוף יפה ורחב.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "draft",
+   "source": "original",
+   "flag": "מילה קשה לגיל: \"מרהיב\""
+  }
+ ]
+}

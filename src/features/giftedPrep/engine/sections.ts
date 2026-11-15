@@ -1,5 +1,6 @@
 import type { Difficulty, PrepItem, PrepSection } from '../types';
 import { mathItem } from './arithmetic';
+import { LANGUAGE_ITEMS, READING_PASSAGES, languageItems, readingItems } from './bank';
 import { intBetween, type Rng } from './prng';
 
 /** Builds `count` items for one section. `seen` holds bank ids the child answered recently. */
@@ -54,6 +55,9 @@ export const buildMath: SectionBuilder = (rng, count) => {
 /** Each content PR adds its section here; the hub shows "soon" for sections not listed yet. */
 const BUILDERS: Partial<Record<PrepSection, SectionBuilder>> = {
     math: buildMath,
+    // Bank sections light up once Ram's review promoted at least one item into content/he/
+    ...(READING_PASSAGES.length > 0 ? { reading: readingItems } : {}),
+    ...(LANGUAGE_ITEMS.length > 0 ? { language: languageItems } : {}),
 };
 
 export function getSectionBuilder(section: PrepSection): SectionBuilder | undefined {

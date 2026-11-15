@@ -34,6 +34,12 @@ Ram's 2nd-grader sits the Ministry of Education Stage-A screening (שלב א׳) 
 8. **Original content only.** Never copy, scrape or paraphrase real Ministry/Szold/Karni items. Formats inspire item *types* only. Every bank item carries `source: "original"` and `reviewStatus`; **only `reviewed` items ship** (a unit test enforces it). Drafts get a blind second solve; disagreements are flagged for the reviewer (Ram).
 9. **Kid wellbeing.** No "gifted" labels, no percentiles, gentle copy. The mock timer is calm (no red flashing).
 
+## Content pipeline (Stage A)
+- Drafts: `content-drafts/gifted-prep/he/{reading,language}.json` (40 passages / 126 questions, 40 language items; Claude-drafted, blind second solve: 1 disagreement of 166, 5 more flags, all shown to the reviewer). Never bundled.
+- Review: Ram's phone review page (artifact) stores approve / edit / drop per passage or item.
+- Promote: `node scripts/prep-content-promote.mjs <decisions.json>` copies approved items into `src/features/giftedPrep/content/he/` with `reviewStatus: reviewed`. A section appears in the hub only once it has reviewed items.
+- No niqqud in v1 (LLM niqqud is error-prone); open question for Ram.
+
 ## Consequences
 - Stage-A PRs are file-disjoint from saga/arcade work except the one-time wiring in App.tsx, SagaMap, ProfileManager, ProfileContext (validator), types/user.ts and the locales.
 - `STORAGE_KEYS` in worldConfig.ts is pinned by a test (10 keys), so the prep key is feature-local.
