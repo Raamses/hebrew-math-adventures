@@ -1,6 +1,8 @@
 // Promote reviewed gifted-prep items from content-drafts/ into the shipped bank (ADR 2026-11-gifted-prep-stage-a §8).
 //
-// Usage: node scripts/prep-content-promote.mjs <decisions.json> [--reviewer Ram]
+// Usage: node scripts/prep-content-promote.mjs <decisions.json> [<more-decisions.json> ...] [--reviewer Ram]
+// The shipped bank is rebuilt from ALL decisions given, so pass every review round's export (round 1 + round 2 ...):
+// an id missing from every file is not promoted.
 // decisions.json: { "<id>": { "status": "approve" | "edit" | "drop", "note"?: string }, ... } — exported from the
 // review page's store. Reading decisions are per passage (rc-NNN), language decisions per item (wm-NNN / sc-NNN).
 // Only "approve" is promoted. "edit" stays in drafts until fixed and approved again; "drop" never ships.
@@ -27,14 +29,16 @@ export function promote({ reading, language }, decisions, { reviewer = 'Ram', to
 }
 
 function main() {
-    const [, , decisionsPath, ...rest] = process.argv;
-    if (!decisionsPath) {
-        console.error('usage: node scripts/prep-content-promote.mjs <decisions.json> [--reviewer Ram]');
+    const args = process.argv.slice(2);
+    const ri = args.indexOf('--reviewer');
+    const reviewer = ri >= 0 && args[ri + 1] ? args[ri + 1] : 'Ram';
+    const paths = args.filter((_, i) => ri < 0 || (i !== ri && i !== ri + 1));
+    if (paths.length === 0) {
+        console.error('usage: node scripts/prep-content-promote.mjs <decisions.json> [<more-decisions.json> ...] [--reviewer Ram]');
         process.exit(2);
     }
-    const ri = rest.indexOf('--reviewer');
-    const reviewer = ri >= 0 && rest[ri + 1] ? rest[ri + 1] : 'Ram';
-    const decisions = JSON.parse(readFileSync(decisionsPath, 'utf8'));
+    // Later files win for an id decided in more than one round
+    const decisions = Object.assign({}, ...paths.map(p => JSON.parse(readFileSync(p, 'utf8'))));
     const DRAFTS = 'content-drafts/gifted-prep/he';
     const SHIPPED = 'src/features/giftedPrep/content/he';
     const drafts = {
