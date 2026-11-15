@@ -76,7 +76,8 @@ export interface PrepSkillStat {
 
 export interface PrepMockResult {
     readonly at: number;
-    readonly sections: Readonly<Record<PrepSection, { readonly answered: number; readonly correct: number; readonly total: number }>>;
+    /** Only the parts that ran (language is never in the mock; reading only once it has reviewed content). */
+    readonly sections: Readonly<Partial<Record<PrepSection, { readonly answered: number; readonly correct: number; readonly total: number }>>>;
 }
 
 export const PREP_SCHEMA_VERSION = 1;

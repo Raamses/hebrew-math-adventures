@@ -5,6 +5,7 @@ import type { SessionAnswer } from '../hooks/usePrepSession';
 import { usePrepSession } from '../hooks/usePrepSession';
 import { mmss, useCountdown } from '../hooks/useCountdown';
 import { usePrepT } from '../hooks/usePrepT';
+import { usePrepProgress } from '../context/PrepProgressContext';
 import type { MockPart } from '../engine/mock';
 import { ItemStem } from './ItemStem';
 import { OptionList } from './OptionList';
@@ -22,6 +23,7 @@ interface MockSectionProps {
 export function MockSection({ part, partIndex, partCount, onDone, onQuit }: MockSectionProps) {
     const { t } = usePrepT();
     const s = usePrepSession(part.items, 'mock');
+    const { niqqud } = usePrepProgress();
     const [paused, setPaused] = useState(false);
     const [choice, setChoice] = useState<number | undefined>(undefined);
     const left = useCountdown(part.seconds, paused || s.done, s.finishBlank);
@@ -55,9 +57,9 @@ export function MockSection({ part, partIndex, partCount, onDone, onQuit }: Mock
                 </div>
             </header>
 
-            <ItemStem stem={item.stem} />
+            <ItemStem stem={item.stem} niqqud={niqqud} />
             <OptionList
-                options={item.options}
+                options={niqqud && item.optionsNiqqud ? item.optionsNiqqud : item.options}
                 chosen={choice}
                 reveal={false}
                 answerIndex={item.answerIndex}

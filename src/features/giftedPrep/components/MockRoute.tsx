@@ -47,8 +47,10 @@ export function MockRoute({ onAgain, onExit }: MockRouteProps) {
             setPhase({ name: 'part', index: phase.index + 1 });
             return;
         }
-        const sections = Object.fromEntries(all.map(r => [r.section, { answered: r.total - r.blank, correct: r.correct, total: r.total }]));
-        addMock({ at: Date.now(), sections: sections as PrepMockResult['sections'] });
+        const sections: PrepMockResult['sections'] = Object.fromEntries(
+            all.map(r => [r.section, { answered: r.total - r.blank, correct: r.correct, total: r.total }]),
+        );
+        addMock({ at: Date.now(), sections });
         const correct = all.reduce((n, r) => n + r.correct, 0), total = all.reduce((n, r) => n + r.total, 0);
         analytics.sessionEnd('mock', all.map(r => r.section).join('+'), correct, total, Math.round((Date.now() - startedAt) / 1000));
         setPhase({ name: 'done' });
