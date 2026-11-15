@@ -1,5 +1,6 @@
 {
  "schemaVersion": 1,
+ "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed.",
  "items": [
   {
    "id": "wm-001",

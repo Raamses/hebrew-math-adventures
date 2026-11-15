@@ -8,17 +8,16 @@ import { parseLanguageBank, parseReadingBank } from '../engine/bankSchema';
 import { makeBuilders } from '../engine/sections';
 import { mulberry32 } from '../engine/prng';
 import { SKILL_TAGS } from '../types';
+import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
 
 const HEBREW = /[֐-׿]/;
-const MARKS = /[֑-ׇ]/g;
-const HAS_MARK = /[֑-ׇ]/;
 
 /** Plain fields carry no niqqud; a vocalized twin, when present, strips back to exactly the plain text. */
 function checkText(id: string, plain: string, voc?: string) {
-    expect(HAS_MARK.test(plain), `${id} plain text has niqqud`).toBe(false);
+    expect(hasNiqqud(plain), `${id} plain text has niqqud`).toBe(false);
     if (voc !== undefined) {
-        expect(voc.replace(MARKS, ''), `${id} vocalized twin changes letters`).toBe(plain);
-        if (HEBREW.test(plain)) expect(HAS_MARK.test(voc), `${id} vocalized twin has no marks`).toBe(true);
+        expect(stripNiqqud(voc), `${id} vocalized twin changes letters`).toBe(plain);
+        if (HEBREW.test(plain)) expect(hasNiqqud(voc), `${id} vocalized twin has no marks`).toBe(true);
     }
 }
 
@@ -57,9 +56,30 @@ describe('gifted-prep Hebrew banks', () => {
     const draftP = parseReadingBank(draftReading);
     const draftL = parseLanguageBank(draftLanguage);
 
-    it('ships ONLY items Ram reviewed (ADR §8)', () => {
+    it('ships ONLY items Ram reviewed (ADR §8; the review covers the plain text)', () => {
         shippedP.forEach(p => expect(p.reviewStatus, p.id).toBe('reviewed'));
         shippedL.forEach(i => expect(i.reviewStatus, i.id).toBe('reviewed'));
+    });
+
+    it('declares niqqud provenance whenever a bank carries vocalized twins (it is not part of the review)', () => {
+        const hasTwins = (json: object) => JSON.stringify(json).includes('Niqqud"');
+        for (const bank of [shippedReading, shippedLanguage, draftReading, draftLanguage] as Record<string, unknown>[]) {
+            if (hasTwins(bank)) expect(String(bank.niqqudProvenance)).toMatch(/not been human-reviewed/);
+        }
+    });
+
+    it('treats maqaf and paseq as plain punctuation, not niqqud', () => {
+        expect(hasNiqqud('בית־ספר')).toBe(false);
+        expect(stripNiqqud('בֵּית־סֵפֶר')).toBe('בית־ספר');
+    });
+
+    it('rejects malformed items at load (option count, key range, twin length, difficulty)', () => {
+        const base = draftLanguage.items[0];
+        const bad = (patch: Record<string, unknown>) => () => parseLanguageBank({ items: [{ ...base, ...patch }] });
+        expect(bad({ options: ['a', 'b', 'c'] })).toThrow(/exactly 4 options/);
+        expect(bad({ answerIndex: 4 })).toThrow(/answerIndex/);
+        expect(bad({ optionsNiqqud: ['a'] })).toThrow(/optionsNiqqud length/);
+        expect(bad({ difficulty: undefined })).toThrow(/difficulty/);
     });
 
     it('shipped and draft items are schema-valid and original', () => {

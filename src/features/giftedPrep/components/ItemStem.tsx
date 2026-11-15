@@ -1,5 +1,6 @@
 import { BookOpen } from 'lucide-react';
 import type { PrepStem } from '../types';
+import { pickText } from '../engine/niqqud';
 
 interface ItemStemProps {
     readonly stem: PrepStem;
@@ -9,7 +10,7 @@ interface ItemStemProps {
 
 /** Passage (if any), question text and an LTR-isolated equation (vault/rules/rtl-hebrew.md). */
 export function ItemStem({ stem, niqqud = false }: ItemStemProps) {
-    const pick = (plain?: string, voc?: string) => (niqqud && voc ? voc : plain);
+    const pick = (plain?: string, voc?: string) => pickText(niqqud, plain, voc);
     const passage = stem.passage;
     return (
         <div className="space-y-3">

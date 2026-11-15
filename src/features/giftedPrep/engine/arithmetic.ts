@@ -1,4 +1,5 @@
 import he from '@/i18n/locales/he.json';
+import mathNiqqud from '../content/he/math-niqqud.json';
 import type { Difficulty, PrepItem, PrepKind, SkillTag } from '../types';
 import { numericDistractors } from './distractors';
 import { intBetween, mulberry32, pick, shuffleOptions, type Rng } from './prng';
@@ -48,7 +49,7 @@ export function exerciseItem(seed: number, difficulty: Difficulty): PrepItem {
     const other = e.op === '+' ? e.a - e.b : e.a + e.b;
     const explanation = e.op === '+' ? addExplanation(e.a, e.b) : subExplanation(e.a, e.b);
     return build(rng, seed, 'math-exercise', e.op === '+' ? 'add' : 'sub', difficulty,
-        { text: 'כמה זה?', equation: `${fmt(e)} = ?` }, e.result, other >= 0 ? other : undefined, explanation);
+        { text: 'כמה זה?', textNiqqud: mathNiqqud.stems.exercise, equation: `${fmt(e)} = ?` }, e.result, other >= 0 ? other : undefined, explanation);
 }
 
 export function missingItem(seed: number, difficulty: Difficulty): PrepItem {
@@ -60,11 +61,11 @@ export function missingItem(seed: number, difficulty: Difficulty): PrepItem {
     // The classic slip: doing the operation you see instead of its inverse.
     const slip = e.op === '+' ? e.result + (hideFirst ? e.b : e.a) : (hideFirst ? e.result - e.b : e.a + e.result);
     return build(rng, seed, 'math-missing', 'missing-number', difficulty,
-        { text: 'איזה מספר חסר?', equation: shown }, answer, slip >= 0 && slip <= 200 ? slip : undefined,
+        { text: 'איזה מספר חסר?', textNiqqud: mathNiqqud.stems.missing, equation: shown }, answer, slip >= 0 && slip <= 200 ? slip : undefined,
         missingExplanation(e.a, e.b, e.op, e.result, hideFirst));
 }
 
-interface WordTemplate { key: keyof typeof he.wordProblems; op: Op; n1: [number, number]; n2: [number, number] }
+interface WordTemplate { key: keyof typeof mathNiqqud.wordProblems & keyof typeof he.wordProblems; op: Op; n1: [number, number]; n2: [number, number] }
 
 /** Gender-neutral +/- templates from the existing word-problem bank (src/data/wordProblemTemplates.ts). */
 const WORD_TEMPLATES: readonly WordTemplate[] = [
@@ -85,9 +86,12 @@ export function wordItem(seed: number, difficulty: Difficulty): PrepItem {
     const n1 = intBetween(rng, ...tpl.n1);
     const n2 = intBetween(rng, ...tpl.n2);
     const answer = tpl.op === '+' ? n1 + n2 : n1 - n2;
-    const text = he.wordProblems[tpl.key].replace('{{n1}}', String(n1)).replace('{{n2}}', String(n2));
+    const fill = (t: string) => t.replace('{{n1}}', String(n1)).replace('{{n2}}', String(n2));
+    const text = fill(he.wordProblems[tpl.key]);
+    // Vocalized twin (Dicta Nakdan + review, content/he/math-niqqud.json); shown when niqqud is on
+    const textNiqqud = fill(mathNiqqud.wordProblems[tpl.key]);
     const other = tpl.op === '+' ? Math.abs(n1 - n2) : n1 + n2;
-    return build(rng, seed, 'math-word', 'word-problem', difficulty, { text }, answer, other,
+    return build(rng, seed, 'math-word', 'word-problem', difficulty, { text, textNiqqud }, answer, other,
         wordExplanation(n1, n2, tpl.op, answer));
 }
 

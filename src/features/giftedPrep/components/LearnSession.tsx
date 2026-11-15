@@ -6,6 +6,7 @@ import { usePrepSession } from '../hooks/usePrepSession';
 import { usePrepAnalytics } from '../hooks/usePrepAnalytics';
 import { usePrepT } from '../hooks/usePrepT';
 import { usePrepProgress } from '../context/PrepProgressContext';
+import { pickOptions, pickText } from '../engine/niqqud';
 import { ItemStem } from './ItemStem';
 import { OptionList } from './OptionList';
 import { PrepSummary } from './PrepSummary';
@@ -57,7 +58,7 @@ export function LearnSession({ section, items, onAgain, onExit }: LearnSessionPr
 
             <ItemStem stem={item.stem} niqqud={niqqud} />
             <OptionList
-                options={niqqud && item.optionsNiqqud ? item.optionsNiqqud : item.options}
+                options={pickOptions(niqqud, item.options, item.optionsNiqqud)}
                 chosen={s.currentAnswer?.chosen ?? undefined}
                 reveal
                 answerIndex={item.answerIndex}
@@ -71,7 +72,7 @@ export function LearnSession({ section, items, onAgain, onExit }: LearnSessionPr
                     aria-live="polite"
                 >
                     <p className="font-bold text-lg">{s.currentAnswer?.correct ? `✅ ${t($ => $.prep.player.correct)}` : `💡 ${t($ => $.prep.player.wrong)}`}</p>
-                    <p className="text-slate-700 leading-relaxed" data-testid="prep-explanation">{niqqud && item.explanationNiqqud ? item.explanationNiqqud : item.explanation}</p>
+                    <p className="text-slate-700 leading-relaxed" data-testid="prep-explanation">{pickText(niqqud, item.explanation, item.explanationNiqqud)}</p>
                     <button
                         type="button"
                         onClick={s.next}

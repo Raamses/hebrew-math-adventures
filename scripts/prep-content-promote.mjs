@@ -18,9 +18,11 @@ export function promote({ reading, language }, decisions, { reviewer = 'Ram', to
     const passages = reading.passages.filter(p => approved(p.id))
         .map(p => stamp(strip({ ...p, questions: p.questions.map(strip) })));
     const items = language.items.filter(i => approved(i.id)).map(i => stamp(strip(i)));
+    // Niqqud provenance travels with the bank: the approve gate covers the plain text only.
+    const prov = bank => (bank.niqqudProvenance ? { niqqudProvenance: bank.niqqudProvenance } : {});
     return {
-        reading: { schemaVersion: 1, passages },
-        language: { schemaVersion: 1, items },
+        reading: { schemaVersion: 1, ...prov(reading), passages },
+        language: { schemaVersion: 1, ...prov(language), items },
     };
 }
 

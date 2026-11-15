@@ -15,7 +15,7 @@ tags: [gifted-prep, stage-a, content-policy, i18n, decision]
 **Plan:** fleet `HMA-Giftedness-Prep-Plan-2026-11-14.md` (Pi vault `Fleet/SDLC/Plans/`).
 
 ## Context
-Ram's 2nd-grader sits the Ministry of Education Stage-A screening (שלב א׳) in school, probably Mon 30.11.2026 (not officially confirmed). The goal is familiarity with the *kinds* of tasks, not drilling answers. Stage B (figural matrices etc., Mar–Apr 2027) follows later on the normal card flow.
+Ram's 2nd-grader sits the Ministry of Education Stage-A screening (שלב א׳) in school on Mon 2026-11-30 (confirmed by Ram 2026-11-15, see below). The goal is familiarity with the *kinds* of tasks, not drilling answers. Stage B (figural matrices etc., Mar–Apr 2027) follows later on the normal card flow.
 
 ### Format facts checked against public sources (2026-11-15)
 - The Ministry's public scoring guide for the grade-2 screening (תשפ"ה, `meyda.education.gov.il/files/Rama/mechvan-gifted-students-heb-2025.pdf`) lists **reading-comprehension** tasks (2 passages, 5 and 7 four-option questions) and **arithmetic** tasks (exercises, missing number, word problems, picture puzzles).
@@ -39,7 +39,8 @@ Ram's 2nd-grader sits the Ministry of Education Stage-A screening (שלב א׳) 
 - Review: Ram's phone review page (artifact) stores approve / edit / drop per passage or item.
 - Promote: `node scripts/prep-content-promote.mjs <decisions.json>` copies approved items into `src/features/giftedPrep/content/he/` with `reviewStatus: reviewed`. A section appears in the hub only once it has reviewed items.
 - Review 2026-11-15: Ram approved all 80 (40 passages, 40 language items); promoted with `reviewStatus: reviewed`.
-- **Niqqud (Ram 2026-11-15: "do the best you can").** Every text field has a fully vocalized twin (`*Niqqud`), ktiv male kept (stripping the marks gives the approved text exactly, enforced by `bank.test.ts`). Pipeline: an LLM vocalized all 1,076 strings; Dicta's Nakdan (the strongest documented Hebrew vocalizer; DictaBERT-menaked, SOTA on modern-Hebrew benchmarks) vocalized them independently; 91.6% of 5,960 words agreed. The 239 distinct disagreements were adjudicated in context (Dicta kept in 110, the LLM form or a corrected form in 129: e.g. Dicta read אפו as "his nose", חמניה as חַמָּנֶיהָ). Shown by default; per-profile switch in the hub.
+- **Niqqud (Ram 2026-11-15: "do the best you can").** Every text field has a fully vocalized twin (`*Niqqud`), ktiv male kept (stripping the marks gives the approved text exactly, enforced by `bank.test.ts`). Pipeline: an LLM vocalized all 1,076 strings; Dicta's Nakdan (the strongest documented Hebrew vocalizer; DictaBERT-menaked, SOTA on modern-Hebrew benchmarks) vocalized them independently; 91.6% of 5,960 words agreed. The 239 distinct disagreements were adjudicated in context (Dicta kept in 110, the LLM form or a corrected form in 129: e.g. Dicta read אפו as "his nose", חמניה as חַמָּנֶיהָ). Shown by default; per-profile switch in the hub. **Review scope:** Ram's approve pass (and `reviewStatus: reviewed`) covers the plain text only; the niqqud is machine-made and Claude-adjudicated, not human-reviewed. Each bank file says so in `niqqudProvenance` (a test requires it whenever twins exist). Math stems and word-problem templates have twins too (`content/he/math-niqqud.json`, Dicta Nakdan + review); math explanations stay plain.
+- Fix-in-place decision (Ram 2026-11-15, after the reviewer's 2nd REQUEST_CHANGES on #284/#285): "fix everything in place" rather than splitting niqqud into separate PRs.
 
 ## Consequences
 - Stage-A PRs are file-disjoint from saga/arcade work except the one-time wiring in App.tsx, SagaMap, ProfileManager, ProfileContext (validator), types/user.ts and the locales.
