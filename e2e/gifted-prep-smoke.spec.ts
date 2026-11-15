@@ -34,6 +34,21 @@ test.describe('Gifted prep section', () => {
         await expect(screen).toBeVisible({ timeout: 15_000 });
         await expect(screen).toHaveAttribute('dir', 'rtl');
         await expect(page.getByTestId('prep-learn-reading')).toBeVisible();
+
+        // Learning mode (math): answer 3 items, see feedback + explanation, then Pause -> Quit (2-step exit)
+        await page.getByTestId('prep-learn-math').click();
+        await expect(page.getByTestId('prep-learn-session')).toBeVisible();
+        for (let i = 0; i < 3; i++) {
+            await page.getByTestId('prep-option-0').click();
+            await expect(page.getByTestId('prep-feedback')).toBeVisible();
+            await expect(page.getByTestId('prep-explanation')).not.toBeEmpty();
+            await expect(page.locator('[data-correct="true"]')).toHaveCount(1);
+            await page.getByTestId('prep-next').click();
+        }
+        await page.getByTestId('prep-pause').click();
+        await page.getByTestId('prep-quit').click();
+        await expect(page.getByTestId('prep-learn-math')).toBeVisible();
+
         await page.getByTestId('prep-back').click();
         await expect(page.getByTestId('prep-tile')).toBeVisible();
 
