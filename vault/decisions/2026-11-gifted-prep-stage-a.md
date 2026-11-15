@@ -38,7 +38,8 @@ Ram's 2nd-grader sits the Ministry of Education Stage-A screening (שלב א׳) 
 - Drafts: `content-drafts/gifted-prep/he/{reading,language}.json` (40 passages / 126 questions, 40 language items; Claude-drafted, blind second solve: 1 disagreement of 166, 5 more flags, all shown to the reviewer). Never bundled.
 - Review: Ram's phone review page (artifact) stores approve / edit / drop per passage or item.
 - Promote: `node scripts/prep-content-promote.mjs <decisions.json>` copies approved items into `src/features/giftedPrep/content/he/` with `reviewStatus: reviewed`. A section appears in the hub only once it has reviewed items.
-- No niqqud in v1 (LLM niqqud is error-prone); open question for Ram.
+- Review 2026-11-15: Ram approved all 80 (40 passages, 40 language items); promoted with `reviewStatus: reviewed`.
+- **Niqqud (Ram 2026-11-15: "do the best you can").** Every text field has a fully vocalized twin (`*Niqqud`), ktiv male kept (stripping the marks gives the approved text exactly, enforced by `bank.test.ts`). Pipeline: an LLM vocalized all 1,076 strings; Dicta's Nakdan (the strongest documented Hebrew vocalizer; DictaBERT-menaked, SOTA on modern-Hebrew benchmarks) vocalized them independently; 91.6% of 5,960 words agreed. The 239 distinct disagreements were adjudicated in context (Dicta kept in 110, the LLM form or a corrected form in 129: e.g. Dicta read אפו as "his nose", חמניה as חַמָּנֶיהָ). Shown by default; per-profile switch in the hub.
 
 ## Consequences
 - Stage-A PRs are file-disjoint from saga/arcade work except the one-time wiring in App.tsx, SagaMap, ProfileManager, ProfileContext (validator), types/user.ts and the locales.
