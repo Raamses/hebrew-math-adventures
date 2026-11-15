@@ -11,13 +11,14 @@ export type PrepKind =
     | 'math-exercise'        // "37 + 25 = ?"
     | 'math-missing'         // "? + 8 = 23"
     | 'math-word'            // short word problem
+    | 'math-picture'         // picture puzzle: "🍎 + 🍎 = 8", how much is 🍎?
     | 'reading'              // question about a passage
     | 'word-meaning'
     | 'sentence-completion';
 
 /** Every skill tag; bank JSON is validated against this list at load (engine/bank.ts). */
 export const SKILL_TAGS = [
-    'add', 'sub', 'missing-number', 'word-problem',
+    'add', 'sub', 'missing-number', 'word-problem', 'picture-puzzle',
     'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
     'word-meaning', 'sentence-completion',
 ] as const;
@@ -31,6 +32,8 @@ export interface PrepStem {
     /** Fully vocalized twin of `text` (bank items); shown when niqqud is on. */
     readonly textNiqqud?: string;
     readonly equation?: string;
+    /** Picture-puzzle lines ("🍎 + 🍎 = 8"), each rendered LTR like an equation. */
+    readonly pictureLines?: readonly string[];
     /** Reading items carry their passage so the player can show it above the question. */
     readonly passage?: {
         readonly id: string;

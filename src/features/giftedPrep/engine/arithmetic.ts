@@ -3,6 +3,7 @@ import mathNiqqud from '../content/he/math-niqqud.json';
 import type { Difficulty, PrepItem, PrepKind, SkillTag } from '../types';
 import { numericDistractors } from './distractors';
 import { intBetween, mulberry32, pick, shuffleOptions, type Rng } from './prng';
+import { pictureItem } from './pictures';
 import { addExplanation, missingExplanation, subExplanation, wordExplanation } from './arithmeticExplain';
 
 /**
@@ -95,9 +96,9 @@ export function wordItem(seed: number, difficulty: Difficulty): PrepItem {
         wordExplanation(n1, n2, tpl.op, answer));
 }
 
-const MAKERS = [exerciseItem, exerciseItem, missingItem, wordItem] as const;
+const MAKERS = [exerciseItem, exerciseItem, missingItem, wordItem, pictureItem] as const;
 
-/** A balanced mix: half exercises, a quarter missing number, a quarter word problems. */
+/** A balanced mix: 2/5 exercises, 1/5 each missing number, word problems and picture puzzles (Stage-A task types). */
 export function mathItem(seed: number, difficulty: Difficulty): PrepItem {
     return MAKERS[seed % MAKERS.length](seed, difficulty);
 }

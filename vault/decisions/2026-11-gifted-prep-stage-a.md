@@ -34,6 +34,11 @@ Ram's 2nd-grader sits the Ministry of Education Stage-A screening (שלב א׳) 
 8. **Original content only.** Never copy, scrape or paraphrase real Ministry/Szold/Karni items. Formats inspire item *types* only. Every bank item carries `source: "original"` and `reviewStatus`; **only `reviewed` items ship** (a unit test enforces it). Drafts get a blind second solve; disagreements are flagged for the reviewer (Ram).
 9. **Kid wellbeing.** No "gifted" labels, no percentiles, gentle copy. The mock timer is calm (no red flashing).
 
+## Picture puzzles (Ram 2026-11-15: "build the picture puzzles task before 30.11")
+- New math kind `math-picture` (skill `picture-puzzle`): every picture is a number; 1–2 picture equations (numbers to 20), find one picture's value. Shapes: double (🍎+🍎), triple, pair, chain, back-substitution; difficulty picks the shape. Original puzzle shapes only.
+- Exactly one solution per puzzle, proven by a brute-force solver over 3000 seeds × 3 difficulties in `pictures.test.ts`; the typical slip (e.g. not halving) is one distractor. Lines render LTR; explanations isolate every equation.
+- In the math mix 1 in 5 items (also in the mock's math part); the repetition guard covers picture numbers.
+
 ## Content pipeline (Stage A)
 - Drafts: `content-drafts/gifted-prep/he/{reading,language}.json` (40 passages / 126 questions, 40 language items; Claude-drafted, blind second solve: 1 disagreement of 166, 5 more flags, all shown to the reviewer). Never bundled.
 - Review: Ram's phone review page (artifact) stores approve / edit / drop per passage or item.

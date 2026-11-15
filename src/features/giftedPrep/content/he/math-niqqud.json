@@ -2,7 +2,8 @@
  "_provenance": "Dicta Nakdan, reviewed and corrected by Claude 2026-11-15 (not part of Ram's approve pass)",
  "stems": {
   "exercise": "כַּמָּה זֶה?",
-  "missing": "אֵיזֶה מִסְפָּר חָסֵר?"
+  "missing": "אֵיזֶה מִסְפָּר חָסֵר?",
+  "picture": "כָּל צִיּוּר הוּא מִסְפָּר. כַּמָּה שָׁוֶוה"
  },
  "wordProblems": {
   "apples_add": "לְדָן יֵשׁ {{n1}} תַּפּוּחִים. הוּא מְקַבֵּל עוֹד {{n2}}. כַּמָּה תַּפּוּחִים יֵשׁ לְדָן עַכְשָׁיו?",
