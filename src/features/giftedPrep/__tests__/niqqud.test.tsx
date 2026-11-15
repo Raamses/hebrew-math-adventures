@@ -6,6 +6,7 @@ import { emptyPrepProgress, loadPrepProgress, migratePrepProgress, prepStorageKe
 import { pickOptions, pickText, stripNiqqud } from '../engine/niqqud';
 import { ItemStem } from '../components/ItemStem';
 import { exerciseItem, missingItem, wordItem } from '../engine/arithmetic';
+import { pictureItem } from '../engine/pictures';
 
 const wrapper = ({ children }: { children: ReactNode }) => <PrepProgressProvider profileId="kid">{children}</PrepProgressProvider>;
 
@@ -56,7 +57,7 @@ describe('niqqud selection', () => {
 
     it('math stems carry a vocalized twin that strips back to the plain text', () => {
         for (let seed = 1; seed <= 300; seed++) {
-            for (const item of [exerciseItem(seed, 2), missingItem(seed, 2), wordItem(seed, 2)]) {
+            for (const item of [exerciseItem(seed, 2), missingItem(seed, 2), wordItem(seed, 2), pictureItem(seed, 2)]) {
                 expect(item.stem.textNiqqud, item.id).toBeDefined();
                 expect(stripNiqqud(item.stem.textNiqqud!)).toBe(item.stem.text);
             }

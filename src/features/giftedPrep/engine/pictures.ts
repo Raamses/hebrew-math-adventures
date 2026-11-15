@@ -2,6 +2,7 @@ import type { Difficulty, PrepItem } from '../types';
 import { numericDistractors } from './distractors';
 import { intBetween, mulberry32, pick, shuffleOptions, shuffled, type Rng } from './prng';
 import { ltr } from './arithmeticExplain';
+import mathNiqqud from '../content/he/math-niqqud.json';
 
 /**
  * Stage-A "picture puzzles" (חידות בציורים, on the Ministry's grade-2 key): every picture stands for a number;
@@ -78,7 +79,11 @@ export function pictureItem(seed: number, difficulty: Difficulty): PrepItem {
         section: 'math',
         skill: 'picture-puzzle',
         difficulty,
-        stem: { text: `כל ציור הוא מספר. כמה שווה ${p.ask}?`, pictureLines: p.lines },
+        stem: {
+            text: `כל ציור הוא מספר. כמה שווה ${p.ask}?`,
+            textNiqqud: `${mathNiqqud.stems.picture} ${p.ask}?`,
+            pictureLines: p.lines,
+        },
         options,
         answerIndex,
         explanation: p.explanation,
