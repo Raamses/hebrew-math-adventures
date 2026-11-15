@@ -21,7 +21,7 @@ Ram's 2nd-grader sits the Ministry of Education Stage-A screening (שלב א׳) 
 - The Ministry's public scoring guide for the grade-2 screening (תשפ"ה, `meyda.education.gov.il/files/Rama/mechvan-gifted-students-heb-2025.pdf`) lists **reading-comprehension** tasks (2 passages, 5 and 7 four-option questions) and **arithmetic** tasks (exercises, missing number, word problems, picture puzzles).
 - Scoring: a correct answer = 1 point; wrong, blank, unclear or double-marked = 0. **No negative marking**, so the mock teaches "never leave a question blank, guess". A digit-swapped answer (61 for 16) scores 0.
 - The format brief's separate "Hebrew language" section was **not** in that key; language items (word meaning, sentence completion) ship as practice that supports reading, not as a mock section.
-- Test date for תשפ"ז: not found in public sources; treated as "probably 30.11".
+- Test date: **Mon 2026-11-30, confirmed by Ram 2026-11-15**. First release = reading comprehension + arithmetic (Ram: "ship reading + arithmetic before 30.11"); figural reasoning is Stage B (Mar–Apr 2027).
 
 ## Decisions
 1. **Self-contained feature folder** `src/features/giftedPrep/` (`engine/`, `components/`, `context/`, `hooks/`, `content/he/`). Nothing goes into `GameOrchestrator`. App.tsx gets a `'prep'` view loaded with `React.lazy` (own chunk; content JSON is in that chunk, not in the main bundle).
