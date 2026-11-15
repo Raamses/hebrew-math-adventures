@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pictureItem } from '../engine/pictures';
+import { numberPictureItem as pictureItem } from '../engine/pictures';
 import type { Difficulty } from '../types';
 
 const SEEDS = 3000;

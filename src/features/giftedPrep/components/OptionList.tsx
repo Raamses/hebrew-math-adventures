@@ -1,4 +1,6 @@
 import { cn } from '@/lib/utils';
+import type { Figure } from '../engine/figures';
+import { PrepFigure } from './PrepFigure';
 
 export const OPTION_LABELS = ['א', 'ב', 'ג', 'ד'] as const;
 
@@ -10,12 +12,14 @@ interface OptionListProps {
     readonly reveal: boolean;
     readonly answerIndex: number;
     readonly onChoose: (index: number) => void;
+    /** Shape puzzles: draw these instead of the text (the text stays as the accessible name). */
+    readonly figures?: readonly Figure[];
 }
 
 const isNumeric = (s: string) => /^\d+$/.test(s);
 
 /** Four answer buttons, RTL-ordered with Hebrew labels א–ד; numbers are LTR-isolated. */
-export function OptionList({ options, chosen, reveal, answerIndex, onChoose }: OptionListProps) {
+export function OptionList({ options, chosen, reveal, answerIndex, onChoose, figures }: OptionListProps) {
     // Learning mode locks after the first tap (feedback shown); in the mock a choice can change until Next
     const locked = reveal && chosen !== undefined && chosen !== null;
     return (
@@ -46,7 +50,9 @@ export function OptionList({ options, chosen, reveal, answerIndex, onChoose }: O
                         <span className="w-8 h-8 shrink-0 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center">
                             {OPTION_LABELS[i]}
                         </span>
-                        {isNumeric(opt) ? (
+                        {figures?.[i] ? (
+                            <PrepFigure fig={figures[i]} px={44} />
+                        ) : isNumeric(opt) ? (
                             <span dir="ltr" className="unicode-bidi-isolate font-rubik text-2xl font-bold text-slate-800">{opt}</span>
                         ) : (
                             <span className="text-lg text-slate-800 leading-snug">{opt}</span>

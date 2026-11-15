@@ -1,6 +1,7 @@
 import { BookOpen } from 'lucide-react';
 import type { PrepStem } from '../types';
 import { pickText } from '../engine/niqqud';
+import { FigureBoardView } from './PrepFigure';
 
 interface ItemStemProps {
     readonly stem: PrepStem;
@@ -34,6 +35,7 @@ export function ItemStem({ stem, niqqud = false }: ItemStemProps) {
                     ))}
                 </div>
             )}
+            {stem.figures && <FigureBoardView board={stem.figures} />}
             {stem.equation && (
                 <div
                     dir="ltr"

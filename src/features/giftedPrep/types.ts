@@ -26,6 +26,8 @@ export type SkillTag = typeof SKILL_TAGS[number];
 
 export type Difficulty = 1 | 2 | 3;
 
+import type { Figure, FigureBoard } from './engine/figures';
+
 /** The stem is data, never JSX. `equation` is rendered inside <div dir="ltr">. */
 export interface PrepStem {
     readonly text?: string;
@@ -34,6 +36,8 @@ export interface PrepStem {
     readonly equation?: string;
     /** Picture-puzzle lines ("🍎 + 🍎 = 8"), each rendered LTR like an equation. */
     readonly pictureLines?: readonly string[];
+    /** Shape puzzles: a row or 3×3 grid of drawn figures, `null` = the "?" cell (components/PrepFigure.tsx). */
+    readonly figures?: FigureBoard;
     /** Reading items carry their passage so the player can show it above the question. */
     readonly passage?: {
         readonly id: string;
@@ -55,6 +59,8 @@ export interface PrepItem {
     readonly options: readonly string[];
     readonly answerIndex: number;
     readonly optionsNiqqud?: readonly string[];
+    /** Shape puzzles: the figure drawn for each option; `options` then holds each figure's Hebrew label. */
+    readonly optionFigures?: readonly Figure[];
     /** Kid-language Hebrew explanation shown after answering in learning mode. */
     readonly explanation: string;
     readonly explanationNiqqud?: string;
