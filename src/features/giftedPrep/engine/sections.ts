@@ -36,24 +36,35 @@ export const stemKey = (item: PrepItem) => item.stem.equation ?? item.stem.pictu
 const MAX_TRIES = 30;
 
 /**
- * Procedural math with the repetition guard (vault/rules/math-curriculum.md): a new item that shares an
- * operand or result with any of the last 3, or repeats an earlier item of the session, is regenerated. `seen` holds bank ids, which
- * procedural items do not have, so it is not used here.
+ * Repetition guard (vault/rules/math-curriculum.md): a new item that shares an operand or result
+ * with any of the last GUARD items, or repeats an earlier item of the session, is regenerated (up
+ * to MAX_TRIES) before being accepted. `make` builds one item from a seed, difficulty and its
+ * index in the session (the adaptive math builder varies makers by index).
  */
-export const buildMath: SectionBuilder = (rng, count) => {
+export function buildGuarded(
+    rng: Rng, count: number,
+    make: (seed: number, difficulty: Difficulty, i: number) => PrepItem,
+): PrepItem[] {
     const out: PrepItem[] = [];
     for (let i = 0; i < count; i++) {
         const recent = new Set(out.slice(-GUARD).flatMap(itemNumbers));
         const shown = new Set(out.map(stemKey));
         const clashes = (it: PrepItem) => shown.has(stemKey(it)) || itemNumbers(it).some(n => recent.has(n));
-        let item = mathItem(intBetween(rng, 1, 2 ** 31 - 2), difficultyAt(i, count));
+        let item = make(intBetween(rng, 1, 2 ** 31 - 2), difficultyAt(i, count), i);
         for (let t = 0; t < MAX_TRIES && clashes(item); t++) {
-            item = mathItem(intBetween(rng, 1, 2 ** 31 - 2), difficultyAt(i, count));
+            item = make(intBetween(rng, 1, 2 ** 31 - 2), difficultyAt(i, count), i);
         }
         out.push(item);
     }
     return out;
-};
+}
+
+/**
+ * Procedural math with the repetition guard: `seen` holds bank ids, which procedural items do not
+ * have, so it is not used here.
+ */
+export const buildMath: SectionBuilder = (rng, count) =>
+    buildGuarded(rng, count, (seed, difficulty) => mathItem(seed, difficulty));
 
 /**
  * Builder map for the given banks: a bank section lights up only once Ram's review promoted at least one
