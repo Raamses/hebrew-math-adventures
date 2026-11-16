@@ -6,8 +6,10 @@
 // decisions.json: { "<id>": { "status": "approve" | "edit" | "drop", "note"?: string }, ... } — exported from the
 // review page's store. Reading decisions are per passage (rc-NNN), language decisions per item (wm-NNN / sc-NNN).
 // Only "approve" is promoted. "edit" stays in drafts until fixed and approved again; "drop" never ships.
-// Round 2 adds passages with 6-7 questions; readingItems() keeps passages whole, so once they ship the mock's
-// reading part (MOCK_PLAN: 10 questions, 12 min) can reach ~13-14 questions. Check MOCK_PLAN seconds when promoting.
+// Passages are shipped whole (up to 7 questions), so a mock reading part can run to 14-16 questions; engine/mock.ts
+// keeps each part's planned pace per question, so no manual MOCK_PLAN change is needed when promoting.
+// An item already in the shipped bank keeps its reviewedAt / reviewedBy: re-running with every round never rewrites
+// an earlier approval date.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -16,9 +18,14 @@ const REVIEW_ONLY = ['flag', 'note', 'genre'];
 const strip = obj => Object.fromEntries(Object.entries(obj).filter(([k]) => !REVIEW_ONLY.includes(k)));
 
 /** Pure core (tested in src/features/giftedPrep/__tests__/promote.test.ts). */
-export function promote({ reading, language }, decisions, { reviewer = 'Ram', today }) {
+export function promote({ reading, language }, decisions, { reviewer = 'Ram', today, shipped = {} }) {
     const approved = id => decisions[id]?.status === 'approve';
-    const stamp = x => ({ ...x, reviewStatus: 'reviewed', reviewedBy: reviewer, reviewedAt: today });
+    const earlier = new Map([...(shipped.reading?.passages ?? []), ...(shipped.language?.items ?? [])]
+        .filter(x => x.reviewedAt).map(x => [x.id, x]));
+    const stamp = x => ({
+        ...x, reviewStatus: 'reviewed',
+        reviewedBy: earlier.get(x.id)?.reviewedBy ?? reviewer, reviewedAt: earlier.get(x.id)?.reviewedAt ?? today,
+    });
     const passages = reading.passages.filter(p => approved(p.id))
         .map(p => stamp(strip({ ...p, questions: p.questions.map(strip) })));
     const items = language.items.filter(i => approved(i.id)).map(i => stamp(strip(i)));
@@ -54,7 +61,11 @@ function main() {
         reading: JSON.parse(readFileSync(`${DRAFTS}/reading.json`, 'utf8')),
         language: JSON.parse(readFileSync(`${DRAFTS}/language.json`, 'utf8')),
     };
-    const out = promote(drafts, decisions, { reviewer, today: new Date().toISOString().slice(0, 10) });
+    const shipped = {
+        reading: JSON.parse(readFileSync(`${SHIPPED}/reading.json`, 'utf8')),
+        language: JSON.parse(readFileSync(`${SHIPPED}/language.json`, 'utf8')),
+    };
+    const out = promote(drafts, decisions, { reviewer, today: new Date().toISOString().slice(0, 10), shipped });
     writeFileSync(`${SHIPPED}/reading.json`, JSON.stringify(out.reading, null, 1) + '\n');
     writeFileSync(`${SHIPPED}/language.json`, JSON.stringify(out.language, null, 1) + '\n');
     const count = s => Object.values(decisions).filter(d => d.status === s).length;

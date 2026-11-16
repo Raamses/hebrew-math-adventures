@@ -24,6 +24,7 @@ export function buildMock(rng: Rng, seen: ReadonlySet<string>): MockPart[] {
         const build = getSectionBuilder(section);
         if (!build) return [];
         const items = build(rng, count, seen);
-        return items.length ? [{ section, items, seconds }] : [];
+        // Reading keeps passages whole, so a part can run past `count`; the timer keeps the same pace per question
+        return items.length ? [{ section, items, seconds: Math.round((seconds * Math.max(count, items.length)) / count) }] : [];
     });
 }

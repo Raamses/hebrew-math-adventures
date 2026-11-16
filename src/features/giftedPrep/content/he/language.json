@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed.",
+ "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New drafts wm-021..wm-040 and sc-021..sc-040 (2026-11-16): vocalized by Claude only, no Dicta cross-check; their niqqud has not been human-reviewed either.",
  "items": [
   {
    "id": "wm-001",
@@ -1081,6 +1081,1086 @@
    ],
    "reviewedBy": "Ram",
    "reviewedAt": "2026-11-15"
+  },
+  {
+   "id": "wm-021",
+   "kind": "word-meaning",
+   "stem": "שירה רצה הרבה, ועכשיו היא צמאה מאוד. מה פירוש המילה 'צמאה'?",
+   "options": [
+    "רוצה לישון",
+    "רוצה לאכול",
+    "רוצה לשתות",
+    "רוצה לשחק"
+   ],
+   "answerIndex": 2,
+   "explanation": "שירה רצה הרבה, והגוף שלה צריך מים. מי שצמא רוצה לשתות.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "שִׁירָה רָצָה הַרְבֵּה, וְעַכְשָׁיו הִיא צְמֵאָה מְאוֹד. מָה פֵּירוּשׁ הַמִּילָּה 'צְמֵאָה'?",
+   "explanationNiqqud": "שִׁירָה רָצָה הַרְבֵּה, וְהַגּוּף שֶׁלָּהּ צָרִיךְ מַיִם. מִי שֶׁצָּמֵא רוֹצֶה לִשְׁתּוֹת.",
+   "optionsNiqqud": [
+    "רוֹצָה לִישׁוֹן",
+    "רוֹצָה לֶאֱכוֹל",
+    "רוֹצָה לִשְׁתּוֹת",
+    "רוֹצָה לְשַׂחֵק"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-022",
+   "kind": "word-meaning",
+   "stem": "המורה חילקה לכל תלמיד דף עבודה. מה פירוש המילה 'חילקה'?",
+   "options": [
+    "לקחה מכל אחד",
+    "נתנה לכל אחד",
+    "שמה בארון",
+    "כתבה בעצמה"
+   ],
+   "answerIndex": 1,
+   "explanation": "חילקה פירושו נתנה לכל אחד. כל תלמיד קיבל דף מהמורה.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "הַמּוֹרָה חִילְּקָה לְכָל תַּלְמִיד דַּף עֲבוֹדָה. מָה פֵּירוּשׁ הַמִּילָּה 'חִילְּקָה'?",
+   "explanationNiqqud": "חִילְּקָה פֵּירוּשׁוֹ נָתְנָה לְכָל אֶחָד. כָּל תַּלְמִיד קִיבֵּל דַּף מֵהַמּוֹרָה.",
+   "optionsNiqqud": [
+    "לָקְחָה מִכָּל אֶחָד",
+    "נָתְנָה לְכָל אֶחָד",
+    "שָׂמָה בָּאָרוֹן",
+    "כָּתְבָה בְּעַצְמָהּ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-023",
+   "kind": "word-meaning",
+   "stem": "סבא של איתן אוסף בולים מכל העולם, ויש לו כבר אלבום שלם. מה פירוש המילה 'אוסף'?",
+   "options": [
+    "מוכר לאחרים",
+    "מדביק על מכתבים",
+    "זורק לפח",
+    "שומר הרבה כאלה"
+   ],
+   "answerIndex": 3,
+   "explanation": "מי שאוסף בולים מחפש עוד ועוד בולים ושומר אותם. לכן לסבא יש אלבום שלם.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "סַבָּא שֶׁל אֵיתָן אוֹסֵף בּוּלִים מִכָּל הָעוֹלָם, וְיֵשׁ לוֹ כְּבָר אַלְבּוֹם שָׁלֵם. מָה פֵּירוּשׁ הַמִּילָּה 'אוֹסֵף'?",
+   "explanationNiqqud": "מִי שֶׁאוֹסֵף בּוּלִים מְחַפֵּשׂ עוֹד וָעוֹד בּוּלִים וְשׁוֹמֵר אוֹתָם. לָכֵן לְסַבָּא יֵשׁ אַלְבּוֹם שָׁלֵם.",
+   "optionsNiqqud": [
+    "מוֹכֵר לַאֲחֵרִים",
+    "מַדְבִּיק עַל מִכְתָּבִים",
+    "זוֹרֵק לַפַּח",
+    "שׁוֹמֵר הַרְבֵּה כָּאֵלֶּה"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-024",
+   "kind": "word-meaning",
+   "stem": "הבריכה של הקטנים רדודה, ואפשר לעמוד בה בקלות. מה פירוש המילה 'רדודה'?",
+   "options": [
+    "לא עמוקה",
+    "לא קרה",
+    "לא פתוחה",
+    "לא שקטה"
+   ],
+   "answerIndex": 0,
+   "explanation": "בבריכה רדודה המים לא עמוקים, ולכן גם ילדים קטנים יכולים לעמוד בה.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "הַבְּרֵיכָה שֶׁל הַקְּטַנִּים רְדוּדָה, וְאֶפְשָׁר לַעֲמוֹד בָּהּ בְּקַלּוּת. מָה פֵּירוּשׁ הַמִּילָּה 'רְדוּדָה'?",
+   "explanationNiqqud": "בִּבְרֵיכָה רְדוּדָה הַמַּיִם לֹא עֲמוּקִּים, וְלָכֵן גַּם יְלָדִים קְטַנִּים יְכוֹלִים לַעֲמוֹד בָּהּ.",
+   "optionsNiqqud": [
+    "לֹא עֲמוּקָּה",
+    "לֹא קָרָה",
+    "לֹא פְּתוּחָה",
+    "לֹא שְׁקֵטָה"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-025",
+   "kind": "word-meaning",
+   "stem": "המדענית בדקה את המים במעבדה בקפידה, כדי לא לפספס אף פרט קטן. מה פירוש המילה 'בקפידה'?",
+   "options": [
+    "במהירות ובלי לחשוב",
+    "בזהירות ובתשומת לב",
+    "בעזרת חברים רבים",
+    "בשמחה ובצחוק"
+   ],
+   "answerIndex": 1,
+   "explanation": "בקפידה פירושו בזהירות ובריכוז. המדענית רצתה לראות כל פרט קטן.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "הַמַּדְעָנִית בָּדְקָה אֶת הַמַּיִם בַּמַּעְבָּדָה בִּקְפִידָה, כְּדֵי לֹא לְפַסְפֵס אַף פְּרָט קָטָן. מָה פֵּירוּשׁ הַמִּילָּה 'בִּקְפִידָה'?",
+   "explanationNiqqud": "בִּקְפִידָה פֵּירוּשׁוֹ בִּזְהִירוּת וּבְרִיכּוּז. הַמַּדְעָנִית רָצְתָה לִרְאוֹת כָּל פְּרָט קָטָן.",
+   "optionsNiqqud": [
+    "בִּמְהִירוּת וּבְלִי לַחְשׁוֹב",
+    "בִּזְהִירוּת וּבִתְשׂוּמֶת לֵב",
+    "בְּעֶזְרַת חֲבֵרִים רַבִּים",
+    "בְּשִׂמְחָה וּבִצְחוֹק"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-026",
+   "kind": "word-meaning",
+   "stem": "בגלל השרב, האנשים שתו הרבה מים וחיפשו צל. מה פירוש המילה 'שרב'?",
+   "options": [
+    "גשם חזק עם רעמים",
+    "רוח קרה מהים",
+    "שלג כבד בהרים",
+    "חום כבד ויבש"
+   ],
+   "answerIndex": 3,
+   "explanation": "שרב הוא חום כבד ויבש. בימים כאלה שותים הרבה ומחפשים צל.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "בִּגְלַל הַשָּׁרָב, הָאֲנָשִׁים שָׁתוּ הַרְבֵּה מַיִם וְחִיפְּשׂוּ צֵל. מָה פֵּירוּשׁ הַמִּילָּה 'שָׁרָב'?",
+   "explanationNiqqud": "שָׁרָב הוּא חוֹם כָּבֵד וְיָבֵשׁ. בְּיָמִים כָּאֵלֶּה שׁוֹתִים הַרְבֵּה וּמְחַפְּשִׂים צֵל.",
+   "optionsNiqqud": [
+    "גֶּשֶׁם חָזָק עִם רְעָמִים",
+    "רוּחַ קָרָה מֵהַיָּם",
+    "שֶׁלֶג כָּבֵד בֶּהָרִים",
+    "חוֹם כָּבֵד וְיָבֵשׁ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-027",
+   "kind": "word-meaning",
+   "stem": "מה ההפך של המילה 'רך'?",
+   "options": [
+    "חם",
+    "קשה",
+    "קטן",
+    "יבש"
+   ],
+   "answerIndex": 1,
+   "explanation": "ההפך מרך הוא קשה. כרית היא רכה, ואבן היא קשה.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "מָה הַהֶפֶךְ שֶׁל הַמִּילָּה 'רַךְ'?",
+   "explanationNiqqud": "הַהֶפֶךְ מֵרַךְ הוּא קָשֶׁה. כָּרִית הִיא רַכָּה, וְאֶבֶן הִיא קָשָׁה.",
+   "optionsNiqqud": [
+    "חַם",
+    "קָשֶׁה",
+    "קָטָן",
+    "יָבֵשׁ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-028",
+   "kind": "word-meaning",
+   "stem": "מה ההפך של המילה 'לפתוח'?",
+   "options": [
+    "לשבור",
+    "לקנות",
+    "לצבוע",
+    "לסגור"
+   ],
+   "answerIndex": 3,
+   "explanation": "ההפך מלפתוח הוא לסגור. פותחים את הדלת כדי להיכנס, וסוגרים אותה אחר כך.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "מָה הַהֶפֶךְ שֶׁל הַמִּילָּה 'לִפְתּוֹחַ'?",
+   "explanationNiqqud": "הַהֶפֶךְ מִלִּפְתּוֹחַ הוּא לִסְגּוֹר. פּוֹתְחִים אֶת הַדֶּלֶת כְּדֵי לְהִיכָּנֵס, וְסוֹגְרִים אוֹתָהּ אַחַר כָּךְ.",
+   "optionsNiqqud": [
+    "לִשְׁבּוֹר",
+    "לִקְנוֹת",
+    "לִצְבּוֹעַ",
+    "לִסְגּוֹר"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-029",
+   "kind": "word-meaning",
+   "stem": "מה ההפך של המילה 'עשיר'?",
+   "options": [
+    "עני",
+    "חכם",
+    "זקן",
+    "חלש"
+   ],
+   "answerIndex": 0,
+   "explanation": "לעשיר יש הרבה כסף, ולעני יש מעט כסף. לכן הם הפכים.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "מָה הַהֶפֶךְ שֶׁל הַמִּילָּה 'עָשִׁיר'?",
+   "explanationNiqqud": "לְעָשִׁיר יֵשׁ הַרְבֵּה כֶּסֶף, וּלְעָנִי יֵשׁ מְעַט כֶּסֶף. לָכֵן הֵם הֲפָכִים.",
+   "optionsNiqqud": [
+    "עָנִי",
+    "חָכָם",
+    "זָקֵן",
+    "חַלָּשׁ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-030",
+   "kind": "word-meaning",
+   "stem": "מה ההפך של המילה 'זמני'?",
+   "options": [
+    "קבוע",
+    "מהיר",
+    "ישן",
+    "רחוק"
+   ],
+   "answerIndex": 0,
+   "explanation": "זמני הוא משהו שנמשך רק זמן קצר. קבוע הוא משהו שנשאר תמיד.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "מָה הַהֶפֶךְ שֶׁל הַמִּילָּה 'זְמַנִּי'?",
+   "explanationNiqqud": "זְמַנִּי הוּא מַשֶּׁהוּ שֶׁנִּמְשָׁךְ רַק זְמַן קָצָר. קָבוּעַ הוּא מַשֶּׁהוּ שֶׁנִּשְׁאָר תָּמִיד.",
+   "optionsNiqqud": [
+    "קָבוּעַ",
+    "מָהִיר",
+    "יָשָׁן",
+    "רָחוֹק"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-031",
+   "kind": "word-meaning",
+   "stem": "איזו מילה דומה במשמעותה ל'חבר'?",
+   "options": [
+    "שכן",
+    "מורה",
+    "ידיד",
+    "אויב"
+   ],
+   "answerIndex": 2,
+   "explanation": "ידיד הוא חבר טוב, מישהו שאוהבים להיות איתו.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אֵיזוֹ מִילָּה דּוֹמָה בְּמַשְׁמָעוּתָהּ לְ'חָבֵר'?",
+   "explanationNiqqud": "יְדִיד הוּא חָבֵר טוֹב, מִישֶׁהוּ שֶׁאוֹהֲבִים לִהְיוֹת אִיתּוֹ.",
+   "optionsNiqqud": [
+    "שָׁכֵן",
+    "מוֹרֶה",
+    "יְדִיד",
+    "אוֹיֵב"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-032",
+   "kind": "word-meaning",
+   "stem": "איזו מילה דומה במשמעותה ל'מפחד'?",
+   "options": [
+    "צוחק",
+    "רעב",
+    "ממהר",
+    "חושש"
+   ],
+   "answerIndex": 3,
+   "explanation": "מי שחושש דואג שמשהו רע יקרה, כמו מי שמפחד.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אֵיזוֹ מִילָּה דּוֹמָה בְּמַשְׁמָעוּתָהּ לְ'מְפַחֵד'?",
+   "explanationNiqqud": "מִי שֶׁחוֹשֵׁשׁ דּוֹאֵג שֶׁמַּשֶּׁהוּ רַע יִקְרֶה, כְּמוֹ מִי שֶׁמְּפַחֵד.",
+   "optionsNiqqud": [
+    "צוֹחֵק",
+    "רָעֵב",
+    "מְמַהֵר",
+    "חוֹשֵׁשׁ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-033",
+   "kind": "word-meaning",
+   "stem": "איזו מילה דומה במשמעותה ל'נבון'?",
+   "options": [
+    "חזק",
+    "שקט",
+    "חכם",
+    "גבוה"
+   ],
+   "answerIndex": 2,
+   "explanation": "נבון פירושו חכם, מישהו שמבין דברים היטב.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אֵיזוֹ מִילָּה דּוֹמָה בְּמַשְׁמָעוּתָהּ לְ'נָבוֹן'?",
+   "explanationNiqqud": "נָבוֹן פֵּירוּשׁוֹ חָכָם, מִישֶׁהוּ שֶׁמֵּבִין דְּבָרִים הֵיטֵב.",
+   "optionsNiqqud": [
+    "חָזָק",
+    "שָׁקֵט",
+    "חָכָם",
+    "גָּבוֹהַּ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-034",
+   "kind": "word-meaning",
+   "stem": "איזו מילה לא מתאימה לקבוצה?",
+   "options": [
+    "תפוח",
+    "בננה",
+    "גזר",
+    "אגס"
+   ],
+   "answerIndex": 2,
+   "explanation": "תפוח, בננה ואגס הם פירות. גזר הוא ירק.",
+   "difficulty": 1,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אֵיזוֹ מִילָּה לֹא מַתְאִימָה לַקְּבוּצָה?",
+   "explanationNiqqud": "תַּפּוּחַ, בָּנָנָה וְאַגָּס הֵם פֵּירוֹת. גֶּזֶר הוּא יָרָק.",
+   "optionsNiqqud": [
+    "תַּפּוּחַ",
+    "בָּנָנָה",
+    "גֶּזֶר",
+    "אַגָּס"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-035",
+   "kind": "word-meaning",
+   "stem": "איזו מילה לא מתאימה לקבוצה?",
+   "options": [
+    "מזלג",
+    "שולחן",
+    "כיסא",
+    "ארון"
+   ],
+   "answerIndex": 0,
+   "explanation": "שולחן, כיסא וארון הם רהיטים. מזלג הוא כלי לאכילה.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אֵיזוֹ מִילָּה לֹא מַתְאִימָה לַקְּבוּצָה?",
+   "explanationNiqqud": "שׁוּלְחָן, כִּיסֵּא וְאָרוֹן הֵם רָהִיטִים. מַזְלֵג הוּא כְּלִי לַאֲכִילָה.",
+   "optionsNiqqud": [
+    "מַזְלֵג",
+    "שׁוּלְחָן",
+    "כִּיסֵּא",
+    "אָרוֹן"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-036",
+   "kind": "word-meaning",
+   "stem": "איזו מילה לא מתאימה לקבוצה?",
+   "options": [
+    "נשר",
+    "יונה",
+    "תוכי",
+    "עטלף"
+   ],
+   "answerIndex": 3,
+   "explanation": "נשר, יונה ותוכי הם ציפורים. גם העטלף עף, אבל הוא יונק ולא ציפור.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אֵיזוֹ מִילָּה לֹא מַתְאִימָה לַקְּבוּצָה?",
+   "explanationNiqqud": "נֶשֶׁר, יוֹנָה וְתוּכִּי הֵם צִיפּוֹרִים. גַּם הָעֲטַלֵּף עָף, אֲבָל הוּא יוֹנֵק וְלֹא צִיפּוֹר.",
+   "optionsNiqqud": [
+    "נֶשֶׁר",
+    "יוֹנָה",
+    "תּוּכִּי",
+    "עֲטַלֵּף"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-037",
+   "kind": "word-meaning",
+   "stem": "רופא עובד בבית חולים. איפה עובד מלצר?",
+   "options": [
+    "במוסך",
+    "במסעדה",
+    "בבית ספר",
+    "בתחנת דלק"
+   ],
+   "answerIndex": 1,
+   "explanation": "רופא עובד במקום שמטפלים בו בחולים, ומלצר עובד במקום שמגישים בו אוכל. זו מסעדה.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "רוֹפֵא עוֹבֵד בְּבֵית חוֹלִים. אֵיפֹה עוֹבֵד מֶלְצַר?",
+   "explanationNiqqud": "רוֹפֵא עוֹבֵד בְּמָקוֹם שֶׁמְּטַפְּלִים בּוֹ בְּחוֹלִים, וּמֶלְצַר עוֹבֵד בְּמָקוֹם שֶׁמַּגִּישִׁים בּוֹ אוֹכֶל. זוֹ מִסְעָדָה.",
+   "optionsNiqqud": [
+    "בְּמוּסָךְ",
+    "בִּמְסַעֲדָה",
+    "בְּבֵית סֵפֶר",
+    "בְּתַחֲנַת דֶּלֶק"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-038",
+   "kind": "word-meaning",
+   "stem": "גוזל הוא התינוק של הציפור. ראשן הוא התינוק של איזו חיה?",
+   "options": [
+    "צפרדע",
+    "דג",
+    "נחש",
+    "צב"
+   ],
+   "answerIndex": 0,
+   "explanation": "ראשן בוקע מביצה של צפרדע וחי במים. כשהוא גדל, הוא הופך לצפרדע.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "גּוֹזָל הוּא הַתִּינוֹק שֶׁל הַצִּיפּוֹר. רֹאשָׁן הוּא הַתִּינוֹק שֶׁל אֵיזוֹ חַיָּה?",
+   "explanationNiqqud": "רֹאשָׁן בּוֹקֵעַ מִבֵּיצָה שֶׁל צְפַרְדֵּעַ וְחַי בַּמַּיִם. כְּשֶׁהוּא גָּדֵל, הוּא הוֹפֵךְ לִצְפַרְדֵּעַ.",
+   "optionsNiqqud": [
+    "צְפַרְדֵּעַ",
+    "דָּג",
+    "נָחָשׁ",
+    "צָב"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-039",
+   "kind": "word-meaning",
+   "stem": "הגן החדש נמצא בלב השכונה. מה פירוש המילה 'לב' במשפט?",
+   "options": [
+    "הקצה",
+    "הכניסה",
+    "האמצע",
+    "איבר בגוף"
+   ],
+   "answerIndex": 2,
+   "explanation": "למילה 'לב' יש כמה פירושים. כאן 'בלב השכונה' פירושו באמצע השכונה.",
+   "difficulty": 3,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "הַגַּן הֶחָדָשׁ נִמְצָא בְּלֵב הַשְּׁכוּנָה. מָה פֵּירוּשׁ הַמִּילָּה 'לֵב' בַּמִּשְׁפָּט?",
+   "explanationNiqqud": "לַמִּילָּה 'לֵב' יֵשׁ כַּמָּה פֵּירוּשִׁים. כָּאן 'בְּלֵב הַשְּׁכוּנָה' פֵּירוּשׁוֹ בְּאֶמְצַע הַשְּׁכוּנָה.",
+   "optionsNiqqud": [
+    "הַקָּצֶה",
+    "הַכְּנִיסָה",
+    "הָאֶמְצַע",
+    "אֵיבָר בַּגּוּף"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "wm-040",
+   "kind": "word-meaning",
+   "stem": "דנה עמדה בראש התור לקופה. מה פירוש המילה 'ראש' במשפט?",
+   "options": [
+    "המקום האחרון",
+    "המקום הראשון",
+    "המקום האמצעי",
+    "החלק העליון של הגוף"
+   ],
+   "answerIndex": 1,
+   "explanation": "'בראש התור' פירושו במקום הראשון. דנה עמדה לפני כולם.",
+   "difficulty": 2,
+   "skill": "word-meaning",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "דָּנָה עָמְדָה בְּרֹאשׁ הַתּוֹר לַקּוּפָּה. מָה פֵּירוּשׁ הַמִּילָּה 'רֹאשׁ' בַּמִּשְׁפָּט?",
+   "explanationNiqqud": "'בְּרֹאשׁ הַתּוֹר' פֵּירוּשׁוֹ בַּמָּקוֹם הָרִאשׁוֹן. דָּנָה עָמְדָה לִפְנֵי כּוּלָּם.",
+   "optionsNiqqud": [
+    "הַמָּקוֹם הָאַחֲרוֹן",
+    "הַמָּקוֹם הָרִאשׁוֹן",
+    "הַמָּקוֹם הָאֶמְצָעִי",
+    "הַחֵלֶק הָעֶלְיוֹן שֶׁל הַגּוּף"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-021",
+   "kind": "sentence-completion",
+   "stem": "בחורף לובשים ___ כדי שיהיה חם.",
+   "options": [
+    "סנדלים",
+    "בגד ים",
+    "מעיל",
+    "כובע קש"
+   ],
+   "answerIndex": 2,
+   "explanation": "בחורף קר בחוץ, ומעיל שומר על הגוף חם.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "בַּחוֹרֶף לוֹבְשִׁים ___ כְּדֵי שֶׁיִּהְיֶה חַם.",
+   "explanationNiqqud": "בַּחוֹרֶף קַר בַּחוּץ, וּמְעִיל שׁוֹמֵר עַל הַגּוּף חַם.",
+   "optionsNiqqud": [
+    "סַנְדָּלִים",
+    "בֶּגֶד יָם",
+    "מְעִיל",
+    "כּוֹבַע קַשׁ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-022",
+   "kind": "sentence-completion",
+   "stem": "את המכתב שמים בתוך ___ ושולחים בדואר.",
+   "options": [
+    "מעטפה",
+    "מקרר",
+    "כיור",
+    "מגירה"
+   ],
+   "answerIndex": 0,
+   "explanation": "שמים מכתב במעטפה, סוגרים אותה ושולחים בדואר.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אֶת הַמִּכְתָּב שָׂמִים בְּתוֹךְ ___ וְשׁוֹלְחִים בַּדּוֹאַר.",
+   "explanationNiqqud": "שָׂמִים מִכְתָּב בִּמְעַטָּפָה, סוֹגְרִים אוֹתָהּ וְשׁוֹלְחִים בַּדּוֹאַר.",
+   "optionsNiqqud": [
+    "מְעַטָּפָה",
+    "מְקָרֵר",
+    "כִּיּוֹר",
+    "מְגֵירָה"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-023",
+   "kind": "sentence-completion",
+   "stem": "כדי לראות מקרוב דברים זעירים, שאי אפשר לראות בעין, מדענים מסתכלים דרך ___.",
+   "options": [
+    "משקפת",
+    "מיקרוסקופ",
+    "מצפן",
+    "מדחום"
+   ],
+   "answerIndex": 1,
+   "explanation": "מיקרוסקופ מגדיל מאוד דברים זעירים. משקפת עוזרת לראות דברים רחוקים.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "כְּדֵי לִרְאוֹת מִקָּרוֹב דְּבָרִים זְעִירִים, שֶׁאִי אֶפְשָׁר לִרְאוֹת בָּעַיִן, מַדְעָנִים מִסְתַּכְּלִים דֶּרֶךְ ___.",
+   "explanationNiqqud": "מִיקְרוֹסְקוֹפּ מַגְדִּיל מְאוֹד דְּבָרִים זְעִירִים. מִשְׁקֶפֶת עוֹזֶרֶת לִרְאוֹת דְּבָרִים רְחוֹקִים.",
+   "optionsNiqqud": [
+    "מִשְׁקֶפֶת",
+    "מִיקְרוֹסְקוֹפּ",
+    "מַצְפֵּן",
+    "מַדְחוֹם"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-024",
+   "kind": "sentence-completion",
+   "stem": "התרנגולת הטילה ___ בלול.",
+   "options": [
+    "ביצה",
+    "חלב",
+    "דבש",
+    "צמר"
+   ],
+   "answerIndex": 0,
+   "explanation": "תרנגולות מטילות ביצים. את החלב מקבלים מפרה.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "הַתַּרְנְגוֹלֶת הֵטִילָה ___ בַּלּוּל.",
+   "explanationNiqqud": "תַּרְנְגוֹלוֹת מְטִילוֹת בֵּיצִים. אֶת הֶחָלָב מְקַבְּלִים מִפָּרָה.",
+   "optionsNiqqud": [
+    "בֵּיצָה",
+    "חָלָב",
+    "דְּבַשׁ",
+    "צֶמֶר"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-025",
+   "kind": "sentence-completion",
+   "stem": "בט״ו בשבט הילדים ___ עצים קטנים בגינה.",
+   "options": [
+    "כורתים",
+    "שותלים",
+    "צובעים",
+    "קונים"
+   ],
+   "answerIndex": 1,
+   "explanation": "בט״ו בשבט, חג האילנות, נוהגים לשתול עצים חדשים.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "בְּט״וּ בִּשְׁבָט הַיְּלָדִים ___ עֵצִים קְטַנִּים בַּגִּינָּה.",
+   "explanationNiqqud": "בְּט״וּ בִּשְׁבָט, חַג הָאִילָנוֹת, נוֹהֲגִים לִשְׁתּוֹל עֵצִים חֲדָשִׁים.",
+   "optionsNiqqud": [
+    "כּוֹרְתִים",
+    "שׁוֹתְלִים",
+    "צוֹבְעִים",
+    "קוֹנִים"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-026",
+   "kind": "sentence-completion",
+   "stem": "השעון המעורר ___ בשש בבוקר, ואמא קמה מיד.",
+   "options": [
+    "נשבר",
+    "נרדם",
+    "צלצל",
+    "שתק"
+   ],
+   "answerIndex": 2,
+   "explanation": "שעון מעורר מצלצל כדי להעיר אותנו. אמא שמעה את הצלצול וקמה.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "הַשָּׁעוֹן הַמְּעוֹרֵר ___ בְּשֵׁשׁ בַּבּוֹקֶר, וְאִמָּא קָמָה מִיָּד.",
+   "explanationNiqqud": "שָׁעוֹן מְעוֹרֵר מְצַלְצֵל כְּדֵי לְהָעִיר אוֹתָנוּ. אִמָּא שָׁמְעָה אֶת הַצִּלְצוּל וְקָמָה.",
+   "optionsNiqqud": [
+    "נִשְׁבַּר",
+    "נִרְדַּם",
+    "צִלְצֵל",
+    "שָׁתַק"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-027",
+   "kind": "sentence-completion",
+   "stem": "סבתא של רוני גרה רחוק, ולכן הם נפגשים רק ___, בחגים ובחופשות.",
+   "options": [
+    "לעיתים קרובות",
+    "בכל בוקר",
+    "לעיתים רחוקות",
+    "בכל ערב"
+   ],
+   "answerIndex": 2,
+   "explanation": "סבתא גרה רחוק, ולכן הם לא נפגשים הרבה. לעיתים רחוקות פירושו לא הרבה פעמים.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "סָבְתָא שֶׁל רוֹנִי גָּרָה רָחוֹק, וְלָכֵן הֵם נִפְגָּשִׁים רַק ___, בַּחַגִּים וּבַחוּפְשׁוֹת.",
+   "explanationNiqqud": "סָבְתָא גָּרָה רָחוֹק, וְלָכֵן הֵם לֹא נִפְגָּשִׁים הַרְבֵּה. לְעִיתִּים רְחוֹקוֹת פֵּירוּשׁוֹ לֹא הַרְבֵּה פְּעָמִים.",
+   "optionsNiqqud": [
+    "לְעִיתִּים קְרוֹבוֹת",
+    "בְּכָל בּוֹקֶר",
+    "לְעִיתִּים רְחוֹקוֹת",
+    "בְּכָל עֶרֶב"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-028",
+   "kind": "sentence-completion",
+   "stem": "נדב צחק בקול ___ אבא סיפר בדיחה מצחיקה.",
+   "options": [
+    "כי",
+    "אבל",
+    "לכן",
+    "אם"
+   ],
+   "answerIndex": 0,
+   "explanation": "נדב צחק בגלל הבדיחה. 'כי' מסבירה למה הוא צחק.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "נָדָב צָחַק בְּקוֹל ___ אַבָּא סִיפֵּר בְּדִיחָה מַצְחִיקָה.",
+   "explanationNiqqud": "נָדָב צָחַק בִּגְלַל הַבְּדִיחָה. 'כִּי' מַסְבִּירָה לָמָּה הוּא צָחַק.",
+   "optionsNiqqud": [
+    "כִּי",
+    "אֲבָל",
+    "לָכֵן",
+    "אִם"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-029",
+   "kind": "sentence-completion",
+   "stem": "מיכל רצתה לקנות גלידה, ___ לא היה לה כסף.",
+   "options": [
+    "כי",
+    "לכן",
+    "אבל",
+    "כדי ש"
+   ],
+   "answerIndex": 2,
+   "explanation": "'אבל' מחברת שני דברים הפוכים: מיכל רצתה גלידה, אבל לא יכלה לקנות.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "מִיכַל רָצְתָה לִקְנוֹת גְּלִידָה, ___ לֹא הָיָה לָהּ כֶּסֶף.",
+   "explanationNiqqud": "'אֲבָל' מְחַבֶּרֶת שְׁנֵי דְּבָרִים הֲפוּכִים: מִיכַל רָצְתָה גְּלִידָה, אֲבָל לֹא יָכְלָה לִקְנוֹת.",
+   "optionsNiqqud": [
+    "כִּי",
+    "לָכֵן",
+    "אֲבָל",
+    "כְּדֵי שֶׁ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-030",
+   "kind": "sentence-completion",
+   "stem": "הכלב של השכנים נבח כל הלילה, ___ אף אחד בבית לא ישן.",
+   "options": [
+    "אבל",
+    "לכן",
+    "למרות ש",
+    "אלא"
+   ],
+   "answerIndex": 1,
+   "explanation": "הנביחות העירו את כולם. הנביחות הן הסיבה, ולכן אף אחד לא ישן.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "הַכֶּלֶב שֶׁל הַשְּׁכֵנִים נָבַח כָּל הַלַּיְלָה, ___ אַף אֶחָד בַּבַּיִת לֹא יָשַׁן.",
+   "explanationNiqqud": "הַנְּבִיחוֹת הֵעִירוּ אֶת כּוּלָּם. הַנְּבִיחוֹת הֵן הַסִּיבָּה, וְלָכֵן אַף אֶחָד לֹא יָשַׁן.",
+   "optionsNiqqud": [
+    "אֲבָל",
+    "לָכֵן",
+    "לַמְרוֹת שֶׁ",
+    "אֶלָּא"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-031",
+   "kind": "sentence-completion",
+   "stem": "___ שתיתי כוס מים גדולה, נשארתי צמא.",
+   "options": [
+    "כי",
+    "למרות ש",
+    "לכן",
+    "כדי ש"
+   ],
+   "answerIndex": 1,
+   "explanation": "בדרך כלל מי ששותה הרבה כבר לא צמא, אבל כאן נשארתי צמא. לכן מתאים 'למרות ש'.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "___ שָׁתִיתִי כּוֹס מַיִם גְּדוֹלָה, נִשְׁאַרְתִּי צָמֵא.",
+   "explanationNiqqud": "בְּדֶרֶךְ כְּלָל מִי שֶׁשּׁוֹתֶה הַרְבֵּה כְּבָר לֹא צָמֵא, אֲבָל כָּאן נִשְׁאַרְתִּי צָמֵא. לָכֵן מַתְאִים 'לַמְרוֹת שֶׁ'.",
+   "optionsNiqqud": [
+    "כִּי",
+    "לַמְרוֹת שֶׁ",
+    "לָכֵן",
+    "כְּדֵי שֶׁ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-032",
+   "kind": "sentence-completion",
+   "stem": "אבא הדליק את המזגן ___ יהיה לנו נעים בבית.",
+   "options": [
+    "כדי ש",
+    "אבל",
+    "למרות ש",
+    "או"
+   ],
+   "answerIndex": 0,
+   "explanation": "אבא הדליק את המזגן בשביל מטרה: שיהיה נעים. 'כדי ש' מסבירה מה המטרה.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אַבָּא הִדְלִיק אֶת הַמַּזְגָן ___ יִהְיֶה לָנוּ נָעִים בַּבַּיִת.",
+   "explanationNiqqud": "אַבָּא הִדְלִיק אֶת הַמַּזְגָן בִּשְׁבִיל מַטָּרָה: שֶׁיִּהְיֶה נָעִים. 'כְּדֵי שֶׁ' מַסְבִּירָה מָה הַמַּטָּרָה.",
+   "optionsNiqqud": [
+    "כְּדֵי שֶׁ",
+    "אֲבָל",
+    "לַמְרוֹת שֶׁ",
+    "אוֹ"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-033",
+   "kind": "sentence-completion",
+   "stem": "יעל לא הלכה לים, ___ לבריכה.",
+   "options": [
+    "כי",
+    "אלא",
+    "אם",
+    "כדי"
+   ],
+   "answerIndex": 1,
+   "explanation": "'אלא' באה אחרי 'לא' ומספרת מה כן קרה: יעל הלכה לבריכה.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "יָעֵל לֹא הָלְכָה לַיָּם, ___ לַבְּרֵיכָה.",
+   "explanationNiqqud": "'אֶלָּא' בָּאָה אַחֲרֵי 'לֹא' וּמְסַפֶּרֶת מָה כֵּן קָרָה: יָעֵל הָלְכָה לַבְּרֵיכָה.",
+   "optionsNiqqud": [
+    "כִּי",
+    "אֶלָּא",
+    "אִם",
+    "כְּדֵי"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-034",
+   "kind": "sentence-completion",
+   "stem": "משחק הכדורגל נדחה ליום אחר ___ הגשם החזק.",
+   "options": [
+    "למרות",
+    "כדי",
+    "אבל",
+    "בגלל"
+   ],
+   "answerIndex": 3,
+   "explanation": "הגשם הוא הסיבה שהמשחק נדחה. 'בגלל' מספרת מה הסיבה.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "מִשְׂחַק הַכַּדּוּרֶגֶל נִדְחָה לְיוֹם אַחֵר ___ הַגֶּשֶׁם הֶחָזָק.",
+   "explanationNiqqud": "הַגֶּשֶׁם הוּא הַסִּיבָּה שֶׁהַמִּשְׂחָק נִדְחָה. 'בִּגְלַל' מְסַפֶּרֶת מָה הַסִּיבָּה.",
+   "optionsNiqqud": [
+    "לַמְרוֹת",
+    "כְּדֵי",
+    "אֲבָל",
+    "בִּגְלַל"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-035",
+   "kind": "sentence-completion",
+   "stem": "אתמול מאיה ___ מכתב לסבתא.",
+   "options": [
+    "כותבת",
+    "תכתוב",
+    "כתב",
+    "כתבה"
+   ],
+   "answerIndex": 3,
+   "explanation": "המילה 'אתמול' אומרת שזה כבר קרה, ומאיה היא בת. לכן 'כתבה'.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "אֶתְמוֹל מַאיָה ___ מִכְתָּב לְסָבְתָא.",
+   "explanationNiqqud": "הַמִּילָּה 'אֶתְמוֹל' אוֹמֶרֶת שֶׁזֶּה כְּבָר קָרָה, וּמַאיָה הִיא בַּת. לָכֵן 'כָּתְבָה'.",
+   "optionsNiqqud": [
+    "כּוֹתֶבֶת",
+    "תִּכְתּוֹב",
+    "כָּתַב",
+    "כָּתְבָה"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-036",
+   "kind": "sentence-completion",
+   "stem": "מחר בבוקר אנחנו ___ לטיול בגליל.",
+   "options": [
+    "נסענו",
+    "נוסעת",
+    "יסעו",
+    "ניסע"
+   ],
+   "answerIndex": 3,
+   "explanation": "'מחר' הוא זמן שעוד לא הגיע, ו'אנחנו' הם כמה אנשים. לכן 'ניסע'.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "מָחָר בַּבּוֹקֶר אֲנַחְנוּ ___ לְטִיּוּל בַּגָּלִיל.",
+   "explanationNiqqud": "'מָחָר' הוּא זְמַן שֶׁעוֹד לֹא הִגִּיעַ, וּ'אֲנַחְנוּ' הֵם כַּמָּה אֲנָשִׁים. לָכֵן 'נִיסַּע'.",
+   "optionsNiqqud": [
+    "נָסַעְנוּ",
+    "נוֹסַעַת",
+    "יִסְעוּ",
+    "נִיסַּע"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-037",
+   "kind": "sentence-completion",
+   "stem": "כשהגענו לתחנה, ראינו שהאוטובוס כבר ___ לפני כמה דקות.",
+   "options": [
+    "יוצא",
+    "יצאו",
+    "תצא",
+    "יצא"
+   ],
+   "answerIndex": 3,
+   "explanation": "'לפני כמה דקות' אומר שזה כבר קרה. מדברים על אוטובוס אחד, ולכן 'יצא'.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "כְּשֶׁהִגַּעְנוּ לַתַּחֲנָה, רָאִינוּ שֶׁהָאוֹטוֹבּוּס כְּבָר ___ לִפְנֵי כַּמָּה דַּקּוֹת.",
+   "explanationNiqqud": "'לִפְנֵי כַּמָּה דַּקּוֹת' אוֹמֵר שֶׁזֶּה כְּבָר קָרָה. מְדַבְּרִים עַל אוֹטוֹבּוּס אֶחָד, וְלָכֵן 'יָצָא'.",
+   "optionsNiqqud": [
+    "יוֹצֵא",
+    "יָצְאוּ",
+    "תֵּצֵא",
+    "יָצָא"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-038",
+   "kind": "sentence-completion",
+   "stem": "שכחתי את השוקולד בשמש, ולכן ___.",
+   "options": [
+    "הוא נמס",
+    "הוא קפא",
+    "הוא גדל",
+    "הוא התקרר"
+   ],
+   "answerIndex": 0,
+   "explanation": "בשמש חם מאוד, ושוקולד שמתחמם נהיה רך ונוזלי. זה נקרא נמס.",
+   "difficulty": 1,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "שָׁכַחְתִּי אֶת הַשּׁוֹקוֹלָד בַּשֶּׁמֶשׁ, וְלָכֵן ___.",
+   "explanationNiqqud": "בַּשֶּׁמֶשׁ חַם מְאוֹד, וְשׁוֹקוֹלָד שֶׁמִּתְחַמֵּם נִהְיֶה רַךְ וְנוֹזְלִי. זֶה נִקְרָא נָמֵס.",
+   "optionsNiqqud": [
+    "הוּא נָמַס",
+    "הוּא קָפָא",
+    "הוּא גָּדַל",
+    "הוּא הִתְקָרֵר"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-039",
+   "kind": "sentence-completion",
+   "stem": "גלעד שכח להשקות את העציץ שבוע שלם, ולכן ___.",
+   "options": [
+    "הצמח פרח",
+    "הצמח גדל מהר",
+    "הצמח נבל",
+    "הצמח הוציא פרי"
+   ],
+   "answerIndex": 2,
+   "explanation": "צמח צריך מים כדי לחיות. בלי מים הוא נובל, כלומר נחלש ומתחיל למות.",
+   "difficulty": 2,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "גִּלְעָד שָׁכַח לְהַשְׁקוֹת אֶת הָעָצִיץ שָׁבוּעַ שָׁלֵם, וְלָכֵן ___.",
+   "explanationNiqqud": "צֶמַח צָרִיךְ מַיִם כְּדֵי לִחְיוֹת. בְּלִי מַיִם הוּא נוֹבֵל, כְּלוֹמַר נֶחְלָשׁ וּמַתְחִיל לָמוּת.",
+   "optionsNiqqud": [
+    "הַצֶּמַח פָּרַח",
+    "הַצֶּמַח גָּדַל מַהֵר",
+    "הַצֶּמַח נָבַל",
+    "הַצֶּמַח הוֹצִיא פְּרִי"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
+  },
+  {
+   "id": "sc-040",
+   "kind": "sentence-completion",
+   "stem": "בבוקר הכבישים היו רטובים והיו שלוליות על המדרכה, כי ___.",
+   "options": [
+    "בלילה היה חם",
+    "בלילה נשבה רוח",
+    "בלילה היה ירח מלא",
+    "בלילה ירד גשם"
+   ],
+   "answerIndex": 3,
+   "explanation": "גשם מרטיב את הכבישים ועושה שלוליות. חום, רוח או ירח לא עושים שלוליות.",
+   "difficulty": 3,
+   "skill": "sentence-completion",
+   "reviewStatus": "reviewed",
+   "source": "original",
+   "stemNiqqud": "בַּבּוֹקֶר הַכְּבִישִׁים הָיוּ רְטוּבִים וְהָיוּ שְׁלוּלִיּוֹת עַל הַמִּדְרָכָה, כִּי ___.",
+   "explanationNiqqud": "גֶּשֶׁם מַרְטִיב אֶת הַכְּבִישִׁים וְעוֹשֶׂה שְׁלוּלִיּוֹת. חוֹם, רוּחַ אוֹ יָרֵחַ לֹא עוֹשִׂים שְׁלוּלִיּוֹת.",
+   "optionsNiqqud": [
+    "בַּלַּיְלָה הָיָה חַם",
+    "בַּלַּיְלָה נָשְׁבָה רוּחַ",
+    "בַּלַּיְלָה הָיָה יָרֵחַ מָלֵא",
+    "בַּלַּיְלָה יָרַד גֶּשֶׁם"
+   ],
+   "reviewedBy": "Ram",
+   "reviewedAt": "2026-11-16"
   }
  ]
 }

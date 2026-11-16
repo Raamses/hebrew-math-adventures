@@ -36,7 +36,11 @@ test('mock: timer expiry moves on and blanks are counted', async ({ page }) => {
             await page.getByTestId('prep-option-1').click();
             await page.getByTestId('prep-next').click();
         }
-        await page.clock.fastForward('13:00');
+        // A part's time depends on how many questions it drew (whole passages), so read the timer instead of
+        // assuming a fixed length, then jump just past it.
+        const left = (await page.getByTestId('prep-timer').textContent()) ?? '';
+        const m = left.match(/(\d+):(\d{2})/);
+        await page.clock.fastForward(((m ? Number(m[1]) * 60 + Number(m[2]) : 20 * 60) + 5) * 1000);
     }
 
     await expect(page.getByTestId('prep-summary')).toBeVisible({ timeout: 15_000 });
