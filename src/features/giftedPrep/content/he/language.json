@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New drafts wm-021..wm-040 and sc-021..sc-040 (2026-11-16): vocalized by Claude only, no Dicta cross-check; their niqqud has not been human-reviewed either.",
+ "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New items wm-021..wm-040 and sc-021..sc-040 (2026-11-16): vocalized by Claude, then cross-checked word by word against Dicta Nakdan on 2026-11-16 (about 980 words; spelling-only differences ignored; 46 disagreements adjudicated in context by Claude, 10 fields corrected). Their niqqud has not been human-reviewed either.",
  "items": [
   {
    "id": "wm-001",
@@ -1206,8 +1206,8 @@
    "skill": "word-meaning",
    "reviewStatus": "reviewed",
    "source": "original",
-   "stemNiqqud": "הַמַּדְעָנִית בָּדְקָה אֶת הַמַּיִם בַּמַּעְבָּדָה בִּקְפִידָה, כְּדֵי לֹא לְפַסְפֵס אַף פְּרָט קָטָן. מָה פֵּירוּשׁ הַמִּילָּה 'בִּקְפִידָה'?",
-   "explanationNiqqud": "בִּקְפִידָה פֵּירוּשׁוֹ בִּזְהִירוּת וּבְרִיכּוּז. הַמַּדְעָנִית רָצְתָה לִרְאוֹת כָּל פְּרָט קָטָן.",
+   "stemNiqqud": "הַמַּדְּעָנִית בָּדְקָה אֶת הַמַּיִם בַּמַּעְבָּדָה בִּקְפִידָה, כְּדֵי לֹא לְפַסְפֵס אַף פְּרָט קָטָן. מָה פֵּירוּשׁ הַמִּילָּה 'בִּקְפִידָה'?",
+   "explanationNiqqud": "בִּקְפִידָה פֵּירוּשׁוֹ בִּזְהִירוּת וּבְרִיכּוּז. הַמַּדְּעָנִית רָצְתָה לִרְאוֹת כָּל פְּרָט קָטָן.",
    "optionsNiqqud": [
     "בִּמְהִירוּת וּבְלִי לַחְשׁוֹב",
     "בִּזְהִירוּת וּבִתְשׂוּמֶת לֵב",
@@ -1369,11 +1369,11 @@
    "reviewStatus": "reviewed",
    "source": "original",
    "stemNiqqud": "אֵיזוֹ מִילָּה דּוֹמָה בְּמַשְׁמָעוּתָהּ לְ'חָבֵר'?",
-   "explanationNiqqud": "יְדִיד הוּא חָבֵר טוֹב, מִישֶׁהוּ שֶׁאוֹהֲבִים לִהְיוֹת אִיתּוֹ.",
+   "explanationNiqqud": "יָדִיד הוּא חָבֵר טוֹב, מִישֶׁהוּ שֶׁאוֹהֲבִים לִהְיוֹת אִיתּוֹ.",
    "optionsNiqqud": [
     "שָׁכֵן",
     "מוֹרֶה",
-    "יְדִיד",
+    "יָדִיד",
     "אוֹיֵב"
    ],
    "reviewedBy": "Ram",
@@ -1534,7 +1534,7 @@
    "explanationNiqqud": "רוֹפֵא עוֹבֵד בְּמָקוֹם שֶׁמְּטַפְּלִים בּוֹ בְּחוֹלִים, וּמֶלְצַר עוֹבֵד בְּמָקוֹם שֶׁמַּגִּישִׁים בּוֹ אוֹכֶל. זוֹ מִסְעָדָה.",
    "optionsNiqqud": [
     "בְּמוּסָךְ",
-    "בִּמְסַעֲדָה",
+    "בְּמִסְעָדָה",
     "בְּבֵית סֵפֶר",
     "בְּתַחֲנַת דֶּלֶק"
    ],
@@ -1666,9 +1666,9 @@
    "reviewStatus": "reviewed",
    "source": "original",
    "stemNiqqud": "אֶת הַמִּכְתָּב שָׂמִים בְּתוֹךְ ___ וְשׁוֹלְחִים בַּדּוֹאַר.",
-   "explanationNiqqud": "שָׂמִים מִכְתָּב בִּמְעַטָּפָה, סוֹגְרִים אוֹתָהּ וְשׁוֹלְחִים בַּדּוֹאַר.",
+   "explanationNiqqud": "שָׂמִים מִכְתָּב בְּמַעֲטָפָה, סוֹגְרִים אוֹתָהּ וְשׁוֹלְחִים בַּדּוֹאַר.",
    "optionsNiqqud": [
-    "מְעַטָּפָה",
+    "מַעֲטָפָה",
     "מְקָרֵר",
     "כִּיּוֹר",
     "מְגֵירָה"
@@ -1692,7 +1692,7 @@
    "skill": "sentence-completion",
    "reviewStatus": "reviewed",
    "source": "original",
-   "stemNiqqud": "כְּדֵי לִרְאוֹת מִקָּרוֹב דְּבָרִים זְעִירִים, שֶׁאִי אֶפְשָׁר לִרְאוֹת בָּעַיִן, מַדְעָנִים מִסְתַּכְּלִים דֶּרֶךְ ___.",
+   "stemNiqqud": "כְּדֵי לִרְאוֹת מִקָּרוֹב דְּבָרִים זְעִירִים, שֶׁאִי אֶפְשָׁר לִרְאוֹת בָּעַיִן, מַדְּעָנִים מִסְתַּכְּלִים דֶּרֶךְ ___.",
    "explanationNiqqud": "מִיקְרוֹסְקוֹפּ מַגְדִּיל מְאוֹד דְּבָרִים זְעִירִים. מִשְׁקֶפֶת עוֹזֶרֶת לִרְאוֹת דְּבָרִים רְחוֹקִים.",
    "optionsNiqqud": [
     "מִשְׁקֶפֶת",
@@ -2124,7 +2124,7 @@
    "skill": "sentence-completion",
    "reviewStatus": "reviewed",
    "source": "original",
-   "stemNiqqud": "גִּלְעָד שָׁכַח לְהַשְׁקוֹת אֶת הָעָצִיץ שָׁבוּעַ שָׁלֵם, וְלָכֵן ___.",
+   "stemNiqqud": "גִּלְעָד שָׁכַח לְהַשְׁקוֹת אֶת הֶעָצִיץ שָׁבוּעַ שָׁלֵם, וְלָכֵן ___.",
    "explanationNiqqud": "צֶמַח צָרִיךְ מַיִם כְּדֵי לִחְיוֹת. בְּלִי מַיִם הוּא נוֹבֵל, כְּלוֹמַר נֶחְלָשׁ וּמַתְחִיל לָמוּת.",
    "optionsNiqqud": [
     "הַצֶּמַח פָּרַח",
@@ -2151,7 +2151,7 @@
    "skill": "sentence-completion",
    "reviewStatus": "reviewed",
    "source": "original",
-   "stemNiqqud": "בַּבּוֹקֶר הַכְּבִישִׁים הָיוּ רְטוּבִים וְהָיוּ שְׁלוּלִיּוֹת עַל הַמִּדְרָכָה, כִּי ___.",
+   "stemNiqqud": "בַּבּוֹקֶר הַכְּבִישִׁים הָיוּ רְטוּבִּים וְהָיוּ שְׁלוּלִיּוֹת עַל הַמִּדְרָכָה, כִּי ___.",
    "explanationNiqqud": "גֶּשֶׁם מַרְטִיב אֶת הַכְּבִישִׁים וְעוֹשֶׂה שְׁלוּלִיּוֹת. חוֹם, רוּחַ אוֹ יָרֵחַ לֹא עוֹשִׂים שְׁלוּלִיּוֹת.",
    "optionsNiqqud": [
     "בַּלַּיְלָה הָיָה חַם",

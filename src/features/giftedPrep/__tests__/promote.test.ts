@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 // @ts-expect-error -- plain .mjs script without type declarations; exercised as JS
 import { mergeDecisions, parseArgs, promote } from '../../../../scripts/prep-content-promote.mjs';
+import draftReading from '../../../../content-drafts/gifted-prep/he/reading.json';
+import draftLanguage from '../../../../content-drafts/gifted-prep/he/language.json';
+import shippedReading from '../content/he/reading.json';
+import shippedLanguage from '../content/he/language.json';
+import type { BankLanguageItem, BankPassage, BankQuestion } from '../engine/bankSchema';
 
 const q = (id: string) => ({ id, stem: 's', options: ['a', 'b', 'c', 'd'], answerIndex: 0, explanation: 'e', skill: 'literal', flag: 'x' });
 const drafts = {
@@ -66,5 +71,44 @@ describe('prep-content-promote CLI: several review rounds', () => {
         expect(again.reading.passages.map((p: { reviewedAt: string }) => p.reviewedAt)).toEqual(['2026-11-15', '2026-11-20']);
         // Promoting round 2 alone is exactly the failure the merge prevents
         expect(promote(drafts, round2, { today: '2026-11-16' }).language.items).toEqual([]);
+    });
+});
+
+describe('prep-content-promote on the real banks', () => {
+    // Field names the bank parser knows (engine/bankSchema.ts) plus the two review stamps promote() adds.
+    // `satisfies` ties each list to the schema type: adding or removing a bank field breaks the compile here.
+    type Stamp = 'reviewedBy' | 'reviewedAt';
+    const STAMPS = { reviewedBy: true, reviewedAt: true } satisfies Record<Stamp, true>;
+    const QUESTION_KEYS = {
+        id: true, stem: true, options: true, answerIndex: true, explanation: true, skill: true,
+        stemNiqqud: true, optionsNiqqud: true, explanationNiqqud: true,
+    } satisfies Record<keyof BankQuestion, true>;
+    const PASSAGE_KEYS = {
+        id: true, title: true, text: true, length: true, difficulty: true, reviewStatus: true, source: true,
+        questions: true, titleNiqqud: true, textNiqqud: true, ...STAMPS,
+    } satisfies Record<keyof BankPassage | Stamp, true>;
+    const ITEM_KEYS = {
+        ...QUESTION_KEYS, kind: true, difficulty: true, reviewStatus: true, source: true, ...STAMPS,
+    } satisfies Record<keyof BankLanguageItem | Stamp, true>;
+    const [QUESTION, PASSAGE, ITEM] = [QUESTION_KEYS, PASSAGE_KEYS, ITEM_KEYS].map(o => Object.keys(o));
+    const approveAll = Object.fromEntries([...shippedReading.passages, ...shippedLanguage.items].map(x => [x.id, { status: 'approve' }]));
+    const out = promote({ reading: draftReading, language: draftLanguage }, approveAll,
+        { reviewer: 'Someone', today: '2099-01-01', shipped: { reading: shippedReading, language: shippedLanguage } });
+    const extra = (o: object, allowed: string[]) => Object.keys(o).filter(k => !allowed.includes(k));
+
+    it('every promoted key is a bank field: a new review-only draft field cannot slip into the bundle', () => {
+        for (const p of out.reading.passages) {
+            expect(extra(p, PASSAGE), p.id).toEqual([]);
+            for (const q of p.questions) expect(extra(q, QUESTION), q.id).toEqual([]);
+        }
+        for (const i of out.language.items) expect(extra(i, ITEM), i.id).toEqual([]);
+    });
+
+    it('re-promoting every shipped id rebuilds the shipped bank exactly, approval stamps carried by id', () => {
+        // Also keeps drafts and shipped in step: a text or niqqud fix made in one file only fails here.
+        expect(out.reading).toEqual(shippedReading);
+        expect(out.language).toEqual(shippedLanguage);
+        expect(out.reading.passages.every((p: { reviewedBy: string }) => p.reviewedBy === 'Ram')).toBe(true);
+        expect(out.language.items.some((i: { reviewedAt: string }) => i.reviewedAt === '2099-01-01')).toBe(false);
     });
 });

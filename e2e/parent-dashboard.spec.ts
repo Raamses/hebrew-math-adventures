@@ -349,24 +349,12 @@ test.describe('Parent Zone — Redesign', () => {
     // PG-2/PG-3: profile manager lives in the 'settings' tab — navigate there first
     await clickTab(page, /הגדרות/, /Settings/);
 
-    // On the settings (profiles) tab, find the delete button for "DeleteMe"
-    // The profile cards have the name in a div.font-bold, and delete button has aria-label מחק פרופיל / Delete Profile
-    // We need to find the delete button that corresponds to the "DeleteMe" profile card
-    const profileCards = page.locator('div.bg-white.rounded-2xl.p-4.flex.items-center.gap-3');
-    const cardCount = await profileCards.count();
-
-    // Find the card containing "DeleteMe" and click its delete button
-    let deleteBtn: ReturnType<typeof page.locator> | null = null;
-    for (let i = 0; i < cardCount; i++) {
-      const cardText = await profileCards.nth(i).textContent();
-      if (cardText && cardText.includes('DeleteMe')) {
-        deleteBtn = profileCards.nth(i).locator('button[aria-label*="מחק"], button[aria-label*="Delete Profile"]').first();
-        break;
-      }
-    }
-
-    expect(deleteBtn).not.toBeNull();
-    await expect(deleteBtn!).toBeVisible({ timeout: 5000 });
+    // On the settings (profiles) tab, find the delete button on the "DeleteMe" card.
+    // Keyed on data-testid, not on the card's Tailwind classes: #282 wrapped the card body for the
+    // gifted-prep toggle and the old class chain stopped matching (nightly 2026-11-16).
+    const deleteBtn = page.getByTestId('profile-card').filter({ hasText: 'DeleteMe' })
+      .locator('button[aria-label*="מחק"], button[aria-label*="Delete Profile"]').first();
+    await expect(deleteBtn).toBeVisible({ timeout: 5000 });
 
     // Set up dialog handler BEFORE clicking delete (confirm dialog appears)
     const dialogPromise = new Promise<void>((resolve) => {
@@ -376,16 +364,16 @@ test.describe('Parent Zone — Redesign', () => {
       });
     });
 
-    await deleteBtn!.click();
+    await deleteBtn.click();
     await dialogPromise;
     await page.waitForTimeout(1500);
 
     // Verify "DeleteMe" profile is no longer in the list
-    const deletedNameEl = page.locator('div.font-bold').filter({ hasText: 'DeleteMe' });
+    const deletedNameEl = page.getByTestId('profile-card').filter({ hasText: 'DeleteMe' });
     await expect(deletedNameEl).toHaveCount(0, { timeout: 5000 });
 
     // Verify "DeleteKeep" profile is still present
-    const keptNameEl = page.locator('div.font-bold').filter({ hasText: 'DeleteKeep' }).first();
+    const keptNameEl = page.getByTestId('profile-card').filter({ hasText: 'DeleteKeep' }).first();
     await expect(keptNameEl).toBeVisible({ timeout: 5000 });
 
     console.log('[Test 6] PASSED: Profile deleted, other profile still present');

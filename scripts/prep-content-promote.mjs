@@ -9,8 +9,9 @@
 // Passages are shipped whole (up to 7 questions), so a mock reading part can run to 14-16 questions; engine/mock.ts
 // keeps each part's planned pace per question, so no manual MOCK_PLAN change is needed when promoting.
 // An item already in the shipped bank keeps its reviewedAt / reviewedBy: re-running with every round never rewrites
-// an earlier approval date.
-import { readFileSync, writeFileSync } from 'node:fs';
+// an earlier approval date. The carry-over is keyed by id only, so a passage that was edited and approved again keeps
+// its first approval date; give the reworked text a new id if the date should move.
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 /** Review-only annotations that must never reach the bundle (`genre` only labels passages on the review page). */
@@ -61,10 +62,9 @@ function main() {
         reading: JSON.parse(readFileSync(`${DRAFTS}/reading.json`, 'utf8')),
         language: JSON.parse(readFileSync(`${DRAFTS}/language.json`, 'utf8')),
     };
-    const shipped = {
-        reading: JSON.parse(readFileSync(`${SHIPPED}/reading.json`, 'utf8')),
-        language: JSON.parse(readFileSync(`${SHIPPED}/language.json`, 'utf8')),
-    };
+    // First promote of a bank: no shipped file yet, so nothing to carry over.
+    const readShipped = f => (existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : {});
+    const shipped = { reading: readShipped(`${SHIPPED}/reading.json`), language: readShipped(`${SHIPPED}/language.json`) };
     const out = promote(drafts, decisions, { reviewer, today: new Date().toISOString().slice(0, 10), shipped });
     writeFileSync(`${SHIPPED}/reading.json`, JSON.stringify(out.reading, null, 1) + '\n');
     writeFileSync(`${SHIPPED}/language.json`, JSON.stringify(out.language, null, 1) + '\n');

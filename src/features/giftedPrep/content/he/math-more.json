@@ -1,5 +1,5 @@
 {
- "_provenance": "Stem templates for the wider Stage-A math pool (2026-11-16). Vocalized by Claude; the niqqud has not been human-reviewed. Each entry is [plain, vocalized]; the tests check that stripping the marks gives the plain text exactly.",
+ "_provenance": "Stem templates for the wider Stage-A math pool (2026-11-16). Vocalized by Claude, then cross-checked word by word against Dicta Nakdan on 2026-11-16 (193 words; 8 disagreements adjudicated in context, 1 corrected); the niqqud has not been human-reviewed. Each entry is [plain, vocalized]; the tests check that stripping the marks gives the plain text exactly.",
  "stems": {
   "compareMax": ["באיזה תרגיל התוצאה הכי גדולה?", "בְּאֵיזֶה תַּרְגִּיל הַתּוֹצָאָה הֲכִי גְּדוֹלָה?"],
   "compareMin": ["באיזה תרגיל התוצאה הכי קטנה?", "בְּאֵיזֶה תַּרְגִּיל הַתּוֹצָאָה הֲכִי קְטַנָּה?"],
@@ -13,7 +13,7 @@
   "unitsTens": ["כמה זה {{u}} אחדות ו־{{t}} עשרות?", "כַּמָּה זֶה {{u}} אֲחָדוֹת וְ־{{t}} עֲשָׂרוֹת?"],
   "tensIn": ["כמה עשרות יש במספר {{n}}?", "כַּמָּה עֲשָׂרוֹת יֵשׁ בַּמִּסְפָּר {{n}}?"],
   "coins": ["בארנק יש {{a}} מטבעות של 10 שקלים, {{b}} מטבעות של 5 שקלים ו־{{c}} מטבעות של שקל אחד. כמה שקלים יש בארנק?", "בָּאַרְנָק יֵשׁ {{a}} מַטְבְּעוֹת שֶׁל 10 שְׁקָלִים, {{b}} מַטְבְּעוֹת שֶׁל 5 שְׁקָלִים וְ־{{c}} מַטְבְּעוֹת שֶׁל שֶׁקֶל אֶחָד. כַּמָּה שְׁקָלִים יֵשׁ בָּאַרְנָק?"],
-  "change": ["{{item}} {{p}} שקלים. משלמים בשטר של {{b}} שקלים. כמה שקלים מקבלים בעודף?", "{{item}} {{p}} שְׁקָלִים. מְשַׁלְּמִים בְּשָׁטָר שֶׁל {{b}} שְׁקָלִים. כַּמָּה שְׁקָלִים מְקַבְּלִים בָּעוֹדֶף?"]
+  "change": ["{{item}} {{p}} שקלים. משלמים בשטר של {{b}} שקלים. כמה שקלים מקבלים בעודף?", "{{item}} {{p}} שְׁקָלִים. מְשַׁלְּמִים בִּשְׁטָר שֶׁל {{b}} שְׁקָלִים. כַּמָּה שְׁקָלִים מְקַבְּלִים בָּעוֹדֶף?"]
  },
  "shopItems": [
   ["מחברת עולה", "מַחְבֶּרֶת עוֹלָה"],

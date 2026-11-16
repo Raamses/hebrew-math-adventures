@@ -60,7 +60,7 @@ const W = more.wordProblems;
 /** The value the stem asks for, computed from scratch. Returns null for kinds this file does not cover. */
 export function oracle(item: PrepItem): number[] | null {
     const opts = item.options;
-    const [t0] = [item.stem.text ?? ''];
+    const t0 = item.stem.text ?? '';
     switch (item.kind) {
         case 'math-compare': {
             const vals = opts.map(evalExpr);

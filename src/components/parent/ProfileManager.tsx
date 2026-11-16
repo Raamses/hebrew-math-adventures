@@ -34,6 +34,7 @@ export const ProfileManager: React.FC = () => {
                     {allProfiles.map(profile => (
                         <div
                             key={profile.id}
+                            data-testid="profile-card"
                             className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                         >
                             <div className="flex items-center gap-3">
