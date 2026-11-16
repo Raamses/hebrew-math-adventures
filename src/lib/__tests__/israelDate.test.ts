@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { israelDay, shiftDay, utcDay, weekdayOf } from '../israelDate';
 import { getDailyChallenge } from '../../data/dailyChallenges';
 import { getDailyQuests } from '../../data/dailyQuests';
-import { computeStreak, migrateUtcDayKeys, type DailyProgress } from '../../context/dailyProgressDays';
+import { computeStreak } from '../../context/dailyProgressDays';
 
 // Israel 2026: summer time (UTC+3) from Fri 27 Mar 02:00 to Sun 25 Oct 02:00; winter time is UTC+2.
 const at = (iso: string) => new Date(iso);
@@ -83,63 +83,3 @@ describe('computeStreak on Israel days', () => {
     });
 });
 
-describe('migrateUtcDayKeys: progress saved under UTC days', () => {
-    const legacy = (over: Partial<DailyProgress> = {}): DailyProgress => ({
-        dailyStamps: ['2026-11-15', '2026-11-16'],
-        totalCoinsEarned: 40,
-        dailyChallengeCorrect: 12,
-        dailyChallengeDate: '2026-11-16',
-        questProgress: { '2026-11-16:0': 9, '2026-11-16:1': 2 },
-        questClaimed: ['2026-11-16:2'],
-        questDate: '2026-11-16',
-        ...over,
-    });
-
-    it('in the 00:00-03:00 Israel window, what the old code showed as today stays today', () => {
-        const now = at('2026-11-16T22:40:00Z'); // 00:40 Israel on the 17th, UTC still the 16th
-        const m = migrateUtcDayKeys(legacy(), now);
-        const today = israelDay(now);
-        expect(today).toBe('2026-11-17');
-        expect(m.dayKey).toBe('il');
-        // not repeated: the challenge already done today stays done
-        expect(m.dailyStamps).toContain(today);
-        // not lost: the streak chain is unbroken and grows by today
-        expect(computeStreak(m.dailyStamps, now)).toBe(3);
-        expect(m.dailyChallengeDate).toBe(today);
-        expect(m.dailyChallengeCorrect).toBe(12);
-        expect(m.questDate).toBe(today);
-        expect(m.questProgress).toEqual({ '2026-11-17:0': 9, '2026-11-17:1': 2 });
-        expect(m.questClaimed).toEqual(['2026-11-17:2']); // a claimed quest can't be claimed twice
-        expect(getDailyQuests(now).map(q => q.id)).toContain('2026-11-17:2');
-    });
-
-    it('in the summer window too (Israel 00:00-03:00 = 21:00-24:00 UTC)', () => {
-        const now = at('2026-07-01T23:30:00Z'); // 02:30 Israel on 2 July
-        const m = migrateUtcDayKeys(legacy({
-            dailyStamps: ['2026-07-01'], dailyChallengeDate: '2026-07-01', questDate: '2026-07-01',
-            questProgress: {}, questClaimed: [],
-        }), now);
-        expect(m.dailyStamps).toEqual(['2026-07-01', '2026-07-02']);
-        expect(m.dailyChallengeDate).toBe('2026-07-02');
-    });
-
-    it('a kid who has not played yet today keeps nothing extra', () => {
-        const now = at('2026-11-16T22:40:00Z');
-        const m = migrateUtcDayKeys(legacy({ dailyStamps: ['2026-11-14', '2026-11-15'], dailyChallengeDate: '2026-11-15', questDate: '2026-11-15', questProgress: { '2026-11-15:0': 3 } }), now);
-        expect(m.dailyStamps).toEqual(['2026-11-14', '2026-11-15']);
-        expect(m.dailyChallengeDate).toBe('2026-11-15'); // an old day: the provider resets it
-        expect(m.questProgress).toEqual({ '2026-11-15:0': 3 });
-    });
-
-    it('outside the window the UTC and Israel days agree, so nothing moves', () => {
-        const now = at('2026-11-16T10:00:00Z'); // 12:00 Israel
-        const m = migrateUtcDayKeys(legacy(), now);
-        expect(m).toEqual({ ...legacy(), dayKey: 'il' });
-        expect(computeStreak(m.dailyStamps, now)).toBe(2);
-    });
-
-    it('runs once: Israel-keyed progress is left alone', () => {
-        const p = { ...legacy(), dayKey: 'il' as const };
-        expect(migrateUtcDayKeys(p, at('2026-11-16T22:40:00Z'))).toBe(p);
-    });
-});

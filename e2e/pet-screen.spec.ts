@@ -122,7 +122,8 @@ test.describe('Pet Screen', () => {
     await expect(feedBtn).toBeVisible({ timeout: 5000 });
 
     const isFeedDisabled = await feedBtn.isDisabled();
-    const todayISO = new Date().toISOString().slice(0, 10);
+    // the app's day key is the Israel date (src/lib/israelDate.ts)
+    const todayISO = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date());
     const alreadyFedToday = petStateBefore!.lastFedDate === todayISO;
 
     if (!isFeedDisabled && !alreadyFedToday && petStateBefore!.gems >= 2) {

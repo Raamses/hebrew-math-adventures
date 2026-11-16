@@ -1,3 +1,5 @@
+import { getDailyChallenge } from '../data/dailyChallenges';
+import { getDailyQuests } from '../data/dailyQuests';
 import { israelDay, shiftDay, utcDay } from '../lib/israelDate';
 
 export interface DailyProgress {
@@ -15,17 +17,24 @@ export interface DailyProgress {
 /**
  * Carry progress saved under UTC day keys over to Israel day keys, once.
  *
- * The rule: right after the switch, the kid sees exactly what the old code showed a moment before. Nothing done
- * today is lost and nothing done today can be done again; the day then rolls over at the next Israel midnight.
+ * The rule: nothing done today is lost or done twice, and nothing is paid for work the kid did not do.
  * - When the UTC day and the Israel day are the same (Israel 02:00/03:00 to midnight), every key already means
  *   the same day, so nothing changes.
  * - Between Israel midnight and UTC midnight (00:00 to 02:00/03:00 Israel time), the old code still treated the
- *   UTC day as today, one day behind Israel. Whatever it held as today moves to the Israel day: the challenge's
- *   correct-answer count, quest progress and claims (quest ids carry the day), and the completed stamp. The UTC
- *   stamp stays as well, so the streak chain is not broken.
+ *   UTC day as today, one day behind Israel. Its "today" was a different day's content: the daily seed changes
+ *   every day, so the challenge and each quest slot usually mean something else on the Israel day.
+ *   - The completed stamp moves to the Israel day (today's challenge counts as done, the streak chain is unbroken,
+ *     no coins are paid). The UTC stamp stays as well.
+ *   - The challenge's correct-answer count moves only if the Israel day's challenge is the same (mode, problem
+ *     type and target); otherwise it stays on the old day and the provider resets it.
+ *   - Quest progress and claims move slot by slot only where the Israel day's quest has the same metric and
+ *     target; the rest stays on the old day's ids, which no longer match any quest.
  *
  * Saved data has no time of day, so a stamp made late in the Israel evening and one made after Israel midnight
- * look the same. Both are treated as today, which is what the kid saw before the switch.
+ * look the same. Both count as today, which is what the kid saw just before the switch.
+ *
+ * Other day-keyed stores are not migrated (pet.lastFedDate, the parent streak's lastPlayedDate, the Equation and
+ * Sudoku stored date): in that window they can differ by one day once, see the ADR 2026-11-israel-midnight-day.
  */
 export function migrateUtcDayKeys(p: DailyProgress, now: Date | number = Date.now()): DailyProgress {
   if (p.dayKey === 'il') return p;
@@ -34,19 +43,34 @@ export function migrateUtcDayKeys(p: DailyProgress, now: Date | number = Date.no
   const il = israelDay(now);
   if (u === il) return out;
 
-  const day = (d: string | undefined) => (d === u ? il : d);
-  const id = (q: string) => (q.startsWith(`${u}:`) ? `${il}:${q.slice(u.length + 1)}` : q);
-  out.dailyChallengeDate = day(p.dailyChallengeDate) ?? '';
-  out.questDate = day(p.questDate);
-  if (p.questProgress) {
-    out.questProgress = Object.fromEntries(Object.entries(p.questProgress).map(([q, n]) => [id(q), n]));
-  }
-  if (p.questClaimed) out.questClaimed = p.questClaimed.map(id);
   if (p.dailyStamps.includes(u) && !p.dailyStamps.includes(il)) out.dailyStamps = [...p.dailyStamps, il];
+
+  const oldC = getDailyChallenge(new Date(`${u}T12:00:00Z`));
+  const newC = getDailyChallenge(new Date(now));
+  const sameChallenge = oldC.mode === newC.mode && oldC.problemType === newC.problemType && oldC.target === newC.target;
+  if (sameChallenge && p.dailyChallengeDate === u) out.dailyChallengeDate = il;
+
+  if (p.questDate === u) {
+    const oldQ = getDailyQuests(new Date(`${u}T12:00:00Z`));
+    const newQ = getDailyQuests(new Date(now));
+    const carry = new Map<string, string>();
+    oldQ.forEach((q, slot) => {
+      const n = newQ[slot];
+      if (n && n.metric === q.metric && n.target === q.target) carry.set(q.id, n.id);
+    });
+    out.questDate = il;
+    out.questProgress = Object.fromEntries(
+      Object.entries(p.questProgress ?? {}).flatMap(([id, n]) => (carry.has(id) ? [[carry.get(id) as string, n]] : [])),
+    );
+    out.questClaimed = (p.questClaimed ?? []).flatMap(id => (carry.has(id) ? [carry.get(id) as string] : []));
+  }
   return out;
 }
 
-/** Consecutive-day streak of daily-challenge stamps, alive if the last stamp is today or yesterday (Israel days). */
+/**
+ * Consecutive-day streak of daily-challenge stamps, alive if the last stamp is today or yesterday (Israel days).
+ * Duplicate stamps count once (the old version let a repeated stamp break the chain).
+ */
 export function computeStreak(stamps: string[], now: Date | number = Date.now()): number {
   if (stamps.length === 0) return 0;
   const sorted = [...new Set(stamps)].sort();

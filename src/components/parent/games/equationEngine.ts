@@ -5,7 +5,7 @@
  * from the date so every profile sees the same equation on a given day.
  */
 
-import { israelDay } from '../../../lib/israelDate';
+import { israelDay, shiftDay } from '../../../lib/israelDate';
 
 /* ── Types ───────────────────────────────────────────────────────── */
 
@@ -366,9 +366,7 @@ export function computeStreak(
   const todayStr = todayKey(today);
   if (stored?.date === todayStr) return stored.streak; // already counted
   if (!won) return 0; // a loss always breaks the streak
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = todayKey(yesterday);
+  const yesterdayStr = shiftDay(todayStr, -1); // calendar step, safe across DST
   if (stored?.date === yesterdayStr) return stored.streak + 1;
   return 1; // won today, but there was a gap -> restart at 1
 }

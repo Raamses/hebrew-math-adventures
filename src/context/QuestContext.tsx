@@ -41,7 +41,8 @@ function loadProgress(profileId: string): DailyProgress {
       return { ...EMPTY_PROGRESS };
     }
     return migrateUtcDayKeys({
-      dailyStamps: entry.dailyStamps,
+      // only well-formed days: a malformed stamp would make the calendar arithmetic throw
+      dailyStamps: entry.dailyStamps.filter((d: unknown) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)),
       totalCoinsEarned: entry.totalCoinsEarned || 0,
       dailyChallengeCorrect: entry.dailyChallengeCorrect || 0,
       dailyChallengeDate: entry.dailyChallengeDate || '',

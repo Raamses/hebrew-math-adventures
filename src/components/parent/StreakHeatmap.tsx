@@ -15,18 +15,14 @@ export const StreakHeatmap: React.FC<StreakHeatmapProps> = ({ dailyStamps }) => 
     const { t } = useTranslation();
     const today = israelDay();
 
-    // Build a 5-week window ending today
-    // 5 weeks = 35 days
-    const totalDays = 35;
-    const startOffset = totalDays - 1; // days back from today
-
+    // Build a 5-week window whose last week is the week containing today (later days that week show as future).
     // Build grid: [week][day] where week 0 = oldest, week 4 = newest
     // day: 0=Sunday..6=Saturday
     const grid: { date: string; count: number }[][] = [];
 
-    // Find the start (Sunday) of the week containing the oldest day
-    const oldestDate = shiftDay(today, -startOffset);
-    const oldestSunday = shiftDay(oldestDate, -weekdayOf(oldestDate));
+    // The Sunday four weeks before this week's Sunday. (It used to start from today-34, which ended the grid
+    // before today on every day but Saturday.)
+    const oldestSunday = shiftDay(today, -weekdayOf(today) - 28);
 
     for (let w = 0; w < 5; w++) {
         const week: { date: string; count: number }[] = [];
