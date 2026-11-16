@@ -373,7 +373,7 @@ test.describe('Parent Zone — Redesign', () => {
     await expect(deletedNameEl).toHaveCount(0, { timeout: 5000 });
 
     // Verify "DeleteKeep" profile is still present
-    const keptNameEl = page.locator('div.font-bold').filter({ hasText: 'DeleteKeep' }).first();
+    const keptNameEl = page.getByTestId('profile-card').filter({ hasText: 'DeleteKeep' }).first();
     await expect(keptNameEl).toBeVisible({ timeout: 5000 });
 
     console.log('[Test 6] PASSED: Profile deleted, other profile still present');
