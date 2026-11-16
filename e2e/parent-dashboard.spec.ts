@@ -369,7 +369,7 @@ test.describe('Parent Zone — Redesign', () => {
     await page.waitForTimeout(1500);
 
     // Verify "DeleteMe" profile is no longer in the list
-    const deletedNameEl = page.locator('div.font-bold').filter({ hasText: 'DeleteMe' });
+    const deletedNameEl = page.getByTestId('profile-card').filter({ hasText: 'DeleteMe' });
     await expect(deletedNameEl).toHaveCount(0, { timeout: 5000 });
 
     // Verify "DeleteKeep" profile is still present

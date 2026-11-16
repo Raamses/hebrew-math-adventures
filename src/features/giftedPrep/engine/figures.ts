@@ -31,7 +31,7 @@ export interface FigureBoard {
  * A circle or square looks the same at every quarter turn, and the star and heart are only ever drawn upright,
  * so their rotation is not part of what the child sees.
  */
-export const POINTING: readonly Shape[] = ['arrow', 'triangle'];
+const POINTING: readonly Shape[] = ['arrow', 'triangle'];
 
 /** The figure as the child sees it: rotation dropped for shapes that do not point. */
 export const canon = (f: Figure): Figure => ({ ...f, rot: POINTING.includes(f.shape) ? f.rot : 0 });

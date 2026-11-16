@@ -5,6 +5,7 @@ import draftReading from '../../../../content-drafts/gifted-prep/he/reading.json
 import draftLanguage from '../../../../content-drafts/gifted-prep/he/language.json';
 import shippedReading from '../content/he/reading.json';
 import shippedLanguage from '../content/he/language.json';
+import type { BankLanguageItem, BankPassage, BankQuestion } from '../engine/bankSchema';
 
 const q = (id: string) => ({ id, stem: 's', options: ['a', 'b', 'c', 'd'], answerIndex: 0, explanation: 'e', skill: 'literal', flag: 'x' });
 const drafts = {
@@ -75,10 +76,21 @@ describe('prep-content-promote CLI: several review rounds', () => {
 
 describe('prep-content-promote on the real banks', () => {
     // Field names the bank parser knows (engine/bankSchema.ts) plus the two review stamps promote() adds.
-    const STAMPS = ['reviewedBy', 'reviewedAt'];
-    const QUESTION = ['id', 'stem', 'options', 'answerIndex', 'explanation', 'skill', 'stemNiqqud', 'optionsNiqqud', 'explanationNiqqud'];
-    const PASSAGE = ['id', 'title', 'text', 'length', 'difficulty', 'reviewStatus', 'source', 'questions', 'titleNiqqud', 'textNiqqud', ...STAMPS];
-    const ITEM = [...QUESTION, 'kind', 'difficulty', 'reviewStatus', 'source', ...STAMPS];
+    // `satisfies` ties each list to the schema type: adding or removing a bank field breaks the compile here.
+    type Stamp = 'reviewedBy' | 'reviewedAt';
+    const STAMPS = { reviewedBy: true, reviewedAt: true } satisfies Record<Stamp, true>;
+    const QUESTION_KEYS = {
+        id: true, stem: true, options: true, answerIndex: true, explanation: true, skill: true,
+        stemNiqqud: true, optionsNiqqud: true, explanationNiqqud: true,
+    } satisfies Record<keyof BankQuestion, true>;
+    const PASSAGE_KEYS = {
+        id: true, title: true, text: true, length: true, difficulty: true, reviewStatus: true, source: true,
+        questions: true, titleNiqqud: true, textNiqqud: true, ...STAMPS,
+    } satisfies Record<keyof BankPassage | Stamp, true>;
+    const ITEM_KEYS = {
+        ...QUESTION_KEYS, kind: true, difficulty: true, reviewStatus: true, source: true, ...STAMPS,
+    } satisfies Record<keyof BankLanguageItem | Stamp, true>;
+    const [QUESTION, PASSAGE, ITEM] = [QUESTION_KEYS, PASSAGE_KEYS, ITEM_KEYS].map(o => Object.keys(o));
     const approveAll = Object.fromEntries([...shippedReading.passages, ...shippedLanguage.items].map(x => [x.id, { status: 'approve' }]));
     const out = promote({ reading: draftReading, language: draftLanguage }, approveAll,
         { reviewer: 'Someone', today: '2099-01-01', shipped: { reading: shippedReading, language: shippedLanguage } });
