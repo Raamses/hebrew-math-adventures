@@ -2,7 +2,7 @@
 type: decision
 status: accepted
 date: 2026-11-15
-updated: 2026-11-15
+updated: 2026-11-16
 project: hebrew-math-adventures
 decision: "Gifted-prep section (Stage A slice): Hebrew-only, parent-enabled, PrepItem contract, original content only"
 related: [rules/rtl-hebrew, rules/math-curriculum, rules/architecture, rules/quality-gates]

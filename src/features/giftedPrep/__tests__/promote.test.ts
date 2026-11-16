@@ -58,6 +58,12 @@ describe('prep-content-promote CLI: several review rounds', () => {
         const shipped = promote(drafts, merged, { today: '2026-11-16' });
         expect(shipped.reading.passages.map((p: { id: string }) => p.id)).toEqual(['rc-001', 'rc-002']);
         expect(shipped.language.items.map((i: { id: string }) => i.id)).toEqual(['wm-001']);
+        // An item already shipped keeps its original approval date and reviewer; new ones get today
+        const again = promote(drafts, merged, {
+            today: '2026-11-20', reviewer: 'Ram',
+            shipped: { reading: { passages: [{ id: 'rc-001', reviewedAt: '2026-11-15', reviewedBy: 'Ram' }] } },
+        });
+        expect(again.reading.passages.map((p: { reviewedAt: string }) => p.reviewedAt)).toEqual(['2026-11-15', '2026-11-20']);
         // Promoting round 2 alone is exactly the failure the merge prevents
         expect(promote(drafts, round2, { today: '2026-11-16' }).language.items).toEqual([]);
     });

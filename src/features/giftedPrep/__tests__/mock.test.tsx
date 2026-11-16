@@ -59,13 +59,19 @@ describe('buildMock draws from the wider pools without repeats', () => {
 
 describe('buildMock timer', () => {
     it('keeps the planned pace per question when whole passages run past the count', () => {
+        let overshoots = 0;
         for (let seed = 1; seed <= 300; seed++) {
             for (const part of buildMock(mulberry32(seed), new Set())) {
+                if (part.items.length > MOCK_PLAN.find(m => m.section === part.section)!.count) overshoots++;
                 const plan = MOCK_PLAN.find(m => m.section === part.section)!;
                 const n = Math.max(plan.count, part.items.length);
                 expect(part.seconds).toBe(Math.round((plan.seconds * n) / plan.count));
                 expect(part.seconds).toBeGreaterThanOrEqual(plan.seconds);
+                // pinned: 14 reading questions at 72 s each
+                if (part.section === 'reading' && part.items.length === 14) expect(part.seconds).toBe(1008);
             }
         }
+        // the shipped bank really produces longer parts, so the rule above is exercised
+        expect(overshoots).toBeGreaterThan(0);
     });
 });
