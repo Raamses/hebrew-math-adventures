@@ -4,6 +4,8 @@ export interface DistractorInput {
     readonly answer: number;
     /** The result of doing the other operation (a - b instead of a + b), when it applies. */
     readonly wrongOp?: number;
+    /** Template-specific slips (each the result of exactly one wrong step), tried first, in order. */
+    readonly slips?: readonly number[];
     readonly max?: number;
 }
 
@@ -17,8 +19,8 @@ const swapDigits = (n: number): number | null => {
  * Three distinct, non-negative wrong answers, all different from `answer`. Prefers meaningful slips
  * (digit swap, wrong operation, carry/borrow error = off by ten, off by one), then fills with near numbers.
  */
-export function numericDistractors(rng: Rng, { answer, wrongOp, max = 100 }: DistractorInput): number[] {
-    const candidates: number[] = [];
+export function numericDistractors(rng: Rng, { answer, wrongOp, slips = [], max = 100 }: DistractorInput): number[] {
+    const candidates: number[] = [...slips];
     const swap = swapDigits(answer);
     if (swap !== null) candidates.push(swap);
     if (wrongOp !== undefined) candidates.push(wrongOp);

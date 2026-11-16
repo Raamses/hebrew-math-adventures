@@ -4,6 +4,7 @@ import { mmss, useCountdown } from '../hooks/useCountdown';
 import { buildMock, MOCK_PLAN } from '../engine/mock';
 import { mulberry32 } from '../engine/prng';
 import { READING_PASSAGES } from '../engine/bank';
+import { stemKey } from '../engine/sections';
 
 describe('useCountdown', () => {
     afterEach(() => vi.useRealTimers());
@@ -38,5 +39,20 @@ describe('buildMock', () => {
             expect(p.items.length).toBeGreaterThanOrEqual(MOCK_PLAN.find(m => m.section === p.section)!.count);
             expect(p.seconds).toBeGreaterThan(0);
         });
+    });
+});
+
+describe('buildMock draws from the wider pools without repeats', () => {
+    it('no question appears twice inside one practice test, over 300 tests', () => {
+        const kinds = new Set<string>();
+        for (let seed = 1; seed <= 300; seed++) {
+            const items = buildMock(mulberry32(seed), new Set()).flatMap(p => p.items);
+            expect(new Set(items.map(i => i.id)).size, `seed ${seed} ids`).toBe(items.length);
+            expect(new Set(items.map(stemKey)).size, `seed ${seed} questions`).toBe(items.length);
+            items.forEach(i => kinds.add(i.kind));
+        }
+        // the math part reaches the new task types, not only the original four
+        ['math-sequence', 'math-compare', 'math-odd-one-out', 'math-place-value', 'math-double-half', 'math-money']
+            .forEach(k => expect(kinds.has(k), k).toBe(true));
     });
 });
