@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 // @ts-expect-error -- plain .mjs script without type declarations; exercised as JS
 import { mergeDecisions, parseArgs, promote } from '../../../../scripts/prep-content-promote.mjs';
+import draftReading from '../../../../content-drafts/gifted-prep/he/reading.json';
+import draftLanguage from '../../../../content-drafts/gifted-prep/he/language.json';
+import shippedReading from '../content/he/reading.json';
+import shippedLanguage from '../content/he/language.json';
 
 const q = (id: string) => ({ id, stem: 's', options: ['a', 'b', 'c', 'd'], answerIndex: 0, explanation: 'e', skill: 'literal', flag: 'x' });
 const drafts = {
@@ -66,5 +70,33 @@ describe('prep-content-promote CLI: several review rounds', () => {
         expect(again.reading.passages.map((p: { reviewedAt: string }) => p.reviewedAt)).toEqual(['2026-11-15', '2026-11-20']);
         // Promoting round 2 alone is exactly the failure the merge prevents
         expect(promote(drafts, round2, { today: '2026-11-16' }).language.items).toEqual([]);
+    });
+});
+
+describe('prep-content-promote on the real banks', () => {
+    // Field names the bank parser knows (engine/bankSchema.ts) plus the two review stamps promote() adds.
+    const STAMPS = ['reviewedBy', 'reviewedAt'];
+    const QUESTION = ['id', 'stem', 'options', 'answerIndex', 'explanation', 'skill', 'stemNiqqud', 'optionsNiqqud', 'explanationNiqqud'];
+    const PASSAGE = ['id', 'title', 'text', 'length', 'difficulty', 'reviewStatus', 'source', 'questions', 'titleNiqqud', 'textNiqqud', ...STAMPS];
+    const ITEM = [...QUESTION, 'kind', 'difficulty', 'reviewStatus', 'source', ...STAMPS];
+    const approveAll = Object.fromEntries([...shippedReading.passages, ...shippedLanguage.items].map(x => [x.id, { status: 'approve' }]));
+    const out = promote({ reading: draftReading, language: draftLanguage }, approveAll,
+        { reviewer: 'Someone', today: '2099-01-01', shipped: { reading: shippedReading, language: shippedLanguage } });
+    const extra = (o: object, allowed: string[]) => Object.keys(o).filter(k => !allowed.includes(k));
+
+    it('every promoted key is a bank field: a new review-only draft field cannot slip into the bundle', () => {
+        for (const p of out.reading.passages) {
+            expect(extra(p, PASSAGE), p.id).toEqual([]);
+            for (const q of p.questions) expect(extra(q, QUESTION), q.id).toEqual([]);
+        }
+        for (const i of out.language.items) expect(extra(i, ITEM), i.id).toEqual([]);
+    });
+
+    it('re-promoting every shipped id rebuilds the shipped bank exactly, approval stamps carried by id', () => {
+        // Also keeps drafts and shipped in step: a text or niqqud fix made in one file only fails here.
+        expect(out.reading).toEqual(shippedReading);
+        expect(out.language).toEqual(shippedLanguage);
+        expect(out.reading.passages.every((p: { reviewedBy: string }) => p.reviewedBy === 'Ram')).toBe(true);
+        expect(out.language.items.some((i: { reviewedAt: string }) => i.reviewedAt === '2099-01-01')).toBe(false);
     });
 });

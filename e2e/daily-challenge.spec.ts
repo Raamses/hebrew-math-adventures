@@ -157,6 +157,12 @@ test.describe('Daily Challenge — arcade modes', () => {
   });
 
   test('daily challenge date is set to today after playing arcade mode', async ({ page }) => {
+    // The app keys daily state by the UTC date (getDailyChallenge: toISOString().slice(0, 10)), so the
+    // expected day is the UTC one. Take it before and after playing: a run that crosses UTC midnight may
+    // legitimately record either day. (The nightly at ~00:05 Israel time failed comparing against the
+    // Asia/Jerusalem date, which is a day ahead of UTC until 02:00/03:00.)
+    const utcDay = () => new Date().toISOString().slice(0, 10);
+    const dayBefore = utcDay();
     await setupFreshProfile(page, 'DCDate');
     await selectArcadeMode(page, 'zen');
     await page.waitForTimeout(3000);
@@ -167,13 +173,8 @@ test.describe('Daily Challenge — arcade modes', () => {
     const date = await getDailyChallengeDate(page);
     console.log(`[DC Date] dailyChallengeDate = ${date}`);
 
-    // If tracking occurred, the date should be today (Asia/Jerusalem timezone)
-    if (date) {
-      // Use proper timezone to get Jerusalem date
-      const now = new Date();
-      const jerusalemDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
-      expect(date).toBe(jerusalemDate);
-    }
+    // If tracking occurred, the date is today's UTC date
+    if (date) expect([dayBefore, utcDay()]).toContain(date);
   });
 
   test('daily challenge completes when target reached in matching mode', async ({ page }) => {

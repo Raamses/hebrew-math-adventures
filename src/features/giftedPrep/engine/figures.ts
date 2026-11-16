@@ -15,7 +15,7 @@ export interface Figure {
     readonly shape: Shape;
     readonly color: FigColor;
     readonly size: Size;
-    /** Clockwise degrees; 0 = pointing up. Only meaningful for shapes that point (see SYMMETRY). */
+    /** Clockwise degrees; 0 = pointing up. Only meaningful for shapes that point (see POINTING). */
     readonly rot: Rotation;
     readonly count: number;
 }
@@ -27,18 +27,14 @@ export interface FigureBoard {
 }
 
 /**
- * Rotational symmetry in degrees: rotating by a multiple of it leaves the shape unchanged.
- * Circle and square look the same at every quarter turn; the star and heart are only ever drawn upright.
+ * Only the arrow and the triangle show which way they point: every quarter turn of them looks different.
+ * A circle or square looks the same at every quarter turn, and the star and heart are only ever drawn upright,
+ * so their rotation is not part of what the child sees.
  */
-const SYMMETRY: Readonly<Record<Shape, number>> = {
-    circle: 90, square: 90, star: 360, heart: 360, triangle: 360, arrow: 360,
-};
 export const POINTING: readonly Shape[] = ['arrow', 'triangle'];
 
-/** The rotation that is visibly different, or 0 when the shape's symmetry hides it. */
-export const visibleRot = (f: Figure): Rotation => ((f.rot % SYMMETRY[f.shape]) as Rotation);
-
-export const canon = (f: Figure): Figure => ({ ...f, rot: POINTING.includes(f.shape) ? visibleRot(f) : 0 });
+/** The figure as the child sees it: rotation dropped for shapes that do not point. */
+export const canon = (f: Figure): Figure => ({ ...f, rot: POINTING.includes(f.shape) ? f.rot : 0 });
 
 const SHAPE_HE: Readonly<Record<Shape, readonly [string, string]>> = {
     circle: ['עיגול', 'עיגולים'], square: ['ריבוע', 'ריבועים'], triangle: ['משולש', 'משולשים'],
@@ -66,4 +62,3 @@ export function label(fig: Figure): string {
     return POINTING.includes(f.shape) ? `${base} ${many ? 'שמצביעים' : 'שמצביע'} ${dirName(f.rot)}` : base;
 }
 
-export const sameFigure = (a: Figure, b: Figure) => label(a) === label(b);
