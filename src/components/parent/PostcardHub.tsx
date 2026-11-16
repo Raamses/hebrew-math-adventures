@@ -14,6 +14,7 @@ import { getWeekStartISO } from './games/parentEconomyEngine';
 import { CelebrationTray } from './CelebrationTray';
 import type { BaseProblemConfig } from '../../engines/ProblemFactory';
 import type { UserProfile } from '../../types/user';
+import { israelDay, shiftDay, weekdayOf } from '../../lib/israelDate';
 
 export { SKILL_LABELS, SKILL_PRACTICE_CONFIGS };
 
@@ -31,7 +32,7 @@ export function deriveNarrativeSentence(profile?: UserProfile | null): string {
     const strongest = analysis.strongest;
 
     // Calculate minutes practiced in the last 7 days from sessionHistory
-    const sevenDaysAgoStr = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+    const sevenDaysAgoStr = shiftDay(israelDay(), -6);
 
     const recentSessions = (profile.sessionHistory || []).filter(s => s.date >= sevenDaysAgoStr);
     const recentSec = recentSessions.reduce((sum, s) => sum + s.durationSec, 0);
@@ -126,11 +127,10 @@ export const PostcardHub: React.FC<PostcardHubProps> = ({
 
         const days: { date: string; dayLabel: string; isToday: boolean; hasActivity: boolean }[] = [];
         for (let i = 6; i >= 0; i--) {
-            const d = new Date(Date.now() - i * 86400000);
-            const dateStr = d.toISOString().slice(0, 10);
+            const dateStr = shiftDay(israelDay(), -i);
             days.push({
                 date: dateStr,
-                dayLabel: dayLabels[d.getUTCDay()],
+                dayLabel: dayLabels[weekdayOf(dateStr)],
                 isToday: i === 0,
                 hasActivity: dailyStamps.includes(dateStr),
             });

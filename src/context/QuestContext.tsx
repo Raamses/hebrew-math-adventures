@@ -5,16 +5,8 @@ import { useProfile } from './ProfileContext';
 import { STORAGE_KEYS } from '../lib/worldConfig';
 import { getSkillLabel } from '../lib/skillFocus';
 import { getWeekStartISO } from '../components/parent/games/parentEconomyEngine';
-
-interface DailyProgress {
-  dailyStamps: string[]; // dates completed (YYYY-MM-DD)
-  totalCoinsEarned: number;
-  dailyChallengeCorrect: number; // accumulated correct answers for today's challenge
-  dailyChallengeDate: string; // date of current challenge progress (resets daily)
-  questProgress?: Record<string, number>;  // questId → progress count
-  questClaimed?: string[];                  // claimed quest IDs
-  questDate?: string;                       // date of current quest progress (resets daily)
-}
+import { israelDay, shiftDay } from '../lib/israelDate';
+import { computeStreak, migrateUtcDayKeys, type DailyProgress } from './dailyProgressDays';
 
 interface QuestContextType {
   todayChallenge: DailyChallenge;
@@ -37,7 +29,7 @@ interface QuestContextType {
 
 const QuestContext = createContext<QuestContextType | undefined>(undefined);
 
-const EMPTY_PROGRESS: DailyProgress = { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '', questProgress: {}, questClaimed: [], questDate: '' };
+const EMPTY_PROGRESS: DailyProgress = { dailyStamps: [], totalCoinsEarned: 0, dailyChallengeCorrect: 0, dailyChallengeDate: '', questProgress: {}, questClaimed: [], questDate: '', dayKey: 'il' };
 
 function loadProgress(profileId: string): DailyProgress {
   try {
@@ -48,7 +40,7 @@ function loadProgress(profileId: string): DailyProgress {
     if (!entry || !Array.isArray(entry.dailyStamps)) {
       return { ...EMPTY_PROGRESS };
     }
-    return {
+    return migrateUtcDayKeys({
       dailyStamps: entry.dailyStamps,
       totalCoinsEarned: entry.totalCoinsEarned || 0,
       dailyChallengeCorrect: entry.dailyChallengeCorrect || 0,
@@ -56,7 +48,8 @@ function loadProgress(profileId: string): DailyProgress {
       questProgress: entry.questProgress || {},
       questClaimed: entry.questClaimed || [],
       questDate: entry.questDate || '',
-    };
+      dayKey: entry.dayKey,
+    });
   } catch {
     return { ...EMPTY_PROGRESS };
   }
@@ -71,33 +64,6 @@ function saveProgress(profileId: string, progress: DailyProgress) {
   } catch {
     // localStorage might be unavailable
   }
-}
-
-/** Compute consecutive-day streak from a sorted list of date strings. */
-function computeStreak(stamps: string[]): number {
-  if (stamps.length === 0) return 0;
-  const sorted = [...stamps].sort();
-  const today = new Date().toISOString().slice(0, 10);
-
-  // If the last stamp is today, streak includes today.
-  // If the last stamp is yesterday, streak is still alive.
-  const last = sorted[sorted.length - 1];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-
-  if (last !== today && last !== yesterday) return 0;
-
-  let streak = 1;
-  for (let i = sorted.length - 2; i >= 0; i--) {
-    const curr = new Date(sorted[i + 1]).getTime();
-    const prev = new Date(sorted[i]).getTime();
-    const diffDays = Math.round((curr - prev) / 86400000);
-    if (diffDays === 1) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-  return streak;
 }
 
 export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -190,7 +156,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Stamp album: count stamps in the last 7 days
   const stampAlbumProgress = useMemo(() => {
-    const sevenDaysAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+    const sevenDaysAgo = shiftDay(israelDay(), -6);
     return dailyProgress.dailyStamps.filter((d) => d >= sevenDaysAgo).length;
   }, [dailyProgress.dailyStamps]);
 
@@ -237,6 +203,7 @@ export const QuestProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const total = baseReward + bonus;
 
     const newProgress: DailyProgress = {
+      ...dailyProgress, // keeps today's quest progress and the day-key marker
       dailyStamps: newStamps,
       totalCoinsEarned: dailyProgress.totalCoinsEarned + total,
       dailyChallengeCorrect: dailyProgress.dailyChallengeCorrect,

@@ -28,6 +28,7 @@ import { CheckpointBanner } from './practice/CheckpointBanner';
 
 // Types
 import type { BaseProblemConfig } from '../engines/ProblemFactory';
+import { israelDay } from '../lib/israelDate';
 
 
 interface PracticeModeProps {
@@ -160,7 +161,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
                 soundManager.playLevelUp();
                 soundManager.vibrate([100, 50, 100]);
                 recordSession({
-                    date: new Date().toISOString().slice(0, 10),
+                    date: israelDay(),
                     durationSec: Math.round((Date.now() - sessionStartTime.current) / 1000),
                     correct: currentSession.correct,
                     attempts: currentSession.attempts,
@@ -208,7 +209,7 @@ export const PracticeMode: React.FC<PracticeModeProps> = ({ targetLevel, onExit,
             soundManager.playLevelUp(); // Or 'gameOver' sound if we had one
             soundManager.vibrate([100, 50, 100]);
             recordSession({
-                date: new Date().toISOString().slice(0, 10),
+                date: israelDay(),
                 durationSec: Math.round((Date.now() - sessionStartTime.current) / 1000),
                 correct: session.correct,
                 attempts: session.attempts,

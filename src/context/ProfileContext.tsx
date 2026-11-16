@@ -7,6 +7,7 @@ import { isValidProfileName } from '../lib/validation';
 import { STORAGE_KEYS } from '../lib/worldConfig';
 import { RandomUtils } from '../engines/utils/ProblemUtils';
 import { getWeekStartISO } from '../components/parent/games/parentEconomyEngine';
+import { israelDay } from '../lib/israelDate';
 
 const PET_DEFAULT: PetState = { species: 'owl', name: 'Buddy', happiness: 60, unlockedTricks: [], lastFedDate: null };
 
@@ -522,7 +523,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const feedPet = useCallback(() => {
         if (!profile || !profile.pet) return;
         if ((profile.gems || 0) < 2) return;
-        const todayISO = new Date().toISOString().slice(0, 10);
+        const todayISO = israelDay();
         if (profile.pet.lastFedDate === todayISO) return; // already fed today
         updateProfile(profile.id, {
             gems: (profile.gems || 0) - 2,

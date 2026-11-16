@@ -8,6 +8,7 @@ import { useSoundManager } from '../../hooks/useSoundManager';
 import { useProfile } from '../../context/ProfileContext';
 import { FrenzyOverlay } from './FrenzyOverlay';
 import type { UserCapabilityProfile } from '../../types/progress';
+import { israelDay } from '../../lib/israelDate';
 
 const Starfield = React.memo(() => {
     // ⚡ Bolt: Pre-calculate random properties once to prevent layout thrashing
@@ -61,7 +62,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
             updateArcadeBestScore('INVADERS', score);
         }
         recordSession({
-            date: new Date().toISOString().slice(0, 10),
+            date: israelDay(),
             durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
             correct: sessionCorrectRef.current,
             attempts: sessionAttemptsRef.current,
@@ -75,7 +76,7 @@ export const MathInvadersGame: React.FC<MathInvadersGameProps> = ({
             updateArcadeBestScore('INVADERS', score);
         }
         recordSession({
-            date: new Date().toISOString().slice(0, 10),
+            date: israelDay(),
             durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
             correct: sessionCorrectRef.current,
             attempts: sessionAttemptsRef.current,

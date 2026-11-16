@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 import { ProfileProvider, useProfile } from '../ProfileContext';
 import { QuestProvider, useQuest } from '../QuestContext';
+import { israelDay } from '../../lib/israelDate';
 
 // Combined hook to access both contexts in the same provider tree
 const useBoth = () => ({
@@ -82,10 +83,10 @@ describe('QuestContext — quest system', () => {
       dailyStamps: [],
       totalCoinsEarned: 0,
       dailyChallengeCorrect: 0,
-      dailyChallengeDate: new Date().toISOString().slice(0, 10),
+      dailyChallengeDate: israelDay(),
       questProgress: { [quest.id]: quest.target },
       questClaimed: [],
-      questDate: new Date().toISOString().slice(0, 10),
+      questDate: israelDay(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
 
@@ -168,10 +169,10 @@ describe('QuestContext — quest system', () => {
       dailyStamps: [],
       totalCoinsEarned: 0,
       dailyChallengeCorrect: 0,
-      dailyChallengeDate: new Date().toISOString().slice(0, 10),
+      dailyChallengeDate: israelDay(),
       questProgress: { [quest.id]: quest.target },
       questClaimed: [quest.id], // already claimed
-      questDate: new Date().toISOString().slice(0, 10),
+      questDate: israelDay(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
 

@@ -5,6 +5,7 @@
  * with the selected child and amount.
  */
 
+import { israelDay } from '../../lib/israelDate';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Gift, Coins } from 'lucide-react';
@@ -33,7 +34,7 @@ export function GiftToChildModal({ state, childProfiles, onConfirm, onClose }: G
     const [selectedChild, setSelectedChild] = useState<string>('');
     const [amount, setAmount] = useState<number>(10);
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = israelDay();
     const todaysGifts = (state.giftHistory ?? []).filter((g: GiftTransaction) => g.date === today);
     const totalToday = todaysGifts.reduce((sum: number, g: GiftTransaction) => sum + g.amount, 0);
     const remainingDaily = MAX_DAILY_GIFT_TOTAL - totalToday;

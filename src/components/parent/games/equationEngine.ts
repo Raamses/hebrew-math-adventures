@@ -5,6 +5,8 @@
  * from the date so every profile sees the same equation on a given day.
  */
 
+import { israelDay } from '../../../lib/israelDate';
+
 /* ── Types ───────────────────────────────────────────────────────── */
 
 export type CellState = 'correct' | 'present' | 'absent';
@@ -300,7 +302,7 @@ interface StoredProgress {
 }
 
 function todayKey(date: Date = new Date()): string {
-  return date.toISOString().slice(0, 10);
+  return israelDay(date);
 }
 
 export function loadProgress(date: Date = new Date()): GameProgress {

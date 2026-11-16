@@ -5,6 +5,7 @@ import { getPetStage, decayedHappiness, PET_SPECIES_OPTIONS } from '../../lib/pe
 import { PetAvatar } from './PetAvatar';
 import { DailyQuestList } from './DailyQuestList';
 import { ArrowRight } from 'lucide-react';
+import { israelDay } from '../../lib/israelDate';
 
 interface PetScreenProps {
   onBack: () => void;
@@ -27,7 +28,7 @@ export const PetScreen: React.FC<PetScreenProps> = ({ onBack }) => {
   const pet = profile.pet;
   const level = profile.capabilities?.estimatedLevel ?? 1;
   const stage = getPetStage(level);
-  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayISO = israelDay();
   const happiness = decayedHappiness(pet, todayISO);
   const alreadyFedToday = pet.lastFedDate === todayISO;
   const canFeed = (profile.gems || 0) >= 2 && !alreadyFedToday;

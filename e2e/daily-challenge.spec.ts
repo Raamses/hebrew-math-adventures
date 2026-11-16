@@ -157,12 +157,11 @@ test.describe('Daily Challenge — arcade modes', () => {
   });
 
   test('daily challenge date is set to today after playing arcade mode', async ({ page }) => {
-    // The app keys daily state by the UTC date (getDailyChallenge: toISOString().slice(0, 10)), so the
-    // expected day is the UTC one. Take it before and after playing: a run that crosses UTC midnight may
-    // legitimately record either day. (The nightly at ~00:05 Israel time failed comparing against the
-    // Asia/Jerusalem date, which is a day ahead of UTC until 02:00/03:00.)
-    const utcDay = () => new Date().toISOString().slice(0, 10);
-    const dayBefore = utcDay();
+    // The app keys daily state by the Israel date (Asia/Jerusalem, src/lib/israelDate.ts), whatever the
+    // runner's time zone. Take it before and after playing: a run that crosses Israel midnight may
+    // legitimately record either day.
+    const israelDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date());
+    const dayBefore = israelDay();
     await setupFreshProfile(page, 'DCDate');
     await selectArcadeMode(page, 'zen');
     await page.waitForTimeout(3000);
@@ -173,14 +172,14 @@ test.describe('Daily Challenge — arcade modes', () => {
     const date = await getDailyChallengeDate(page);
     console.log(`[DC Date] dailyChallengeDate = ${date}`);
 
-    // If tracking occurred, the date is today's UTC date
-    if (date) expect([dayBefore, utcDay()]).toContain(date);
+    // If tracking occurred, the date is today's Israel date
+    if (date) expect([dayBefore, israelDay()]).toContain(date);
   });
 
   test('daily challenge completes when target reached in matching mode', async ({ page }) => {
     // This test plays the mode that matches today's daily challenge.
     // We determine today's challenge mode deterministically (same as the app).
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date()); // the app's day is the Israel day
     const seed = today.split('-').reduce((a, b) => a + parseInt(b, 10), 0);
     const MODES = ['zen', 'classic', 'blitz', 'survival'] as const;
     const todayMode = MODES[seed % MODES.length];
@@ -225,12 +224,7 @@ test.describe('Daily Challenge — arcade modes', () => {
 
     // If we managed to pop enough correct bubbles matching today's mode, the challenge should complete
     if (totalPopped >= todayTarget) {
-      const todayStr = new Date().toISOString().slice(0, 10);
-      // Use Jerusalem timezone
-      const now = new Date();
-      const jerusalemOffset = 3;
-      const jerusalemDate = new Date(now.getTime() + jerusalemOffset * 3600000).toISOString().slice(0, 10);
-      expect(stamps).toContain(jerusalemDate);
+      expect(stamps).toContain(today);
     } else {
       // If we didn't reach the target (bubbles can be tricky in E2E), at least verify progress was tracked
       expect(correct).toBeGreaterThan(0);

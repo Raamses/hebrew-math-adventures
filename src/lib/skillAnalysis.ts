@@ -1,6 +1,7 @@
 import type { UserCapabilityProfile } from '../types/progress';
 import type { SessionRecord } from '../types/analytics';
 import { SKILL_KEY_MAP } from '../types/progress';
+import { israelDay, shiftDay, weekdayOf } from './israelDate';
 
 export interface SkillInsight {
     skillKey: string;
@@ -84,18 +85,15 @@ export interface WeeklyBarData {
  * Aggregate the last 7 days of session history into weekly bar chart data.
  */
 export function getWeeklyData(sessionHistory: SessionRecord[] | undefined): WeeklyBarData[] {
-    const today = new Date();
-    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const today = israelDay();
     // Hardcoded Hebrew day-labels: intentional (Hebrew-letter chart labels render in both locales) — owner: workboard card a10f7e85-46e9-493f-b06c-41359e3f6077 (accept decision, R13).
     const dayLabels = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש']; // Sunday=א .. Saturday=ש
 
     // Initialize 7 days
     const days: WeeklyBarData[] = [];
     for (let i = 6; i >= 0; i--) {
-        const d = new Date(todayMidnight);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().slice(0, 10);
-        const dayIndex = d.getDay(); // 0=Sunday
+        const dateStr = shiftDay(today, -i);
+        const dayIndex = weekdayOf(dateStr); // 0=Sunday
         days.push({
             day: dayLabels[dayIndex],
             dayIndex,
