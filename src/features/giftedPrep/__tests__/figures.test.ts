@@ -4,6 +4,7 @@ import { canon, label, type Figure } from '../engine/figures';
 import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
 import mathNiqqud from '../content/he/math-niqqud.json';
 import type { Difficulty, PrepItem } from '../types';
+import { analogyDefensible } from './analogyOracle';
 
 const SEEDS = Number(process.env.PREP_SWEEP ?? 10_000);
 const DIFFS: Difficulty[] = [1, 2, 3];
@@ -34,6 +35,7 @@ function defensible(item: PrepItem): number[] {
             return ATTRS.some(a => rest.every(r => r[a] === rest[0][a]) && canon(f)[a] !== rest[0][a]) ? [i] : [];
         });
     }
+    if (board.layout === 'analogy') return analogyDefensible(item);
     if (board.layout === 'row') {
         const shown = board.cells.filter((c): c is Figure => c !== null).map(canon);
         const fits = (f: Figure) => ATTRS.every(a => nextValue(shown.map(s => s[a]), a).includes(canon(f)[a]));
@@ -83,10 +85,10 @@ describe('shape picture puzzles: 10k-seed sweep', () => {
             pos[it3.answerIndex]++;
             const b = it3.stem.figures;
             const s = b?.cells.filter(Boolean) as Figure[] | undefined;
-            kinds.add(!b ? 'odd' : b.layout === 'grid' ? 'matrix'
+            kinds.add(!b ? 'odd' : b.layout === 'grid' ? 'matrix' : b.layout === 'analogy' ? 'analogy'
                 : s!.some(f => f.rot !== s![0].rot) ? 'rotation' : s!.some(f => f.count !== s![0].count) ? 'count' : 'size');
         }
-        expect([...kinds].sort()).toEqual(['count', 'matrix', 'odd', 'rotation', 'size']);
+        expect([...kinds].sort()).toEqual(['analogy', 'count', 'matrix', 'odd', 'rotation', 'size']);
         pos.forEach(c => expect(c).toBeGreaterThan(600));
     });
 
