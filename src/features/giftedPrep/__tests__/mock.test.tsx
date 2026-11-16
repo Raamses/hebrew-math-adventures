@@ -56,3 +56,16 @@ describe('buildMock draws from the wider pools without repeats', () => {
             .forEach(k => expect(kinds.has(k), k).toBe(true));
     });
 });
+
+describe('buildMock timer', () => {
+    it('keeps the planned pace per question when whole passages run past the count', () => {
+        for (let seed = 1; seed <= 300; seed++) {
+            for (const part of buildMock(mulberry32(seed), new Set())) {
+                const plan = MOCK_PLAN.find(m => m.section === part.section)!;
+                const n = Math.max(plan.count, part.items.length);
+                expect(part.seconds).toBe(Math.round((plan.seconds * n) / plan.count));
+                expect(part.seconds).toBeGreaterThanOrEqual(plan.seconds);
+            }
+        }
+    });
+});
