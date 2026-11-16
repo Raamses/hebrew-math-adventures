@@ -41,6 +41,14 @@
 import { test, expect, type Page } from '@playwright/test';
 import { setupFreshProfile, openMenu } from './helpers';
 
+/** The app's day key: the Israel calendar date (Asia/Jerusalem), shifted by whole calendar days. */
+function israelDay(offsetDays = 0): string {
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date());
+  const d = new Date(`${today}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
+
 const PROFILES_KEY = 'hebrew-math-profiles';
 const DAILY_PROGRESS_KEY = 'hebrew-math-daily-progress';
 
@@ -58,7 +66,7 @@ async function injectPet(page: Page): Promise<void> {
       name: 'Buddy',
       happiness: 80,
       unlockedTricks: [],
-      lastFedDate: new Date().toISOString().slice(0, 10),
+      lastFedDate: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date()),
     };
     localStorage.setItem(key, JSON.stringify(profiles));
   }, PROFILES_KEY);
@@ -94,6 +102,7 @@ async function injectDailyProgress(page: Page, profileId: string, progress: {
       questProgress: {},
       questClaimed: [],
       questDate: '',
+      dayKey: 'il', // Israel-day keys, so the app does not migrate them as legacy UTC days
     };
     if (p.stamps) base.dailyStamps = p.stamps;
     if (p.questProgress) base.questProgress = p.questProgress;
@@ -101,7 +110,7 @@ async function injectDailyProgress(page: Page, profileId: string, progress: {
     if (p.dailyChallengeCorrect !== undefined) base.dailyChallengeCorrect = p.dailyChallengeCorrect;
     if (p.dailyChallengeDate) base.dailyChallengeDate = p.dailyChallengeDate;
     if (p.totalCoinsEarned !== undefined) base.totalCoinsEarned = p.totalCoinsEarned;
-    base.questDate = new Date().toISOString().slice(0, 10);
+    base.questDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date());
     all[pid] = base;
     localStorage.setItem(key, JSON.stringify(all));
   }, { key: DAILY_PROGRESS_KEY, pid: profileId, p: progress });
@@ -109,7 +118,7 @@ async function injectDailyProgress(page: Page, profileId: string, progress: {
 
 /** Compute the daily quests for a given date (mirrors src/data/dailyQuests.ts). */
 function computeDailyQuests(date: Date): { id: string; metric: string; target: number; gemReward: number; titleKey: string; icon: string }[] {
-  const iso = date.toISOString().slice(0, 10);
+  const iso = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(date); // the app's day is the Israel day
   const seed = iso.split('-').reduce((a, b) => a + parseInt(b, 10), 0);
   const POOL = [
     { metric: 'correct_answers', target: 15, titleKey: 'quest.pop15',  icon: '🎯' },
@@ -224,18 +233,14 @@ test.describe('Daily Quests and Streak Mechanics', () => {
       expect(profileId).toBeTruthy();
 
       // Inject 3 consecutive days of stamps (today + 2 previous days)
-      const today = new Date();
+      const todayIl = israelDay();
       const stamps: string[] = [];
-      for (let i = 2; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        stamps.push(d.toISOString().slice(0, 10));
-      }
+      for (let i = 2; i >= 0; i--) stamps.push(israelDay(-i));
 
       await injectDailyProgress(page, profileId!, {
         stamps,
         dailyChallengeCorrect: 0,
-        dailyChallengeDate: today.toISOString().slice(0, 10),
+        dailyChallengeDate: todayIl,
       });
 
       await reloadAndSelectProfile(page);
@@ -444,13 +449,8 @@ test.describe('Daily Quests and Streak Mechanics', () => {
       expect(profileId).toBeTruthy();
 
       // Inject 7 consecutive days of stamps (full week)
-      const today = new Date();
       const stamps: string[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        stamps.push(d.toISOString().slice(0, 10));
-      }
+      for (let i = 6; i >= 0; i--) stamps.push(israelDay(-i));
 
       await injectDailyProgress(page, profileId!, { stamps });
 
@@ -479,8 +479,8 @@ test.describe('Daily Quests and Streak Mechanics', () => {
       expect(profileId).toBeTruthy();
 
       // Inject quest progress with a stale questDate (yesterday)
-      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-      const todayDate = new Date().toISOString().slice(0, 10);
+      const yesterday = israelDay(-1);
+      const todayDate = israelDay();
 
       await page.evaluate(({ key, pid, yd }) => {
         const raw = localStorage.getItem(key);
@@ -493,6 +493,7 @@ test.describe('Daily Quests and Streak Mechanics', () => {
           questProgress: { 'old_quest': 100 },
           questClaimed: ['old_quest'],
           questDate: yd, // Stale date!
+          dayKey: 'il',
         };
         localStorage.setItem(key, JSON.stringify(all));
       }, { key: DAILY_PROGRESS_KEY, pid: profileId, yd: yesterday });

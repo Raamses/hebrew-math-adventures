@@ -15,6 +15,7 @@
  *   - Gift-to-child mechanism (transfer parent coins to child profile)
  */
 
+import { israelDay, shiftDay } from '../../../lib/israelDate';
 import type {
     ParentEconomyState,
     ParentBadgeId,
@@ -95,14 +96,12 @@ export function calculateCoinsEarned(result: GameResult): CoinEarningResult {
 
 /** Get today's date as YYYY-MM-DD */
 export function getTodayISO(): string {
-    return new Date().toISOString().slice(0, 10);
+    return israelDay();
 }
 
 /** Get yesterday's date as YYYY-MM-DD (relative to a reference date, default: today) */
 export function getYesterdayISO(refDate?: string): string {
-    const d = refDate ? new Date(refDate + 'T12:00:00') : new Date();
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().slice(0, 10);
+    return shiftDay(refDate ?? israelDay(), -1);
 }
 
 /**

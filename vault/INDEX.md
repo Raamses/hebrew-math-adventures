@@ -43,6 +43,7 @@ Everything about this project, one place. **Start here.**
 - [[decisions/2026-08-bubble-spawn-x-overflow-clamp]] — variant-aware spawn-X clamp; fixed viewport overflow + e2e flake
 - [[decisions/2026-08-equation-streak-loss-breaks]] — loss breaks streak (Nerdle semantics)
 - [[decisions/2026-11-gifted-prep-stage-a]] — gifted-prep section (Stage A): Hebrew-only, parent toggle, PrepItem contract, original content only
+- [[decisions/2026-11-israel-midnight-day]] — the day rolls over at Israel midnight (Asia/Jerusalem), not UTC; one-time migration of saved progress
 
 ## 🔧 Related projects
 - **[[projects/hebrew-math-adventures]]** — main project (this vault)

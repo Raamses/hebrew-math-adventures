@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { israelDay, shiftDay, weekdayOf } from '../../lib/israelDate';
 
 interface StreakHeatmapProps {
     dailyStamps: string[];
@@ -12,32 +13,23 @@ interface StreakHeatmapProps {
  */
 export const StreakHeatmap: React.FC<StreakHeatmapProps> = ({ dailyStamps }) => {
     const { t } = useTranslation();
-    const today = new Date();
-    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const today = israelDay();
 
-    // Build a 5-week window ending today
-    // 5 weeks = 35 days
-    const totalDays = 35;
-    const startOffset = totalDays - 1; // days back from today
-
+    // Build a 5-week window whose last week is the week containing today (later days that week show as future).
     // Build grid: [week][day] where week 0 = oldest, week 4 = newest
     // day: 0=Sunday..6=Saturday
     const grid: { date: string; count: number }[][] = [];
 
-    // Find the start (Sunday) of the week containing the oldest day
-    const oldestDate = new Date(todayMidnight);
-    oldestDate.setDate(oldestDate.getDate() - startOffset);
-    const oldestSunday = new Date(oldestDate);
-    oldestSunday.setDate(oldestSunday.getDate() - oldestSunday.getDay());
+    // The Sunday four weeks before this week's Sunday. (It used to start from today-34, which ended the grid
+    // before today on every day but Saturday.)
+    const oldestSunday = shiftDay(today, -weekdayOf(today) - 28);
 
     for (let w = 0; w < 5; w++) {
         const week: { date: string; count: number }[] = [];
         for (let d = 0; d < 7; d++) {
-            const cellDate = new Date(oldestSunday);
-            cellDate.setDate(cellDate.getDate() + w * 7 + d);
-            const dateStr = cellDate.toISOString().slice(0, 10);
+            const dateStr = shiftDay(oldestSunday, w * 7 + d);
             // Only count if cell is within range and not in the future
-            const isFuture = cellDate > todayMidnight;
+            const isFuture = dateStr > today;
             const count = isFuture ? -1 : (dailyStamps.includes(dateStr) ? 1 : 0);
             week.push({ date: dateStr, count });
         }

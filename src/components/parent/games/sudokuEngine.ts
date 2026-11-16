@@ -9,6 +9,8 @@
  * Index = row * 9 + col.
  */
 
+import { israelDay } from '../../../lib/israelDate';
+
 /* ── Types ───────────────────────────────────────────────────────── */
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -406,7 +408,7 @@ interface StoredProgress {
 }
 
 function todayKey(date: Date = new Date()): string {
-  return date.toISOString().slice(0, 10);
+  return israelDay(date);
 }
 
 export function freshStats(): SudokuStats {

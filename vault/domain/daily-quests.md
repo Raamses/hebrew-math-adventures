@@ -1,7 +1,7 @@
 ---
 type: domain
 project: hebrew-math-adventures
-updated: 2026-08-08
+updated: 2026-11-16
 status: active
 tags: [domain, quests, daily, engagement, retention, gamification]
 ---
@@ -18,6 +18,7 @@ Drive daily habit formation (retention) for kids. Every day the game offers a **
 Source: `src/data/dailyChallenges.ts` → `getDailyChallenge()`
 
 - **Deterministic per date**: seeded from the ISO date string (`YYYY-MM-DD`), so every kid gets the *same* challenge each day. No backend.
+- **The date is the Israel day** (Asia/Jerusalem, `israelDay()` in `src/lib/israelDate.ts`), so the day rolls over at Israel midnight in both DST seasons. Until 2026-11-16 it was the UTC date. See [[decisions/2026-11-israel-midnight-day]].
 - **Fields**: `mode` (zen/classic/blitz/survival), `problemType` (addition_simple / sub_simple / multiplication / series / compare), `target` (10–19 correct answers), `timeLimit` (blitz=60s, survival=none, else 90s), `reward` (10–18 coins).
 - **Selection**: `seed = sum of date digits`; `mode = MODES[seed % 4]`, `type = PROBLEM_TYPES[seed % 5]`, `target = 10 + (seed % 10)`.
 

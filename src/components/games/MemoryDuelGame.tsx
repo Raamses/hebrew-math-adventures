@@ -7,6 +7,7 @@ import { useMemoryGame } from '../../hooks/useMemoryGame';
 import { useSoundManager } from '../../hooks/useSoundManager';
 import { useProfile } from '../../context/ProfileContext';
 import type { UserCapabilityProfile } from '../../types/progress';
+import { israelDay } from '../../lib/israelDate';
 
 interface MemoryDuelGameProps {
     level: number;
@@ -58,7 +59,7 @@ export const MemoryDuelGame: React.FC<MemoryDuelGameProps> = ({
     useEffect(() => {
         if (status === 'complete' && onComplete) {
             recordSession({
-                date: new Date().toISOString().slice(0, 10),
+                date: israelDay(),
                 durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
                 correct: matchedCount,
                 attempts: moves,

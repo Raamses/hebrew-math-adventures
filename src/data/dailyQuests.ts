@@ -1,3 +1,5 @@
+import { israelDay } from '../lib/israelDate';
+
 export type QuestMetric = 'correct_answers' | 'games_finished' | 'combo_reached' | 'boss_defeated' | 'daily_challenge';
 
 export interface DailyQuest {
@@ -20,7 +22,7 @@ const POOL: Omit<DailyQuest, 'id' | 'gemReward'>[] = [
 ];
 
 export function getDailyQuests(date?: Date): DailyQuest[] {
-  const iso = (date || new Date()).toISOString().slice(0, 10);
+  const iso = israelDay(date);
   const seed = iso.split('-').reduce((a, b) => a + parseInt(b, 10), 0);
   const picks: DailyQuest[] = [];
   const used = new Set<number>();

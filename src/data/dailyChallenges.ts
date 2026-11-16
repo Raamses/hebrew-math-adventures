@@ -1,3 +1,5 @@
+import { israelDay } from '../lib/israelDate';
+
 // Deterministic daily challenge from date seed — no backend needed.
 // Every kid gets the same challenge each day.
 
@@ -16,7 +18,7 @@ const MODES = ['zen', 'classic', 'blitz', 'survival'] as const;
 const PROBLEM_TYPES = ['addition_simple', 'sub_simple', 'multiplication', 'series', 'compare'];
 
 export function getDailyChallenge(date?: Date): DailyChallenge {
-  const today = (date || new Date()).toISOString().slice(0, 10);
+  const today = israelDay(date);
   const seed = today.split('-').reduce((a, b) => a + parseInt(b, 10), 0);
 
   const dailyMode = MODES[seed % MODES.length];
