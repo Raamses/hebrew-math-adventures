@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PostcardHub, deriveNarrativeSentence } from '../PostcardHub';
 import type { UserProfile } from '../../../types/user';
+import { israelDay } from '../../../lib/israelDate';
 
 vi.mock('../../../context/ProfileContext', () => ({
     useProfile: () => ({
@@ -14,7 +15,7 @@ vi.mock('../../../context/ProfileContext', () => ({
 }));
 
 describe('PostcardHub', () => {
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = israelDay();
 
     const mockProfile: UserProfile = {
         id: 'test-child-1',

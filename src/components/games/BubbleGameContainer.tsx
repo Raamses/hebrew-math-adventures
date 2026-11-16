@@ -28,6 +28,7 @@ import { generateBossGate } from '../../lib/bossGate';
 import { MathBehaviorStrategy } from '../../engines/bubble/strategies/MathStrategy';
 import { SESSION_CONFIG, SESSION_THEMES, BOSS_LEVELS, MAX_LEVEL } from '../../lib/worldConfig';
 import { RollingWindow, ROLLING_WINDOW_CONFIG } from '../../lib/rollingWindow';
+import { israelDay } from '../../lib/israelDate';
 
 // --- Power-Up Toast Labels (Frenzy Star) ---
 const POWER_UP_LABELS: Record<PowerUpType, string> = {
@@ -456,7 +457,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             playLevelUp();
             soundManager.vibrate([100, 50, 100]);
             recordSession({
-                date: new Date().toISOString().slice(0, 10),
+                date: israelDay(),
                 durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
                 correct: sessionCorrectRef.current,
                 attempts: sessionAttemptsRef.current,
@@ -470,7 +471,7 @@ export const BubbleGameContainer: React.FC<BubbleGameContainerProps> = ({
             playWrongSound();
             soundManager.vibrate([100, 50, 100]);
             recordSession({
-                date: new Date().toISOString().slice(0, 10),
+                date: israelDay(),
                 durationSec: Math.round((Date.now() - sessionStartTimeRef.current) / 1000),
                 correct: sessionCorrectRef.current,
                 attempts: sessionAttemptsRef.current,
