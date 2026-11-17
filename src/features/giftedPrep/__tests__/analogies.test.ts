@@ -41,12 +41,17 @@ function problems(it: PrepItem): string[] {
     return out;
 }
 
-/** The rule A→B shows, as the child would name it: rot90 = quarter turn clockwise, rot270 = anticlockwise. */
+/**
+ * The rule A→B shows, as the child would name it: rot90 = quarter turn clockwise, rot270 = anticlockwise.
+ * A is always the flag for turns and mirrors, so its rotation survives canon: a left-right mirror maps rot to
+ * -rot (sum 0 mod 360), an up-down mirror to 180 - rot (sum 180).
+ */
 function ruleOf(it: PrepItem): string {
     const [a, b] = cellsOf(it);
     const d = differences(a, b)[0];
     if (d !== 'orientation') return d;
-    return !!a.flip === !!b.flip ? `rot${(b.rot - a.rot + 360) % 360}` : 'mirror';
+    if (!!a.flip === !!b.flip) return `rot${(b.rot - a.rot + 360) % 360}`;
+    return (a.rot + b.rot) % 360 === 0 ? 'mirrorLR' : 'mirrorUD';
 }
 
 describe('figural analogies (A:B::C:?): 10k-seed sweep', () => {
@@ -66,7 +71,7 @@ describe('figural analogies (A:B::C:?): 10k-seed sweep', () => {
         }
         expect([...rules].sort()).toEqual(d === 1
             ? ['color', 'rot180', 'rot90', 'size']
-            : ['color', 'mirror', 'rot180', 'rot270', 'rot90', 'size']);
+            : ['color', 'mirrorLR', 'mirrorUD', 'rot180', 'rot270', 'rot90', 'size']);
         pos.forEach(n => expect(n).toBeGreaterThan(400));
     });
 

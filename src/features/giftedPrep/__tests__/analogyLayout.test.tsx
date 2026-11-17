@@ -8,10 +8,11 @@ import { mulberry32 } from '../engine/prng';
 
 /** A real d3 board (from the generator) whose A is a mirrored flag, so the mirror render path is exercised. */
 function mirroredBoard() {
-    for (let seed = 1; ; seed++) {
+    for (let seed = 1; seed <= 500; seed++) {
         const board = analogyPuzzle(mulberry32(seed), 3).board;
         if (board.cells[0]?.flip) return board;
     }
+    throw new Error('no d3 analogy with a mirrored flag as A in seeds 1..500');
 }
 
 const transformOf = (img: Element) => img.querySelector('svg g')?.getAttribute('transform');
