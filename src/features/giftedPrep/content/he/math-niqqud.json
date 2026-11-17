@@ -1,5 +1,5 @@
 {
- "_provenance": "Dicta Nakdan, reviewed and corrected by Claude 2026-11-15; figureStems (Claude-vocalized 2026-11-16) cross-checked against Dicta Nakdan the same day, full agreement (not part of Ram's approve pass)",
+ "_provenance": "Dicta Nakdan, reviewed and corrected by Claude 2026-11-15; figureStems (Claude-vocalized 2026-11-16) cross-checked against Dicta Nakdan the same day, full agreement; the analogy stem (2026-11-16) likewise matched Dicta Nakdan word for word (not part of Ram's approve pass)",
  "stems": {
   "exercise": "כַּמָּה זֶה?",
   "missing": "אֵיזֶה מִסְפָּר חָסֵר?",
@@ -28,6 +28,10 @@
   "odd": [
    "איזו צורה לא שייכת לקבוצה?",
    "אֵיזוֹ צוּרָה לֹא שַׁיֶּיכֶת לַקְּבוּצָה?"
+  ],
+  "analogy": [
+   "מה שקרה לצורה הראשונה קורה גם לשלישית. איזו צורה באה במקום סימן השאלה?",
+   "מָה שֶׁקָּרָה לַצּוּרָה הָרִאשׁוֹנָה קוֹרֶה גַּם לַשְּׁלִישִׁית. אֵיזוֹ צוּרָה בָּאָה בִּמְקוֹם סִימַן הַשְּׁאֵלָה?"
   ]
  }
 }

@@ -1,7 +1,7 @@
 /**
  * Gifted-prep item contract (ADR vault/decisions/2026-11-gifted-prep-stage-a.md).
- * Stage A needs only the kinds below; Stage B kinds (matrix, figural series, analogies) extend
- * this union later without changing the player.
+ * Shape puzzles (series, 3×3 matrices, odd one out, figural analogies) ride on 'math-picture' with drawn
+ * options (`optionFigures`); further Stage B kinds extend this union without changing the player.
  */
 
 /** Test sections, in the order the Stage-A screening presents them. */
@@ -43,7 +43,7 @@ export interface PrepStem {
     readonly equation?: string;
     /** Picture-puzzle lines ("🍎 + 🍎 = 8"), each rendered LTR like an equation. */
     readonly pictureLines?: readonly string[];
-    /** Shape puzzles: a row or 3×3 grid of drawn figures, `null` = the "?" cell (components/PrepFigure.tsx). */
+    /** Shape puzzles: a row, a 3×3 grid or an A:B::C:? analogy of drawn figures, `null` = the "?" cell (components/PrepFigure.tsx). */
     readonly figures?: FigureBoard;
     /** Reading items carry their passage so the player can show it above the question. */
     readonly passage?: {

@@ -8,7 +8,7 @@ import { intBetween, pick, shuffled, type Rng } from './prng';
  */
 
 export interface FigurePuzzle {
-    readonly kind: 'rotation' | 'size' | 'count' | 'matrix' | 'odd';
+    readonly kind: 'rotation' | 'size' | 'count' | 'matrix' | 'odd' | 'analogy';
     readonly board: FigureBoard;
     /** options[0] is the key. */
     readonly options: readonly Figure[];

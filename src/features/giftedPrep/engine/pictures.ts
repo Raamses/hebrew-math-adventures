@@ -5,7 +5,8 @@ import { ltr } from './arithmeticExplain';
 import mathNiqqud from '../content/he/math-niqqud.json';
 import { canon, label } from './figures';
 import { matrixPuzzle, oddPuzzle } from './figureGrid';
-import { seriesPuzzle } from './figureSeries';
+import { seriesPuzzle, type FigurePuzzle } from './figureSeries';
+import { analogyPuzzle } from './figureAnalogy';
 
 /**
  * Stage-A "picture puzzles" (חידות בציורים, on the Ministry's grade-2 key): every picture stands for a number;
@@ -74,13 +75,18 @@ function puzzle(rng: Rng, shape: Shape, x: string, y: string): Puzzle {
     }
 }
 
-const FIGURE_STEM = { rotation: 'series', size: 'series', count: 'series', matrix: 'matrix', odd: 'odd' } as const;
+const FIGURE_STEM = { rotation: 'series', size: 'series', count: 'series', matrix: 'matrix', odd: 'odd', analogy: 'analogy' } as const;
 
-/** Shape puzzles (series, matrix, odd one out): options are drawn figures, labelled by their Hebrew description. */
-export function figureItem(seed: number, difficulty: Difficulty): PrepItem {
+type FigureMaker = (rng: Rng, difficulty: Difficulty) => FigurePuzzle;
+const FIGURE_MAKERS: readonly FigureMaker[] = [seriesPuzzle, seriesPuzzle, matrixPuzzle, oddPuzzle, analogyPuzzle];
+
+/**
+ * Shape puzzles (series, matrix, odd one out, analogy): options are drawn figures, labelled by their Hebrew
+ * description. `only` pins one puzzle family (the seed sweeps use it).
+ */
+export function figureItem(seed: number, difficulty: Difficulty, only?: FigureMaker): PrepItem {
     const rng = mulberry32(seed);
-    const make = pick(rng, [seriesPuzzle, seriesPuzzle, matrixPuzzle, oddPuzzle]);
-    const p = make(rng, difficulty);
+    const p = (only ?? pick(rng, FIGURE_MAKERS))(rng, difficulty);
     const order = shuffled(rng, [0, 1, 2, 3]);
     const [text, textNiqqud] = mathNiqqud.figureStems[FIGURE_STEM[p.kind]];
     return {
