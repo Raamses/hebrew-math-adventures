@@ -1,5 +1,4 @@
 import { getDailyChallenge } from '../data/dailyChallenges';
-import { getDailyQuests } from '../data/dailyQuests';
 import { israelDay, shiftDay, utcDay } from '../lib/israelDate';
 
 export interface DailyProgress {
@@ -27,8 +26,7 @@ export interface DailyProgress {
  *     no coins are paid). The UTC stamp stays as well.
  *   - The challenge's correct-answer count moves only if the Israel day's challenge is the same (mode, problem
  *     type and target); otherwise it stays on the old day and the provider resets it.
- *   - Quest progress and claims move slot by slot only where the Israel day's quest has the same metric and
- *     target; the rest stays on the old day's ids, which no longer match any quest.
+ *   - Quest progress and claims are dropped: the Israel day's quests are always different ones (see below).
  *
  * Saved data has no time of day, so a stamp made late in the Israel evening and one made after Israel midnight
  * look the same. Both count as today, which is what the kid saw just before the switch.
@@ -50,19 +48,14 @@ export function migrateUtcDayKeys(p: DailyProgress, now: Date | number = Date.no
   const sameChallenge = oldC.mode === newC.mode && oldC.problemType === newC.problemType && oldC.target === newC.target;
   if (sameChallenge && p.dailyChallengeDate === u) out.dailyChallengeDate = il;
 
+  // Quests never carry. Slot j is POOL[(seed + j) % 6], and from a UTC day to the next calendar day the seed
+  // (sum of year, month, day) moves by +1, by 2 - lastDayOfMonth, or by -40 at the year end: never by a
+  // multiple of 6. So no slot holds the same quest on the Israel day, and old progress or claims would pay for
+  // or block a different quest. A test pins "no slot coincides" over a whole year, so a POOL change shows up.
   if (p.questDate === u) {
-    const oldQ = getDailyQuests(new Date(`${u}T12:00:00Z`));
-    const newQ = getDailyQuests(new Date(now));
-    const carry = new Map<string, string>();
-    oldQ.forEach((q, slot) => {
-      const n = newQ[slot];
-      if (n && n.metric === q.metric && n.target === q.target) carry.set(q.id, n.id);
-    });
     out.questDate = il;
-    out.questProgress = Object.fromEntries(
-      Object.entries(p.questProgress ?? {}).flatMap(([id, n]) => (carry.has(id) ? [[carry.get(id) as string, n]] : [])),
-    );
-    out.questClaimed = (p.questClaimed ?? []).flatMap(id => (carry.has(id) ? [carry.get(id) as string] : []));
+    out.questProgress = {};
+    out.questClaimed = [];
   }
   return out;
 }
