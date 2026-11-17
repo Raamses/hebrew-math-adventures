@@ -1,4 +1,4 @@
-import type { Shape } from './figures';
+import type { Figure, Shape } from './figures';
 
 /**
  * 0–40 viewBox outlines, all pointing up at rotation 0 (components/PrepFigure.tsx draws them). The square,
@@ -14,3 +14,16 @@ export const PATH: Readonly<Record<Exclude<Shape, 'circle'>, string>> = {
     // pole on the left, cloth to its right at the top: the one shape that changes in a mirror
     flag: 'M10 4H14V37H10z M14 4L34 12L14 20z',
 };
+
+/** Size steps far enough apart to tell small from medium at option size. */
+export const SCALE = { 1: 0.48, 2: 0.74, 3: 1 } as const;
+
+/**
+ * The SVG transform PrepFigure puts on a figure's outline: scale about the centre, mirrored left-right when
+ * `flip` (flag only), then rotated `rot` clockwise. figures.ts `canon` and figureAnalogy.ts `turn` assume this
+ * order; figureSymmetry.test evaluates this exact string on the outline corners.
+ */
+export function figureTransform(fig: Figure): string {
+    const s = SCALE[fig.size];
+    return `rotate(${fig.rot} 20 20) translate(20 20) scale(${fig.flip ? -s : s} ${s}) translate(-20 -20)`;
+}

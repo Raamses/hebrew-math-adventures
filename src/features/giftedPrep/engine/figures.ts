@@ -40,7 +40,7 @@ export interface FigureBoard {
  * so their rotation is not part of what the child sees. Of these, only the flag (cloth on one side of the pole)
  * changes in a mirror; the others are their own mirror image (proved on the drawn vertices in figureSymmetry.test).
  */
-export const POINTING: readonly Shape[] = ['arrow', 'triangle', 'flag'];
+const POINTING: readonly Shape[] = ['arrow', 'triangle', 'flag'];
 const CHIRAL: readonly Shape[] = ['flag'];
 
 /** The figure as the child sees it: rotation dropped for shapes that do not point, the mirror for shapes it cannot change. */
@@ -68,7 +68,7 @@ export const sizeName = (s: Size, plural = false) => SIZE_HE[s][plural ? 1 : 0];
 export const dirName = (r: Rotation) => DIR_HE[r];
 
 /** The side the flag's cloth hangs on: a quarter turn clockwise from where the pole points, or anticlockwise if mirrored. */
-export const clothSide = (f: Figure): Rotation => (((f.rot + (f.flip ? 270 : 90)) % 360) as Rotation);
+const clothSide = (f: Figure): Rotation => (((f.rot + (f.flip ? 270 : 90)) % 360) as Rotation);
 
 /**
  * "משולש כחול גדול שמצביע ימינה" / "3 עיגולים אדומים קטנים" / "דגל ירוק בינוני שמצביע למעלה והבד ימינה":

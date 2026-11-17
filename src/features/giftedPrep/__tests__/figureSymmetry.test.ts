@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { canon, COLORS, label, SHAPES, type Figure, type Rotation, type Shape, type Size } from '../engine/figures';
-import { PATH } from '../engine/figurePaths';
+import { figureTransform, PATH } from '../engine/figurePaths';
 import { TURNS, turn, type Turn } from '../engine/figureAnalogy';
 
 /**
  * Symmetry canonicalization checked against the drawing itself: the corners of each straight-edged outline
- * (figurePaths.ts) are moved exactly as PrepFigure's SVG transform moves them (mirror, then rotate about the
- * centre). Two orientations look the same exactly when the corner sets coincide, and that must be exactly
+ * (figurePaths.ts) are moved by evaluating the very transform string PrepFigure renders (`figureTransform`;
+ * analogyLayout.test checks the component uses it). Two orientations look the same exactly when the corner sets coincide, and that must be exactly
  * when `canon` (and so `label`) says they are the same figure.
  */
 
@@ -37,10 +37,19 @@ const rotate = ([x, y]: Pt, deg: number): Pt => {
 };
 const key = (pts: readonly Pt[]) => [...new Set(pts.map(([x, y]) => `${Math.round(x * 1e6) / 1e6},${Math.round(y * 1e6) / 1e6}`))].sort().join(' ');
 
-/** What PrepFigure draws: mirror left-right if flip, then rotate clockwise by rot. */
-const drawn = (f: Figure): Pt[] => corners(PATH[f.shape as typeof POLY[number]])
-    .map(([x, y]): Pt => (f.flip ? [40 - x, y] : [x, y]))
-    .map(p => rotate(p, f.rot));
+/** Evaluates an SVG transform list (rotate with centre, translate, scale): the rightmost function acts first. */
+function applyTransform(t: string, p: Pt): Pt {
+    const ops = [...t.matchAll(/(\w+)\(([^)]*)\)/g)].map(([, fn, args]) => [fn, args.trim().split(/[\s,]+/).map(Number)] as const);
+    return ops.reduceRight<Pt>(([x, y], [fn, n]) => {
+        if (fn === 'translate') return [x + n[0], y + (n[1] ?? 0)];
+        if (fn === 'scale') return [x * n[0], y * (n[1] ?? n[0])];
+        if (fn === 'rotate') { const [cx, cy] = [n[1] ?? 0, n[2] ?? 0]; const [rx, ry] = rotate([x - cx + 20, y - cy + 20], n[0]); return [rx - 20 + cx, ry - 20 + cy]; }
+        throw new Error(`unexpected transform ${fn}`);
+    }, p);
+}
+
+/** What PrepFigure draws: the outline's corners under the component's own transform. */
+const drawn = (f: Figure): Pt[] => corners(PATH[f.shape as typeof POLY[number]]).map(p => applyTransform(figureTransform(f), p));
 
 /** The same page operation done on the corners directly. */
 const PAGE: Readonly<Record<Turn, (p: Pt) => Pt>> = {
@@ -81,6 +90,15 @@ describe('symmetry canonicalization matches the drawing', () => {
             byLabel.set(label(g), k);
         }
         expect(new Set(byLabel.values()).size).toBe(byLabel.size);
+    });
+
+    it('the transform mirrors left-right (not up-down) before turning', () => {
+        // the flag's pole is at x 10..14: mirrored it must move to x 26..30 with the cloth tip still on top
+        const tip = (f: Figure) => applyTransform(figureTransform(f), [34, 12]);
+        const r = (p: Pt) => p.map(v => Math.round(v * 100) / 100);
+        const s = 0.74; // size 2
+        expect(r(tip(fig('flag', 0, true)))).toEqual(r([20 - 14 * s, 20 - 8 * s]));
+        expect(r(tip(fig('flag', 90, true)))).toEqual(r([20 + 8 * s, 20 - 14 * s]));
     });
 
     it('names the flag by where its pole points and where the cloth hangs', () => {

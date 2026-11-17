@@ -17,8 +17,9 @@ export const TURNS: readonly Turn[] = ['rot90', 'rot180', 'rot270', 'mirrorLR', 
 export type AnalogyRule = Turn | 'size' | 'color';
 
 const RULES: Readonly<Record<Difficulty, readonly AnalogyRule[]>> = {
+    // d1: one quarter-turn direction (clockwise) and the half turn; d2 adds anticlockwise and both mirrors
     1: ['size', 'color', 'rot90', 'rot180'],
-    2: ['size', 'color', 'rot90', 'rot180', 'mirrorLR', 'mirrorUD'],
+    2: ['size', 'color', 'rot90', 'rot270', 'rot180', 'mirrorLR', 'mirrorUD'],
     // d3: A and C start in different orientations, so copying B's direction is wrong
     3: ['rot90', 'rot270', 'rot180', 'mirrorLR', 'mirrorUD', 'size', 'color'],
 };

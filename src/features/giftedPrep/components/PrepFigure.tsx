@@ -1,7 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import type { Figure, FigureBoard, FigColor } from '../engine/figures';
 import { label } from '../engine/figures';
-import { PATH } from '../engine/figurePaths';
+import { figureTransform, PATH } from '../engine/figurePaths';
 import { cn } from '@/lib/utils';
 
 /** Colour-blind-friendlier saturated fills; shape always differs too, so colour is never the only cue. */
@@ -9,16 +9,10 @@ const FILL: Readonly<Record<FigColor, string>> = {
     red: '#e11d48', blue: '#2563eb', green: '#16a34a', yellow: '#eab308', purple: '#9333ea',
 };
 
-/** Size steps far enough apart to tell small from medium at option size. */
-const SCALE = { 1: 0.48, 2: 0.74, 3: 1 } as const;
-
 function Glyph({ fig, px }: { readonly fig: Figure; readonly px: number }) {
-    const s = SCALE[fig.size];
-    // mirror first (flag only), then rotate: the order figures.ts `canon` and figureAnalogy.ts `turn` assume
-    const t = `rotate(${fig.rot} 20 20) translate(20 20) scale(${fig.flip ? -s : s} ${s}) translate(-20 -20)`;
     return (
         <svg viewBox="0 0 40 40" width={px} height={px} aria-hidden="true" className="shrink-0">
-            <g transform={t} fill={FILL[fig.color]} stroke="#1e293b" strokeWidth={1.2} strokeLinejoin="round">
+            <g transform={figureTransform(fig)} fill={FILL[fig.color]} stroke="#1e293b" strokeWidth={1.2} strokeLinejoin="round">
                 {fig.shape === 'circle' ? <circle cx={20} cy={20} r={16} /> : <path d={PATH[fig.shape]} />}
             </g>
         </svg>

@@ -33,8 +33,9 @@ export function analogyAnswers(a: Figure, b: Figure, c: Figure): Set<string> {
     const out = new Set<string>();
     for (const rule of RULES) {
         const ra = rule(a);
+        if (!ra || key(ra) !== key(b)) continue;
         const rc = rule(c);
-        if (ra && rc && key(ra) === key(b)) out.add(key(rc));
+        if (rc) out.add(key(rc));
     }
     return out;
 }

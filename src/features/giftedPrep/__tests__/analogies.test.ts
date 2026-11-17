@@ -41,12 +41,12 @@ function problems(it: PrepItem): string[] {
     return out;
 }
 
-/** The rule A→B shows, as the child would name it. */
+/** The rule A→B shows, as the child would name it: rot90 = quarter turn clockwise, rot270 = anticlockwise. */
 function ruleOf(it: PrepItem): string {
     const [a, b] = cellsOf(it);
     const d = differences(a, b)[0];
     if (d !== 'orientation') return d;
-    return !!a.flip === !!b.flip ? 'rot' : 'mirror';
+    return !!a.flip === !!b.flip ? `rot${(b.rot - a.rot + 360) % 360}` : 'mirror';
 }
 
 describe('figural analogies (A:B::C:?): 10k-seed sweep', () => {
@@ -64,7 +64,9 @@ describe('figural analogies (A:B::C:?): 10k-seed sweep', () => {
             pos[it.answerIndex]++;
             rules.add(ruleOf(it));
         }
-        expect([...rules].sort()).toEqual(d === 1 ? ['color', 'rot', 'size'] : ['color', 'mirror', 'rot', 'size']);
+        expect([...rules].sort()).toEqual(d === 1
+            ? ['color', 'rot180', 'rot90', 'size']
+            : ['color', 'mirror', 'rot180', 'rot270', 'rot90', 'size']);
         pos.forEach(n => expect(n).toBeGreaterThan(400));
     });
 
@@ -72,7 +74,7 @@ describe('figural analogies (A:B::C:?): 10k-seed sweep', () => {
         for (let seed = 1; seed <= 2000; seed++) {
             const it = item(seed, 3);
             const [a, , c] = cellsOf(it);
-            if (ruleOf(it) !== 'rot' && ruleOf(it) !== 'mirror') continue;
+            if (ruleOf(it) === 'size' || ruleOf(it) === 'color') continue;
             // cells are canonical: an arrow or triangle carries no mirror bit, so only its direction counts
             expect(a.rot !== c.rot || (c.shape === 'flag' && !!a.flip !== !!c.flip), it.explanation).toBe(true);
         }
