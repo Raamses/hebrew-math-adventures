@@ -20,6 +20,9 @@ async function openParentSettings(page: Page) {
 
 test.describe('Gifted prep parent progress', () => {
     test('empty state, then accuracy, weakest types and mistakes after practice', async ({ page }) => {
+        // Hebrew UI regardless of the runner's locale (the app follows navigator.language otherwise);
+        // an init script survives the localStorage.clear() + reload inside setupFreshProfile
+        await page.addInitScript(() => localStorage.setItem('i18nextLng', 'he'));
         await setupFreshProfile(page, 'ProgressKid');
 
         // Parent turns the section on; the progress view appears next to the toggle, empty
@@ -64,7 +67,8 @@ test.describe('Gifted prep parent progress', () => {
         await expect(mistake).toHaveCount(1);
         await expect(mistake.getByTestId('prep-mistake-question')).not.toBeEmpty();
         await expect(mistake.getByTestId('prep-mistake-answer')).not.toBeEmpty();
-        // RTL: the parent zone stays right-to-left around the panel
-        expect(await page.evaluate(() => document.documentElement.dir)).toBe('rtl');
+        // RTL: the parent zone and the panel lay out right-to-left in Hebrew
+        await expect(page.getByTestId('parent-dashboard')).toHaveAttribute('dir', 'rtl');
+        expect(await panel.evaluate(el => getComputedStyle(el).direction)).toBe('rtl');
     });
 });
