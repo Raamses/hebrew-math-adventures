@@ -32,12 +32,13 @@ Every "today" key was the UTC date (`new Date().toISOString().slice(0, 10)`). Fo
    - From 00:00 to 02:00/03:00 Israel time, the old code's "today" was the previous day's content. The daily seed changes every day, so the challenge and each quest slot usually mean something else on the Israel day.
      - The completed stamp moves to the Israel day: today's challenge counts as done and the streak is unbroken. No coins are paid, and the UTC stamp stays.
      - The challenge's correct-answer count moves only if the Israel day's challenge is the same (mode, problem type and target). Otherwise the provider resets it.
-     - Quest progress and claims move slot by slot, only where the Israel day's quest has the same metric and target. The rest is dropped.
-   - Malformed stamps are dropped on load, and a repeated stamp counts once in the streak.
+     - Quest progress and claims are dropped. From one calendar day to the next the quest seed never moves by a multiple of 6, so no slot holds the same quest; a year-long test pins that.
+   - Malformed or impossible stamps (`isDay`) are dropped on load, and a repeated stamp counts once in the streak.
 5. **Not migrated, on purpose:** these stores are left as they are, and in that window each can be off by one day, once.
    - `pet.lastFedDate`: a pet fed late in the evening can be fed again after Israel midnight.
    - The parent streak's `lastPlayedDate`: at most one extra streak day.
    - The Equation and Sudoku stored `date`: an in-progress puzzle is discarded once.
+   - The profile's own copy of the stamps (`UserProfile.dailyStamps`), which the parent postcard's 7-day strip reads: today can show blank there while the heatmap shows it done. Cosmetic, one window, and it corrects itself on the next completed challenge, which writes the full stamp list back.
    Each costs at most one small extra or one lost puzzle, once per device, so a migration for each was not worth it.
 
 ## Consequences

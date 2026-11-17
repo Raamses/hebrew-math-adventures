@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { israelDay, shiftDay, utcDay, weekdayOf } from '../israelDate';
+import { isDay, israelDay, shiftDay, utcDay, weekdayOf } from '../israelDate';
 import { getDailyChallenge } from '../../data/dailyChallenges';
 import { getDailyQuests } from '../../data/dailyQuests';
 import { computeStreak } from '../../context/dailyProgressDays';
@@ -56,6 +56,14 @@ describe('israelDay: the day rolls over at Israel midnight', () => {
         expect(shiftDay('2026-12-31', 1)).toBe('2027-01-01');
         expect(shiftDay('2026-03-27', 1)).toBe('2026-03-28'); // across DST: still one day
         expect(weekdayOf('2026-11-15')).toBe(0); // Sunday
+    });
+
+    it('isDay accepts only real calendar days', () => {
+        expect(isDay('2026-11-17')).toBe(true);
+        expect(isDay('2028-02-29')).toBe(true);
+        for (const bad of ['2026-13-45', '2026-02-30', '2027-02-29', '2026-11-7', 'garbage', '', 20261117, null]) {
+            expect(isDay(bad), String(bad)).toBe(false);
+        }
     });
 });
 

@@ -1,7 +1,7 @@
 ---
 type: domain
 project: hebrew-math-adventures
-updated: 2026-11-16
+updated: 2026-11-17
 status: active
 tags: [domain, quests, daily, engagement, retention, gamification]
 ---
@@ -77,10 +77,12 @@ Source: `src/data/dailyQuests.ts` → `getDailyQuests()`
   questProgress?: Record<string, number>; // questId → progress
   questClaimed?: string[];       // claimed quest IDs
   questDate?: string;            // resets daily
+  dayKey?: 'il';                 // set once the keys are Israel days; absent = legacy UTC keys, migrated on load
 }
 ```
 
 ### Key behaviors
+- **Day keys are Israel days** (`israelDay()`). Progress saved before 2026-11-16 has no `dayKey` and is migrated once on load by `migrateUtcDayKeys` (`src/context/dailyProgressDays.ts`). Progress built by hand (tests, fixtures) must set `dayKey: 'il'`, or it is treated as UTC-keyed. See [[decisions/2026-11-israel-midnight-day]].
 - **Daily reset**: on load, if `dailyChallengeDate`/`questDate` ≠ today, progress is zeroed and the date is updated.
 - **Streak computation** (`computeStreak`): counts consecutive days ending today or yesterday; a gap breaks the streak.
 - **Stamp album**: `stampAlbumProgress` counts stamps in the last 7 days (capped at 7).

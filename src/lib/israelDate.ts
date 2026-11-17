@@ -26,6 +26,13 @@ export function utcDay(at: Date | number = Date.now()): string {
     return new Date(at).toISOString().slice(0, 10);
 }
 
+/** True for a real calendar day written as YYYY-MM-DD ('2026-02-30' and '2026-13-45' are false). */
+export function isDay(day: unknown): day is string {
+    if (typeof day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return false;
+    const t = Date.parse(`${day}T00:00:00Z`);
+    return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === day;
+}
+
 /** Calendar arithmetic on a YYYY-MM-DD string: shiftDay('2026-03-01', -1) is '2026-02-28'. No time zone involved. */
 export function shiftDay(day: string, days: number): string {
     const d = new Date(`${day}T00:00:00Z`);

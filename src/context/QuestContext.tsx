@@ -5,7 +5,7 @@ import { useProfile } from './ProfileContext';
 import { STORAGE_KEYS } from '../lib/worldConfig';
 import { getSkillLabel } from '../lib/skillFocus';
 import { getWeekStartISO } from '../components/parent/games/parentEconomyEngine';
-import { israelDay, shiftDay } from '../lib/israelDate';
+import { isDay, israelDay, shiftDay } from '../lib/israelDate';
 import { computeStreak, migrateUtcDayKeys, type DailyProgress } from './dailyProgressDays';
 
 interface QuestContextType {
@@ -41,8 +41,8 @@ function loadProgress(profileId: string): DailyProgress {
       return { ...EMPTY_PROGRESS };
     }
     return migrateUtcDayKeys({
-      // only well-formed days: a malformed stamp would make the calendar arithmetic throw
-      dailyStamps: entry.dailyStamps.filter((d: unknown) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)),
+      // only real calendar days: a malformed or impossible stamp would make the calendar arithmetic throw
+      dailyStamps: entry.dailyStamps.filter(isDay),
       totalCoinsEarned: entry.totalCoinsEarned || 0,
       dailyChallengeCorrect: entry.dailyChallengeCorrect || 0,
       dailyChallengeDate: entry.dailyChallengeDate || '',

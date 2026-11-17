@@ -6,7 +6,7 @@ import { QuestProvider, useQuest } from '../QuestContext';
 import { computeStreak, migrateUtcDayKeys, type DailyProgress } from '../dailyProgressDays';
 import { getDailyChallenge } from '../../data/dailyChallenges';
 import { getDailyQuests } from '../../data/dailyQuests';
-import { israelDay, shiftDay } from '../../lib/israelDate';
+import { shiftDay } from '../../lib/israelDate';
 
 const at = (iso: string) => new Date(iso);
 const noon = (day: string) => at(`${day}T12:00:00Z`);
@@ -37,37 +37,25 @@ describe('migrateUtcDayKeys in the 00:00-03:00 Israel window', () => {
         expect(m.totalCoinsEarned).toBe(40); // no coins for the carried stamp
     });
 
-    it('quest progress and claims never land on a different quest (F1.1)', () => {
-        const before = getDailyQuests(noon('2026-11-16'));
-        const today = getDailyQuests(now);
+    it('quest progress and claims are dropped, so nothing is claimable or blocked for free', () => {
         const m = migrateUtcDayKeys(legacy('2026-11-16'), now);
-        for (const [slot, q] of today.entries()) {
-            const same = before[slot].metric === q.metric && before[slot].target === q.target;
-            if (!same) {
-                expect(m.questProgress?.[q.id] ?? 0).toBe(0);
-                expect(m.questClaimed).not.toContain(q.id);
-            }
-        }
-        // with these two days no slot has the same quest, so nothing is claimable or blocked for free
-        expect(today.every((q, s) => q.metric !== before[s].metric || q.target !== before[s].target)).toBe(true);
+        expect(m.questDate).toBe('2026-11-17');
         expect(m.questProgress).toEqual({});
         expect(m.questClaimed).toEqual([]);
     });
 
-    it('over a whole year, a carried quest slot is always the same quest', () => {
+    it('over a whole year, no quest slot holds the same quest on the next day (why quests never carry)', () => {
         let u = '2026-01-01';
         for (let i = 0; i < 366; i++, u = shiftDay(u, 1)) {
             const w = at(`${u}T22:30:00Z`); // inside the window: Israel is on the next day
-            const il = israelDay(w);
-            const m = migrateUtcDayKeys(legacy(u), w);
             const before = getDailyQuests(noon(u));
-            for (const [id, n] of Object.entries(m.questProgress ?? {})) {
-                expect(id.startsWith(`${il}:`)).toBe(true);
-                const slot = Number(id.split(':')[1]);
-                const q = getDailyQuests(w)[slot];
-                expect([q.metric, q.target]).toEqual([before[slot].metric, before[slot].target]);
-                expect(n).toBeLessThanOrEqual(q.target);
+            const after = getDailyQuests(w);
+            for (const [slot, q] of after.entries()) {
+                expect([q.metric, q.target], `${u} slot ${slot}`).not.toEqual([before[slot].metric, before[slot].target]);
             }
+            const m = migrateUtcDayKeys(legacy(u), w);
+            expect(m.questProgress).toEqual({});
+            expect(m.questClaimed).toEqual([]);
         }
     });
 
@@ -123,7 +111,7 @@ describe('QuestProvider loads legacy progress through the migration', () => {
             coins: 0, gems: 0,
         }]));
         localStorage.setItem('hebrew-math-daily-progress', JSON.stringify({
-            [PID]: { ...legacy('2026-11-16'), dailyStamps: ['2026-11-15', '2026-11-16', 'garbage'] },
+            [PID]: { ...legacy('2026-11-16'), dailyStamps: ['2026-11-15', '2026-11-16', 'garbage', '2026-13-45'] },
         }));
     });
     afterEach(() => vi.useRealTimers());
@@ -142,5 +130,6 @@ describe('QuestProvider loads legacy progress through the migration', () => {
         const saved = JSON.parse(localStorage.getItem('hebrew-math-daily-progress') as string)[PID];
         expect(saved.dayKey).toBe('il');
         expect(saved.dailyStamps).not.toContain('garbage');
+        expect(saved.dailyStamps).not.toContain('2026-13-45');
     });
 });
