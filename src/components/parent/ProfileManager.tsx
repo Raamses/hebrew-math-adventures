@@ -4,6 +4,7 @@ import { useProfile } from '../../context/ProfileContext';
 import { useTranslation } from 'react-i18next';
 import { EditProfileModal } from './EditProfileModal';
 import { PrepToggle } from '../../features/giftedPrep/components/PrepToggle';
+import { PrepParentProgress } from '../../features/giftedPrep/components/PrepParentProgress';
 import type { UserProfile } from '../../types/user';
 
 export const ProfileManager: React.FC = () => {
@@ -77,6 +78,7 @@ export const ProfileManager: React.FC = () => {
                             </div>
                             </div>
                             <PrepToggle profile={profile} onChange={updateProfile} />
+                            <PrepParentProgress profile={profile} />
                         </div>
                     ))}
 

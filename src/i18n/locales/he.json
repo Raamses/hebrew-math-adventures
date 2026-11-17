@@ -1048,6 +1048,46 @@
       "skipped": "דילגת על {{n}} שאלות – בפעם הבאה כדאי לנחש",
       "sectionScore": "{{name}}: {{correct}} מתוך {{total}}",
       "partLine": "{{n}} שאלות · {{min}} דקות"
+    },
+    "parent": {
+      "open": "התקדמות באקדמיה",
+      "close": "סגירת ההתקדמות",
+      "title": "התקדמות באקדמיית החשיבה",
+      "empty": "עדיין אין תרגול. אחרי התרגול הראשון יופיעו כאן הדיוק, הזמן והטעויות.",
+      "byType": "לפי סוג שאלה",
+      "type": "סוג",
+      "accuracy": "דיוק",
+      "median": "זמן חציוני",
+      "attempts": "שאלות",
+      "percent": "{{n}}%",
+      "seconds": "{{s}} שנ׳",
+      "weakest": "הכי כדאי לתרגל",
+      "noWeak": "אין כרגע סוג חלש: הכול נענה נכון",
+      "mistakes": "{{n}} הטעויות האחרונות",
+      "noMistakes": "אין טעויות עד עכשיו",
+      "correctAnswer": "התשובה הנכונה:",
+      "chosen": "נבחר:",
+      "noDetails": "מתרגול מלפני העדכון: פרטי השאלה לא נשמרו"
+    },
+    "skills": {
+      "add": "חיבור",
+      "sub": "חיסור",
+      "missing-number": "המספר החסר",
+      "word-problem": "שאלות מילוליות",
+      "picture-puzzle": "חידות בציורים",
+      "number-pattern": "סדרות מספרים",
+      "compare": "השוואה",
+      "odd-one-out": "יוצא דופן",
+      "place-value": "עשרות ויחידות",
+      "double-half": "כפול וחצי",
+      "money": "כסף",
+      "literal": "הבנה מילולית",
+      "inference": "הסקת מסקנות",
+      "vocabulary": "אוצר מילים",
+      "main-idea": "רעיון מרכזי",
+      "sequence": "סדר אירועים",
+      "word-meaning": "משמעות מילים",
+      "sentence-completion": "השלמת משפטים"
     }
   }
 }

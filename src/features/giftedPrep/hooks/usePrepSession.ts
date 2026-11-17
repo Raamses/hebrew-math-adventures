@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PrepItem } from '../types';
 import { usePrepProgress } from '../context/PrepProgressContext';
+import { mistakeDetails } from '../engine/mistakeDetails';
 import { usePrepAnalytics, type PrepMode } from './usePrepAnalytics';
 
 export interface SessionAnswer {
@@ -34,7 +35,10 @@ export function usePrepSession(items: readonly PrepItem[], mode: PrepMode) {
         const correct = choice === current.answerIndex;
         const ms = Date.now() - shownAt.current;
         setAnswers(prev => [...prev, { itemId: current.id, chosen: choice, correct }]);
-        addAttempt({ itemId: current.id, section: current.section, skill: current.skill, correct, ms, at: Date.now() });
+        addAttempt({
+            itemId: current.id, section: current.section, skill: current.skill, correct, ms, at: Date.now(),
+            ...(correct ? {} : mistakeDetails(current, choice)),
+        });
         analytics.itemAnswered(current, correct, ms, mode);
     }, [current, answers.length, index, addAttempt, analytics, mode]);
 

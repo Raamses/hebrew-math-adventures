@@ -75,7 +75,7 @@ export interface PrepItem {
     readonly seed?: number;
 }
 
-/** One answered item, as stored in the attempt log (no free text, no PII). */
+/** One answered item, as stored in the attempt log (no child-typed text, no PII). */
 export interface PrepAttempt {
     readonly itemId: string;
     readonly section: PrepSection;
@@ -83,6 +83,11 @@ export interface PrepAttempt {
     readonly correct: boolean;
     readonly ms: number;
     readonly at: number;
+    /** Wrong attempts only (G7.2 parent view, engine/mistakeDetails.ts): the app's own question text,
+     * the key and the chosen option. Optional in schema v1: attempts recorded before G7.2 have none. */
+    readonly question?: string;
+    readonly answer?: string;
+    readonly chosen?: string;
 }
 
 export interface PrepSkillStat {

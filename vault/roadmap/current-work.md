@@ -26,6 +26,7 @@ tags: [roadmap, current, work]
 
 ## Gifted-prep Stage-A blitz (2026-11-15 → 11-17, hand-built, target Stage A ~30.11)
 - PR order: main-red e2e fix → scaffold → arithmetic → reading + language (Ram reviews content) → learning mode + mock. ADR [[decisions/2026-11-gifted-prep-stage-a]].
+- Push to 30.11 (Ram 2026-11-16): G7.1 progress model + G7.3 adaptive practice (#295), C2 figural analogies (#294), G7.2 parent progress view in the parent zone (per-type accuracy + median time, 3 weakest types, last 20 mistakes with the correct answer).
 
 ## Active Plan
 - [[plans/game-ideation-2026-08-23]] — comprehensive feature plan from ideation session (P0/P1/P2 priorities)
