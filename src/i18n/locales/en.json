@@ -1063,7 +1063,7 @@
       "seconds": "{{s}} s",
       "weakest": "Practice these most",
       "noWeak": "No weak type right now: everything was answered correctly",
-      "mistakes": "Last {{n}} mistakes",
+      "mistakes": "Recent mistakes ({{n}})",
       "noMistakes": "No mistakes so far",
       "correctAnswer": "Correct answer:",
       "chosen": "Chosen:",
