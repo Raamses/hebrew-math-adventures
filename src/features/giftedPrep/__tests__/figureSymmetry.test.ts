@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { canon, COLORS, label, SHAPES, type Figure, type Rotation, type Shape, type Size } from '../engine/figures';
-import { figureTransform, PATH } from '../engine/figurePaths';
+import { figureTransform, PATH, SCALE } from '../engine/figurePaths';
 import { TURNS, turn, type Turn } from '../engine/figureAnalogy';
 
 /**
@@ -93,10 +93,11 @@ describe('symmetry canonicalization matches the drawing', () => {
     });
 
     it('the transform mirrors left-right (not up-down) before turning', () => {
-        // the flag's pole is at x 10..14: mirrored it must move to x 26..30 with the cloth tip still on top
+        // the cloth tip sits at (34, 12), 14 right of and 8 above the centre: a left-right mirror must put it
+        // 14 to the LEFT and still 8 above (an up-down mirror would put it below), then rot 90 turns that clockwise
         const tip = (f: Figure) => applyTransform(figureTransform(f), [34, 12]);
         const r = (p: Pt) => p.map(v => Math.round(v * 100) / 100);
-        const s = 0.74; // size 2
+        const s = SCALE[2];
         expect(r(tip(fig('flag', 0, true)))).toEqual(r([20 - 14 * s, 20 - 8 * s]));
         expect(r(tip(fig('flag', 90, true)))).toEqual(r([20 + 8 * s, 20 - 14 * s]));
     });

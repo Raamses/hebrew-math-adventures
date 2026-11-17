@@ -15,7 +15,7 @@ export const PATH: Readonly<Record<Exclude<Shape, 'circle'>, string>> = {
     flag: 'M10 4H14V37H10z M14 4L34 12L14 20z',
 };
 
-/** Size steps far enough apart to tell small from medium at option size. */
+/** Size steps far enough apart to tell small from medium at option size (figureSymmetry.test reads them too). */
 export const SCALE = { 1: 0.48, 2: 0.74, 3: 1 } as const;
 
 /**
