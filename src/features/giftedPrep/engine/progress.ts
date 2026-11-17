@@ -7,6 +7,10 @@ export interface PrepMistake {
     readonly skill: SkillTag;
     readonly at: number;
     readonly ms: number;
+    /** G7.2 snapshot (engine/mistakeDetails.ts); absent on attempts recorded before G7.2. */
+    readonly question?: string;
+    readonly answer?: string;
+    readonly chosen?: string;
 }
 
 export interface PrepTypeProgress {
@@ -25,7 +29,13 @@ const MISTAKES_PER_TYPE_CAP = 10;
 const DEFAULT_RECENT_MISTAKES_CAP = 20;
 
 function toMistake(attempt: PrepAttempt): PrepMistake {
-    return { itemId: attempt.itemId, skill: attempt.skill, at: attempt.at, ms: attempt.ms };
+    const { itemId, skill, at, ms, question, answer, chosen } = attempt;
+    return {
+        itemId, skill, at, ms,
+        ...(question !== undefined ? { question } : {}),
+        ...(answer !== undefined ? { answer } : {}),
+        ...(chosen !== undefined ? { chosen } : {}),
+    };
 }
 
 /** Newest-first mistakes from a chronological attempt list, capped at `cap`. */
@@ -71,4 +81,23 @@ export function recentPrepMistakes(
     max: number = DEFAULT_RECENT_MISTAKES_CAP,
 ): readonly PrepMistake[] {
     return mistakesOf(state.attempts, max);
+}
+
+const DEFAULT_WEAKEST_COUNT = 3;
+
+/**
+ * The `count` weakest types for the parent view (G7.2): lowest accuracy first, then slower median,
+ * then more attempts. A type at 100% is never "weak", so the list can be shorter than `count`.
+ */
+export function weakestPrepTypes(
+    types: readonly PrepTypeProgress[],
+    count: number = DEFAULT_WEAKEST_COUNT,
+): readonly PrepTypeProgress[] {
+    return types
+        .filter(t => t.accuracy !== null && t.accuracy < 1)
+        .slice()
+        .sort((a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0)
+            || (b.medianMs ?? 0) - (a.medianMs ?? 0)
+            || b.attempts - a.attempts)
+        .slice(0, count);
 }

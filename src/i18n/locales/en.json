@@ -1048,6 +1048,46 @@
       "skipped": "You skipped {{n}} questions. Next time, guess",
       "sectionScore": "{{name}}: {{correct}} of {{total}}",
       "partLine": "{{n}} questions · {{min}} min"
+    },
+    "parent": {
+      "open": "Academy progress",
+      "close": "Close progress",
+      "title": "Thinking Academy progress",
+      "empty": "No practice yet. Accuracy, time and mistakes appear here after the first practice.",
+      "byType": "By question type",
+      "type": "Type",
+      "accuracy": "Accuracy",
+      "median": "Median time",
+      "attempts": "Questions",
+      "percent": "{{n}}%",
+      "seconds": "{{s}} s",
+      "weakest": "Practice these most",
+      "noWeak": "No weak type right now: everything was answered correctly",
+      "mistakes": "Last {{n}} mistakes",
+      "noMistakes": "No mistakes so far",
+      "correctAnswer": "Correct answer:",
+      "chosen": "Chosen:",
+      "noDetails": "From practice before this update: question details were not saved"
+    },
+    "skills": {
+      "add": "Addition",
+      "sub": "Subtraction",
+      "missing-number": "Missing number",
+      "word-problem": "Word problems",
+      "picture-puzzle": "Picture puzzles",
+      "number-pattern": "Number patterns",
+      "compare": "Comparing",
+      "odd-one-out": "Odd one out",
+      "place-value": "Tens and ones",
+      "double-half": "Double and half",
+      "money": "Money",
+      "literal": "Literal understanding",
+      "inference": "Inference",
+      "vocabulary": "Vocabulary",
+      "main-idea": "Main idea",
+      "sequence": "Order of events",
+      "word-meaning": "Word meaning",
+      "sentence-completion": "Sentence completion"
     }
   }
 }
