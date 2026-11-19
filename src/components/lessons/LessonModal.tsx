@@ -91,8 +91,11 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
             dir="rtl"
             className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md"
         >
-            {/* Remove overflow-hidden to allow mascot pop-out */}
-            <div className="w-full max-w-5xl aspect-video bg-white rounded-[3rem] shadow-2xl relative flex flex-col">
+            {/* Remove overflow-hidden to allow mascot pop-out.
+                Phones (below md) get a full-height portrait card: a 16:9 card at ~390px wide is
+                ~200px tall, which left the story stage ~75px under the 128px footer and put the
+                mascot + speech bubble on top of the scene's drop targets. */}
+            <div className="w-full max-w-5xl h-full max-h-[56rem] md:h-auto md:max-h-none md:aspect-video bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl relative flex flex-col">
 
                 {/* Header / Close */}
                 <div className="absolute top-4 right-4 z-40">
@@ -106,7 +109,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                 </div>
 
                 {/* Main Content Area — the themed story stage */}
-                <div className="flex-1 relative rounded-t-[3rem] overflow-hidden">
+                <div className="order-1 flex-1 min-h-0 relative rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden">
                     <InteractiveStoryScene
                         stepType={currentStep.type}
                         items={items}
@@ -153,7 +156,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                 )}
 
                 {/* Footer / Controls */}
-                <div className="h-32 bg-white border-t border-slate-100 flex items-center px-8 relative z-20 rounded-b-[3rem]">
+                <div className="order-3 h-20 md:h-32 shrink-0 bg-white border-t border-slate-100 flex items-center px-4 md:px-8 relative z-20 rounded-b-[2rem] md:rounded-b-[3rem]">
                     {/* Step progress + optional hint, kept clear of the mascot on the right-hand (RTL start) side */}
                     <div className="mr-auto ml-8 text-right hidden md:block">
                         <div data-testid="lesson-step-progress" className="text-lg font-bold text-slate-500">
@@ -170,7 +173,7 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                             data-testid="lesson-next"
                             onClick={handleNext}
                             disabled={!canAdvance}
-                            className={`flex items-center gap-3 px-8 py-4 rounded-2xl text-2xl font-bold transition-all ${canAdvance
+                            className={`flex items-center gap-3 px-6 py-3 md:px-8 md:py-4 rounded-2xl text-xl md:text-2xl font-bold transition-all ${canAdvance
                                 ? 'bg-primary text-white shadow-lg hover:scale-105 active:scale-95'
                                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                                 }`}
@@ -183,17 +186,23 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                     </div>
                 </div>
 
-                {/* Mascot & Speech - OUTSIDE the clipped areas */}
-                <div className="absolute bottom-0 left-8 z-50 flex items-end pb-4 filter drop-shadow-xl pointer-events-none">
-                    <div className="w-40 h-40 relative">
-                        <Mascot character="owl" emotion={currentStep.mascotEmotion} />
+                {/* Mascot & Speech. md+: overlaid bottom-left, OUTSIDE the clipped areas.
+                    Phones: an in-flow row between the stage and the footer (flex order), so it never
+                    covers the scene's items or drop targets. */}
+                <div
+                    data-testid="lesson-mascot"
+                    className="order-2 shrink-0 relative flex items-center gap-3 px-4 py-2 border-t border-slate-100 z-30 pointer-events-none md:order-none md:absolute md:bottom-0 md:left-8 md:z-50 md:items-end md:gap-0 md:p-0 md:pb-4 md:border-0 md:filter md:drop-shadow-xl"
+                >
+                    <div className="w-14 h-14 md:w-40 md:h-40 relative shrink-0">
+                        <Mascot character="owl" emotion={currentStep.mascotEmotion} className="max-md:!w-14 max-md:!h-14" />
                     </div>
                     {/* Speech Bubble Container */}
-                    <div className="absolute left-28 bottom-28 w-80">
+                    <div className="relative flex-1 min-w-0 md:flex-none md:absolute md:left-28 md:bottom-28 md:w-80">
                         <SpeechBubble
                             text={t(currentStep.mascotText)}
                             isVisible={true}
                             position="right"
+                            inlineOnMobile
                         />
                     </div>
                 </div>

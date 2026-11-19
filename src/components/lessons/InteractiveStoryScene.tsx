@@ -138,8 +138,13 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
                                 // Hit-test the drop point against the target layer. framer-motion
                                 // leaves the element transformed, so we ask the document what is
                                 // under the pointer rather than comparing rects ourselves.
-                                const el = document.elementFromPoint(info.point.x, info.point.y);
-                                const targetEl = el?.closest('[data-target-id]');
+                                // elementsFromPoint (plural): by onDragEnd the whileDrag
+                                // pointer-events:none is already gone, so the topmost hit is the
+                                // dragged sprite itself and elementFromPoint never reaches the target.
+                                const targetEl = document
+                                    .elementsFromPoint(info.point.x, info.point.y)
+                                    .map(el => el.closest('[data-target-id]'))
+                                    .find(Boolean);
                                 onDrop(item.id, targetEl?.getAttribute('data-target-id') ?? null);
                             }}
                             onClick={tappable ? () => onTap(item.id) : undefined}
