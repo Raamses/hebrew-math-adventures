@@ -184,6 +184,16 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
   test.describe('Interactive step progression', () => {
 
     test('5. Drag step: drag an item to a target → target count increases', async ({ page }) => {
+      // Quarantined 2026-11-19 (follow-up to PR #300). With a real count to read (data-count),
+      // the drop is rejected on both engines: basket data-count stays 0. At phone width
+      // (Pixel 5 393px / iPhone 13 390px) the scene is squeezed into a short strip and the
+      // mascot speech bubble covers the basket's centre, so the drop point's elementFromPoint
+      // is the speech bubble, not [data-target-id]. That is a layout issue a child also hits,
+      // and the same cause as test 6's stuck countFive step. Until the layout is fixed this
+      // test would only go green by dropping on whichever pixel is uncovered. The old version
+      // passed only because the basket has hideCounter and the count check was skipped.
+      // Owner: story-scenes card HMA-W4A1-C f928e00a.
+      test.fixme(true, 'n1_2 basket covered by the mascot speech bubble at phone width, drop rejected (data-count stays 0); owner card f928e00a (HMA-W4A1-C)');
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
@@ -193,31 +203,22 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
       const targets = page.locator(DRAG_TARGET);
       await expect(items.first()).toBeVisible({ timeout: 5000 });
       await expect(targets.first()).toBeVisible({ timeout: 5000 });
-      // Get initial count
-      const targetTestId = await targets.first().getAttribute('data-testid');
-      const targetId = targetTestId?.replace('lesson-target-', '');
-      let initialCount = 0;
-      if (targetId) {
-        const countEl = page.getByTestId(`lesson-target-count-${targetId}`);
-        if (await countEl.isVisible()) {
-          const text = await countEl.textContent();
-          initialCount = parseInt(text || '0', 10);
-        }
-      }
-      // Perform drag: drag the first movable item to the first target
+      // n1_2 count_five: the only target is the basket, which accepts 'seashell', and every
+      // movable item is a seashell (lesson_counting_seashells.ts). So a drop that the engine
+      // accepts must raise the basket count; a rejected drop leaves it unchanged and fails here.
+      // The basket has hideCounter, so there is no lesson-target-count-basket element: read the
+      // target's data-count (InteractiveStoryScene, = target.currentCount) instead.
+      await expect(targets).toHaveCount(1);
+      const basket = page.getByTestId('lesson-target-basket');
+      await expect(basket).toBeVisible();
+      await expect(items.first()).toHaveAttribute('data-item-type', 'seashell');
+      const readCount = async () => parseInt((await basket.getAttribute('data-count')) || '', 10);
+      const initialCount = await readCount();
+      expect(Number.isNaN(initialCount)).toBe(false);
+      // Perform drag: drag the first movable item to the basket
       const dragged = await dragFirstItemToFirstTarget(page);
       expect(dragged).toBe(true);
-      await page.waitForTimeout(400);
-      // Check if count changed (may not work if the item type doesn't match target's accepts list)
-      if (targetId) {
-        const countEl = page.getByTestId(`lesson-target-count-${targetId}`);
-        if (await countEl.isVisible()) {
-          const newCountText = await countEl.textContent();
-          const newCount = parseInt(newCountText || '0', 10);
-          // Count should increase or stay same (if wrong item type)
-          expect(newCount).toBeGreaterThanOrEqual(initialCount);
-        }
-      }
+      await expect.poll(readCount, { timeout: 5000 }).toBeGreaterThan(initialCount);
     });
 
     test('6. Complete all steps in a lesson → lesson modal closes', async ({ page }) => {

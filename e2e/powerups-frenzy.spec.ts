@@ -347,15 +347,19 @@ test.describe('Powerups, Frenzy Mode, and Level Up Banners', () => {
       const powerup = await waitForPowerUpBubble(page);
       expect(powerup, 'Frenzy Star power-up bubble should spawn at the combo-5 crossing').not.toBeNull();
 
-      const powerupId = (await powerup!.getAttribute('data-testid').catch(() => null)) ?? '';
-      await powerup!.dispatchEvent('click');
-
-      // Popping the power-up consumes it — the bubble leaves the board.
-      if (powerupId) {
-        await expect(page.locator(`[data-testid="${powerupId}"]`)).toHaveCount(0, { timeout: 10_000 });
-      } else {
-        await expect(powerup!).toBeHidden({ timeout: 10_000 });
-      }
+      // Popping the power-up consumes it: the engine marks it popped and removes it ~1 s later.
+      // The star spawns inside the pop that lifted the combo to 5, and that pop holds the
+      // container's answer lock for SESSION_CONFIG.ANSWER_LOCK_MS (120 ms). A click that lands in
+      // that window is dropped without effect (BubbleGameContainer onPopWrapper), and nothing
+      // else removes a power-up for 30 s, so one early click left the star on the board
+      // (CI run 44532138252). Re-pop until it is gone; a click on an already-popped bubble is a
+      // no-op (Bubble handleClick), so a retry can't double-pop. Only one star spawns per combo
+      // crossing and the test stops answering here, so a second ✨ cannot replace it.
+      const powerupBubble = page.getByRole('button', { name: /^Pop power-up bubble/ });
+      await expect(async () => {
+        if ((await powerupBubble.count()) > 0) await powerupBubble.first().dispatchEvent('click');
+        await expect(powerupBubble).toHaveCount(0, { timeout: 2_500 });
+      }).toPass({ timeout: 15_000 });
     });
 
   });

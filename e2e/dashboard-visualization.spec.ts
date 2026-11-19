@@ -47,7 +47,7 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfile, openMenu, solveParentGate } from './helpers';
+import { setupFreshProfile, openParentDashboardFromMap } from './helpers';
 
 // ─── Dashboard tabs & helpers ─────────────────────────────────────────────
 
@@ -61,37 +61,6 @@ const TAB_ICONS: Record<(typeof DASHBOARD_TABS)[number], string> = {
   games: '🎮',
   settings: '⚙️',
 };
-
-/**
- * Open the parent dashboard from the saga map.
- * The map exposes the parent zone through the hamburger menu
- * ([data-testid="parent-zone-button"]); [data-testid="parent-access"] only
- * exists on the profile-select screen, so we drive the map flow and solve the
- * clipboard problem on the real keypad.
- */
-async function openParentDashboard(page: Page): Promise<void> {
-  await openMenu(page);
-
-  const parentZoneBtn = page.locator('[data-testid="parent-zone-button"]').first();
-  await expect(parentZoneBtn).toBeVisible({ timeout: 15000 });
-  await parentZoneBtn.click();
-
-  const gate = page.locator('[data-testid="parent-gate"]').first();
-  await expect(gate).toBeVisible({ timeout: 5000 });
-
-  const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
-  await expect(problemEl).toBeVisible({ timeout: 5000 });
-  const problemText = (await problemEl.textContent()) || '';
-  const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
-  if (!problemMatch) {
-    throw new Error(`Unexpected parent gate problem: "${problemText}"`);
-  }
-  const n1 = parseInt(problemMatch[1] as string, 10);
-  const n2 = parseInt(problemMatch[2] as string, 10);
-  await solveParentGate(page, n1 + n2);
-
-  await expect(page.getByTestId('parent-dashboard')).toBeVisible({ timeout: 15000 });
-}
 
 /** Quarantine reason for tests 3–8 (see the file header). */
 const PROGRESS_OVERVIEW_ORPHANED =
@@ -107,7 +76,7 @@ const PROGRESS_OVERVIEW_ORPHANED =
  * through to assertions against DOM that does not exist.
  */
 async function openProgressOverviewTab(page: Page): Promise<void> {
-  await openParentDashboard(page);
+  await openParentDashboardFromMap(page);
 
   const weeklyChart = page
     .getByTestId('parent-dashboard')
@@ -138,14 +107,14 @@ test.describe('Parent Dashboard Data Visualization', () => {
 
     test('1. Navigate to parent dashboard via the saga-map parent zone', async ({ page  }) => {
       await setupFreshProfile(page, 'DashTester');
-      await openParentDashboard(page);
+      await openParentDashboardFromMap(page);
       // Parent dashboard should be visible
       await expect(page.getByTestId('parent-dashboard')).toBeVisible({ timeout: 10000 });
     });
 
     test('2. Four tabs render with correct icons', async ({ page  }) => {
       await setupFreshProfile(page, 'DashTester');
-      await openParentDashboard(page);
+      await openParentDashboardFromMap(page);
 
       // Verify all 4 tab buttons exist (ParentDashboard.tsx: PARENT_TABS)
       const tabs = page.getByTestId('parent-dashboard').locator('[role="tab"]');

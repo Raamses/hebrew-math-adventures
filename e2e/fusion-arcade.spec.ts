@@ -145,6 +145,9 @@ async function waitForStreakChange(page: Page, previous: number, timeoutMs = 2_0
   return current;
 }
 
+/** Last value buildStreak answered: the engine's "previous target" for stale-pop detection. */
+let lastAnswered: number | null = null;
+
 /**
  * Drive real correct answers until the engine's fusion streak reaches
  * `targetStreak` (absolute, not a delta).
@@ -157,9 +160,6 @@ async function waitForStreakChange(page: Page, previous: number, timeoutMs = 2_0
  * HUD counter instead and keep answering until it reaches the target; this also
  * carries on correctly if the streak is reset mid-climb.
  */
-/** Last value buildStreak answered: the engine's "previous target" for stale-pop detection. */
-let lastAnswered: number | null = null;
-
 async function buildStreak(page: Page, targetStreak: number): Promise<void> {
   const deadline = Date.now() + Math.max(20_000, targetStreak * 8_000);
   let observed = await readFusionStreak(page);

@@ -62,6 +62,7 @@ export const InteractiveStoryScene: React.FC<InteractiveStorySceneProps> = ({
                         key={target.id}
                         data-target-id={target.id}
                         data-testid={`lesson-target-${target.id}`}
+                        data-count={target.currentCount}
                         className="absolute -translate-x-1/2 -translate-y-1/2"
                         style={{
                             left: `${target.position.x}%`,

@@ -201,6 +201,28 @@ export async function clickBubble(page: Page, bubbleSelector: string) {
   return true;
 }
 
+/**
+ * Text of the on-screen bubble-game instruction, bidi isolates stripped and trimmed ('' if none).
+ * The one probe for both DOM shapes: PracticeMode renders the instruction inside
+ * div[dir] > span.font-mono, while BubbleGameContainer (blitz) puts dir + font-mono on the
+ * equation element itself (div[dir=ltr].font-mono), where the span-only probe finds nothing.
+ * The second shape only counts when its text has an arithmetic operator, so a score or timer
+ * in font-mono is never read as the instruction. Reads without auto-waiting; callers poll.
+ */
+export async function readInstructionText(page: Page): Promise<string> {
+  return await page.evaluate(() => {
+    const strip = (s: string | null | undefined) =>
+      (s || '').replace(/[\u2066\u2067\u2068\u2069]/g, '').trim();
+    const visible = (el: Element | null) => !!el && el.getClientRects().length > 0;
+    const span = document.querySelector('div[dir] span.font-mono');
+    if (visible(span)) return strip(span!.textContent);
+    for (const el of Array.from(document.querySelectorAll('div[dir].font-mono, div[dir] .font-mono'))) {
+      if (visible(el) && /[+\-\u2212\u00d7\u00f7*=]/.test(el.textContent || '')) return strip(el.textContent);
+    }
+    return '';
+  });
+}
+
 function parseAnswer(text: string): number | null {
   const bodyText = text.replace(/[⁦⁧⁨⁩]/g, '');
   // Look for arithmetic instruction like "N + N = ?", "? + N = N", "N - ? = N"
@@ -247,27 +269,12 @@ function parseAnswer(text: string): number | null {
  * Uses dispatchEvent for element-targeted clicking, independent of position.
  */
 export async function solveBubbleProblem(page: Page): Promise<boolean> {
-  // Read instruction/equation from the stable display element, falling back to body text.
-  // Two DOM shapes exist: PracticeMode renders the equation inside div[dir] > span.font-mono,
-  // while BubbleGameContainer (blitz, ~L613) puts dir + font-mono on the equation element
-  // itself (div[dir=ltr].font-mono), so the span-only probe finds nothing there.
-  const spanInstruction = page.locator('div[dir] span.font-mono').first();
-  const equationInstruction = page
-    .locator('div[dir].font-mono, div[dir] .font-mono')
-    .filter({ hasText: /[+\-−×÷*=]/ })
-    .first();
-  const instructionEl = (await spanInstruction.isVisible().catch(() => false))
-    ? spanInstruction
-    : equationInstruction;
-  const rawText = (await instructionEl.isVisible().catch(() => false))
-    ? (await instructionEl.textContent().catch(() => '')) || ''
-    : (await page.textContent('body')) || '';
+  // Read the instruction from the shared probe (both DOM shapes), falling back to body text.
+  // parseAnswer strips the bidi isolates itself; bodyText strips them for the sensory regex below.
+  const instruction = await readInstructionText(page);
+  const rawText = instruction || (await page.textContent('body')) || '';
   const bodyText = rawText.replace(/[⁦⁧⁨⁩]/g, '');
 
-  // Parse the cleaned text: bodyText has the bidi isolates (U+2066–U+2069, incl. FSI/PDI)
-  // stripped. They are format characters, not whitespace (\s does not match them), and in
-  // the blitz equation they sit between digits/operators — leaving them in makes the
-  // arithmetic regex fail to match, which is what made playBubbleSession pop 0 bubbles.
   const answer = parseAnswer(bodyText);
   if (answer !== null) {
     // Find a bubble containing the answer number via testid or text filter (no index-based nth).
@@ -311,7 +318,6 @@ export async function solveBubbleProblem(page: Page): Promise<boolean> {
   return false;
 }
 
-/** Answer for the instruction now on screen (same parse as solveBubbleProblem; factor lines 193-240 into parseAnswer). */
 /** Target of a sensory instruction ("Pop the bubble with N" / Hebrew), the same regex solveBubbleProblem uses. */
 function parsePopTarget(text: string): number | null {
   const bodyText = text.replace(/[⁦-⁩]/g, '');
@@ -322,9 +328,8 @@ function parsePopTarget(text: string): number | null {
 /** Answer for the instruction on screen. Survival opens on sensory levels ("Pop the bubble with 3"), so an
  *  equation-only parse returns null there and reachBoss could never pop a bubble (nightly red since #275). */
 export async function readAnswer(page: Page): Promise<number | null> {
-  const instruction = page.locator('div[dir] span.font-mono').first();
-  await expect(instruction).not.toBeEmpty();
-  const text = (await instruction.textContent()) ?? '';
+  let text = '';
+  await expect.poll(async () => (text = await readInstructionText(page))).not.toBe('');
   return parseAnswer(text) ?? parsePopTarget(text);
 }
 
@@ -959,6 +964,34 @@ export async function setupWithUnlockedNodes(
  * the logout item (data-testid="menu-logout", SagaMap.tsx), and wait until the selector's
  * parent-access button is on screen.
  */
+/**
+ * Open the parent dashboard from the saga map: hamburger menu → parent-zone-button → parent gate,
+ * solve the clipboard sum on the real keypad, wait for the dashboard.
+ * [data-testid="parent-access"] only exists on the profile-select screen; use openParentGate there.
+ * Prerequisite: the saga map is showing with a profile loaded.
+ */
+export async function openParentDashboardFromMap(page: Page): Promise<void> {
+  await openMenu(page);
+
+  const parentZoneBtn = page.getByTestId('parent-zone-button').first();
+  await expect(parentZoneBtn).toBeVisible({ timeout: 15000 });
+  await parentZoneBtn.click();
+
+  const gate = page.getByTestId('parent-gate').first();
+  await expect(gate).toBeVisible({ timeout: 5000 });
+
+  const problemEl = gate.getByTestId('parent-gate-problem').first();
+  await expect(problemEl).toBeVisible({ timeout: 5000 });
+  const problemText = (await problemEl.textContent()) || '';
+  const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
+  if (!problemMatch) {
+    throw new Error(`Unexpected parent gate problem: "${problemText}"`);
+  }
+  await solveParentGate(page, parseInt(problemMatch[1]!, 10) + parseInt(problemMatch[2]!, 10));
+
+  await expect(page.getByTestId('parent-dashboard')).toBeVisible({ timeout: 15000 });
+}
+
 export async function logoutFromSagaMap(page: Page): Promise<void> {
   await openMenu(page);
   const logoutBtn = page.getByTestId('menu-logout');

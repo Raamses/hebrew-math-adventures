@@ -34,52 +34,9 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfile, openParentGate, openMenu, waitForSagaMap, solveParentGate, logoutFromSagaMap } from './helpers';
+import { setupFreshProfile, openParentGate, waitForSagaMap, logoutFromSagaMap, openParentDashboardFromMap } from './helpers';
 
 // ─── Local Helpers ───────────────────────────────────────────────────
-
-/**
- * Open the parent gate from the SagaMap (via hamburger menu → parent-zone-button).
- * Solves the math problem and verifies the dashboard appears.
- * Prerequisite: page must be on the saga map with a profile loaded.
- */
-async function openParentGateFromMap(page: Page) {
-  // Open the hamburger menu
-  await openMenu(page);
-
-  // Click the parent-zone-button inside the menu
-  const parentZoneBtn = page.locator('[data-testid="parent-zone-button"]').first();
-  await expect(parentZoneBtn).toBeVisible({ timeout: 5000 });
-  await parentZoneBtn.click();
-  await page.waitForTimeout(800);
-
-  // Wait for parent gate modal to appear
-  const gate = page.locator('[data-testid="parent-gate"]').first();
-  await expect(gate).toBeVisible({ timeout: 5000 });
-  await page.waitForTimeout(300);
-
-  // Read the math problem from the clipboard (PG-1 keypad rework)
-  const problemEl = gate.locator('[data-testid="parent-gate-problem"]').first();
-  await expect(problemEl).toBeVisible({ timeout: 5000 });
-  const problemText = (await problemEl.textContent()) || '';
-  const problemMatch = problemText.match(/(\d+)\s*\+\s*(\d+)\s*=\s*\?/);
-  if (!problemMatch) {
-    throw new Error(`Could not parse parent gate problem from text: "${problemText}"`);
-  }
-
-  const n1 = parseInt(problemMatch[1]);
-  const n2 = parseInt(problemMatch[2]);
-  const sum = n1 + n2;
-
-  console.log(`[ParentGate from Map] Parsed problem: ${n1} + ${n2} = ${sum}`);
-
-  // Solve via the shared keypad helper (PG-1 rework)
-  await solveParentGate(page, sum);
-
-  // Verify parent dashboard is now visible
-  const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
-  await expect(dashboard).toBeVisible({ timeout: 10000 });
-}
 
 /**
  * Navigate from a fresh saga map to the Parent Dashboard via ProfileSelector.
@@ -97,7 +54,7 @@ async function navigateToDashboardFromSelector(page: Page, name = 'ParentTest') 
  */
 async function navigateToDashboardFromMap(page: Page, name = 'ParentTest') {
   await setupFreshProfile(page, name);
-  await openParentGateFromMap(page);
+  await openParentDashboardFromMap(page);
 }
 
 /**
@@ -155,7 +112,7 @@ test.describe('Parent Zone — Redesign', () => {
     await setupFreshProfile(page, 'GateMapTest');
 
     // We're on the saga map — open menu and access parent zone from there
-    await openParentGateFromMap(page);
+    await openParentDashboardFromMap(page);
 
     // Verify dashboard is visible
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
@@ -470,9 +427,10 @@ test.describe('Parent Zone — Redesign', () => {
     await expect(dashboard.locator('h2').filter({ hasText: 'ניהול פרופילים' })).toBeVisible({ timeout: 5000 });
     await expect(dashboard.getByText('Manage Profiles')).toHaveCount(0);
 
-    // All four tabs render with Hebrew labels.
+    // All four tabs render. (Their labels are not a locale check: parent.tabs.* is in neither
+    // locale file, so the hardcoded Hebrew default shows in both languages.)
     for (const tabId of ['postcard', 'goals', 'games', 'settings']) {
-      await expect(page.getByTestId(`tab-${tabId}`)).toHaveAttribute('aria-label', /[\u0590-\u05FF]/);
+      await expect(page.getByTestId(`tab-${tabId}`)).toBeVisible();
     }
 
     console.log('[Test 9] PASSED: RTL layout with Hebrew text verified');
