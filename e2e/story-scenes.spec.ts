@@ -104,9 +104,21 @@ async function dragFirstItemToFirstTarget(page: Page): Promise<boolean> {
   const itemBox = await items.first().boundingBox().catch(() => null);
   const targetBox = await targets.first().boundingBox().catch(() => null);
   if (!itemBox || !targetBox) return false;
-  await page.mouse.move(itemBox.x + itemBox.width / 2, itemBox.y + itemBox.height / 2);
+  // Move at roughly one step per frame, like a finger. framer-motion starts a drag from its frame
+  // loop; on WebKit a burst of synchronous moves ends in pointerup before the drag has started,
+  // so the item never moves and no drop happens.
+  const sx = itemBox.x + itemBox.width / 2;
+  const sy = itemBox.y + itemBox.height / 2;
+  const ex = targetBox.x + targetBox.width / 2;
+  const ey = targetBox.y + targetBox.height / 2;
+  const steps = 15;
+  await page.mouse.move(sx, sy);
   await page.mouse.down();
-  await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 10 });
+  for (let k = 1; k <= steps; k++) {
+    await page.mouse.move(sx + ((ex - sx) * k) / steps, sy + ((ey - sy) * k) / steps);
+    await page.waitForTimeout(32);
+  }
+  await page.waitForTimeout(100);
   await page.mouse.up();
   await page.waitForTimeout(600);
   return true;
@@ -184,16 +196,8 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
   test.describe('Interactive step progression', () => {
 
     test('5. Drag step: drag an item to a target → target count increases', async ({ page }) => {
-      // Quarantined 2026-11-19 (follow-up to PR #300). With a real count to read (data-count),
-      // the drop is rejected on both engines: basket data-count stays 0. At phone width
-      // (Pixel 5 393px / iPhone 13 390px) the scene is squeezed into a short strip and the
-      // mascot speech bubble covers the basket's centre, so the drop point's elementFromPoint
-      // is the speech bubble, not [data-target-id]. That is a layout issue a child also hits,
-      // and the same cause as test 6's stuck countFive step. Until the layout is fixed this
-      // test would only go green by dropping on whichever pixel is uncovered. The old version
-      // passed only because the basket has hideCounter and the count check was skipped.
-      // Owner: story-scenes card HMA-W4A1-C f928e00a.
-      test.fixme(true, 'n1_2 basket covered by the mascot speech bubble at phone width, drop rejected (data-count stays 0); owner card f928e00a (HMA-W4A1-C)');
+      // Guards the phone layout of LessonModal: before the portrait layout the mascot speech
+      // bubble covered the basket at 390-393px, the drop hit the bubble and data-count stayed 0.
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
@@ -222,12 +226,6 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
     });
 
     test('6. Complete all steps in a lesson → lesson modal closes', async ({ page }) => {
-      // Re-quarantined 2026-11-19 (PR #300), not a mobile gap: on the n1_2 seashell lesson the
-      // loop reaches the "countFive" step with Continue disabled and finds no tappable item and
-      // no drag target it knows how to use, so it stops with the scene still open (mobile-chrome,
-      // both attempts). The step's interaction needs its own driver. Owner: story-scenes card
-      // HMA-W4A1-C f928e00a.
-      test.fixme(true, 'n1_2 countFive step: no driver for its interaction, Continue stays disabled; owner card f928e00a (HMA-W4A1-C)');
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
