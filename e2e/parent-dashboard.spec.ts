@@ -9,7 +9,7 @@
  *  2.  Parent gate from SagaMap — open menu → parent-zone-button → solve gate → dashboard
  *
  * Tab navigation (2):
- *  3.  All 4 tabs render correct content (profiles/progress/games/skills)
+ *  3.  All 4 tabs render correct content (postcard/goals/games/settings — PARENT_TABS)
  *  4.  Games tab → ParentGamesHub renders game cards → click game → game view opens
  *
  * Profile management (3):
@@ -19,7 +19,7 @@
  *
  * Layout & RTL (2):
  *  8.  Mobile-first layout — viewport 390px, max-w-md content, fixed bottom nav, stacked
- *  9.  RTL layout — dir=rtl on dashboard, Hebrew text visible, tabs right-to-left
+ *  9.  RTL layout — Hebrew locale pinned: dir=rtl, Hebrew-only copy visible, 4 tabs
  *
  * Exit routing (2):
  * 10. Exit to ProfileSelector — opened from selector → exit → back to ProfileSelector
@@ -34,26 +34,9 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfile, openParentGate, openMenu, waitForSagaMap, solveParentGate } from './helpers';
+import { setupFreshProfile, openParentGate, openMenu, waitForSagaMap, solveParentGate, logoutFromSagaMap } from './helpers';
 
 // ─── Local Helpers ───────────────────────────────────────────────────
-
-/**
- * Log out from the saga map to reach the ProfileSelector screen.
- * The logout button has aria-label "Log Out" (en) or "התנתק" (he).
- */
-async function logoutToProfileSelector(page: Page) {
-  // The logout button is inside the hamburger menu — open it first
-  await openMenu(page);
-  const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
-  await expect(logoutBtn).toBeVisible({ timeout: 10000 });
-  await logoutBtn.click();
-  await page.waitForTimeout(2000);
-
-  // Verify we're on ProfileSelector
-  const parentAccessBtn = page.locator('[data-testid="parent-access"]').first();
-  await expect(parentAccessBtn).toBeVisible({ timeout: 10000 });
-}
 
 /**
  * Open the parent gate from the SagaMap (via hamburger menu → parent-zone-button).
@@ -104,7 +87,7 @@ async function openParentGateFromMap(page: Page) {
  */
 async function navigateToDashboardFromSelector(page: Page, name = 'ParentTest') {
   await setupFreshProfile(page, name);
-  await logoutToProfileSelector(page);
+  await logoutFromSagaMap(page);
   await openParentGate(page);
 }
 
@@ -147,7 +130,7 @@ test.describe('Parent Zone — Redesign', () => {
 
   test('1. Parent gate from ProfileSelector — solve math → dashboard appears', async ({ page }) => {
     await setupFreshProfile(page, 'GateTest');
-    await logoutToProfileSelector(page);
+    await logoutFromSagaMap(page);
 
     // Verify parent-access button is visible
     const parentAccessBtn = page.locator('[data-testid="parent-access"]').first();
@@ -188,58 +171,48 @@ test.describe('Parent Zone — Redesign', () => {
 
   // ── Tab Navigation ─────────────────────────────────────────────
 
-  test('3. All 4 tabs render correct content', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('3. All 4 tabs render correct content', async ({ page }) => {
+    // Reconciled with ParentDashboard.tsx PARENT_TABS (postcard/goals/games/settings). The old
+    // profiles/progress/skills tabs no longer exist; tabs are addressed by data-testid="tab-{id}".
     await navigateToDashboardFromSelector(page, 'TabTest');
 
-    const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
+    const dashboard = page.getByTestId('parent-dashboard');
     await expect(dashboard).toBeVisible({ timeout: 10000 });
+    await expect(dashboard.locator('[role="tab"]')).toHaveCount(4);
 
-    // --- Tab 1: profiles (default) ---
-    const profilesHeading = page.locator('h2').filter({ hasText: /ניהול פרופילים|Manage Profiles/ }).first();
-    await expect(profilesHeading).toBeVisible({ timeout: 5000 });
-    console.log('[Test 3] Tab "profiles" content visible');
+    // --- postcard (default landing): PostcardHub ---
+    await expect(page.getByTestId('tab-postcard')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('postcard-hub')).toBeVisible({ timeout: 5000 });
 
-    // --- Tab 2: progress ---
-    await clickTab(page, /התקדמות/, /Progress/);
-    const progressVisible = await page.evaluate(() => {
-      const text = document.body.textContent || '';
-      return text.includes('Stars') || text.includes('כוכבים') ||
-             text.includes('Streak') || text.includes('רצף') ||
-             text.includes('Weekly') || text.includes('שבועי') ||
-             text.includes('Badges') || text.includes('אותות');
-    });
-    expect(progressVisible).toBeTruthy();
-    console.log('[Test 3] Tab "progress" content visible');
+    // --- goals: weekly goal card + skill breakdown ---
+    await page.getByTestId('tab-goals').click();
+    await expect(page.getByTestId('tab-goals')).toHaveAttribute('aria-selected', 'true');
+    const goalsTab = page.getByTestId('parent-goals-tab');
+    await expect(goalsTab).toBeVisible({ timeout: 5000 });
+    await expect(goalsTab.getByTestId('weekly-goal-card')).toBeVisible();
+    await expect(page.getByTestId('postcard-hub')).toHaveCount(0);
 
-    // --- Tab 3: games ---
-    await clickTab(page, /משחקים/, /Games/);
-    // ParentGamesHub renders a header with t('parent.games.title')
-    const gamesHeader = page.locator('h2').filter({ hasText: /משחקים|Games/ }).first();
-    await expect(gamesHeader).toBeVisible({ timeout: 5000 });
-    // Game cards should be visible
-    const gamesList = page.locator('[data-testid="games-list"]').first();
-    await expect(gamesList).toBeVisible({ timeout: 5000 });
-    console.log('[Test 3] Tab "games" content visible');
+    // --- games: economy bar + ParentGamesHub game list ---
+    await page.getByTestId('tab-games').click();
+    await expect(page.getByTestId('tab-games')).toHaveAttribute('aria-selected', 'true');
+    const gamesTab = page.getByTestId('parent-games-tab');
+    await expect(gamesTab).toBeVisible({ timeout: 5000 });
+    await expect(gamesTab.getByTestId('parent-economy-bar')).toBeVisible();
+    await expect(gamesTab.getByTestId('games-list')).toBeVisible({ timeout: 5000 });
 
-    // --- Tab 4: skills ---
-    await clickTab(page, /ניתוח כישורים/, /Skill Analysis/);
-    const skillsVisible = await page.evaluate(() => {
-      const text = document.body.textContent || '';
-      return text.includes('Addition') || text.includes('חיבור') ||
-             text.includes('Subtraction') || text.includes('חיסור') ||
-             text.includes('Multiplication') || text.includes('כפל') ||
-             text.includes('Division') || text.includes('חילוק') ||
-             text.includes('Skill') || text.includes('כישור');
-    });
-    expect(skillsVisible).toBeTruthy();
-    console.log('[Test 3] Tab "skills" content visible');
+    // --- settings: ProfileManager, one card per profile (with the gifted-prep toggle) ---
+    await page.getByTestId('tab-settings').click();
+    await expect(page.getByTestId('tab-settings')).toHaveAttribute('aria-selected', 'true');
+    const profileCard = dashboard.getByTestId('profile-card');
+    await expect(profileCard).toHaveCount(1, { timeout: 5000 });
+    await expect(profileCard).toContainText('TabTest');
+    await expect(profileCard.locator('[data-testid^="prep-toggle-"]')).toBeVisible();
+    await expect(page.getByTestId('parent-games-tab')).toHaveCount(0);
 
     console.log('[Test 3] PASSED: All 4 tabs render correct content');
   });
 
-  test('4. Games tab → ParentGamesHub renders, game cards visible, click game → game view', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('4. Games tab → ParentGamesHub renders, game cards visible, click game → game view', async ({ page }) => {
     await navigateToDashboardFromSelector(page, 'GamesTabTest');
 
     // Navigate to games tab
@@ -330,7 +303,7 @@ test.describe('Parent Zone — Redesign', () => {
   test('6. Delete profile — accept confirm → profile removed', async ({ page }) => {
     // Set up two profiles so we can delete one and still see the dashboard
     await setupFreshProfile(page, 'DeleteKeep');
-    await logoutToProfileSelector(page);
+    await logoutFromSagaMap(page);
 
     // Create a second profile to delete
     const newPlayerBtn = page.locator('button:has(svg.lucide-plus)').first();
@@ -343,7 +316,7 @@ test.describe('Parent Zone — Redesign', () => {
     await page.waitForTimeout(1500);
 
     // Now log out again to reach ProfileSelector, then open parent gate
-    await logoutToProfileSelector(page);
+    await logoutFromSagaMap(page);
     await openParentGate(page);
 
     // PG-2/PG-3: profile manager lives in the 'settings' tab — navigate there first
@@ -427,16 +400,17 @@ test.describe('Parent Zone — Redesign', () => {
 
   // ── Layout & RTL ────────────────────────────────────────────────
 
-  test('8. Mobile-first layout — viewport 390px, max-w-md content, fixed bottom nav', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('8. Mobile-first layout — viewport 390px, max-w-md content, fixed bottom nav', async ({ page }) => {
     await navigateToDashboardFromSelector(page, 'LayoutTest');
 
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
     await expect(dashboard).toBeVisible({ timeout: 10000 });
 
-    // Verify the viewport is mobile-sized (390px from playwright config, allow small variance)
+    // Verify the viewport is phone-sized. The device descriptors set it, not the config's
+    // 390px default: Pixel 5 (mobile-chrome) is 393px wide, iPhone 13 (mobile-safari) 390px.
     const viewport = page.viewportSize();
-    expect(viewport?.width).toBeCloseTo(390, 0);
+    expect(viewport?.width).toBeGreaterThanOrEqual(360);
+    expect(viewport?.width).toBeLessThanOrEqual(430);
 
     // Verify the content container has max-w-md class (mobile-first constraint)
     const contentContainer = dashboard.locator('.max-w-md').first();
@@ -469,46 +443,37 @@ test.describe('Parent Zone — Redesign', () => {
     console.log('[Test 8] PASSED: Mobile-first layout verified');
   });
 
-  test('9. RTL layout — dir=rtl on dashboard, Hebrew text visible, tabs render', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('9. RTL layout — dir=rtl on dashboard, Hebrew text visible, tabs render', async ({ page }) => {
+    // The app's language follows navigator.language and the E2E browser boots in English, so
+    // pin Hebrew before boot (same pin as parent-zone-redesign.spec.ts RTL test).
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('i18nextLng', 'he');
+      } catch {
+        // storage unavailable on this document — the navigator override still applies
+      }
+      Object.defineProperty(navigator, 'language', { get: () => 'he-IL', configurable: true });
+      Object.defineProperty(navigator, 'languages', { get: () => ['he-IL', 'he', 'en-US'], configurable: true });
+    });
     await navigateToDashboardFromSelector(page, 'RtlTest');
 
-    const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
+    const dashboard = page.getByTestId('parent-dashboard');
     await expect(dashboard).toBeVisible({ timeout: 10000 });
+    await expect(dashboard).toHaveAttribute('dir', 'rtl');
+    // The tab bar carries its own dir from the same i18n source.
+    await expect(dashboard.locator('nav [dir]').first()).toHaveAttribute('dir', 'rtl');
 
-    // Verify dir=rtl on the dashboard root element or its parent (RTL context)
-    const dir = await dashboard.getAttribute('dir');
-    if (dir !== 'rtl') {
-      const parentDir = await dashboard.locator('..').getAttribute('dir');
-      expect(parentDir).toBe('rtl');
-    } else {
-      expect(dir).toBe('rtl');
+    // The dashboard has no <h1>; assert copy that comes from the locale files and differs
+    // between he and en, so it proves the Hebrew locale is active (not a hardcoded default).
+    // Settings tab heading: parent.manageProfiles = "ניהול פרופילים" (he) / "Manage Profiles" (en).
+    await page.getByTestId('tab-settings').click();
+    await expect(dashboard.locator('h2').filter({ hasText: 'ניהול פרופילים' })).toBeVisible({ timeout: 5000 });
+    await expect(dashboard.getByText('Manage Profiles')).toHaveCount(0);
+
+    // All four tabs render with Hebrew labels.
+    for (const tabId of ['postcard', 'goals', 'games', 'settings']) {
+      await expect(page.getByTestId(`tab-${tabId}`)).toHaveAttribute('aria-label', /[\u0590-\u05FF]/);
     }
-
-    // Verify Hebrew title is visible: לוח בקרה להורים
-    const titleEl = dashboard.locator('h1').first();
-    await expect(titleEl).toBeVisible({ timeout: 5000 });
-    const titleText = await titleEl.textContent();
-    expect(titleText).toContain('לוח בקרה להורים');
-
-    // Verify exit button has Hebrew text: יציאה
-    const exitBtn = page.locator('button').filter({ hasText: /יציאה/ }).first();
-    await expect(exitBtn).toBeVisible({ timeout: 5000 });
-
-    // Verify tab labels are in Hebrew
-    const tabs = dashboard.locator('button[role="tab"]');
-    const tabTexts: string[] = [];
-    const tabCount = await tabs.count();
-    for (let i = 0; i < tabCount; i++) {
-      const text = (await tabs.nth(i).textContent()) || '';
-      tabTexts.push(text.trim());
-    }
-
-    // Expect Hebrew tab labels (at least partial match)
-    expect(tabTexts.some(t => t.includes('ניהול פרופילים'))).toBeTruthy();
-    expect(tabTexts.some(t => t.includes('התקדמות'))).toBeTruthy();
-    expect(tabTexts.some(t => t.includes('משחקים'))).toBeTruthy();
-    expect(tabTexts.some(t => t.includes('ניתוח כישורים'))).toBeTruthy();
 
     console.log('[Test 9] PASSED: RTL layout with Hebrew text verified');
   });

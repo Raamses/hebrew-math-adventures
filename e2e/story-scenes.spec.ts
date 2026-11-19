@@ -21,31 +21,95 @@
  *   - data-testid="lesson-target-count-{target.id}" (target counter)
  * LessonModal has no data-testid but is the overlay containing story-scene.
  * Lesson nodes on the saga map use data-testid="saga-node-{nodeId}".
- *
- * Model: ask-claude --escalate --card e751ea10-535a-4909-9974-45c02f35e1d0
- *   — FAILED: "You've hit your session limit · resets 1:40am (Asia/Jerusalem)"
- *   Both claude-opus-5 (--escalate) and claude-sonnet-5 (default) were
- *   rate-limited. Gemini CLI also unavailable (IneligibleTierError).
- *   Specs written by glm-5.2 with full source context. Delegation failure
- *   documented per card instructions.
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfileWithPracticeAccess, enterSagaNodeById } from './helpers';
+import { setupFreshProfileWithPracticeAccess, enterSagaNodeById, setupWithUnlockedNodes } from './helpers';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
+
+/** Drop zones of the current step (drag steps only). */
+const DRAG_TARGET = '[data-testid^="lesson-target-"]';
+
+/** Items the child can actually act on. Decorative scenery is rendered with
+ *  `pointer-events-none` and can never be dragged or tapped, so it is excluded —
+ *  counting raw `lesson-item-*` on a step that only holds scenery yields a false positive. */
+const MOVABLE_ITEM = '[data-testid^="lesson-item-"]:not(.pointer-events-none)';
+
+/** Items a tap step made interactive — InteractiveStoryScene sets `role="button"` on those only. */
+const TAPPABLE_ITEM = '[data-testid^="lesson-item-"][role="button"]';
 
 /** Wait for the story scene to be visible after entering a lesson node. */
 async function waitForStoryScene(page: Page): Promise<void> {
   await expect(page.getByTestId('story-scene')).toBeVisible({ timeout: 15000 });
 }
 
-/** Click the Next/continue button in the lesson modal to advance steps. */
-async function clickLessonNext(page: Page): Promise<void> {
-  // The Next button in LessonModal — locate by text or aria-label
-  const nextBtn = page.locator('button', { hasText: /next|הבא|→|▶|continue|המשך/i }).first();
+/** Click the lesson's Next/Finish control when (and only when) the engine reports the step is
+ *  complete — LessonModal keeps `lesson-next` disabled until then, so a blind click never advances.
+ *  Returns true when the click happened. */
+async function clickLessonNext(page: Page): Promise<boolean> {
+  const nextBtn = page.getByTestId('lesson-next');
+  if (!(await nextBtn.isVisible().catch(() => false))) return false;
+  if (!(await nextBtn.isEnabled().catch(() => false))) return false;
   await nextBtn.click();
   await page.waitForTimeout(500);
+  return true;
+}
+
+/** True when the step expects child action: drop targets (drag step) or tappable items (tap step).
+ *  Dialog steps carry neither. */
+async function isInteractiveStep(page: Page): Promise<boolean> {
+  if ((await page.locator(DRAG_TARGET).count()) > 0) return true;
+  return (await page.locator(TAPPABLE_ITEM).count()) > 0;
+}
+
+/** Advance past the dialog steps (via `lesson-next`) until an interactive step is on screen. */
+async function advanceToInteractiveStep(page: Page): Promise<void> {
+  const maxAdvance = 20;
+  for (let i = 0; i < maxAdvance; i++) {
+    if (await isInteractiveStep(page)) return;
+    if (!(await clickLessonNext(page))) return;
+  }
+}
+
+/** Advance past the dialog steps until a step with drop targets (the drag step) is on screen. */
+async function advanceToDragStep(page: Page): Promise<void> {
+  const maxAdvance = 20;
+  for (let i = 0; i < maxAdvance; i++) {
+    if ((await page.locator(DRAG_TARGET).count()) > 0) return;
+    if (!(await clickLessonNext(page))) return;
+  }
+}
+
+/** Advance until a step exposes tappable items, clearing any drag step that blocks the way. */
+async function advanceToTapStep(page: Page): Promise<void> {
+  const maxAdvance = 30;
+  for (let i = 0; i < maxAdvance; i++) {
+    if ((await page.locator(TAPPABLE_ITEM).count()) > 0) return;
+    if ((await page.locator(DRAG_TARGET).count()) > 0) {
+      // A drag step cannot be skipped via lesson-next: its button stays disabled until the
+      // target is filled, so drop one movable item to let the engine advance.
+      if (await dragFirstItemToFirstTarget(page)) continue;
+      return;
+    }
+    if (!(await clickLessonNext(page))) return;
+  }
+}
+
+/** Drag the first movable item onto the first drop target. Returns false when either is missing. */
+async function dragFirstItemToFirstTarget(page: Page): Promise<boolean> {
+  const items = page.locator(MOVABLE_ITEM);
+  const targets = page.locator(DRAG_TARGET);
+  if ((await items.count()) === 0 || (await targets.count()) === 0) return false;
+  const itemBox = await items.first().boundingBox().catch(() => null);
+  const targetBox = await targets.first().boundingBox().catch(() => null);
+  if (!itemBox || !targetBox) return false;
+  await page.mouse.move(itemBox.x + itemBox.width / 2, itemBox.y + itemBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 10 });
+  await page.mouse.up();
+  await page.waitForTimeout(600);
+  return true;
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────
@@ -64,44 +128,26 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
       await expect(scene).toBeVisible();
     });
 
-    test('2. Scene renders items with data-testid="lesson-item-{id}"', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    test('2. Scene renders items with data-testid="lesson-item-{id}"', async ({ page }) => {
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
+      // Advance past dialog step to interactive step
+      await advanceToInteractiveStep(page);
       // Look for any lesson-item elements
       const items = page.locator('[data-testid^="lesson-item-"]');
       const count = await items.count();
-      // The first step may be a dialog step (no items). If so, click Next to reach interactive step.
-      if (count === 0) {
-        // Try advancing to the next step
-        const nextBtn = page.locator('button', { hasText: /next|הבא|→|▶|continue|המשך/i }).first();
-        if (await nextBtn.isVisible()) {
-          await nextBtn.click();
-          await page.waitForTimeout(1000);
-        }
-      }
-      const itemsAfter = page.locator('[data-testid^="lesson-item-"]');
-      const countAfter = await itemsAfter.count();
       // There should be at least 1 item in an interactive step
-      expect(countAfter).toBeGreaterThan(0);
+      expect(count).toBeGreaterThan(0);
     });
 
-    test('3. Scene renders targets with data-testid="lesson-target-{id}"', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    test('3. Scene renders targets with data-testid="lesson-target-{id}"', async ({ page }) => {
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
-      // Advance to interactive step if needed
-      let targets = page.locator('[data-testid^="lesson-target-"]');
-      if ((await targets.count()) === 0) {
-        const nextBtn = page.locator('button', { hasText: /next|הבא|→|▶|continue|המשך/i }).first();
-        if (await nextBtn.isVisible()) {
-          await nextBtn.click();
-          await page.waitForTimeout(1000);
-        }
-        targets = page.locator('[data-testid^="lesson-target-"]');
-      }
+      // Advance to the interactive step that owns the drop targets
+      await advanceToDragStep(page);
+      const targets = page.locator('[data-testid^="lesson-target-"]');
       const count = await targets.count();
       expect(count).toBeGreaterThan(0);
       // Verify target count element exists
@@ -117,18 +163,19 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
       }
     });
 
-    test('4. Dialog step shows mascot text and a Next button', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    test('4. Dialog step shows mascot text and a Next button', async ({ page }) => {
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
-      // The first step is typically a dialog step with mascot text
-      // Look for any text content in the lesson modal area
-      const sceneText = page.getByTestId('story-scene').textContent();
-      expect(await sceneText).not.toBeNull();
-      // Look for a Next/continue button
-      const nextBtn = page.locator('button', { hasText: /next|הבא|→|▶|continue|המשך|OK|אישור/i });
-      const btnVisible = await nextBtn.first().isVisible().catch(() => false);
+      // The first step is a dialog step: the mascot speech bubble lives in the modal chrome,
+      // not inside the story scene, so read the whole lesson modal rather than the scene.
+      const modalText = await page.getByTestId('lesson-modal').textContent();
+      expect(modalText).not.toBeNull();
+      expect(modalText!.trim().length).toBeGreaterThan(0);
+      // The advance control is the stable `lesson-next` button in the modal footer
+      // (its label differs per step: start / next / finish).
+      const nextBtn = page.getByTestId('lesson-next');
+      const btnVisible = await nextBtn.isVisible().catch(() => false);
       expect(btnVisible).toBe(true);
     });
 
@@ -136,97 +183,105 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
 
   test.describe('Interactive step progression', () => {
 
-    test('5. Drag step: drag an item to a target → target count increases', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+    test('5. Drag step: drag an item to a target → target count increases', async ({ page }) => {
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
       // Advance to the interactive drag step
-      let items = page.locator('[data-testid^="lesson-item-"]');
-      if ((await items.count()) === 0) {
-        await clickLessonNext(page);
-        await page.waitForTimeout(1000);
-        items = page.locator('[data-testid^="lesson-item-"]');
-      }
-      // Get the first item and first target
-      const firstItem = items.first();
-      const firstTarget = page.locator('[data-testid^="lesson-target-"]').first();
-      await expect(firstItem).toBeVisible();
-      await expect(firstTarget).toBeVisible();
+      await advanceToDragStep(page);
+      const items = page.locator(MOVABLE_ITEM);
+      const targets = page.locator(DRAG_TARGET);
+      await expect(items.first()).toBeVisible({ timeout: 5000 });
+      await expect(targets.first()).toBeVisible({ timeout: 5000 });
       // Get initial count
-      const targetTestId = await firstTarget.getAttribute('data-testid');
+      const targetTestId = await targets.first().getAttribute('data-testid');
       const targetId = targetTestId?.replace('lesson-target-', '');
-      let initialCount = '0';
+      let initialCount = 0;
       if (targetId) {
         const countEl = page.getByTestId(`lesson-target-count-${targetId}`);
         if (await countEl.isVisible()) {
-          initialCount = (await countEl.textContent()) || '0';
+          const text = await countEl.textContent();
+          initialCount = parseInt(text || '0', 10);
         }
       }
-      // Perform drag: drag the item to the target
-      const itemBox = await firstItem.boundingBox();
-      const targetBox = await firstTarget.boundingBox();
-      if (itemBox && targetBox) {
-        await page.mouse.move(itemBox.x + itemBox.width / 2, itemBox.y + itemBox.height / 2);
-        await page.mouse.down();
-        await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 10 });
-        await page.mouse.up();
-        await page.waitForTimeout(1000);
-      }
+      // Perform drag: drag the first movable item to the first target
+      const dragged = await dragFirstItemToFirstTarget(page);
+      expect(dragged).toBe(true);
+      await page.waitForTimeout(400);
       // Check if count changed (may not work if the item type doesn't match target's accepts list)
       if (targetId) {
         const countEl = page.getByTestId(`lesson-target-count-${targetId}`);
         if (await countEl.isVisible()) {
-          const newCount = (await countEl.textContent()) || '0';
+          const newCountText = await countEl.textContent();
+          const newCount = parseInt(newCountText || '0', 10);
           // Count should increase or stay same (if wrong item type)
-          expect(parseInt(newCount)).toBeGreaterThanOrEqual(parseInt(initialCount));
+          expect(newCount).toBeGreaterThanOrEqual(initialCount);
         }
       }
     });
 
     test('6. Complete all steps in a lesson → lesson modal closes', async ({ page }) => {
+      // Re-quarantined 2026-11-19 (PR #300), not a mobile gap: on the n1_2 seashell lesson the
+      // loop reaches the "countFive" step with Continue disabled and finds no tappable item and
+      // no drag target it knows how to use, so it stops with the scene still open (mobile-chrome,
+      // both attempts). The step's interaction needs its own driver. Owner: story-scenes card
+      // HMA-W4A1-C f928e00a.
+      test.fixme(true, 'n1_2 countFive step: no driver for its interaction, Continue stays disabled; owner card f928e00a (HMA-W4A1-C)');
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
-      // Progress through all steps by clicking Next until the scene disappears
-      const maxSteps = 10;
-      for (let i = 0; i < maxSteps; i++) {
+
+      // Progress through all steps until the story scene disappears.
+      const maxIterations = 60;
+      for (let i = 0; i < maxIterations; i++) {
         const sceneVisible = await page.getByTestId('story-scene').isVisible().catch(() => false);
         if (!sceneVisible) break;
-        // Try to find and click Next button
-        const nextBtn = page.locator('button', { hasText: /next|הבא|→|▶|continue|המשך|OK|אישור|סיום|finish|done/i }).first();
-        const btnVisible = await nextBtn.isVisible().catch(() => false);
-        if (btnVisible) {
-          await nextBtn.click();
-          await page.waitForTimeout(1000);
-        } else {
-          // If no Next button, try interacting with items (drag/tap)
-          const items = page.locator('[data-testid^="lesson-item-"]');
-          const itemCount = await items.count();
-          if (itemCount > 0) {
-            // Try tapping/clicking items
-            await items.first().click();
-            await page.waitForTimeout(500);
-          } else {
-            break; // No actionable elements
-          }
+
+        // When the engine reports the step complete, `lesson-next` (Next / Finish) is enabled.
+        if (await clickLessonNext(page)) continue;
+
+        // Tap step: tap one tappable item per iteration (scenery is not tappable).
+        const tappables = page.locator(TAPPABLE_ITEM);
+        if ((await tappables.count()) > 0) {
+          await tappables.first().click();
+          await page.waitForTimeout(500);
+          continue;
         }
+
+        // Drag step: drop one movable item onto the first target per iteration.
+        if (await dragFirstItemToFirstTarget(page)) continue;
+
+        // No actionable elements — break to avoid an infinite loop.
+        break;
       }
-      // The story scene should be gone (lesson completed)
-      // Note: This may not complete if drag interactions are needed
-      const sceneStillVisible = await page.getByTestId('story-scene').isVisible().catch(() => false);
-      if (sceneStillVisible) {
-        test.fixme(true, 'Lesson completion requires precise drag interactions that may not ' +
-          'work in headless mode. Steps may need specific item-to-target matching.');
-      }
+
+      // The story scene should be gone (lesson completed).
+      await expect(page.getByTestId('story-scene')).toHaveCount(0, { timeout: 10000 });
+      // Verify we're back on the saga map.
+      await expect(page.locator('[data-testid="saga-node-n1_1"]').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('7. Tap step (n2_3a SubtractionForest): tap an item → removed', async ({ page }) => {
-      test.fixme(true, 'n2_3a (Hungry Bunny / SubtractionForest) requires unlocking Unit 2 ' +
-        'nodes via saga progress injection. The lesson uses interactive_tap steps where ' +
-        'tapping an item removes it. Requires setupWithUnlockedNodes for n2_3a or ' +
-        'injectSagaProgress to unlock it. The tap interaction itself (click on ' +
-        'data-testid="lesson-item-{id}") is straightforward once the node is accessible.');
+      // Unlock n2_3a (Unit 2 lesson node) via saga progress injection
+      await setupWithUnlockedNodes(page, 'TapTester', ['n2_3a']);
+      await enterSagaNodeById(page, 'n2_3a');
+      await waitForStoryScene(page);
+      // Advance to the interactive tap step. The forest scene also renders scenery sprites,
+      // so wait for an item the scene actually made tappable (`role="button"`).
+      await advanceToTapStep(page);
+      const tappable = page.locator(TAPPABLE_ITEM);
+      await expect(tappable.first()).toBeVisible({ timeout: 10000 });
+      const items = page.locator('[data-testid^="lesson-item-"]');
+      const itemCount = await items.count();
+      expect(itemCount).toBeGreaterThan(0);
+      // Tap the first tappable item. The forest's apples overlap, so the actionability check
+      // sees a neighbour's svg intercepting the pointer and retries until timeout. force skips
+      // that check; the tap lands on whichever apple is on top, and any apple tap must remove
+      // one item, which is exactly what the count assertion below checks.
+      await tappable.first().click({ force: true });
+      // Verify item was removed. The tapped item stays in the DOM while its exit animation
+      // runs (slower on WebKit), so poll the count instead of reading it once after a sleep.
+      await expect.poll(() => items.count(), { timeout: 10000 }).toBeLessThan(itemCount);
     });
 
   });

@@ -204,12 +204,13 @@ test.describe('hint content by operation', () => {
     await expect(viz.locator('svg').first()).toBeVisible();
   });
 
+  // FIXME: no reachable division hint. learningPath.ts has no arithmetic division practice
+  // node (division appears only adaptively at level 5+), and MathCard.tsx renders the hint
+  // button only when problem.type === 'arithmetic'. n4_7 is NOT a division node: it is
+  // config { type: 'word' } (learningPath.ts:92), so its hint button never renders either.
+  // Follow-up: board card e1d72e8c (add an arithmetic division node, then fill in its id
+  // here and drop the .fixme).
   test.fixme('division shows baskets, apples and the sharing explainer', async ({ page }) => {
-    // No dedicated division practice node exists in learningPath.ts.
-    // Division problems are only generated adaptively at level 5+ via
-    // LEVEL_PROGRESSION, making a deterministic E2E test impossible
-    // without adding a new practice node with config: { type: 'division' }.
-    // If such a node is added, fill in its ID here and drop the .fixme.
     await setupWithUnlockedNodes(page, `hint div ${profileSeq++}`, ['TODO_DIV_NODE']);
     const viz = await openHint(page, 'TODO_DIV_NODE');
     await expect(viz).toContainText(T.sharing);

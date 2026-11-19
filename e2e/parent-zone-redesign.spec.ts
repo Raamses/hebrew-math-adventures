@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupFreshProfile, openParentGate, openMenu, solveParentGate } from './helpers';
+import { setupFreshProfile, openParentGate, openMenu, solveParentGate, logoutFromSagaMap } from './helpers';
 
 test.describe('Parent Zone Redesign', () => {
   // Global timeout is 180s — no need for local override
@@ -31,16 +31,11 @@ test.describe('Parent Zone Redesign', () => {
     await expect(dashboard).toBeVisible({ timeout: 10000 });
   });
 
-  test('Mobile layout fits viewport and tabs are tappable', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('Mobile layout fits viewport and tabs are tappable', async ({ page }) => {
     // 2. Mobile layout: verify dashboard fits mobile viewport (390x844), tabs are tappable
     await page.setViewportSize({ width: 390, height: 844 });
     await setupFreshProfile(page, 'ParentZoneTest2');
-    
-    // Log out to reach ProfileSelector where openParentGate works out of the box
-    const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
-    await logoutBtn.click();
-    await page.waitForTimeout(2000);
+    await logoutFromSagaMap(page);
 
     await openParentGate(page);
 
@@ -51,33 +46,46 @@ test.describe('Parent Zone Redesign', () => {
     const box = await dashboard.boundingBox();
     expect(box?.width).toBeLessThanOrEqual(390);
 
-    // Verify tabs are tappable
-    const progressTab = page.locator('button[role="tab"]').filter({ hasText: /התקדמות|Progress/ }).first();
-    await progressTab.click();
-    await expect(progressTab).toHaveAttribute('aria-selected', 'true');
+    // Verify tabs are tappable — real tab ids from ParentDashboard.tsx PARENT_TABS
+    for (const tabId of ['postcard', 'goals', 'games', 'settings']) {
+      const tab = page.locator(`[data-testid="tab-${tabId}"]`).first();
+      await expect(tab).toBeVisible({ timeout: 5000 });
+      await tab.click();
+      await expect(tab).toHaveAttribute('aria-selected', 'true');
+    }
   });
 
-  test('RTL layout has Hebrew text rendering correctly', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('RTL layout has Hebrew text rendering correctly', async ({ page }) => {
     // 3. RTL layout: verify Hebrew text renders correctly (no LTR leakage in dashboard)
+    // ParentDashboard derives dir from the active i18n language
+    // (src/components/parent/ParentDashboard.tsx) and the E2E browser boots with
+    // an English navigator locale, so pin the app to Hebrew before boot.
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('i18nextLng', 'he');
+      } catch {
+        // storage unavailable on this document — the navigator override still applies
+      }
+      Object.defineProperty(navigator, 'language', { get: () => 'he-IL', configurable: true });
+      Object.defineProperty(navigator, 'languages', { get: () => ['he-IL', 'he', 'en-US'], configurable: true });
+    });
     await setupFreshProfile(page, 'ParentZoneTest3');
-    
-    const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
-    await logoutBtn.click();
-    await page.waitForTimeout(2000);
+    await logoutFromSagaMap(page);
 
     await openParentGate(page);
 
     const dashboard = page.locator('[data-testid="parent-dashboard"]').first();
     await expect(dashboard).toBeVisible();
 
-    // The default dir is rtl for Hebrew
+    // Hebrew is an RTL language — the dashboard must not render LTR
     await expect(dashboard).toHaveAttribute('dir', 'rtl');
 
-    const heading = page.locator('h1').filter({ hasText: /ניהול|פרופילים|אזור|הורים/ }).first();
-    if (await heading.count() > 0) {
-      await expect(heading).toBeVisible();
-    }
+    // Hebrew copy renders from the locale files. Tab labels are not a valid probe (parent.tabs.*
+    // is in neither locale file, so their hardcoded Hebrew defaults render in English too); the
+    // settings heading parent.manageProfiles differs between he ("ניהול פרופילים") and en.
+    await page.getByTestId('tab-settings').click();
+    await expect(dashboard.locator('h2').filter({ hasText: 'ניהול פרופילים' })).toBeVisible({ timeout: 5000 });
+    await expect(dashboard.getByText('Manage Profiles')).toHaveCount(0);
   });
 
   test('Exit from dashboard returns to correct screen', async ({ page }) => {
@@ -115,14 +123,10 @@ test.describe('Parent Zone Redesign', () => {
     await expect(sagaNode).toBeVisible({ timeout: 10000 });
   });
 
-  test('Games tab shows ParentGamesHub with game cards', async ({ page  }) => {
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
+  test('Games tab shows ParentGamesHub with game cards', async ({ page }) => {
     // 5. Games tab shows ParentGamesHub with game cards
     await setupFreshProfile(page, 'ParentZoneTest5');
-    
-    const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
-    await logoutBtn.click();
-    await page.waitForTimeout(2000);
+    await logoutFromSagaMap(page);
 
     await openParentGate(page);
 

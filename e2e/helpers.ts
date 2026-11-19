@@ -41,15 +41,31 @@ export async function setupFreshProfile(page: Page, name = 'TestBot') {
 
 /**
  * Open the hamburger menu on the saga map.
+ * Waits for real menu state (aria-expanded + panel visibility) with retries for mobile viewport.
+ * No flaky fixed sleeps.
  */
 export async function openMenu(page: Page) {
   const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
-  await expect(menuToggle).toBeVisible({ timeout: 10000 });
+  await expect(menuToggle).toBeVisible({ timeout: 15000 });
+
+  // Check current state via aria-expanded
   const isExpanded = await menuToggle.getAttribute('aria-expanded');
-  if (isExpanded !== 'true') {
-    await menuToggle.click();
-    await page.waitForTimeout(500);
+  if (isExpanded === 'true') {
+    // Already open — verify panel is visible
+    const menuPanel = page.locator('[data-testid="menu-panel"], [role="menu"], .fixed.inset-0').first();
+    await expect(menuPanel).toBeVisible({ timeout: 5000 });
+    return;
   }
+
+  // Not open — click and wait for expansion with retry for mobile race conditions
+  await expect(async () => {
+    await menuToggle.click();
+    // Wait for aria-expanded to flip to true
+    await expect(menuToggle).toHaveAttribute('aria-expanded', 'true', { timeout: 3000 });
+    // And wait for the menu panel to actually render
+    const menuPanel = page.locator('[data-testid="menu-panel"], [role="menu"], .fixed.inset-0').first();
+    await expect(menuPanel).toBeVisible({ timeout: 3000 });
+  }).toPass({ timeout: 10000, intervals: [200, 300, 500] });
 }
 
 /**
@@ -231,14 +247,28 @@ function parseAnswer(text: string): number | null {
  * Uses dispatchEvent for element-targeted clicking, independent of position.
  */
 export async function solveBubbleProblem(page: Page): Promise<boolean> {
-  // Read instruction/equation from stable display element, falling back to body
-  const instructionEl = page.locator('div[dir] span.font-mono').first();
+  // Read instruction/equation from the stable display element, falling back to body text.
+  // Two DOM shapes exist: PracticeMode renders the equation inside div[dir] > span.font-mono,
+  // while BubbleGameContainer (blitz, ~L613) puts dir + font-mono on the equation element
+  // itself (div[dir=ltr].font-mono), so the span-only probe finds nothing there.
+  const spanInstruction = page.locator('div[dir] span.font-mono').first();
+  const equationInstruction = page
+    .locator('div[dir].font-mono, div[dir] .font-mono')
+    .filter({ hasText: /[+\-−×÷*=]/ })
+    .first();
+  const instructionEl = (await spanInstruction.isVisible().catch(() => false))
+    ? spanInstruction
+    : equationInstruction;
   const rawText = (await instructionEl.isVisible().catch(() => false))
     ? (await instructionEl.textContent().catch(() => '')) || ''
     : (await page.textContent('body')) || '';
   const bodyText = rawText.replace(/[⁦⁧⁨⁩]/g, '');
 
-  const answer = parseAnswer(rawText);
+  // Parse the cleaned text: bodyText has the bidi isolates (U+2066–U+2069, incl. FSI/PDI)
+  // stripped. They are format characters, not whitespace (\s does not match them), and in
+  // the blitz equation they sit between digits/operators — leaving them in makes the
+  // arithmetic regex fail to match, which is what made playBubbleSession pop 0 bubbles.
+  const answer = parseAnswer(bodyText);
   if (answer !== null) {
     // Find a bubble containing the answer number via testid or text filter (no index-based nth).
     // F1.1: Dropped substring aria-label*= clause which over-matches (e.g. "value 1" matches 12, 15, 19).
@@ -703,7 +733,8 @@ export async function injectSagaProgress(
  * Use `logoutFromSagaMap()` first if currently on the saga map.
  */
 export async function openParentGate(page: Page): Promise<void> {
-  // Click the parent-access button on ProfileSelector
+  // parent-access exists only on the ProfileSelector screen (ProfileSelector.tsx); the saga-map
+  // hamburger menu has parent-zone-button instead. Callers on the saga map log out first.
   const parentAccessBtn = page.locator('[data-testid="parent-access"]').first();
   await expect(parentAccessBtn).toBeVisible({ timeout: 10000 });
   await parentAccessBtn.click();
@@ -921,4 +952,17 @@ export async function setupWithUnlockedNodes(
   const n1_1AfterReload = page.locator('[data-testid="saga-node-n1_1"]').first();
   await expect(n1_1AfterReload).toBeVisible({ timeout: 30000 });
   await page.waitForTimeout(500);
+}
+
+/**
+ * Log out from the saga map to the ProfileSelector screen: open the hamburger menu, click
+ * the logout item (data-testid="menu-logout", SagaMap.tsx), and wait until the selector's
+ * parent-access button is on screen.
+ */
+export async function logoutFromSagaMap(page: Page): Promise<void> {
+  await openMenu(page);
+  const logoutBtn = page.getByTestId('menu-logout');
+  await expect(logoutBtn).toBeVisible({ timeout: 10000 });
+  await logoutBtn.click();
+  await expect(page.locator('[data-testid="parent-access"]').first()).toBeVisible({ timeout: 10000 });
 }

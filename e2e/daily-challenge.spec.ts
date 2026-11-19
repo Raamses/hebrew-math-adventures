@@ -67,29 +67,75 @@ async function getDailyStamps(page: Page): Promise<string[]> {
   }, STORAGE_KEY);
 }
 
+const GAME_OVER_TEXT = /Play Again|שחק שוב|Game Over|Summary|סיכום/i;
+
+/** Text of the on-screen bubble-game instruction (isolates stripped, trimmed). */
+async function readInstructionText(page: Page): Promise<string> {
+  return await page.evaluate(() => {
+    const visible = (el: Element | null) => !!el && el.getClientRects().length > 0;
+    const span = document.querySelector('div[dir] span.font-mono');
+    const el = visible(span)
+      ? span
+      : document.querySelector('div[dir].font-mono, div[dir] .font-mono');
+    return (el?.textContent || '').replace(/[\u2066\u2067\u2068\u2069]/g, '').trim();
+  });
+}
+
+/** Poll until an instruction renders (or the timeout elapses). Returns its text ('' if none). */
+async function waitForInstruction(page: Page, timeoutMs: number): Promise<string> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const text = await readInstructionText(page);
+    if (text) return text;
+    await page.waitForTimeout(150);
+  }
+  return '';
+}
+
+/** Poll until the instruction changes (next problem rendered) or the game-over modal shows. */
+async function waitForInstructionChange(page: Page, previous: string, timeoutMs: number): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const bodyText = (await page.textContent('body')) || '';
+    if (GAME_OVER_TEXT.test(bodyText)) return;
+    const text = await readInstructionText(page);
+    if (text && text !== previous) return;
+    await page.waitForTimeout(150);
+  }
+}
+
 /**
  * Play a bubble game session and pop correct bubbles until the session ends
  * or a max number of attempts is reached.
  * Returns the number of correct bubbles popped.
+ *
+ * Waits on game state (instruction rendered / instruction changed / game-over modal)
+ * instead of fixed sleeps: the old 1.5 s + 2 s per attempt burned the whole 180 s
+ * test budget whenever the instruction could not be parsed.
  */
 async function playBubbleSession(page: Page, maxAttempts = 20): Promise<number> {
   let correctPops = 0;
   for (let i = 0; i < maxAttempts; i++) {
-    await page.waitForTimeout(1500);
-
-    // Check if game is still active (no game-over modal)
-    const bodyText = await page.textContent('body') || '';
-    if (bodyText.match(/Play Again|שחק שוב|Game Over|Summary|סיכום/i)) {
+    // Wait for the instruction to render (or for the game to end)
+    const instruction = await waitForInstruction(page, 3000);
+    const bodyText = (await page.textContent('body')) || '';
+    if (GAME_OVER_TEXT.test(bodyText)) {
       break;
     }
 
     // Try to solve the current bubble problem
     const solved = await solveBubbleProblem(page);
-    if (solved) {
-      correctPops++;
-      // Wait for pop animation + next problem
-      await page.waitForTimeout(2000);
+    if (!solved) {
+      // Nothing solvable on screen: if there is no instruction either, we are not in a
+      // bubble game anymore; otherwise give the engine a beat and retry.
+      if (!instruction) break;
+      await page.waitForTimeout(300);
+      continue;
     }
+
+    correctPops++;
+    // Wait for the pop animation and the next problem's instruction
+    await waitForInstructionChange(page, instruction, 1500);
   }
   return correctPops;
 }
@@ -177,6 +223,13 @@ test.describe('Daily Challenge — arcade modes', () => {
   });
 
   test('daily challenge completes when target reached in matching mode', async ({ page }) => {
+    // Re-quarantined 2026-11-19 (PR #300), not a mobile gap: on 2026-11-19 (mode zen, target 16)
+    // the game processed the pops (HUD: 13 targets, score 2,018) yet the per-profile daily
+    // progress kept dailyChallengeCorrect = 0 and no stamp (mobile-chrome, both attempts).
+    // Either zen is not credited to the challenge or the spec's mode/target derivation no
+    // longer matches the app's; the spec also picks a different mode every day, so a pass on
+    // one day proves little. Owner: quest/challenge card HMA-W4A1-C f928e00a.
+    test.fixme(true, 'zen pops not credited to dailyChallengeCorrect on 2026-11-19; day-dependent mode; owner card f928e00a (HMA-W4A1-C)');
     // This test plays the mode that matches today's daily challenge.
     // We determine today's challenge mode deterministically (same as the app).
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date()); // the app's day is the Israel day
@@ -185,7 +238,6 @@ test.describe('Daily Challenge — arcade modes', () => {
     const todayMode = MODES[seed % MODES.length];
     const todayTarget = 10 + (seed % 10); // 10-19
 
-    test.skip(true, 'mobile-gap quarantine 2026-09-19 — element not rendered on mobile (tracked in issue)');
     console.log(`[DC Complete] Today's challenge: mode=${todayMode}, target=${todayTarget}`);
 
     await setupFreshProfile(page, 'DCComplete');
