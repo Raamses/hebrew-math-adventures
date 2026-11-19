@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { setupFreshProfile, selectArcadeMode, solveBubbleProblem } from './helpers';
+import { setupFreshProfile, selectArcadeMode, solveBubbleProblem, readInstructionText } from './helpers';
 
 const STORAGE_KEY = 'hebrew-math-daily-progress';
 
@@ -68,18 +68,6 @@ async function getDailyStamps(page: Page): Promise<string[]> {
 }
 
 const GAME_OVER_TEXT = /Play Again|שחק שוב|Game Over|Summary|סיכום/i;
-
-/** Text of the on-screen bubble-game instruction (isolates stripped, trimmed). */
-async function readInstructionText(page: Page): Promise<string> {
-  return await page.evaluate(() => {
-    const visible = (el: Element | null) => !!el && el.getClientRects().length > 0;
-    const span = document.querySelector('div[dir] span.font-mono');
-    const el = visible(span)
-      ? span
-      : document.querySelector('div[dir].font-mono, div[dir] .font-mono');
-    return (el?.textContent || '').replace(/[\u2066\u2067\u2068\u2069]/g, '').trim();
-  });
-}
 
 /** Poll until an instruction renders (or the timeout elapses). Returns its text ('' if none). */
 async function waitForInstruction(page: Page, timeoutMs: number): Promise<string> {

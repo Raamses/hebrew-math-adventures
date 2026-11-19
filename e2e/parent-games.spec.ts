@@ -251,7 +251,7 @@ test.describe('Parent Games', () => {
     // Owning card: a10f7e85-46e9-493f-b06c-41359e3f6077 (kept quarantined — the documented 2026-10-07 deployed-site reason stands; investigation is owned on that card).
     test.skip(true, 're-quarantined 2026-10-07 — cell-attribute in-game assert fails deterministically on mobile-chrome (deployed site), NOT a mobile-gap; owning card a10f7e85-46e9-493f-b06c-41359e3f6077');
     // Not part of the W4A1 mobile-gap scope: this skip belongs to card a10f7e85 and stays
-    // until that card closes. W4A1 only hardened the test body below (kept for that card).
+    // until that card closes. The test body is left as it was; hardening it is that card's job.
     await openGame(page, 'sudoku');
 
     // Select easy difficulty
@@ -262,17 +262,9 @@ test.describe('Parent Games', () => {
     const mistakesEl = page.locator('[data-testid="sudoku-mistakes"]').first();
     const initialMistakes = parseInt(await mistakesEl.getAttribute('data-mistakes') || '0');
 
-    // Find an empty cell (data-state="empty") and pin its data-testid before
-    // clicking. A bare [data-state="empty"] locator re-resolves on every use:
-    // once the clicked cell flips to data-state="selected" it no longer matches,
-    // so .first() silently retargets a *different* empty cell and the
-    // selected/value assertions read the wrong element. Pinning the testid
-    // keeps every later assertion on the cell we actually clicked.
-    const emptyCellQuery = page.locator('[data-testid^="sudoku-cell-"][data-state="empty"]').first();
-    await expect(emptyCellQuery).toBeVisible({ timeout: 5000 });
-    const cellTestId = await emptyCellQuery.getAttribute('data-testid');
-    expect(cellTestId).toBeTruthy();
-    const emptyCell = page.locator(`[data-testid="${cellTestId}"]`).first();
+    // Find an empty cell (data-state="empty")
+    const emptyCell = page.locator('[data-testid^="sudoku-cell-"][data-state="empty"]').first();
+    await expect(emptyCell).toBeVisible({ timeout: 5000 });
 
     // Click the empty cell to select it
     await emptyCell.click();
@@ -376,66 +368,78 @@ test.describe('Parent Games', () => {
     // Owning card: a10f7e85-46e9-493f-b06c-41359e3f6077 (kept quarantined — the documented 2026-10-07 deployed-site reason stands; investigation is owned on that card).
     test.skip(true, 're-quarantined 2026-10-07 — scored-cell data-state null after submit on mobile-chrome (deployed site), NOT a mobile-gap; owning card a10f7e85-46e9-493f-b06c-41359e3f6077');
     // Not part of the W4A1 mobile-gap scope: this skip belongs to card a10f7e85 and stays
-    // until that card closes. W4A1 only hardened the test body below (kept for that card).
+    // until that card closes. The test body is left as it was; hardening it is that card's job.
     await openGame(page, 'equation-of-the-day');
 
     // Wait for keyboard
     await expect(page.locator('[data-testid="eq-keyboard"]').first()).toBeVisible({ timeout: 5000 });
 
-    // The active guess row renders one cell per solution character, so the
-    // rendered width is the required guess length. Read it from the DOM with a
-    // prefix selector instead of a hard-coded eq-cell-0-0..7 list: the old list
-    // undercounted longer solutions, leaving the typed guess too short and
-    // submit disabled.
-    const firstCell = page.locator('[data-testid="eq-cell-0-0"]').first();
-    await expect(firstCell).toBeVisible({ timeout: 5000 });
-    const cellCount = await page.locator('[data-testid^="eq-cell-0-"]').count();
-    expect(cellCount).toBeGreaterThan(0);
+    // The solution format is like "6+7=13" (length varies).
+    // We need to fill the first row with a valid-length guess.
+    // Strategy: type a few chars and check if submit becomes enabled.
+    // If the guess is wrong length, submit stays disabled.
+    // Type a plausible equation: try different lengths.
 
-    // Build a *mathematically valid* equation of exactly the required length.
-    // The old test padded "6+7=13" with '1's for longer rows; those strings are
-    // not valid equations, and builds that validate the guess before scoring
-    // leave every cell's data-state unset. A valid equation keeps the required
-    // length while exercising the real scoring path.
-    const validEquationsByLength: Record<number, string> = {
-      5: '1+1=2',
-      6: '6+7=13',
-      7: '10+2=12',
-      8: '10+20=30',
-      9: '100+1=101',
-      10: '100+20=120',
-      11: '100+200=300',
-      12: '1000+20=1020',
-      13: '1000+200=1200',
-      14: '1000+2000=3000',
-      15: '10000+200=10200',
-      16: '10000+2000=12000',
-      17: '10000+20000=30000',
-      18: '100000+2000=102000',
-    };
-    const charsToType = (validEquationsByLength[cellCount] ?? '1'.repeat(cellCount)).split('');
+    // First, check the first row cell count to determine solution length
+    const row0Cells = page.locator('[data-testid="eq-cell-0-0"], [data-testid="eq-cell-0-1"], [data-testid="eq-cell-0-2"], [data-testid="eq-cell-0-3"], [data-testid="eq-cell-0-4"], [data-testid="eq-cell-0-5"], [data-testid="eq-cell-0-6"], [data-testid="eq-cell-0-7"]');
+    const cellCount = await row0Cells.count();
+
+    // Type a guess of the correct length.
+    // Common solutions: "6+7=13" (6 chars), "3+4=7" (5 chars but unlikely with 2-digit results),
+    // "12+34=46" (9 chars). We'll try a generic approach: type "1+1=2" and pad if needed.
+    // Actually, the engine generates equations like "leftSide=rightSide" where leftSide is
+    // "a+b" format. Let's try common patterns based on length.
+
+    // Try: type some digits and operators to fill the row
+    const guessChars = ['1', '+', '1', '=', '2'];
+
+    // If the solution is longer, we need more chars. Let's try a 6-char guess first.
+    // Solutions seen in engine: "6+7=13" (6 chars). Let's try that pattern.
+    const sixCharGuess = ['6', '+', '7', '=', '1', '3'];
+
+    let charsToType: string[];
+    if (cellCount >= 6) {
+      // Pad the 6-char guess if solution is longer
+      charsToType = sixCharGuess;
+      // If more cells needed, try extending with more digits
+      if (cellCount > 6) {
+        charsToType = [...sixCharGuess];
+        for (let i = 6; i < cellCount; i++) {
+          charsToType.push('1');
+        }
+      }
+    } else {
+      charsToType = guessChars.slice(0, cellCount);
+    }
 
     // Type each character using the on-screen keyboard
     for (const char of charsToType) {
       const key = page.locator(`[data-testid="eq-key-${char}"]`).first();
-      await expect(key).toBeVisible({ timeout: 5000 });
       await key.click();
-      await page.waitForTimeout(80);
+      await page.waitForTimeout(100);
     }
 
-    // Verify submit is now enabled (full-length guess)
+    // Verify submit is now enabled (not disabled)
     const submitBtn = page.locator('[data-testid="eq-submit"]').first();
-    await expect(submitBtn).toBeEnabled({ timeout: 5000 });
+    await expect(submitBtn).toBeEnabled({ timeout: 2000 });
 
     // Submit the guess
     await submitBtn.click();
+    await page.waitForTimeout(500);
 
-    // Scoring is committed after the submit/validation pass. Use auto-retrying
-    // assertions instead of a single getAttribute() read after a fixed sleep:
-    // the old 500 ms read raced the React commit and saw data-state=null.
+    // After submit, the row cells should have data-state attributes (correct/present/absent)
+    // Check at least one cell in row 0 has a scored state
+    const scoredCell = page.locator('[data-testid="eq-cell-0-0"]').first();
+    const cellState = await scoredCell.getAttribute('data-state');
+    expect(['correct', 'present', 'absent']).toContain(cellState);
+
+    // If the guess was correct, we should see the result panel
+    // If wrong, we should see guesses-left decreased or next row active
+    // Either way, the first row should now be "locked" (has scored states)
     for (let col = 0; col < charsToType.length; col++) {
       const cell = page.locator(`[data-testid="eq-cell-0-${col}"]`).first();
-      await expect(cell).toHaveAttribute('data-state', /^(correct|present|absent)$/, { timeout: 5000 });
+      const state = await cell.getAttribute('data-state');
+      expect(['correct', 'present', 'absent']).toContain(state);
     }
   });
 
