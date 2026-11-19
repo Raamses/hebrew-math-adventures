@@ -733,20 +733,9 @@ export async function injectSagaProgress(
  * Use `logoutFromSagaMap()` first if currently on the saga map.
  */
 export async function openParentGate(page: Page): Promise<void> {
-  // The parent-access entry point usually lives on the ProfileSelector screen, but
-  // tests that call setupFreshProfile() land on the saga map. In that case the
-  // parent-access button is inside the saga-map hamburger menu, so open it first.
-  let parentAccessBtn = page.locator('[data-testid="parent-access"]').first();
-  if (!(await parentAccessBtn.isVisible().catch(() => false))) {
-    const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
-    if (await menuToggle.isVisible().catch(() => false)) {
-      if ((await menuToggle.getAttribute('aria-expanded')) !== 'true') {
-        await menuToggle.click();
-        await page.waitForTimeout(500);
-      }
-    }
-    parentAccessBtn = page.locator('[data-testid="parent-access"]').first();
-  }
+  // parent-access exists only on the ProfileSelector screen (ProfileSelector.tsx); the saga-map
+  // hamburger menu has parent-zone-button instead. Callers on the saga map log out first.
+  const parentAccessBtn = page.locator('[data-testid="parent-access"]').first();
   await expect(parentAccessBtn).toBeVisible({ timeout: 10000 });
   await parentAccessBtn.click();
   await page.waitForTimeout(800);
@@ -966,20 +955,14 @@ export async function setupWithUnlockedNodes(
 }
 
 /**
- * Wait for the hamburger menu to close (aria-expanded=false, panel hidden).
- * Useful after clicking a menu item that should dismiss the menu.
+ * Log out from the saga map to the ProfileSelector screen: open the hamburger menu, click
+ * the logout item (data-testid="menu-logout", SagaMap.tsx), and wait until the selector's
+ * parent-access button is on screen.
  */
-export async function waitForMenuClosed(page: Page): Promise<void> {
-  const menuToggle = page.locator('[data-testid="menu-toggle"]').first();
-  await expect(async () => {
-    const expanded = await menuToggle.getAttribute('aria-expanded');
-    if (expanded === 'true') {
-      throw new Error('Menu still open');
-    }
-    const menuPanel = page.locator('[data-testid="menu-panel"], [role="menu"], .fixed.inset-0').first();
-    const visible = await menuPanel.isVisible().catch(() => false);
-    if (visible) {
-      throw new Error('Menu panel still visible');
-    }
-  }).toPass({ timeout: 5000, intervals: [100, 200, 300] });
+export async function logoutFromSagaMap(page: Page): Promise<void> {
+  await openMenu(page);
+  const logoutBtn = page.getByTestId('menu-logout');
+  await expect(logoutBtn).toBeVisible({ timeout: 10000 });
+  await logoutBtn.click();
+  await expect(page.locator('[data-testid="parent-access"]').first()).toBeVisible({ timeout: 10000 });
 }

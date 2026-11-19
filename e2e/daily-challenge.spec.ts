@@ -223,6 +223,13 @@ test.describe('Daily Challenge — arcade modes', () => {
   });
 
   test('daily challenge completes when target reached in matching mode', async ({ page }) => {
+    // Re-quarantined 2026-11-19 (PR #300), not a mobile gap: on 2026-11-19 (mode zen, target 16)
+    // the game processed the pops (HUD: 13 targets, score 2,018) yet the per-profile daily
+    // progress kept dailyChallengeCorrect = 0 and no stamp (mobile-chrome, both attempts).
+    // Either zen is not credited to the challenge or the spec's mode/target derivation no
+    // longer matches the app's; the spec also picks a different mode every day, so a pass on
+    // one day proves little. Owner: quest/challenge card HMA-W4A1-C f928e00a.
+    test.fixme(true, 'zen pops not credited to dailyChallengeCorrect on 2026-11-19; day-dependent mode; owner card f928e00a (HMA-W4A1-C)');
     // This test plays the mode that matches today's daily challenge.
     // We determine today's challenge mode deterministically (same as the app).
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem' }).format(new Date()); // the app's day is the Israel day

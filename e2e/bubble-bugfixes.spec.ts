@@ -57,7 +57,17 @@ test.describe('Bubble Game Bugfix Regression Tests', () => {
     });
 
     test('Instruction renders in English after language toggle', async ({ page }) => {
-  // Global timeout is 180s — no need for local override
+      // The app's language follows navigator.language and the E2E browser boots in English,
+      // so pin Hebrew before boot; the toggle below then really switches he -> en.
+      await page.addInitScript(() => {
+        try {
+          window.localStorage.setItem('i18nextLng', 'he');
+        } catch {
+          // storage unavailable on this document — the navigator override still applies
+        }
+        Object.defineProperty(navigator, 'language', { get: () => 'he-IL', configurable: true });
+        Object.defineProperty(navigator, 'languages', { get: () => ['he-IL', 'he', 'en-US'], configurable: true });
+      });
       await setupFreshProfile(page, 'I18nEnglish');
       await selectArcadeMode(page, 'zen');
       await page.waitForTimeout(3000);

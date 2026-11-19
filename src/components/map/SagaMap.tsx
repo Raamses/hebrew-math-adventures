@@ -298,6 +298,7 @@ export const SagaMap: React.FC<SagaMapProps> = ({ onNodeSelect, onLogout, onArca
                                             setIsMenuOpen(false);
                                             onLogout();
                                         }}
+                                        data-testid="menu-logout"
                                         className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-rose-50/70 hover:bg-rose-100/80 border border-rose-200/50 text-rose-700 transition-all active:scale-[0.98] cursor-pointer w-full min-h-[48px]"
                                         title={t('menu.logout')}
                                         aria-label={t('menu.logout')}

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { setupFreshProfile, openParentGate, openMenu, solveParentGate } from './helpers';
+import { setupFreshProfile, openParentGate, openMenu, solveParentGate, logoutFromSagaMap } from './helpers';
 
 test.describe('Parent Zone Redesign', () => {
   // Global timeout is 180s — no need for local override
@@ -35,15 +35,7 @@ test.describe('Parent Zone Redesign', () => {
     // 2. Mobile layout: verify dashboard fits mobile viewport (390x844), tabs are tappable
     await page.setViewportSize({ width: 390, height: 844 });
     await setupFreshProfile(page, 'ParentZoneTest2');
-    
-    // The logout control lives inside the saga-map hamburger menu on mobile —
-    // it is not rendered as a top-level button. Open the hardened menu first so
-    // the logout button is reachable, then continue from the ProfileSelector.
-    await openMenu(page);
-    const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
-    await expect(logoutBtn).toBeVisible({ timeout: 10000 });
-    await logoutBtn.click();
-    await page.waitForTimeout(2000);
+    await logoutFromSagaMap(page);
 
     await openParentGate(page);
 
@@ -78,14 +70,7 @@ test.describe('Parent Zone Redesign', () => {
       Object.defineProperty(navigator, 'languages', { get: () => ['he-IL', 'he', 'en-US'], configurable: true });
     });
     await setupFreshProfile(page, 'ParentZoneTest3');
-    
-    // The logout control lives inside the saga-map hamburger menu on mobile —
-    // open the hardened menu first so the logout button is reachable.
-    await openMenu(page);
-    const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
-    await expect(logoutBtn).toBeVisible({ timeout: 10000 });
-    await logoutBtn.click();
-    await page.waitForTimeout(2000);
+    await logoutFromSagaMap(page);
 
     await openParentGate(page);
 
@@ -95,13 +80,12 @@ test.describe('Parent Zone Redesign', () => {
     // Hebrew is an RTL language — the dashboard must not render LTR
     await expect(dashboard).toHaveAttribute('dir', 'rtl');
 
-    // Hebrew copy renders in the dashboard chrome: every tab label is Hebrew
-    const hebrewText = /[\u0590-\u05FF]/;
-    for (const tabId of ['postcard', 'goals', 'games', 'settings']) {
-      const tab = page.locator(`[data-testid="tab-${tabId}"]`).first();
-      await expect(tab).toBeVisible({ timeout: 5000 });
-      await expect(tab).toHaveAttribute('aria-label', hebrewText);
-    }
+    // Hebrew copy renders from the locale files. Tab labels are not a valid probe (parent.tabs.*
+    // is in neither locale file, so their hardcoded Hebrew defaults render in English too); the
+    // settings heading parent.manageProfiles differs between he ("ניהול פרופילים") and en.
+    await page.getByTestId('tab-settings').click();
+    await expect(dashboard.locator('h2').filter({ hasText: 'ניהול פרופילים' })).toBeVisible({ timeout: 5000 });
+    await expect(dashboard.getByText('Manage Profiles')).toHaveCount(0);
   });
 
   test('Exit from dashboard returns to correct screen', async ({ page }) => {
@@ -142,14 +126,7 @@ test.describe('Parent Zone Redesign', () => {
   test('Games tab shows ParentGamesHub with game cards', async ({ page }) => {
     // 5. Games tab shows ParentGamesHub with game cards
     await setupFreshProfile(page, 'ParentZoneTest5');
-    
-    // The logout control lives inside the saga-map hamburger menu on mobile —
-    // open the hardened menu first so the logout button is reachable.
-    await openMenu(page);
-    const logoutBtn = page.locator('button[aria-label*="Log Out"], button[aria-label*="התנתק"]').first();
-    await expect(logoutBtn).toBeVisible({ timeout: 10000 });
-    await logoutBtn.click();
-    await page.waitForTimeout(2000);
+    await logoutFromSagaMap(page);
 
     await openParentGate(page);
 

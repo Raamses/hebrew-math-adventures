@@ -221,6 +221,12 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
     });
 
     test('6. Complete all steps in a lesson → lesson modal closes', async ({ page }) => {
+      // Re-quarantined 2026-11-19 (PR #300), not a mobile gap: on the n1_2 seashell lesson the
+      // loop reaches the "countFive" step with Continue disabled and finds no tappable item and
+      // no drag target it knows how to use, so it stops with the scene still open (mobile-chrome,
+      // both attempts). The step's interaction needs its own driver. Owner: story-scenes card
+      // HMA-W4A1-C f928e00a.
+      test.fixme(true, 'n1_2 countFive step: no driver for its interaction, Continue stays disabled; owner card f928e00a (HMA-W4A1-C)');
       await setupFreshProfileWithPracticeAccess(page, 'StoryTester');
       await enterSagaNodeById(page, 'n1_2');
       await waitForStoryScene(page);
@@ -268,12 +274,14 @@ test.describe('Interactive Story Scenes and Advanced MathCards', () => {
       const items = page.locator('[data-testid^="lesson-item-"]');
       const itemCount = await items.count();
       expect(itemCount).toBeGreaterThan(0);
-      // Tap the first tappable item
-      await tappable.first().click();
-      await page.waitForTimeout(800);
-      // Verify item was removed (count decreased or item no longer visible)
-      const newItemCount = await items.count();
-      expect(newItemCount).toBeLessThan(itemCount);
+      // Tap the first tappable item. The forest's apples overlap, so the actionability check
+      // sees a neighbour's svg intercepting the pointer and retries until timeout. force skips
+      // that check; the tap lands on whichever apple is on top, and any apple tap must remove
+      // one item, which is exactly what the count assertion below checks.
+      await tappable.first().click({ force: true });
+      // Verify item was removed. The tapped item stays in the DOM while its exit animation
+      // runs (slower on WebKit), so poll the count instead of reading it once after a sleep.
+      await expect.poll(() => items.count(), { timeout: 10000 }).toBeLessThan(itemCount);
     });
 
   });

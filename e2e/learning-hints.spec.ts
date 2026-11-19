@@ -204,17 +204,15 @@ test.describe('hint content by operation', () => {
     await expect(viz.locator('svg').first()).toBeVisible();
   });
 
-  // FIXME (HMA-W4A1): unreachable premise. Node n4_7 is configured as type 'word' in
-  // learningPath.ts (L92), while MathCard.tsx (L100) only renders the hint button when
-  // canShowHintButton = wrongAttempts >= 1 && problem.type === 'arithmetic'. So for n4_7
-  // the hint button can never render, and openHint() can never open the modal — this test
-  // is asserting a division hint path that is unreachable from this node. Re-enable once
-  // n4_7 becomes an arithmetic division node (or the hint gate widens beyond 'arithmetic').
+  // FIXME: no reachable division hint. learningPath.ts has no arithmetic division practice
+  // node (division appears only adaptively at level 5+), and MathCard.tsx renders the hint
+  // button only when problem.type === 'arithmetic'. n4_7 is NOT a division node: it is
+  // config { type: 'word' } (learningPath.ts:92), so its hint button never renders either.
+  // Follow-up: board card e1d72e8c (add an arithmetic division node, then fill in its id
+  // here and drop the .fixme).
   test.fixme('division shows baskets, apples and the sharing explainer', async ({ page }) => {
-    // Division practice node n4_7 was added in learningPath.ts (division_simple, max 10).
-    // Unlock n4_7 along with its prerequisite nodes to reach it on the saga map.
-    await setupWithUnlockedNodes(page, `hint div ${profileSeq++}`, ['n4_7']);
-    const viz = await openHint(page, 'n4_7');
+    await setupWithUnlockedNodes(page, `hint div ${profileSeq++}`, ['TODO_DIV_NODE']);
+    const viz = await openHint(page, 'TODO_DIV_NODE');
     await expect(viz).toContainText(T.sharing);
     await expect(viz.locator('svg')).toBeVisible();
   });

@@ -13,6 +13,12 @@ test.describe('Unit progression', () => {
   // Global timeout is 180s — no need for local override
 
   test('Complete n1_10 (CHALLENGE node) → n2_1 unlocks', async ({ page }) => {
+    // Re-quarantined 2026-11-19 (PR #300) with a real reason, not a mobile gap: the n1_10
+    // session now serves word problems ("One team scored 5 goals and the other scored 2…"),
+    // and solveCurrentProblem has no word-problem parser. It falls back to a number-series
+    // guess, submits a wrong answer and still returns true, so 30 "solves" never finish the
+    // session (mobile-chrome, both attempts). Follow-up: board card a93af8ca.
+    test.fixme(true, 'n1_10 serves word problems that solveCurrentProblem cannot answer, so the session never completes; follow-up card a93af8ca');
     await setupFreshProfileWithPracticeAccess(page, 'UnitProgress');
 
     const profileId = await getProfileId(page, 'UnitProgress');

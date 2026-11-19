@@ -7,24 +7,26 @@
  * ── Frenzy Mode — 4 tests ─────────────────────────────────────────────────
  *  1. Build combo to 5 → frenzy overlay appears (role="status")
  *  2. Combo 10 → frenzy escalates to super tier
- *  3. Combo 15 → mega frenzy tier (scaffolded)
+ *  3. Combo 15 → mega frenzy tier (5x)
  *  4. Frenzy ends when combo breaks
  *
  * ── Power-ups — 1 test ────────────────────────────────────────────────────
- *  5. Power-up bubble appears and can be popped (scaffolded)
+ *  5. Power-up bubble appears and can be popped
  *
  * ── Level Up Banner — 2 tests ─────────────────────────────────────────────
  *  6. Level up banner appears when level increases
  *  7. Level up banner shows correct level number
  *
- * Selector strategy: FrenzyOverlay has NO data-testid but uses
- * role="status" and aria-live="polite". LevelUpBanner has NO data-testid
- * but renders text matching t('game.levelUp') = "רמה {{level}}!" (he) /
- * "Level {{level}}!" (en). Bubbles use data-testid="bubble-{value}".
- * Arcade modes: data-testid="arcade-button" → data-testid="arcade-mode-classic".
- *
- * NEEDED_TESTIDS: frenzy-overlay, frenzy-badge, level-up-banner,
- *                 powerup-bubble, powerup-toast
+ * Selector strategy (current app truth):
+ *  - FrenzyOverlay: no data-testid; role="status" + aria-live="polite", tier
+ *    shown as a "{multiplier}x" span.
+ *  - LevelUpBanner: no data-testid; text t('game.levelUp') = "רמה {{level}}!"
+ *    (he) / "Level {{level}}!" (en). LEVEL_UP_RE keeps the trailing "!" so the
+ *    permanent "Lv {n}" HUD badge never matches.
+ *  - Value bubbles: data-testid="bubble-{value}".
+ *  - Power-up bubble (Frenzy Star): accessible name "Pop power-up bubble: {value}"
+ *    (sensory/Bubble.tsx), found with getByRole.
+ *  - Arcade modes: data-testid="arcade-button" → data-testid="arcade-mode-classic".
  *
  * Model: ask-claude --escalate --card e751ea10-535a-4909-9974-45c02f35e1d0
  *   — FAILED: "You've hit your session limit · resets 1:40am (Asia/Jerusalem)"
@@ -193,37 +195,14 @@ async function waitForFrenzyToEnd(page: Page, overlay: Locator, timeoutMs = 4_00
   return !visible;
 }
 
-/** Candidate board bubbles for the Frenzy Star power-up. */
-function powerUpCandidates(page: Page): Locator {
-  return page.locator(
-    '[data-testid^="bubble-"], [data-testid^="fusion-bubble-"], [data-testid*="powerup"], [data-testid*="power-up"]',
-  );
-}
-
 /**
- * Power-ups are not value bubbles: the Frenzy Star is created with
- * `internalValue: powerUpType` (POWER_UP_EMOJI content), so its test-id and
- * content are never a plain number.
+ * The Frenzy Star power-up bubble. sensory/Bubble.tsx gives power-ups the exact
+ * accessible name "Pop power-up bubble: {value}" (value bubbles use "Pop bubble
+ * with value …", bosses "Pop boss bubble …"), so match on the role + name.
  */
 async function findPowerUpBubble(page: Page): Promise<Locator | null> {
-  const candidates = powerUpCandidates(page);
-  const count = await candidates.count();
-
-  for (let i = 0; i < count; i++) {
-    const el = candidates.nth(i);
-    const testId = (await el.getAttribute('data-testid').catch(() => null)) ?? '';
-    if (/^(?:fusion-)?bubble-\d+$/.test(testId)) continue; // ordinary value bubble
-    if (/power-?up/i.test(testId)) return el;
-    if (/^(?:fusion-)?bubble-/.test(testId)) return el; // e.g. bubble-lightning_chain
-  }
-
-  // Fallback: the Frenzy Star renders a power-up emoji, value bubbles render numbers.
-  for (let i = 0; i < count; i++) {
-    const el = candidates.nth(i);
-    const text = ((await el.textContent().catch(() => '')) ?? '').trim();
-    if (text.length > 0 && !/^-?\d+$/.test(text)) return el;
-  }
-  return null;
+  const powerUp = page.getByRole('button', { name: /^Pop power-up bubble/ }).first();
+  return (await powerUp.count()) > 0 ? powerUp : null;
 }
 
 async function waitForPowerUpBubble(page: Page, timeoutMs = 10_000): Promise<Locator | null> {
@@ -308,11 +287,14 @@ test.describe('Powerups, Frenzy Mode, and Level Up Banners', () => {
       expect(done, 'frenzy should be active before breaking the combo').toBe(true);
       await expect(overlay.first()).toBeVisible({ timeout: 5_000 });
 
-      // Pop a bubble that is neither the current target nor one of the values we
-      // already answered — the engine classifies those as "stale" and ignores
-      // the pop instead of breaking the combo.
+      // Pop a bubble that is neither the current target nor the previous target.
+      // The engine's validateAgainst() (MathStrategy.ts) classifies a pop that
+      // matches the previous target snapshot as "stale" and ignores it instead of
+      // breaking the combo; any other non-target value is a genuine wrong answer.
       const current = await readAnswer(page).catch(() => null);
-      const excluded = new Set<number>(answered);
+      const excluded = new Set<number>();
+      const previous = answered[answered.length - 1];
+      if (previous !== undefined) excluded.add(previous);
       if (current !== null) excluded.add(current);
 
       const bubbles = page.locator('[data-testid^="bubble-"]');

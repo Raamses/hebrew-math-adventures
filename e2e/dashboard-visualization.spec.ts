@@ -8,8 +8,8 @@
  *  1. Navigate to parent dashboard via the saga-map parent zone → visible
  *  2. Four tabs render with correct icons (💌 🎯 🎮 ⚙️)
  *
- * ── Progress Overview widgets — 6 tests ──────────────────────────────────
- *  3. ProgressOverview renders (on whichever dashboard tab hosts it)
+ * ── Progress Overview widgets — 6 tests (QUARANTINED, see below) ─────────
+ *  3. ProgressOverview renders
  *  4. Stat cards render (stars, badges, coins, streak, time)
  *  5. WeeklyChart renders SVG with 7 bar <rect> elements
  *  6. StreakHeatmap renders a grid of 35 cells (7×5)
@@ -24,6 +24,15 @@
  *                  profile-select screen, not on the saga map.)
  *  - Tabs:         data-testid="tab-{postcard|goals|games|settings}" + role="tab"
  *                  (ParentDashboard.tsx: PARENT_TABS).
+ *
+ * Tests 3–8 stay quarantined (test.fixme): ProgressOverview, WeeklyChart and
+ * StreakHeatmap are orphaned components. Nothing in src/ renders
+ * ProgressOverview (only a unit test imports it), and PARENT_TABS has no
+ * progress tab, so the DOM these tests assert on is never rendered. They are
+ * not mobile gaps and must not be switched on until the component is wired
+ * into a tab (or deleted, together with these tests). Follow-up: see
+ * board card 35fed897 (PROGRESS_OVERVIEW_ORPHANED below).
+ *
  *  - ProgressOverview widgets have NO data-testid and are located structurally:
  *                  WeeklyChart = svg[viewBox="0 0 100 120"] with one <rect> per day,
  *                  StreakHeatmap = 35 cells carrying an inline aspect-ratio,
@@ -84,10 +93,18 @@ async function openParentDashboard(page: Page): Promise<void> {
   await expect(page.getByTestId('parent-dashboard')).toBeVisible({ timeout: 15000 });
 }
 
+/** Quarantine reason for tests 3–8 (see the file header). */
+const PROGRESS_OVERVIEW_ORPHANED =
+  'ProgressOverview/WeeklyChart/StreakHeatmap are orphaned: no component in src/ renders ' +
+  'ProgressOverview and PARENT_TABS (postcard/goals/games/settings) has no progress tab, so this ' +
+  'DOM never exists. Not a mobile gap. Follow-up: board card 35fed897 ' +
+  '(wire it into a parent tab, or delete it and these tests).';
+
 /**
- * ProgressOverview is not a tab of its own in the redesigned dashboard, so land
- * on the tab that actually renders it (stat cards + WeeklyChart + StreakHeatmap
- * + accuracy bar) by probing the real tabs for the WeeklyChart SVG.
+ * Land on the dashboard tab that renders ProgressOverview (stat cards +
+ * WeeklyChart + StreakHeatmap + accuracy bar) by probing the real tabs for the
+ * WeeklyChart SVG. Throws when no tab renders it, so a test can never fall
+ * through to assertions against DOM that does not exist.
  */
 async function openProgressOverviewTab(page: Page): Promise<void> {
   await openParentDashboard(page);
@@ -107,6 +124,10 @@ async function openProgressOverviewTab(page: Page): Promise<void> {
       return;
     }
   }
+  throw new Error(
+    `No parent dashboard tab (${DASHBOARD_TABS.join(', ')}) renders ProgressOverview ` +
+      '(svg[viewBox="0 0 100 120"] not found).',
+  );
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────
@@ -141,8 +162,10 @@ test.describe('Parent Dashboard Data Visualization', () => {
   });
 
   test.describe('Progress Overview tab', () => {
+    // Every test in this group is quarantined: see PROGRESS_OVERVIEW_ORPHANED.
 
     test('3. ProgressOverview renders on the dashboard', async ({ page  }) => {
+      test.fixme(true, PROGRESS_OVERVIEW_ORPHANED);
       await setupFreshProfile(page, 'DashTester');
       await openProgressOverviewTab(page);
 
@@ -156,6 +179,7 @@ test.describe('Parent Dashboard Data Visualization', () => {
     });
 
     test('4. Stat cards render with expected labels', async ({ page  }) => {
+      test.fixme(true, PROGRESS_OVERVIEW_ORPHANED);
       await setupFreshProfile(page, 'DashTester');
       await openProgressOverviewTab(page);
 
@@ -167,6 +191,7 @@ test.describe('Parent Dashboard Data Visualization', () => {
     });
 
     test('5. WeeklyChart renders SVG with 7 bar <rect> elements', async ({ page  }) => {
+      test.fixme(true, PROGRESS_OVERVIEW_ORPHANED);
       await setupFreshProfile(page, 'DashTester');
       await openProgressOverviewTab(page);
 
@@ -180,6 +205,7 @@ test.describe('Parent Dashboard Data Visualization', () => {
     });
 
     test('6. StreakHeatmap renders a grid of 35 cells (7×5)', async ({ page  }) => {
+      test.fixme(true, PROGRESS_OVERVIEW_ORPHANED);
       await setupFreshProfile(page, 'DashTester');
       await openProgressOverviewTab(page);
 
@@ -191,6 +217,7 @@ test.describe('Parent Dashboard Data Visualization', () => {
     });
 
     test('7. Accuracy bar shows a percentage', async ({ page  }) => {
+      test.fixme(true, PROGRESS_OVERVIEW_ORPHANED);
       await setupFreshProfile(page, 'DashTester');
       await openProgressOverviewTab(page);
 
@@ -202,6 +229,7 @@ test.describe('Parent Dashboard Data Visualization', () => {
     });
 
     test('8. Fresh profile shows zero/empty stats across all cards', async ({ page  }) => {
+      test.fixme(true, PROGRESS_OVERVIEW_ORPHANED);
       await setupFreshProfile(page, 'DashTester');
       await openProgressOverviewTab(page);
 
