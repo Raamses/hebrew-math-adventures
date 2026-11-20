@@ -1,12 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { backwardsItem, coinWays, countingItem, positionItem, sumDifferenceItem } from '../engine/mathReasoning';
+import { calendarItem, parityItem, pyramidItem } from '../engine/mathReasoning2';
+import { stripNiqqud as strip } from '../engine/niqqud';
 import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
 import type { Difficulty, PrepItem } from '../types';
 import { reasoningOracle, reasoningSolutions } from './reasoningOracles';
 
 const SEEDS = Number(process.env.PREP_SWEEP ?? 10_000);
 const DIFFS: Difficulty[] = [1, 2, 3];
-const MAKERS = { backwardsItem, sumDifferenceItem, positionItem, countingItem };
+const MAKERS = { backwardsItem, sumDifferenceItem, positionItem, countingItem, parityItem, pyramidItem, calendarItem };
+const WEEK = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
 
 /** `a + b − c = d` with any number of terms, evaluated left to right. */
 function chainHolds(eq: string): boolean {
@@ -27,7 +30,10 @@ function problems(item: PrepItem): string[] {
     const out: string[] = [];
     const say = (ok: boolean, msg: string) => { if (!ok) out.push(`${item.id}: ${msg} | ${item.stem.text} [${item.options}]`); };
     say(item.options.length === 4 && new Set(item.options).size === 4, 'options not 4 distinct');
-    say(item.options.every(o => /^\d+$/.test(o) && Number(o) <= 100), 'an option is not a whole number 0–100');
+    say(item.options.every(o => /^\d+$/.test(o) && Number(o) <= 100) || item.options.every(o => WEEK.includes(o)),
+        'options are neither whole numbers 0–100 nor day names');
+    say(!item.optionsNiqqud || item.optionsNiqqud.every((o, i) => hasNiqqud(o) && strip(o) === item.options[i]), 'option niqqud twin differs');
+    say((item.stem.pictureLines ?? []).every(l => (l.match(/\d+/g) ?? []).every(n => Number(n) <= 100)), 'picture number over 100');
     const story = reasoningSolutions(item);
     say(story !== null && story.length === 1, `the story allows ${JSON.stringify(story)}`);
     const right = reasoningOracle(item);
@@ -48,7 +54,7 @@ describe('C3 reasoning types: 10k-seed sweep per type and difficulty', () => {
             const found: string[] = [];
             for (let seed = 1; seed <= SEEDS && found.length < 5; seed++) found.push(...problems(make(seed, d)));
             expect(found).toEqual([]);
-        });
+        }, 120_000);
     }
 
     it('is deterministic per seed and spreads the answer slot', () => {
@@ -63,12 +69,18 @@ describe('C3 reasoning types: 10k-seed sweep per type and difficulty', () => {
 
 /** Which template a stem came from, by a phrase only that template uses. */
 const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
+    parityItem: [['odd2', /חיבר \d+ מספרים אי־זוגיים\. /], ['oddBound', /אי־זוגיים, וכל/], ['mixed', /אי־זוגיים ו־/], ['frog', /צפרדע/]],
+    pyramidItem: [['top', /השאלה\? \| \? \|/], ['down', /\| \d+ \| \d+  ◻ \|/], ['twice', /\| \d+ \| ◻  ◻ \|/]],
+    calendarItem: [['after', /איזה יום יהיה/], ['before', /היה לפני/], ['date', /בחודש/]],
     positionItem: [['total', /מהסוף\. כמה ילדים/], ['fromBack', /באיזה מקום/], ['between', /בין רוני לגל/], ['fence', /גדר/], ['floors', /מדרגות/]],
     countingItem: [['handshakes', /לחצו/], ['games', /בטורניר/], ['coins', /מטבעות/], ['digitsOnce', /אסור/], ['digitsTwice', /מותר/], ['outfits', /חולצות/]],
     sumDifferenceItem: [['numbers', /שני מספרים/], ['marbles', /גולות/], ['cookies', /עוגיות/]],
     backwardsItem: [['double', /לעצמו/], ['half', /החצי/], ['add', /הוספתי/], ['sub', /הורדתי/]],
 };
 const EXPECTED: Readonly<Record<string, Readonly<Record<Difficulty, readonly string[]>>>> = {
+    parityItem: { 1: ['odd2'], 2: ['oddBound', 'frog'], 3: ['mixed', 'oddBound', 'frog'] },
+    pyramidItem: { 1: ['top'], 2: ['down'], 3: ['twice'] },
+    calendarItem: { 1: ['after'], 2: ['after'], 3: ['after', 'before', 'date'] },
     positionItem: { 1: ['total', 'floors'], 2: ['total', 'fromBack', 'between', 'floors'], 3: ['fromBack', 'between', 'fence', 'floors'] },
     countingItem: {
         1: ['handshakes', 'digitsOnce', 'outfits'],
@@ -84,7 +96,8 @@ describe('C3 reasoning types: levels', () => {
         for (const [name, make] of Object.entries(MAKERS)) {
             const seen = new Set<string>();
             for (let seed = 1; seed <= 600; seed++) {
-                const text = make(seed, d).stem.text ?? '';
+                const it = make(seed, d);
+                const text = [it.stem.text ?? '', ...(it.stem.pictureLines ?? [])].join(' | ');
                 VARIANTS[name].forEach(([v, re]) => { if (re.test(text)) seen.add(v); });
             }
             expect([...seen].sort(), `${name} d${d}`).toEqual([...EXPECTED[name][d]].sort());
@@ -145,6 +158,37 @@ describe('C3 reasoning types: distractors are named wrong paths', () => {
             const v = first ? r + a - b : r - a + b;
             return v >= 0 && v <= 100 ? v : null;
         })).toBeGreaterThan(0.95);
+    });
+});
+
+describe('C3 part 2: distractors are named wrong paths', () => {
+    const wrong = (it: PrepItem) => it.options.filter((_, i) => i !== it.answerIndex);
+    it('pyramid d3: "forgot the middle brick counts twice" (top − both corners) is always an option', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = pyramidItem(seed, 3);
+            const [top, , bottom] = it.stem.pictureLines!;
+            const [a, , c] = bottom.split('  ').map(Number);
+            expect(wrong(it)).toContain(String(Number(top) - a - c));
+        }
+    });
+    it('parity with a range: one option has the right kind (even/odd) but is too big', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = parityItem(seed, 3);
+            if (/צפרדע/.test(it.stem.text!)) continue;
+            const key = Number(it.options[it.answerIndex]);
+            expect(wrong(it).map(Number).some(o => o % 2 === key % 2), it.stem.text).toBe(true);
+        }
+    });
+    it('calendar: a day one off from the key is always an option (counted today as day 1)', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = calendarItem(seed, 2);
+            const k = WEEK.indexOf(it.options[it.answerIndex]);
+            expect(wrong(it).some(o => [1, 6].includes((WEEK.indexOf(o) - k + 7) % 7)), it.stem.text).toBe(true);
+        }
+    });
+    it('calendar options carry niqqud twins', () => {
+        const it = calendarItem(5, 1);
+        expect(it.optionsNiqqud).toHaveLength(4);
     });
 });
 

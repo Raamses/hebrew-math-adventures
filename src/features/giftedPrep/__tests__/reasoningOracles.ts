@@ -99,21 +99,92 @@ function counting(text: string): number[] {
     throw new Error(`unknown counting stem: ${text}`);
 }
 
-const SOLVERS: Partial<Record<PrepItem['kind'], (text: string) => number[]>> = {
-    'math-backwards': backwards,
-    'math-sum-difference': sumDifference,
-    'math-position': position,
-    'math-counting': counting,
+/** Totals reachable with `k` odd numbers from `odd` and `m` even numbers from `even` (repeats allowed). */
+function reachable(k: number, m: number, odd: readonly number[], even: readonly number[]): Set<number> {
+    let sums = new Set([0]);
+    const add = (pool: readonly number[]) => { sums = new Set([...sums].flatMap(x => pool.map(p => x + p))); };
+    for (let i = 0; i < k; i++) add(odd);
+    for (let i = 0; i < m; i++) add(even);
+    return sums;
+}
+
+/** Which offered totals or landing spots are possible: build every possible one and look the options up. */
+function parity(item: PrepItem): number[] {
+    const text = item.stem.text ?? '';
+    const n = nums(text);
+    if (text.includes('צפרדע')) {
+        const [s, j] = n;
+        const spots = new Set<number>();
+        for (let at = s + j; at <= 200; at += j) spots.add(at);
+        return item.options.map(Number).filter(o => spots.has(o));
+    }
+    const bounded = text.includes('בין 1 ל־9');
+    const odds = bounded ? [1, 3, 5, 7, 9] : range(0, 60).filter(x => x % 2 === 1);
+    const k = n[0], m = /אי־זוגיים ו־/.test(text) ? n[1] : 0;
+    const sums = reachable(k, m, odds, [2, 4, 6, 8]);
+    return item.options.map(Number).filter(o => sums.has(o));
+}
+
+/** Fills every empty bottom brick with 0–100 and keeps the fillings that match every shown brick. */
+function pyramid(item: PrepItem): number[] {
+    const rows = (item.stem.pictureLines ?? []).map(l => l.split('\u2003\u2003').map(c => (/^\d+$/.test(c) ? Number(c) : c)));
+    const [top, mid, bottom] = rows;
+    const holes = bottom.flatMap((c, i) => (typeof c === 'number' ? [] : [i]));
+    const answers = new Set<number>();
+    const fit = (b: number[]) => {
+        const m = [b[0] + b[1], b[1] + b[2]];
+        if (mid.some((c, i) => typeof c === 'number' && c !== m[i])) return;
+        const t = m[0] + m[1];
+        if (typeof top[0] === 'number' && top[0] !== t) return;
+        const ask = [...top, ...mid, ...bottom].indexOf('?');
+        answers.add([t, ...m, ...b][ask]);
+    };
+    // no brick can be bigger than a shown top brick
+    const most = typeof top[0] === 'number' ? top[0] : 100;
+    const b = [...bottom];
+    const tryFrom = (h: number) => {
+        if (h === holes.length) { fit(b as number[]); return; }
+        for (let v = 0; v <= most; v++) { b[holes[h]] = v; tryFrom(h + 1); }
+    };
+    tryFrom(0);
+    return [...answers];
+}
+
+const WEEK = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
+
+/** Walks the days one by one. */
+function calendar(item: PrepItem): (number | string)[] {
+    const text = item.stem.text ?? '';
+    const n = nums(text);
+    if (text.includes('בחודש')) {
+        let date = n[0];
+        for (let i = 0; i < n[2]; i++) date = date === n[1] ? 1 : date + 1;
+        return [date];
+    }
+    let day = WEEK.findIndex(d => text.startsWith(`היום ${d}.`));
+    const back = text.includes('לפני');
+    for (let i = 0; i < n[0]; i++) day = back ? (day + 6) % 7 : (day + 1) % 7;
+    return [WEEK[day]];
+}
+
+const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | string)[]>> = {
+    'math-backwards': it => backwards(it.stem.text ?? ''),
+    'math-sum-difference': it => sumDifference(it.stem.text ?? ''),
+    'math-position': it => position(it.stem.text ?? ''),
+    'math-counting': it => counting(it.stem.text ?? ''),
+    'math-parity': parity,
+    'math-pyramid': pyramid,
+    'math-calendar': calendar,
 };
 
 /** Every value the story allows (a well-made item has exactly one); null for kinds this file does not cover. */
-export function reasoningSolutions(item: PrepItem): number[] | null {
+export function reasoningSolutions(item: PrepItem): (number | string)[] | null {
     const solve = SOLVERS[item.kind];
-    return solve ? [...new Set(solve(item.stem.text ?? ''))] : null;
+    return solve ? [...new Set(solve(item))] : null;
 }
 
 /** Option indices that hold a value the story allows; null for kinds this file does not cover. */
 export function reasoningOracle(item: PrepItem): number[] | null {
-    const answers = reasoningSolutions(item);
-    return answers && item.options.flatMap((o, i) => (answers.includes(Number(o)) ? [i] : []));
+    const answers = reasoningSolutions(item)?.map(String);
+    return answers ? item.options.flatMap((o, i) => (answers.includes(o) ? [i] : [])) : null;
 }

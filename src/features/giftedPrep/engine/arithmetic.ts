@@ -10,6 +10,7 @@ import { doubleHalfItem, placeValueItem } from './mathNumberSense';
 import { oddOneOutItem, sequenceItem } from './mathPatterns';
 import { moneyItem, storyItem } from './mathWorld';
 import { backwardsItem, countingItem, positionItem, sumDifferenceItem } from './mathReasoning';
+import { calendarItem, parityItem, pyramidItem } from './mathReasoning2';
 
 /**
  * Stage-A style arithmetic (grade 2, numbers to 100; vault/rules/math-curriculum.md level 3):
@@ -102,16 +103,16 @@ export function wordItem(seed: number, difficulty: Difficulty): PrepItem {
 }
 
 /**
- * The mix (20 slots): the Stage-A key's task types keep 10 — exercises 3, missing number 2 (one balance),
+ * The mix (23 slots): the Stage-A key's task types keep 10 — exercises 3, missing number 2 (one balance),
  * word problems 3, picture puzzles 2 — number sense gets 6: sequence, compare, odd one out,
- * tens and ones, double/half, money — and C3 reasoning 4: work backwards, sum and difference,
- * positions, systematic counting.
+ * tens and ones, double/half, money — and C3 reasoning 7: work backwards, sum and difference,
+ * positions, systematic counting, parity, number pyramid, calendar.
  */
 export const MAKERS = [
     exerciseItem, exerciseItem, exerciseItem, missingItem, balanceItem,
     wordItem, storyItem, storyItem, pictureItem, pictureItem,
     sequenceItem, compareItem, oddOneOutItem, placeValueItem, doubleHalfItem, moneyItem,
-    backwardsItem, sumDifferenceItem, positionItem, countingItem,
+    backwardsItem, sumDifferenceItem, positionItem, countingItem, parityItem, pyramidItem, calendarItem,
 ] as const;
 
 export function mathItem(seed: number, difficulty: Difficulty): PrepItem {
