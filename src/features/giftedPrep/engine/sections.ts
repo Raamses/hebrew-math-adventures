@@ -2,6 +2,7 @@ import type { Difficulty, PrepItem, PrepSection } from '../types';
 import { mathItem } from './arithmetic';
 import { LANGUAGE_ITEMS, READING_PASSAGES, languageItems, readingItems, type BankLanguageItem, type BankPassage } from './bank';
 import { intBetween, type Rng } from './prng';
+import { pyramidText } from './mistakeDetails';
 
 /** Builds `count` items for one section. `seen` holds bank ids the child answered recently. */
 export type SectionBuilder = (rng: Rng, count: number, seen: ReadonlySet<string>) => PrepItem[];
@@ -24,7 +25,7 @@ export function difficultyAt(i: number, count: number): Difficulty {
 
 /** All numbers an item shows (operands and result), used by the repetition guard. */
 export function itemNumbers(item: PrepItem): number[] {
-    const text = `${item.stem.equation ?? ''} ${(item.stem.pictureLines ?? []).join(' ')} ${item.stem.text ?? ''} ${item.options[item.answerIndex]}`;
+    const text = `${item.stem.equation ?? ''} ${(item.stem.pictureLines ?? []).join(' ')} ${item.stem.pyramid ? pyramidText(item.stem.pyramid) : ''} ${item.stem.text ?? ''} ${item.options[item.answerIndex]}`;
     return (text.match(/\d+/g) ?? []).map(Number);
 }
 
@@ -32,6 +33,7 @@ const GUARD = 3;
 /** What makes two items "the same question": the equation or picture, else the text plus its options
  * (compare / odd-one-out items share one stem text, so the options tell them apart). */
 export const stemKey = (item: PrepItem) => item.stem.equation ?? item.stem.pictureLines?.join('|')
+    ?? (item.stem.pyramid && pyramidText(item.stem.pyramid))
     ?? `${item.stem.text ?? item.id}|${[...item.options].sort().join(',')}`;
 const MAX_TRIES = 30;
 
