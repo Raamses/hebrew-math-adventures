@@ -22,6 +22,9 @@ export type PrepKind =
     | 'math-sum-difference'  // together 20, one has 6 more
     | 'math-position'        // places in a line, fence posts, floors
     | 'math-counting'        // handshakes, coin combinations, numbers from digits
+    | 'math-parity'          // which total of odd numbers is even possible
+    | 'math-pyramid'         // number pyramid: each brick is the sum of the two below
+    | 'math-calendar'        // the 7-day week, a month running out
     | 'reading'              // question about a passage
     | 'word-meaning'
     | 'sentence-completion';
@@ -30,7 +33,7 @@ export type PrepKind =
 export const SKILL_TAGS = [
     'add', 'sub', 'missing-number', 'word-problem', 'picture-puzzle',
     'number-pattern', 'compare', 'odd-one-out', 'place-value', 'double-half', 'money',
-    'work-backwards', 'sum-difference', 'position', 'counting',
+    'work-backwards', 'sum-difference', 'position', 'counting', 'parity', 'number-wall', 'calendar',
     'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
     'word-meaning', 'sentence-completion',
 ] as const;

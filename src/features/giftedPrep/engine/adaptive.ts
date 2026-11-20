@@ -5,6 +5,7 @@ import { doubleHalfItem, placeValueItem } from './mathNumberSense';
 import { oddOneOutItem, sequenceItem } from './mathPatterns';
 import { moneyItem, storyItem } from './mathWorld';
 import { backwardsItem, countingItem, positionItem, sumDifferenceItem } from './mathReasoning';
+import { calendarItem, parityItem, pyramidItem } from './mathReasoning2';
 import { pictureItem } from './pictures';
 import { derivePrepTypeProgress } from './progress';
 import { type Rng } from './prng';
@@ -25,7 +26,9 @@ export const NUMBER_SENSE_TAGS = [
 type NumberSenseTag = typeof NUMBER_SENSE_TAGS[number];
 
 /** C3 non-routine reasoning types: REASONING_PER_SESSION of them per session, weighted by weakness. */
-export const REASONING_TAGS = ['work-backwards', 'sum-difference', 'position', 'counting'] as const;
+export const REASONING_TAGS = [
+    'work-backwards', 'sum-difference', 'position', 'counting', 'parity', 'number-wall', 'calendar',
+] as const;
 export type ReasoningTag = typeof REASONING_TAGS[number];
 
 export const ORIGINAL_TOTAL = 10;
@@ -57,6 +60,9 @@ const REASONING_MAKERS: Readonly<Record<ReasoningTag, Maker>> = {
     'sum-difference': sumDifferenceItem,
     position: positionItem,
     counting: countingItem,
+    parity: parityItem,
+    'number-wall': pyramidItem,
+    calendar: calendarItem,
 };
 
 /** 1 - accuracy of one skill; 0.5 when it has no attempts yet. */
