@@ -10,3 +10,4 @@ e2e/parent-zone-redesign.spec.ts        # parent gate opens the dashboard; exit 
 e2e/language-toggle.spec.ts             # Hebrew -> English UI switch
 e2e/gifted-prep-smoke.spec.ts           # gifted prep: parent toggle -> tile -> hub (RTL) -> back
 e2e/gifted-prep-parent-progress.spec.ts # G7.2 parent progress: empty state -> practice -> per-type, weakest, mistakes
+e2e/story-scenes.spec.ts                # lesson scene: drag a shell into the basket (count rises), finish the lesson, tap step
