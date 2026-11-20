@@ -191,13 +191,13 @@ export const LessonModal: React.FC<LessonModalProps> = ({ isOpen, lesson, onClos
                     covers the scene's items or drop targets. */}
                 <div
                     data-testid="lesson-mascot"
-                    className="order-2 shrink-0 relative flex items-center gap-3 px-4 py-2 border-t border-slate-100 z-30 pointer-events-none md:order-none md:absolute md:bottom-0 md:left-8 md:z-50 md:items-end md:gap-0 md:p-0 md:pb-4 md:border-0 md:filter md:drop-shadow-xl"
+                    className="order-2 shrink-0 relative flex items-center gap-3 px-4 py-2 border-t border-slate-100 z-30 pointer-events-none md:order-none md:absolute md:bottom-0 md:end-8 md:z-50 md:items-end md:gap-0 md:p-0 md:pb-4 md:border-0 md:filter md:drop-shadow-xl"
                 >
                     <div className="w-14 h-14 md:w-40 md:h-40 relative shrink-0">
                         <Mascot character="owl" emotion={currentStep.mascotEmotion} className="max-md:!w-14 max-md:!h-14" />
                     </div>
                     {/* Speech Bubble Container */}
-                    <div className="relative flex-1 min-w-0 md:flex-none md:absolute md:left-28 md:bottom-28 md:w-80">
+                    <div className="relative flex-1 min-w-0 md:flex-none md:absolute md:end-28 md:bottom-28 md:w-80">
                         <SpeechBubble
                             text={t(currentStep.mascotText)}
                             isVisible={true}
