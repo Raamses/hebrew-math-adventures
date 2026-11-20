@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { backwardsItem, coinWays, countingItem, positionItem, sumDifferenceItem } from '../engine/mathReasoning';
 import { calendarItem, parityItem, pyramidItem } from '../engine/mathReasoning2';
 import { stripNiqqud as strip } from '../engine/niqqud';
+import { pyramidText } from '../engine/mistakeDetails';
 import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
 import type { Difficulty, PrepItem } from '../types';
 import { reasoningOracle, reasoningSolutions } from './reasoningOracles';
@@ -33,7 +34,9 @@ function problems(item: PrepItem): string[] {
     say(item.options.every(o => /^\d+$/.test(o) && Number(o) <= 100) || item.options.every(o => WEEK.includes(o)),
         'options are neither whole numbers 0–100 nor day names');
     say(!item.optionsNiqqud || item.optionsNiqqud.every((o, i) => hasNiqqud(o) && strip(o) === item.options[i]), 'option niqqud twin differs');
-    say((item.stem.pictureLines ?? []).every(l => (l.match(/\d+/g) ?? []).every(n => Number(n) <= 100)), 'picture number over 100');
+    say((item.stem.pyramid ?? []).flat().every(c => c === '' || c === '?' || (/^\d+$/.test(c) && Number(c) <= 100)), 'pyramid brick is not a number 0–100, "?" or empty');
+    say(!item.stem.pyramid || item.stem.pyramid.every((r, i) => r.length === i + 1), 'pyramid rows are not 1, 2, 3 bricks');
+    say(!item.stem.pyramid || item.stem.pyramid.flat().filter(c => c === '?').length === 1, 'pyramid does not ask exactly one brick');
     const story = reasoningSolutions(item);
     say(story !== null && story.length === 1, `the story allows ${JSON.stringify(story)}`);
     const right = reasoningOracle(item);
@@ -70,7 +73,7 @@ describe('C3 reasoning types: 10k-seed sweep per type and difficulty', () => {
 /** Which template a stem came from, by a phrase only that template uses. */
 const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
     parityItem: [['odd2', /חיבר \d+ מספרים אי־זוגיים\. /], ['oddBound', /אי־זוגיים, וכל/], ['mixed', /אי־זוגיים ו־/], ['frog', /צפרדע/]],
-    pyramidItem: [['top', /השאלה\? \| \? \|/], ['down', /\| \d+ \| \d+  ◻ \|/], ['twice', /\| \d+ \| ◻  ◻ \|/]],
+    pyramidItem: [['top', /^\? \/ ◻ ◻ \/ \d+ \d+ \d+$/], ['down', /^\d+ \/ \d+ ◻ \/ ◻ \? \d+$/], ['twice', /^\d+ \/ ◻ ◻ \/ \d+ \? \d+$/]],
     calendarItem: [['after', /איזה יום יהיה/], ['before', /היה לפני/], ['date', /בחודש/]],
     positionItem: [['total', /מהסוף\. כמה ילדים/], ['fromBack', /באיזה מקום/], ['between', /בין רוני לגל/], ['fence', /גדר/], ['floors', /מדרגות/]],
     countingItem: [['handshakes', /לחצו/], ['games', /בטורניר/], ['coins', /מטבעות/], ['digitsOnce', /אסור/], ['digitsTwice', /מותר/], ['outfits', /חולצות/]],
@@ -97,7 +100,7 @@ describe('C3 reasoning types: levels', () => {
             const seen = new Set<string>();
             for (let seed = 1; seed <= 600; seed++) {
                 const it = make(seed, d);
-                const text = [it.stem.text ?? '', ...(it.stem.pictureLines ?? [])].join(' | ');
+                const text = it.stem.pyramid ? pyramidText(it.stem.pyramid) : it.stem.text ?? '';
                 VARIANTS[name].forEach(([v, re]) => { if (re.test(text)) seen.add(v); });
             }
             expect([...seen].sort(), `${name} d${d}`).toEqual([...EXPECTED[name][d]].sort());
@@ -166,9 +169,8 @@ describe('C3 part 2: distractors are named wrong paths', () => {
     it('pyramid d3: "forgot the middle brick counts twice" (top − both corners) is always an option', () => {
         for (let seed = 1; seed <= 1000; seed++) {
             const it = pyramidItem(seed, 3);
-            const [top, , bottom] = it.stem.pictureLines!;
-            const [a, , c] = bottom.split('  ').map(Number);
-            expect(wrong(it)).toContain(String(Number(top) - a - c));
+            const [[top], , [a, , c]] = it.stem.pyramid!.map(r => r.map(Number));
+            expect(wrong(it)).toContain(String(top - a - c));
         }
     });
     it('parity with a range: one option has the right kind (even/odd) but is too big', () => {

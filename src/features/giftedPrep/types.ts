@@ -51,6 +51,8 @@ export interface PrepStem {
     readonly equation?: string;
     /** Picture-puzzle lines ("🍎 + 🍎 = 8"), each rendered LTR like an equation. */
     readonly pictureLines?: readonly string[];
+    /** Number pyramid, top row first: a number, '?' (the asked brick) or '' (an empty brick). Drawn as bricks. */
+    readonly pyramid?: readonly (readonly string[])[];
     /** Shape puzzles: a row, a 3×3 grid or an A:B::C:? analogy of drawn figures, `null` = the "?" cell (components/PrepFigure.tsx). */
     readonly figures?: FigureBoard;
     /** Reading items carry their passage so the player can show it above the question. */

@@ -127,7 +127,7 @@ function parity(item: PrepItem): number[] {
 
 /** Fills every empty bottom brick with 0–100 and keeps the fillings that match every shown brick. */
 function pyramid(item: PrepItem): number[] {
-    const rows = (item.stem.pictureLines ?? []).map(l => l.split('\u2003\u2003').map(c => (/^\d+$/.test(c) ? Number(c) : c)));
+    const rows = (item.stem.pyramid ?? []).map(r => r.map(c => (/^\d+$/.test(c) ? Number(c) : c)));
     const [top, mid, bottom] = rows;
     const holes = bottom.flatMap((c, i) => (typeof c === 'number' ? [] : [i]));
     const answers = new Set<number>();
