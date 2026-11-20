@@ -9,6 +9,33 @@ interface ItemStemProps {
     readonly niqqud?: boolean;
 }
 
+/**
+ * Number pyramid as equal-width bricks in centered rows: with equal widths and gaps, every brick sits
+ * exactly over the gap between the two bricks it is the sum of. Always LTR (numbers).
+ */
+export function PyramidView({ rows }: { readonly rows: readonly (readonly string[])[] }) {
+    return (
+        <div dir="ltr" className="unicode-bidi-isolate rounded-2xl bg-white border border-slate-200 py-4 flex flex-col items-center gap-1.5" data-testid="prep-pyramid">
+            {rows.map((row, r) => (
+                <div key={r} className="flex justify-center gap-1.5">
+                    {row.map((cell, c) => (
+                        <div
+                            key={c}
+                            aria-label={cell === '' ? 'ריק' : cell === '?' ? 'סימן שאלה' : cell}
+                            data-testid="prep-pyramid-brick"
+                            className={cell === '?'
+                                ? 'w-16 h-12 rounded-lg border-2 border-indigo-500 bg-indigo-50 text-indigo-700 flex items-center justify-center font-rubik text-3xl font-black'
+                                : 'w-16 h-12 rounded-lg border-2 border-amber-400 bg-amber-50 text-slate-800 flex items-center justify-center font-rubik text-2xl font-bold'}
+                        >
+                            {cell}
+                        </div>
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
+}
+
 /** Passage (if any), question text and an LTR-isolated equation (vault/rules/rtl-hebrew.md). */
 export function ItemStem({ stem, niqqud = false }: ItemStemProps) {
     const pick = (plain?: string, voc?: string) => pickText(niqqud, plain, voc);
@@ -35,6 +62,7 @@ export function ItemStem({ stem, niqqud = false }: ItemStemProps) {
                     ))}
                 </div>
             )}
+            {stem.pyramid && <PyramidView rows={stem.pyramid} />}
             {stem.figures && <FigureBoardView board={stem.figures} />}
             {stem.equation && (
                 <div

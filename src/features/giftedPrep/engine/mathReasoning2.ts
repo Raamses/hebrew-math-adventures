@@ -74,8 +74,9 @@ export function parityItem(seed: number, difficulty: Difficulty): PrepItem {
 
 // ── Number pyramid: each brick is the sum of the two below it ──
 
-const BOX = '◻';
-const row = (cells: readonly (number | string)[]) => cells.join('  ');
+/** '' is an empty brick, '?' the asked one. */
+const row = (cells: readonly (number | string)[]) => cells.map(String);
+const E = '';
 
 export function pyramidItem(seed: number, difficulty: Difficulty): PrepItem {
     const rng = mulberry32(seed);
@@ -86,7 +87,7 @@ export function pyramidItem(seed: number, difficulty: Difficulty): PrepItem {
     const text = stem(fillPair(reasonPair('pyramid', 'ask')));
     if (difficulty === 1) {
         return numericItem(rng, seed, difficulty, {
-            kind: 'math-pyramid', skill: 'number-wall', stem: { ...text, pictureLines: ['?', row([BOX, BOX]), row([a, b, c])] },
+            kind: 'math-pyramid', skill: 'number-wall', stem: { ...text, pyramid: [row(['?']), row([E, E]), row([a, b, c])] },
             answer: T,
             slips: [a + b + c /* added the bottom row once */, L, R],
             explanation: `קודם ממלאים את השורה האמצעית: ${ltr(`${a} + ${b} = ${L}`)} ו־${ltr(`${b} + ${c} = ${R}`)}. `
@@ -95,7 +96,7 @@ export function pyramidItem(seed: number, difficulty: Difficulty): PrepItem {
     }
     if (difficulty === 2) {
         return numericItem(rng, seed, difficulty, {
-            kind: 'math-pyramid', skill: 'number-wall', stem: { ...text, pictureLines: [String(T), row([L, BOX]), row([BOX, '?', c])] },
+            kind: 'math-pyramid', skill: 'number-wall', stem: { ...text, pyramid: [row([T]), row([L, E]), row([E, '?', c])] },
             answer: b,
             slips: [R /* stopped at the middle row */, T - c /* skipped the middle row */, L /* copied the brick above */],
             explanation: `מלמעלה למטה: המשבצת הריקה באמצע היא ${ltr(`${T} − ${L} = ${R}`)}. `
@@ -104,7 +105,7 @@ export function pyramidItem(seed: number, difficulty: Difficulty): PrepItem {
     }
     const twice = T - a - c;
     return numericItem(rng, seed, difficulty, {
-        kind: 'math-pyramid', skill: 'number-wall', stem: { ...text, pictureLines: [String(T), row([BOX, BOX]), row([a, '?', c])] },
+        kind: 'math-pyramid', skill: 'number-wall', stem: { ...text, pyramid: [row([T]), row([E, E]), row([a, '?', c])] },
         answer: b,
         slips: [twice /* forgot that the middle brick counts twice */, Math.round(twice / 2) + 1, Math.round(twice / 2) - 1],
         explanation: `המספר שבאמצע השורה התחתונה נכנס לשתי המשבצות שבאמצע, ולכן למעלה הוא נספר פעמיים: `
