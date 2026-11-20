@@ -18,6 +18,10 @@ export type PrepKind =
     | 'math-place-value'     // "4 tens and 7 ones"
     | 'math-double-half'     // double 16, half of 30
     | 'math-money'           // coins and change, in shekels
+    | 'math-backwards'       // C3 reasoning: "I added 4, doubled it and got 20"
+    | 'math-sum-difference'  // together 20, one has 6 more
+    | 'math-position'        // places in a line, fence posts, floors
+    | 'math-counting'        // handshakes, coin combinations, numbers from digits
     | 'reading'              // question about a passage
     | 'word-meaning'
     | 'sentence-completion';
@@ -26,6 +30,7 @@ export type PrepKind =
 export const SKILL_TAGS = [
     'add', 'sub', 'missing-number', 'word-problem', 'picture-puzzle',
     'number-pattern', 'compare', 'odd-one-out', 'place-value', 'double-half', 'money',
+    'work-backwards', 'sum-difference', 'position', 'counting',
     'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
     'word-meaning', 'sentence-completion',
 ] as const;
