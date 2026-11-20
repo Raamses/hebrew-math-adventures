@@ -4,6 +4,7 @@ import { balanceItem, compareItem } from './mathCompare';
 import { doubleHalfItem, placeValueItem } from './mathNumberSense';
 import { oddOneOutItem, sequenceItem } from './mathPatterns';
 import { moneyItem, storyItem } from './mathWorld';
+import { backwardsItem, countingItem, positionItem, sumDifferenceItem } from './mathReasoning';
 import { pictureItem } from './pictures';
 import { derivePrepTypeProgress } from './progress';
 import { type Rng } from './prng';
@@ -23,9 +24,14 @@ export const NUMBER_SENSE_TAGS = [
 ] as const;
 type NumberSenseTag = typeof NUMBER_SENSE_TAGS[number];
 
+/** C3 non-routine reasoning types: REASONING_PER_SESSION of them per session, weighted by weakness. */
+export const REASONING_TAGS = ['work-backwards', 'sum-difference', 'position', 'counting'] as const;
+export type ReasoningTag = typeof REASONING_TAGS[number];
+
 export const ORIGINAL_TOTAL = 10;
 export const ORIGINAL_FLOOR = 2;
-export const SESSION_COUNT = 16;
+export const REASONING_PER_SESSION = 2;
+export const SESSION_COUNT = ORIGINAL_TOTAL + NUMBER_SENSE_TAGS.length + REASONING_PER_SESSION;
 
 type Maker = (seed: number, difficulty: Difficulty) => PrepItem;
 
@@ -46,22 +52,30 @@ const NUMBER_SENSE_MAKERS: Readonly<Record<NumberSenseTag, Maker>> = {
     money: moneyItem,
 };
 
+const REASONING_MAKERS: Readonly<Record<ReasoningTag, Maker>> = {
+    'work-backwards': backwardsItem,
+    'sum-difference': sumDifferenceItem,
+    position: positionItem,
+    counting: countingItem,
+};
+
+/** 1 - accuracy of one skill; 0.5 when it has no attempts yet. */
+const weaknessOf = (state: PrepProgressState, tag: SkillTag) => {
+    const accuracy = derivePrepTypeProgress(state).find(p => p.skill === tag)?.accuracy ?? null;
+    return accuracy == null ? 0.5 : 1 - accuracy;
+};
+
 /** 1 + weakness; weakness = max over member tags of (null -> 0.5, else 1 - accuracy). Always >= 1. */
 export function originalTypeWeight(state: PrepProgressState, type: MathOriginalType): number {
-    const progress = derivePrepTypeProgress(state);
-    const weakness = Math.max(...MEMBER_TAGS[type].map(tag => {
-        const accuracy = progress.find(p => p.skill === tag)?.accuracy ?? null;
-        return accuracy == null ? 0.5 : 1 - accuracy;
-    }));
-    return 1 + weakness;
+    return 1 + Math.max(...MEMBER_TAGS[type].map(tag => weaknessOf(state, tag)));
 }
 
 /** Weighted draw of `n` distinct types from `types`, without replacement; ties favor earlier index. */
-function weightedDrawWithoutReplacement(
-    rng: Rng, types: readonly MathOriginalType[], weights: readonly number[], n: number,
-): MathOriginalType[] {
+function weightedDrawWithoutReplacement<T>(
+    rng: Rng, types: readonly T[], weights: readonly number[], n: number,
+): T[] {
     const pool = types.map((type, i) => ({ type, weight: weights[i] }));
-    const picked: MathOriginalType[] = [];
+    const picked: T[] = [];
     for (let k = 0; k < n; k++) {
         const total = pool.reduce((sum, p) => sum + p.weight, 0);
         let r = rng() * total;
@@ -89,6 +103,22 @@ export function originalTypeCounts(rng: Rng, state: PrepProgressState): Record<M
     return counts;
 }
 
+/** REASONING_PER_SESSION distinct reasoning types, weak ones more likely (weight 1 + weakness). */
+export function reasoningPicks(rng: Rng, state: PrepProgressState): ReasoningTag[] {
+    const weights = REASONING_TAGS.map(tag => 1 + weaknessOf(state, tag));
+    return weightedDrawWithoutReplacement(rng, REASONING_TAGS, weights, REASONING_PER_SESSION);
+}
+
+/**
+ * A reasoning type's level follows the kid on that type, not the session position: easy until 3 attempts
+ * and while under 50% right, hardest from 80%.
+ */
+export function reasoningDifficulty(state: PrepProgressState, tag: ReasoningTag): Difficulty {
+    const p = derivePrepTypeProgress(state).find(t => t.skill === tag);
+    if (!p || p.attempts < 3 || (p.accuracy ?? 0) < 0.5) return 1;
+    return (p.accuracy ?? 0) >= 0.8 ? 3 : 2;
+}
+
 /** Booklet-order makers for one session: the 4 original types (weighted counts), then one per number-sense tag. */
 function makerOrder(counts: Record<MathOriginalType, number>): Maker[] {
     const missingMakers: readonly Maker[] = [missingItem, balanceItem];
@@ -103,11 +133,16 @@ function makerOrder(counts: Record<MathOriginalType, number>): Maker[] {
 }
 
 /**
- * 16-item adaptive math learning session: the 4 original Stage-A types keep 10 slots (weighted by
- * weakness, floor 2 each), number-sense keeps its per-session floor (every tag exactly once).
+ * 18-item adaptive math learning session: the 4 original Stage-A types keep 10 slots (weighted by
+ * weakness, floor 2 each), number-sense keeps its per-session floor (every tag exactly once), and
+ * 2 reasoning types close the session, each at the level the kid has reached on it.
  * These items are all procedural (no bank ids), so there is no `seen` parameter (as in buildMath).
  */
 export function buildAdaptiveMath(rng: Rng, state: PrepProgressState): PrepItem[] {
     const makers = makerOrder(originalTypeCounts(rng, state));
+    for (const tag of reasoningPicks(rng, state)) {
+        const level = reasoningDifficulty(state, tag);
+        makers.push(seed => REASONING_MAKERS[tag](seed, level));
+    }
     return buildGuarded(rng, SESSION_COUNT, (seed, difficulty, i) => makers[i](seed, difficulty));
 }

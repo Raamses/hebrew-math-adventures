@@ -1,4 +1,5 @@
 import more from '../content/he/math-more.json';
+import reasoning from '../content/he/math-reasoning.json';
 import type { PrepStem } from '../types';
 
 /**
@@ -24,7 +25,17 @@ export const stemPair = (key: StemKey): Pair => more.stems[key] as unknown as Pa
 export const wordPair = (key: WordKey): Pair => more.wordProblems[key] as unknown as Pair;
 export const SHOP_ITEMS: readonly Pair[] = more.shopItems as unknown as Pair[];
 
-/** For tests: every pair in the file. */
+/** Reasoning stems (content/he/math-reasoning.json), one group per type: `reasonPair('position', 'total')`. */
+type Reasoning = Omit<typeof reasoning, '_provenance'>;
+export const reasonPair = <G extends keyof Reasoning>(group: G, key: keyof Reasoning[G]): Pair =>
+    reasoning[group][key] as unknown as Pair;
+
+/** Joins pairs (and plain fragments shared by both twins) into one pair. */
+export const joinPairs = (...parts: readonly Pair[]): Pair =>
+    [parts.map(p => p[0]).join(''), parts.map(p => p[1]).join('')];
+
+/** For tests: every pair in both files. */
 export const ALL_PAIRS: readonly Pair[] = [
     ...Object.values(more.stems), ...Object.values(more.wordProblems), ...more.shopItems,
+    ...Object.entries(reasoning).filter(([k]) => k !== '_provenance').flatMap(([, g]) => Object.values(g)),
 ] as unknown as Pair[];

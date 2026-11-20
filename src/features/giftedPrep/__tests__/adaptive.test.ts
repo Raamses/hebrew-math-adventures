@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
     buildAdaptiveMath, MATH_ORIGINAL_TYPES, NUMBER_SENSE_TAGS, ORIGINAL_FLOOR, ORIGINAL_TOTAL,
-    originalTypeCounts, SESSION_COUNT, type MathOriginalType,
+    originalTypeCounts, REASONING_PER_SESSION, REASONING_TAGS, reasoningDifficulty, reasoningPicks,
+    SESSION_COUNT, type MathOriginalType, type ReasoningTag,
 } from '../engine/adaptive';
 import { difficultyAt, stemKey } from '../engine/sections';
 import { mulberry32 } from '../engine/prng';
@@ -23,6 +24,8 @@ const ALL_NULL = makeState([]);
 const WEAK_WORD = makeState(ORIGINAL_SKILLS.map(s => attempt(s, s !== 'word-problem')));
 const MIXED_STATES = [ALL_ZERO, ALL_ONE, ALL_NULL, WEAK_WORD];
 
+const isReasoning = (skill: SkillTag): skill is ReasoningTag => (REASONING_TAGS as readonly SkillTag[]).includes(skill);
+
 function typeOf(skill: SkillTag): MathOriginalType | undefined {
     if (skill === 'add' || skill === 'sub') return 'exercise';
     if (skill === 'missing-number' || skill === 'word-problem' || skill === 'picture-puzzle') return skill;
@@ -36,16 +39,21 @@ describe('buildAdaptiveMath', () => {
         expect(b).toEqual(a);
     });
 
-    it('has 16 items: 10 original-type + 6 number-sense (each number-sense skill once, each original type >= 2)', () => {
+    it('has 18 items: 10 original-type + 6 number-sense (each once) + 2 different reasoning types', () => {
         const items = buildAdaptiveMath(mulberry32(7), WEAK_WORD);
+        expect(SESSION_COUNT).toBe(18);
         expect(items).toHaveLength(SESSION_COUNT);
         const originalCounts: Partial<Record<MathOriginalType, number>> = {};
         const senseSeen = new Set<string>();
+        const reasoning: SkillTag[] = [];
         for (const item of items) {
             const type = typeOf(item.skill);
             if (type) originalCounts[type] = (originalCounts[type] ?? 0) + 1;
+            else if (isReasoning(item.skill)) reasoning.push(item.skill);
             else senseSeen.add(item.skill);
         }
+        expect(reasoning).toHaveLength(REASONING_PER_SESSION);
+        expect(new Set(reasoning).size).toBe(REASONING_PER_SESSION);
         let originalTotal = 0;
         for (const type of MATH_ORIGINAL_TYPES) {
             expect(originalCounts[type] ?? 0).toBeGreaterThanOrEqual(ORIGINAL_FLOOR);
@@ -99,11 +107,53 @@ describe('buildAdaptiveMath', () => {
             items.forEach((item, i) => {
                 expect(keys.has(stemKey(item))).toBe(false);
                 keys.add(stemKey(item));
-                expect(item.difficulty).toBe(difficultyAt(i, SESSION_COUNT));
+                // reasoning items follow the kid's level on that type (easy for a new kid), the rest the session ramp
+                expect(item.difficulty).toBe(isReasoning(item.skill) ? 1 : difficultyAt(i, SESSION_COUNT));
                 expect(item.options).toHaveLength(4);
                 expect(item.answerIndex).toBeGreaterThanOrEqual(0);
                 expect(item.answerIndex).toBeLessThan(4);
             });
         }
+    });
+});
+
+describe('reasoning types in the adaptive session (C3)', () => {
+    const answered = (skill: SkillTag, right: number, wrong: number) => [
+        ...Array.from({ length: right }, () => attempt(skill, true)),
+        ...Array.from({ length: wrong }, () => attempt(skill, false)),
+    ];
+
+    it('level: easy until 3 attempts and under 50%, middle from 50%, hardest from 80%', () => {
+        expect(reasoningDifficulty(ALL_NULL, 'counting')).toBe(1);
+        expect(reasoningDifficulty(makeState(answered('counting', 2, 0)), 'counting')).toBe(1);
+        expect(reasoningDifficulty(makeState(answered('counting', 1, 2)), 'counting')).toBe(1);
+        expect(reasoningDifficulty(makeState(answered('counting', 2, 2)), 'counting')).toBe(2);
+        expect(reasoningDifficulty(makeState(answered('counting', 4, 1)), 'counting')).toBe(3);
+        // another type's record does not move this one
+        expect(reasoningDifficulty(makeState(answered('position', 5, 0)), 'counting')).toBe(1);
+    });
+
+    it('a session item uses that level', () => {
+        const strong = makeState(REASONING_TAGS.flatMap(t => answered(t, 5, 0)));
+        for (let seed = 1; seed <= 20; seed++) {
+            const items = buildAdaptiveMath(mulberry32(seed), strong).filter(i => isReasoning(i.skill));
+            items.forEach(i => expect(i.difficulty, i.id).toBe(3));
+        }
+    });
+
+    it('draws a weak reasoning type more often, and every type still appears', () => {
+        const weakCounting = makeState([
+            ...answered('counting', 0, 4),
+            ...REASONING_TAGS.filter(t => t !== 'counting').flatMap(t => answered(t, 4, 0)),
+        ]);
+        const hits: Record<string, number> = {};
+        for (let seed = 1; seed <= 4000; seed++) {
+            const picks = reasoningPicks(mulberry32(seed), weakCounting);
+            expect(new Set(picks).size).toBe(REASONING_PER_SESSION);
+            picks.forEach(p => { hits[p] = (hits[p] ?? 0) + 1; });
+        }
+        // weights 2 vs 1 (total 5), 2 drawn: the weak type is in 70% of sessions, each strong one in about 43%
+        expect(hits.counting).toBeGreaterThan(2650);
+        for (const t of REASONING_TAGS.filter(x => x !== 'counting')) expect(hits[t] ?? 0, t).toBeGreaterThan(1550);
     });
 });
