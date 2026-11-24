@@ -129,11 +129,13 @@ describe('gifted-prep Hebrew banks', () => {
             ({ ...base.questions[0], id: `${base.id}-q${n}`, skill, options: [key, 'א1', 'א2', 'א3'], answerIndex: 0 });
         const passage = (key: string): BankPassage =>
             ({ ...base, questions: [q(1, 'main-idea', 'שמש ירח כוכב שמיים'), q(2, 'inference', key)] });
-        expect(keyRepeats(passage('כי שמש ירח כוכב ים'))).toEqual([`${base.id}-q2 repeats ${base.id}-q1`]); // 3 of 4 = 0.75
-        expect(keyRepeats(passage('שמש ירח ים חול'))).toEqual([]); // 2 of 4 = 0.5
-        expect(keyRepeats(passage('שמש'))).toEqual([]); // 1 shared word, even at 100%
-        expect(keyRepeats(passage('הַשֶּׁמֶשׁ, שמש; ירח!'))).toEqual([]); // niqqud and punctuation dropped: 2 words of 3 = 0.67
-        expect(keyRepeats(passage('שמש, ירח!'))).toEqual([`${base.id}-q2 repeats ${base.id}-q1`]); // 2 of 2
+        // No exceptions here, so the cases do not depend on KEY_REPEAT_REVIEWED.
+        const flags = (key: string) => keyRepeats(passage(key), new Set());
+        expect(flags('כי שמש ירח כוכב ים')).toEqual([`${base.id}-q2 repeats ${base.id}-q1`]); // 3 of 4 = 0.75
+        expect(flags('שמש ירח ים חול')).toEqual([]); // 2 of 4 = 0.5
+        expect(flags('שמש')).toEqual([]); // 1 shared word, even at 100%
+        expect(flags('הַשֶּׁמֶשׁ, שמש; ירח!')).toEqual([]); // השמש (with the article) is its own word, not שמש: 2 shared of 3 = 0.67
+        expect(flags('שמש, ירח!')).toEqual([`${base.id}-q2 repeats ${base.id}-q1`]); // 2 of 2
     });
 
     it('ids are unique', () => {
