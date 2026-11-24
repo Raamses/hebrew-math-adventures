@@ -64,9 +64,10 @@ describe('wider math pool: 10k-seed sweep per template and difficulty', () => {
         const kinds = new Set<string>();
         for (let seed = 1; seed <= MAKERS.length * 3; seed++) kinds.add(mathItem(seed, 2).kind);
         expect([...kinds].sort()).toEqual([
-            'math-backwards', 'math-calendar', 'math-compare', 'math-counting', 'math-double-half', 'math-exercise',
-            'math-missing', 'math-money', 'math-odd-one-out', 'math-parity', 'math-picture', 'math-place-value',
-            'math-position', 'math-pyramid', 'math-sequence', 'math-sum-difference', 'math-word',
+            'math-backwards', 'math-calendar', 'math-clues', 'math-compare', 'math-counting', 'math-double-half',
+            'math-exercise', 'math-hidden-digit', 'math-machine', 'math-missing', 'math-money', 'math-odd-one-out',
+            'math-parity', 'math-picture', 'math-place-value', 'math-position', 'math-pyramid', 'math-sequence',
+            'math-sum-difference', 'math-word',
         ]);
     });
 
