@@ -36,6 +36,27 @@ function PyramidView({ rows }: { readonly rows: readonly (readonly string[])[] }
     );
 }
 
+/** Circle centres for the triangle cells, in the order of PrepStem.triangle (viewBox 240 × 210). */
+const TRIANGLE_AT: readonly (readonly [number, number])[] = [[120, 28], [74, 105], [28, 182], [120, 182], [212, 182], [166, 105]];
+
+/** Magic triangle: a drawn triangle with 6 circles, corners and middles of each side. Always LTR (numbers). */
+function TriangleView({ cells }: { readonly cells: readonly string[] }) {
+    return (
+        <div dir="ltr" className="unicode-bidi-isolate rounded-2xl bg-white border border-slate-200 py-3 flex justify-center" data-testid="prep-triangle">
+            <svg viewBox="0 0 240 210" width={240} height={210} role="img" aria-label={cells.map(c => c || 'ריק').join(', ')}>
+                <polygon points="120,28 28,182 212,182" fill="none" stroke="#f59e0b" strokeWidth={4} strokeLinejoin="round" />
+                {cells.map((c, i) => (
+                    <g key={i} data-testid="prep-triangle-cell">
+                        <circle cx={TRIANGLE_AT[i][0]} cy={TRIANGLE_AT[i][1]} r={22} fill={c === '?' ? '#eef2ff' : '#fffbeb'} stroke={c === '?' ? '#6366f1' : '#f59e0b'} strokeWidth={3} />
+                        <text x={TRIANGLE_AT[i][0]} y={TRIANGLE_AT[i][1]} textAnchor="middle" dominantBaseline="central"
+                            className="font-rubik" fontSize={c === '?' ? 24 : 20} fontWeight={800} fill={c === '?' ? '#4338ca' : '#1e293b'}>{c}</text>
+                    </g>
+                ))}
+            </svg>
+        </div>
+    );
+}
+
 /** Passage (if any), question text and an LTR-isolated equation (vault/rules/rtl-hebrew.md). */
 export function ItemStem({ stem, niqqud = false }: ItemStemProps) {
     const pick = (plain?: string, voc?: string) => pickText(niqqud, plain, voc);
@@ -51,7 +72,7 @@ export function ItemStem({ stem, niqqud = false }: ItemStemProps) {
                 </article>
             )}
             {stem.text && (
-                <p className="text-xl font-bold text-slate-800 leading-snug" data-testid="prep-question">{pick(stem.text, stem.textNiqqud)}</p>
+                <p className="text-xl font-bold text-slate-800 leading-snug whitespace-pre-line" data-testid="prep-question">{pick(stem.text, stem.textNiqqud)}</p>
             )}
             {stem.pictureLines && (
                 <div className="rounded-2xl bg-white border border-slate-200 py-3 space-y-2" data-testid="prep-picture-lines">
@@ -63,6 +84,7 @@ export function ItemStem({ stem, niqqud = false }: ItemStemProps) {
                 </div>
             )}
             {stem.pyramid && <PyramidView rows={stem.pyramid} />}
+            {stem.triangle && <TriangleView cells={stem.triangle} />}
             {stem.figures && <FigureBoardView board={stem.figures} />}
             {stem.equation && (
                 <div

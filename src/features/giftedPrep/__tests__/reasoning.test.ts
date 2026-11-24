@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { backwardsItem, coinWays, countingItem, positionItem, sumDifferenceItem } from '../engine/mathReasoning';
 import { calendarItem, parityItem, pyramidItem } from '../engine/mathReasoning2';
 import { clueHolds, cluesItem, hiddenDigitItem, machineItem } from '../engine/mathReasoning3';
+import { scalesItem, triangleItem } from '../engine/mathReasoning4';
 import { stripNiqqud as strip } from '../engine/niqqud';
 import { pyramidText } from '../engine/mistakeDetails';
 import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
@@ -12,7 +13,7 @@ const SEEDS = Number(process.env.PREP_SWEEP ?? 10_000);
 const DIFFS: Difficulty[] = [1, 2, 3];
 const MAKERS = {
     backwardsItem, sumDifferenceItem, positionItem, countingItem, parityItem, pyramidItem, calendarItem,
-    machineItem, hiddenDigitItem, cluesItem,
+    machineItem, hiddenDigitItem, cluesItem, scalesItem, triangleItem,
 };
 const WEEK = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
 
@@ -35,8 +36,10 @@ function problems(item: PrepItem): string[] {
     const out: string[] = [];
     const say = (ok: boolean, msg: string) => { if (!ok) out.push(`${item.id}: ${msg} | ${item.stem.text} [${item.options}]`); };
     say(item.options.length === 4 && new Set(item.options).size === 4, 'options not 4 distinct');
-    say(item.options.every(o => /^\d+$/.test(o) && Number(o) <= 100) || item.options.every(o => WEEK.includes(o)),
-        'options are neither whole numbers 0–100 nor day names');
+    say(item.options.every(o => /^\d+$/.test(o) && Number(o) <= 100) || item.options.every(o => WEEK.includes(o))
+        || (item.kind === 'math-scales' && item.options.every(o => !/[\d\u05D0-\u05EA]/.test(o))),
+        'options are neither whole numbers 0–100, day names nor (scales) pictures');
+    say(!item.stem.triangle || (item.stem.triangle.length === 6 && item.stem.triangle.filter(c => c === '?').length <= 1), 'triangle is not 6 circles with at most one "?"');
     say(!item.optionsNiqqud || item.optionsNiqqud.every((o, i) => hasNiqqud(o) && strip(o) === item.options[i]), 'option niqqud twin differs');
     say((item.stem.pyramid ?? []).flat().every(c => c === '' || c === '?' || (/^\d+$/.test(c) && Number(c) <= 100)), 'pyramid brick is not a number 0–100, "?" or empty');
     say(!item.stem.pyramid || item.stem.pyramid.every((r, i) => r.length === i + 1), 'pyramid rows are not 1, 2, 3 bricks');
@@ -79,6 +82,8 @@ describe('C3 reasoning types: 10k-seed sweep per type and difficulty', () => {
 /** Which template a stem came from, by a phrase only that template uses. */
 const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
     machineItem: [['pairs', /^\d+ → \d+$/]],
+    scalesItem: [['order', /הכי (כבד|קל)/], ['mixed', /קל יותר/], ['trade', /שוקלים/]],
+    triangleItem: [['given', /בכל צלע הוא \d+\. איזה/], ['equal', /שווה/], ['corners', /בפינות/]],
     cluesItem: [['two', /^[^.]+\.( [^.]+\.){2} איזה/], ['three', /^[^.]+\.( [^.]+\.){3} איזה/], ['digitSum', /מקבלים/]],
     hiddenDigitItem: [['onesPlus', /^\d⭐ \+ \d\d = /], ['twoPlaces', /^⭐\d \+ \d⭐ = /], ['carry', /^\d⭐ \+ \d\d = /], ['minus', / − /]],
     parityItem: [['odd2', /חיבר \d+ מספרים אי־זוגיים\. /], ['oddBound', /אי־זוגיים, וכל/], ['mixed', /אי־זוגיים ו־/], ['frog', /צפרדע/]],
@@ -91,6 +96,8 @@ const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
 };
 const EXPECTED: Readonly<Record<string, Readonly<Record<Difficulty, readonly string[]>>>> = {
     machineItem: { 1: ['pairs'], 2: ['pairs'], 3: ['pairs'] },
+    scalesItem: { 1: ['order'], 2: ['order', 'trade'], 3: ['order', 'mixed', 'trade'] },
+    triangleItem: { 1: ['given'], 2: ['equal'], 3: ['equal', 'corners'] },
     cluesItem: { 1: ['two'], 2: ['three', 'digitSum'], 3: ['three', 'digitSum'] },
     // onesPlus and carry share a shape; the carry itself is checked by the explanation sweep
     hiddenDigitItem: { 1: ['onesPlus', 'carry'], 2: ['onesPlus', 'carry', 'twoPlaces'], 3: ['onesPlus', 'carry', 'twoPlaces', 'minus'] },
@@ -113,7 +120,9 @@ describe('C3 reasoning types: levels', () => {
             const seen = new Set<string>();
             for (let seed = 1; seed <= 600; seed++) {
                 const it = make(seed, d);
-                const text = it.stem.pyramid ? pyramidText(it.stem.pyramid) : it.stem.equation ?? it.stem.pictureLines?.[0] ?? it.stem.text ?? '';
+                const text = it.stem.pyramid ? pyramidText(it.stem.pyramid)
+                    : it.kind === 'math-scales' || it.kind === 'math-triangle' ? [it.stem.text, ...(it.stem.pictureLines ?? [])].join(' | ')
+                    : it.stem.equation ?? it.stem.pictureLines?.[0] ?? it.stem.text ?? '';
                 VARIANTS[name].forEach(([v, re]) => { if (re.test(text)) seen.add(v); });
             }
             expect([...seen].sort(), `${name} d${d}`).toEqual([...EXPECTED[name][d]].sort());
@@ -225,6 +234,23 @@ describe('C5: distractors are named wrong paths', () => {
             for (const v of wrong(it).map(Number)) expect(clues.filter(c => !clueHolds(c, v)), `${t} ${v}`).toHaveLength(1);
         }
     });
+    it('clues with 2 clues (d1): two wrong options each break one clue, the third breaks both', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = cluesItem(seed, 1);
+            const t = it.stem.text!;
+            const n = (re: RegExp) => Number(t.match(re)?.[1]);
+            const clues = [
+                ...(/הוא זוגי\./.test(t) ? [{ kind: 'even' as const, n: 0 }] : []),
+                ...(/אי־זוגי\./.test(t) ? [{ kind: 'odd' as const, n: 0 }] : []),
+                ...(/גדול מ־/.test(t) ? [{ kind: 'gt' as const, n: n(/גדול מ־(\d+)/) }] : []),
+                ...(/העשרות שלו היא/.test(t) ? [{ kind: 'tens' as const, n: n(/העשרות שלו היא (\d)/) }] : []),
+                ...(/האחדות שלו היא/.test(t) ? [{ kind: 'ones' as const, n: n(/האחדות שלו היא (\d)/) }] : []),
+            ];
+            expect(clues).toHaveLength(2);
+            const broken = wrong(it).map(Number).map(v => clues.filter(c => !clueHolds(c, v)).length).sort();
+            expect(broken, t).toEqual([1, 1, 2]);
+        }
+    });
     it('machine with doubling: "took the first pair difference as the rule" is an option whenever it is a new number', () => {
         let checked = 0;
         for (let seed = 1; seed <= 1000; seed++) {
@@ -242,6 +268,33 @@ describe('C5: distractors are named wrong paths', () => {
     it('hidden digit: options are always single digits', () => {
         for (let seed = 1; seed <= 1000; seed++) {
             for (const d of [1, 2, 3] as const) expect(hiddenDigitItem(seed, d).options.every(o => /^\d$/.test(o))).toBe(true);
+        }
+    });
+});
+
+describe('C5 part B: named distractors and shape', () => {
+    const wrong = (it: PrepItem) => it.options.filter((_, i) => i !== it.answerIndex);
+    it('triangle corner sum: "one side" and "forgot to take away the six numbers" are options', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = triangleItem(seed, 3);
+            if (!/בפינות/.test(it.stem.text!)) continue;
+            const n = Number(it.stem.text!.match(/בכל צלע הוא (\d+)/)![1]);
+            expect(wrong(it)).toContain(String(n));
+            if (3 * n <= 110) expect(wrong(it)).toContain(String(3 * n));
+        }
+    });
+    it('trading: "added the numbers instead of trading" is an option when it differs from the answer', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = scalesItem(seed, 3);
+            if (!it.stem.pictureLines) continue;
+            const added = it.stem.pictureLines.map(l => l.split(' = ')[1].split(' ').length).reduce((a, b) => a + b, 0);
+            if (String(added) !== it.options[it.answerIndex]) expect(wrong(it)).toContain(String(added));
+        }
+    });
+    it('ordering: the four options are the four things in the sentences', () => {
+        for (let seed = 1; seed <= 500; seed++) {
+            const it = scalesItem(seed, 1);
+            for (const o of it.options) expect(it.stem.text).toContain(o);
         }
     });
 });

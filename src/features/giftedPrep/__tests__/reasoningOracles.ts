@@ -215,6 +215,64 @@ function clues(item: PrepItem): number[] {
     return item.options.map(Number).filter(v => checks.every(c => c(v)));
 }
 
+/** Scales: orders the things by every comparison (and what follows from them), or trades balance by balance. */
+function scales(item: PrepItem): (number | string)[] {
+    const text = item.stem.text ?? '';
+    const lines = item.stem.pictureLines;
+    if (lines) {
+        // "🍉 = 🍍 🍍": one of the left weighs like the right; count the smallest kind in one top thing
+        const worth = new Map<string, Map<string, number>>();
+        for (const l of lines) {
+            const [left, right] = l.split(' = ');
+            const parts = right.split(' ');
+            worth.set(left, new Map([[parts[0], parts.length]]));
+        }
+        const target = text.match(/כמה (\S+) שוקלים/)![1];
+        const top = text.match(/כמו (\S+) אחד/)![1];
+        let kind = top, count = 1;
+        while (kind !== target) {
+            const [[next, n]] = [...worth.get(kind)!];
+            kind = next; count *= n;
+        }
+        return [count];
+    }
+    const heavier = new Set<string>();
+    for (const m of text.matchAll(/(\S+) (כבד|קל) יותר מ־(\S+)\./g)) heavier.add(m[2] === 'כבד' ? `${m[1]}>${m[3]}` : `${m[3]}>${m[1]}`);
+    const things = [...new Set([...heavier].flatMap(p => p.split('>')))];
+    // close under "if a > b and b > c then a > c" (Floyd-Warshall order: the middle thing outermost)
+    for (const b of things) for (const a of things) for (const c of things) if (heavier.has(`${a}>${b}`) && heavier.has(`${b}>${c}`)) heavier.add(`${a}>${c}`);
+    const heaviest = /הכי כבד/.test(text);
+    return things.filter(t => things.every(o => o === t || heavier.has(heaviest ? `${t}>${o}` : `${o}>${t}`)));
+}
+
+/** Magic triangle: a hidden circle tried 0–100, or every arrangement of the six listed numbers. */
+function triangle(item: PrepItem): number[] {
+    const sides = [[0, 1, 2], [2, 3, 4], [4, 5, 0]];
+    const text = item.stem.text ?? '';
+    const cells = item.stem.triangle ?? [];
+    const said = text.match(/בכל צלע הוא (\d+)/);
+    if (cells.every(c => c === '')) {
+        const list = nums(text.match(/המספרים ([\d, ]+) בעיגולים/)![1]);
+        const n = Number(said![1]);
+        const sums = new Set<number>();
+        const go = (put: number[], left: number[]) => {
+            if (!left.length) {
+                if (sides.every(s => s.reduce((t, i) => t + put[i], 0) === n)) sums.add(put[0] + put[2] + put[4]);
+                return;
+            }
+            left.forEach((v, i) => go([...put, v], [...left.slice(0, i), ...left.slice(i + 1)]));
+        };
+        go([], list);
+        return [...sums];
+    }
+    const at = cells.indexOf('?');
+    return range(0, 100).filter(v => {
+        const filled = cells.map((c, i) => (i === at ? v : Number(c)));
+        const s = sides.map(side => side.reduce((t, i) => t + filled[i], 0));
+        return s.every(x => x === s[0]) && (!said || s[0] === Number(said[1]));
+    });
+}
+
 const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | string)[]>> = {
     'math-backwards': it => backwards(it.stem.text ?? ''),
     'math-sum-difference': it => sumDifference(it.stem.text ?? ''),
@@ -226,6 +284,8 @@ const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | st
     'math-machine': machine,
     'math-hidden-digit': hiddenDigit,
     'math-clues': clues,
+    'math-scales': scales,
+    'math-triangle': triangle,
 };
 
 /** Every value the story allows (a well-made item has exactly one); null for kinds this file does not cover. */

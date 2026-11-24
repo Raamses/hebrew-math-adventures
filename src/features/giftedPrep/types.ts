@@ -28,6 +28,8 @@ export type PrepKind =
     | 'math-machine'         // number machine: find the in→out rule
     | 'math-hidden-digit'    // "4⭐ + ⭐5 = 87": which digit is ⭐
     | 'math-clues'           // "I'm thinking of a number" with 2-3 clues
+    | 'math-scales'          // order by weight from comparisons; trade along balances
+    | 'math-triangle'        // magic triangle: every side has the same sum
     | 'reading'              // question about a passage
     | 'word-meaning'
     | 'sentence-completion';
@@ -37,7 +39,7 @@ export const SKILL_TAGS = [
     'add', 'sub', 'missing-number', 'word-problem', 'picture-puzzle',
     'number-pattern', 'compare', 'odd-one-out', 'place-value', 'double-half', 'money',
     'work-backwards', 'sum-difference', 'position', 'counting', 'parity', 'number-wall', 'calendar',
-    'number-machine', 'hidden-digit', 'clues',
+    'number-machine', 'hidden-digit', 'clues', 'scales', 'magic-triangle',
     'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
     'word-meaning', 'sentence-completion',
 ] as const;
@@ -57,6 +59,8 @@ export interface PrepStem {
     readonly pictureLines?: readonly string[];
     /** Number pyramid, top row first: a number, '?' (the asked brick) or '' (an empty brick). Drawn as bricks. */
     readonly pyramid?: readonly (readonly string[])[];
+    /** Magic triangle, 6 circles: top, left middle, bottom left, bottom middle, bottom right, right middle ('' empty, '?' asked). */
+    readonly triangle?: readonly string[];
     /** Shape puzzles: a row, a 3×3 grid or an A:B::C:? analogy of drawn figures, `null` = the "?" cell (components/PrepFigure.tsx). */
     readonly figures?: FigureBoard;
     /** Reading items carry their passage so the player can show it above the question. */
