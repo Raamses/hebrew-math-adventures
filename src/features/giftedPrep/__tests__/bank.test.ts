@@ -50,6 +50,26 @@ function checkPassage(p: BankPassage) {
 
 const keyOf = (q: BankQuestion) => q.options[q.answerIndex];
 
+// A key that restates the passage's main-idea key gives the answer away twice (#315, #317 reviews).
+// Content words only: niqqud and punctuation dropped, very common function words ignored.
+const KEY_STOP = new Set(['כי', 'של', 'שלו', 'שלה', 'את', 'על', 'עם', 'לא', 'הוא', 'היא', 'זה', 'גם', 'כל', 'אבל', 'או', 'יש', 'מה', 'אם', 'רק', 'כדי', 'לו', 'לה', 'אל', 'מאוד']);
+const contentWords = (s: string) => new Set(stripNiqqud(s).replace(/[^א-ת]+/g, ' ').split(' ').filter(w => w.length > 1 && !KEY_STOP.has(w)));
+// Reviewed and shipped before the guard existed; q2 asks why, q1 asks for a title. Do not add to this list.
+const KEY_REPEAT_REVIEWED = new Set(['rc-055-q2']);
+function keyRepeats(p: BankPassage): string[] {
+    const out: string[] = [];
+    for (const m of p.questions.filter(q => q.skill === 'main-idea')) {
+        const mk = contentWords(keyOf(m));
+        for (const q of p.questions) {
+            if (q === m || KEY_REPEAT_REVIEWED.has(q.id)) continue;
+            const k = contentWords(keyOf(q));
+            const shared = [...k].filter(w => mk.has(w)).length;
+            if (shared >= 2 && shared / Math.min(k.size, mk.size) >= 0.75) out.push(`${q.id} repeats ${m.id}`);
+        }
+    }
+    return out;
+}
+
 describe('gifted-prep Hebrew banks', () => {
     const shippedP = parseReadingBank(shippedReading);
     const shippedL = parseLanguageBank(shippedLanguage);
@@ -93,6 +113,14 @@ describe('gifted-prep Hebrew banks', () => {
     it('rejects a content typo in skill instead of casting it', () => {
         const bad = { items: [{ ...draftLanguage.items[0], skill: 'litteral' }] };
         expect(() => parseLanguageBank(bad)).toThrow(/unknown skill/);
+    });
+
+    it('no key restates the main-idea key of its passage', () => {
+        expect([...shippedP, ...draftP].flatMap(keyRepeats)).toEqual([]);
+        const p = draftP[0];
+        const m = p.questions.find(q => q.skill === 'main-idea') ?? p.questions[0];
+        const twin = { ...p, questions: [{ ...m, skill: 'main-idea' as const }, { ...m, id: `${p.id}-q99`, skill: 'inference' as const }] };
+        expect(keyRepeats(twin)).toHaveLength(1);
     });
 
     it('ids are unique', () => {
