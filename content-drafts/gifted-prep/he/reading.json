@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New passages rc-041..rc-080 (2026-11-16): vocalized by Claude, then cross-checked word by word against Dicta Nakdan on 2026-11-16 (about 7,900 words; spelling-only differences such as ktiv male vs chaser ignored; 321 disagreements adjudicated in context by Claude: 60 fields in rc-041..rc-080 corrected, e.g. missing dagesh and wrong noun patterns, the rest kept where Dicta misread the context). Rule for the whole bank: a form corrected in this pass replaces every occurrence of that word, round 1 included, which corrected 17 more fields (77 in all) in (rc-002, rc-003, rc-005, rc-013, rc-018, rc-020, rc-024, rc-034, rc-036, rc-040), and one lemma keeps one stem (the coral word now uses holam in singular and plural). Their niqqud has not been human-reviewed either. Round 3, rc-081..rc-100 (drafts 2026-11-17): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-17: 4,576 words, 4,353 agreed; 223 disagreements adjudicated in context by Claude. 39 fields corrected (e.g. חֵדֶק, עֲטַלֵּפִים, הֶעָלִים, הִנִּיחַ, נִיצֵּחַ, סַחֲטוּ, אַבְקָה, construct אַחַד); the rest kept where Dicta misread the context (article, imperative vs past, names) or differed only in spelling convention, and where two forms are both acceptable the form already in the bank was kept (לְהַחְזִיק, מִלְמַעְלָה). None of the corrected wrong forms occurs in rounds 1-2. Their niqqud has not been human-reviewed either. Round 4, rc-101..rc-120 (drafts 2026-11-20): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-20: 4,529 words, 4,315 agreed; 214 disagreements adjudicated in context by Claude. 6 forms corrected in 21 places (הַחֲתוּלָה, מַאגְמָה, לַיְּלָדִים, חוֹכְמָה, בַּהַתְחָלָה, כְּשֶׁנּוֹצַר); the rest kept where Dicta misread the context (names, verb vs noun, imperative vs past) or differed only in spelling convention, and where two forms are both acceptable the form already in the bank was kept (סַבְתָּא, מָה עָשָׂה). Their niqqud has not been human-reviewed either. Round 5, rc-121..rc-140 (drafts 2026-11-24): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-24: 4,624 words, 4,431 agreed; 193 disagreements adjudicated in context by Claude. 7 forms corrected in 15 places (עֲקוּמָּה, נַהֶגֶת, כִּיוּוּן, סִירֵנָה, בַּשִּׁינַּיִים, מַחֲזִיק, and dagesh kal in דּוֹדָה after a consonant-final word or at the start of a field); the rest kept where Dicta misread the context (names, gender, verb vs noun, imperative vs past) or differed only in spelling convention or tokenization, and where two forms are both acceptable the form already in the bank was kept (סַבְתָּא, מָה, holam for kamatz katan). Their niqqud has not been human-reviewed either.",
+ "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New passages rc-041..rc-080 (2026-11-16): vocalized by Claude, then cross-checked word by word against Dicta Nakdan on 2026-11-16 (about 7,900 words; spelling-only differences such as ktiv male vs chaser ignored; 321 disagreements adjudicated in context by Claude: 60 fields in rc-041..rc-080 corrected, e.g. missing dagesh and wrong noun patterns, the rest kept where Dicta misread the context). Rule for the whole bank: a form corrected in this pass replaces every occurrence of that word, round 1 included, which corrected 17 more fields (77 in all) in (rc-002, rc-003, rc-005, rc-013, rc-018, rc-020, rc-024, rc-034, rc-036, rc-040), and one lemma keeps one stem (the coral word now uses holam in singular and plural). Their niqqud has not been human-reviewed either. Round 3, rc-081..rc-100 (drafts 2026-11-17): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-17: 4,576 words, 4,353 agreed; 223 disagreements adjudicated in context by Claude. 39 fields corrected (e.g. חֵדֶק, עֲטַלֵּפִים, הֶעָלִים, הִנִּיחַ, נִיצֵּחַ, סַחֲטוּ, אַבְקָה, construct אַחַד); the rest kept where Dicta misread the context (article, imperative vs past, names) or differed only in spelling convention, and where two forms are both acceptable the form already in the bank was kept (לְהַחְזִיק, מִלְמַעְלָה). None of the corrected wrong forms occurs in rounds 1-2. Their niqqud has not been human-reviewed either. Round 4, rc-101..rc-120 (drafts 2026-11-20): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-20: 4,529 words, 4,315 agreed; 214 disagreements adjudicated in context by Claude. 6 forms corrected in 21 places (הַחֲתוּלָה, מַאגְמָה, לַיְּלָדִים, חוֹכְמָה, בַּהַתְחָלָה, כְּשֶׁנּוֹצַר); the rest kept where Dicta misread the context (names, verb vs noun, imperative vs past) or differed only in spelling convention, and where two forms are both acceptable the form already in the bank was kept (סַבְתָּא, מָה עָשָׂה). Their niqqud has not been human-reviewed either. Round 5, rc-121..rc-140 (drafts 2026-11-24): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-24: 4,613 words, 4,424 agreed; 189 disagreements adjudicated in context by Claude. 7 forms corrected in 15 places (עֲקוּמָּה, נַהֶגֶת, כִּיוּוּן, סִירֵנָה, בַּשִּׁינַּיִים, מַחֲזִיק, and dagesh kal in דּוֹדָה after a consonant-final word or at the start of a field); the rest kept where Dicta misread the context (names, gender, verb vs noun, imperative vs past) or differed only in spelling convention or tokenization, and where two forms are both acceptable the form already in the bank was kept (סַבְתָּא, מָה, holam for kamatz katan). Their niqqud has not been human-reviewed either.",
  "passages": [
   {
    "id": "rc-001",
@@ -11132,18 +11132,18 @@
       "אביב הציע ליונתן לשבת לידו",
       "המדריכה ניגנה בגיטרה",
       "סבא בא לבקר",
-      "כולם שרו סביב מדורה"
+      "יונתן בכה כי התגעגע הביתה"
      ],
      "answerIndex": 0,
-     "explanation": "אחרי הלילה הראשון, ״בבוקר״, אביב הציע ליונתן לשבת לידו. המדורה והגיטרה היו בערב, וסבא עוד לא בא.",
+     "explanation": "אחרי הלילה הראשון, ״בבוקר״, אביב הציע ליונתן לשבת לידו. יונתן בכה עוד בלילה, הגיטרה הייתה בערב, וסבא עוד לא בא.",
      "skill": "sequence",
      "stemNiqqud": "מָה קָרָה בַּבּוֹקֶר שֶׁאַחֲרֵי הַלַּיְלָה הָרִאשׁוֹן?",
-     "explanationNiqqud": "אַחֲרֵי הַלַּיְלָה הָרִאשׁוֹן, ״בַּבּוֹקֶר״, אָבִיב הִצִּיעַ לְיוֹנָתָן לָשֶׁבֶת לְיָדוֹ. הַמְּדוּרָה וְהַגִּיטָרָה הָיוּ בָּעֶרֶב, וְסַבָּא עוֹד לֹא בָּא.",
+     "explanationNiqqud": "אַחֲרֵי הַלַּיְלָה הָרִאשׁוֹן, ״בַּבּוֹקֶר״, אָבִיב הִצִּיעַ לְיוֹנָתָן לָשֶׁבֶת לְיָדוֹ. יוֹנָתָן בָּכָה עוֹד בַּלַּיְלָה, הַגִּיטָרָה הָיְיתָה בָּעֶרֶב, וְסַבָּא עוֹד לֹא בָּא.",
      "optionsNiqqud": [
       "אָבִיב הִצִּיעַ לְיוֹנָתָן לָשֶׁבֶת לְיָדוֹ",
       "הַמַּדְרִיכָה נִיגְּנָה בְּגִיטָרָה",
       "סַבָּא בָּא לְבַקֵּר",
-      "כּוּלָּם שָׁרוּ סְבִיב מְדוּרָה"
+      "יוֹנָתָן בָּכָה כִּי הִתְגַּעְגֵּעַ הַבַּיְתָה"
      ]
     },
     {
@@ -11687,49 +11687,49 @@
     },
     {
      "id": "rc-123-q3",
-     "stem": "למה נתנה הדיילת לאלה סוכרייה?",
+     "stem": "למה עזרה הדיילת לאלה?",
      "options": [
       "כי אלה הייתה רעבה",
       "כי היא ראתה שלאלה כואבות האוזניים",
-      "כי זה היה יום ההולדת של אלה",
+      "כי אלה ביקשה עזרה בקול",
       "כי אמא ביקשה ממנה"
      ],
      "answerIndex": 1,
      "explanation": "הדיילת ראתה את הפנים העצובות של אלה, ואמרה שהסוכרייה עוזרת לאוזניים.",
      "skill": "inference",
-     "stemNiqqud": "לָמָּה נָתְנָה הַדַּיֶּילֶת לְאֵלָה סוּכָּרִיָּיה?",
+     "stemNiqqud": "לָמָּה עָזְרָה הַדַּיֶּילֶת לְאֵלָה?",
      "explanationNiqqud": "הַדַּיֶּילֶת רָאֲתָה אֶת הַפָּנִים הָעֲצוּבוֹת שֶׁל אֵלָה, וְאָמְרָה שֶׁהַסּוּכָּרִיָּיה עוֹזֶרֶת לָאוֹזְנַיִים.",
      "optionsNiqqud": [
       "כִּי אֵלָה הָיְיתָה רְעֵבָה",
       "כִּי הִיא רָאֲתָה שֶׁלְּאֵלָה כּוֹאֲבוֹת הָאוֹזְנַיִים",
-      "כִּי זֶה הָיָה יוֹם הַהוּלֶּדֶת שֶׁל אֵלָה",
+      "כִּי אֵלָה בִּיקְּשָׁה עֶזְרָה בְּקוֹל",
       "כִּי אִמָּא בִּיקְּשָׁה מִמֶּנָּה"
      ]
     },
     {
      "id": "rc-123-q4",
-     "stem": "למה העננים נראו לאלה כמו שדה של צמר גפן?",
+     "stem": "העננים היו ״כמו שדה של צמר גפן״. מה הסיפור רוצה שנדמיין?",
      "options": [
-      "כי מתחת למטוס היה שדה",
-      "כי בעננים גדל צמר גפן",
-      "כי העננים נראו לבנים ורכים, כמו צמר גפן",
-      "כי העננים היו קרים"
+      "ענן אחד קטן ליד החלון",
+      "עננים אפורים של סערה",
+      "הרבה עננים רכים שפרושים למטה, כמו שטיח",
+      "שדה אמיתי עם צמחים"
      ],
      "answerIndex": 2,
-     "explanation": "בסיפור כתוב שהעננים היו לבנים ורכים. גם צמר גפן לבן ורך, ולכן הם נראו כמו שדה של צמר גפן.",
+     "explanation": "שדה הוא שטח גדול ורחב. הסיפור לא מתכוון לשדה אמיתי, אלא לכך שהיו הרבה עננים רכים שפרושים מתחת למטוס.",
      "skill": "inference",
-     "stemNiqqud": "לָמָּה הָעֲנָנִים נִרְאוּ לְאֵלָה כְּמוֹ שָׂדֶה שֶׁל צֶמֶר גֶּפֶן?",
-     "explanationNiqqud": "בַּסִּיפּוּר כָּתוּב שֶׁהָעֲנָנִים הָיוּ לְבָנִים וְרַכִּים. גַּם צֶמֶר גֶּפֶן לָבָן וְרַךְ, וְלָכֵן הֵם נִרְאוּ כְּמוֹ שָׂדֶה שֶׁל צֶמֶר גֶּפֶן.",
+     "stemNiqqud": "הָעֲנָנִים הָיוּ ״כְּמוֹ שָׂדֶה שֶׁל צֶמֶר גֶּפֶן״. מָה הַסִּיפּוּר רוֹצֶה שֶׁנְּדַמְיֵין?",
+     "explanationNiqqud": "שָׂדֶה הוּא שֶׁטַח גָּדוֹל וְרָחָב. הַסִּיפּוּר לֹא מִתְכַּוֵּון לְשָׂדֶה אֲמִיתִּי, אֶלָּא לְכָךְ שֶׁהָיוּ הַרְבֵּה עֲנָנִים רַכִּים שֶׁפְּרוּשִׂים מִתַּחַת לַמָּטוֹס.",
      "optionsNiqqud": [
-      "כִּי מִתַּחַת לַמָּטוֹס הָיָה שָׂדֶה",
-      "כִּי בָּעֲנָנִים גָּדֵל צֶמֶר גֶּפֶן",
-      "כִּי הָעֲנָנִים נִרְאוּ לְבָנִים וְרַכִּים, כְּמוֹ צֶמֶר גֶּפֶן",
-      "כִּי הָעֲנָנִים הָיוּ קָרִים"
+      "עָנָן אֶחָד קָטָן לְיַד הַחַלּוֹן",
+      "עֲנָנִים אֲפוֹרִים שֶׁל סְעָרָה",
+      "הַרְבֵּה עֲנָנִים רַכִּים שֶׁפְּרוּשִׂים לְמַטָּה, כְּמוֹ שָׁטִיחַ",
+      "שָׂדֶה אֲמִיתִּי עִם צְמָחִים"
      ]
     },
     {
      "id": "rc-123-q5",
-     "stem": "מה קרה מיד אחרי שאלה מצצה את הסוכרייה ובלעה?",
+     "stem": "מה קרה מיד אחרי שאלה עשתה מה שהדיילת אמרה?",
      "options": [
       "המטוס נחת",
       "היא שמעה ״פופ״ קטן, והכאב עבר",
@@ -11739,7 +11739,7 @@
      "answerIndex": 1,
      "explanation": "אחרי שעשתה כמו שהדיילת אמרה, אלה שמעה ״פופ״ קטן, והכאב באוזניים עבר.",
      "skill": "sequence",
-     "stemNiqqud": "מָה קָרָה מִיָּד אַחֲרֵי שֶׁאֵלָה מָצְצָה אֶת הַסּוּכָּרִיָּיה וּבָלְעָה?",
+     "stemNiqqud": "מָה קָרָה מִיָּד אַחֲרֵי שֶׁאֵלָה עָשְׂתָה מָה שֶׁהַדַּיֶּילֶת אָמְרָה?",
      "explanationNiqqud": "אַחֲרֵי שֶׁעָשְׂתָה כְּמוֹ שֶׁהַדַּיֶּילֶת אָמְרָה, אֵלָה שָׁמְעָה ״פּוֹפּ״ קָטָן, וְהַכְּאֵב בָּאוֹזְנַיִים עָבַר.",
      "optionsNiqqud": [
       "הַמָּטוֹס נָחַת",
@@ -11785,23 +11785,23 @@
    "questions": [
     {
      "id": "rc-124-q1",
-     "stem": "למה הייתה החולצה של נועם הפוכה?",
+     "stem": "למה הסמיק נועם?",
      "options": [
-      "כי זו אופנה חדשה",
-      "כי הוא קם מאוחר והתלבש מהר בחושך",
-      "כי ליה הפכה אותה",
-      "כי החולצה הייתה גדולה עליו"
+      "כי היה לו חם בכיתה",
+      "כי היה לו לא נעים שהחולצה הפוכה",
+      "כי ליה צעקה עליו",
+      "כי הוא היה חולה"
      ],
      "answerIndex": 1,
-     "explanation": "נועם מיהר, והחדר היה חשוך. כך קל ללבוש חולצה הפוך בלי לשים לב.",
+     "explanation": "אנשים מסמיקים כשלא נעים להם. נועם הסמיק מיד אחרי שליה לחשה לו שהחולצה הפוכה.",
      "skill": "inference",
-     "stemNiqqud": "לָמָּה הָיְיתָה הַחוּלְצָה שֶׁל נוֹעַם הֲפוּכָה?",
-     "explanationNiqqud": "נוֹעַם מִיהֵר, וְהַחֶדֶר הָיָה חָשׁוּךְ. כָּךְ קַל לִלְבּוֹשׁ חוּלְצָה הָפוּךְ בְּלִי לָשִׂים לֵב.",
+     "stemNiqqud": "לָמָּה הִסְמִיק נוֹעַם?",
+     "explanationNiqqud": "אֲנָשִׁים מַסְמִיקִים כְּשֶׁלֹּא נָעִים לָהֶם. נוֹעַם הִסְמִיק מִיָּד אַחֲרֵי שֶׁלִּיָּה לָחֲשָׁה לוֹ שֶׁהַחוּלְצָה הֲפוּכָה.",
      "optionsNiqqud": [
-      "כִּי זוֹ אוֹפְנָה חֲדָשָׁה",
-      "כִּי הוּא קָם מְאוּחָר וְהִתְלַבֵּשׁ מַהֵר בַּחוֹשֶׁךְ",
-      "כִּי לִיָּה הָפְכָה אוֹתָהּ",
-      "כִּי הַחוּלְצָה הָיְיתָה גְּדוֹלָה עָלָיו"
+      "כִּי הָיָה לוֹ חַם בַּכִּיתָּה",
+      "כִּי הָיָה לוֹ לֹא נָעִים שֶׁהַחוּלְצָה הֲפוּכָה",
+      "כִּי לִיָּה צָעֲקָה עָלָיו",
+      "כִּי הוּא הָיָה חוֹלֶה"
      ]
     },
     {
