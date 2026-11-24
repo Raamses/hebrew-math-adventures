@@ -54,14 +54,15 @@ const keyOf = (q: BankQuestion) => q.options[q.answerIndex];
 // Content words only: niqqud and punctuation dropped, very common function words ignored.
 const KEY_STOP = new Set(['כי', 'של', 'שלו', 'שלה', 'את', 'על', 'עם', 'לא', 'הוא', 'היא', 'זה', 'גם', 'כל', 'אבל', 'או', 'יש', 'מה', 'אם', 'רק', 'כדי', 'לו', 'לה', 'אל', 'מאוד']);
 const contentWords = (s: string) => new Set(stripNiqqud(s).replace(/[^א-ת]+/g, ' ').split(' ').filter(w => w.length > 1 && !KEY_STOP.has(w)));
-// Reviewed and shipped before the guard existed; q2 asks why, q1 asks for a title. Do not add to this list.
+// Shipped before the guard existed: rc-055-q2's key is contained in q1's title key. Board card 6335a158 rewords it
+// (Ram approves on a review page); remove the id here when that ships. Do not add to this list.
 const KEY_REPEAT_REVIEWED = new Set(['rc-055-q2']);
-function keyRepeats(p: BankPassage): string[] {
+function keyRepeats(p: BankPassage, exempt: ReadonlySet<string> = KEY_REPEAT_REVIEWED): string[] {
     const out: string[] = [];
     for (const m of p.questions.filter(q => q.skill === 'main-idea')) {
         const mk = contentWords(keyOf(m));
         for (const q of p.questions) {
-            if (q === m || KEY_REPEAT_REVIEWED.has(q.id)) continue;
+            if (q === m || exempt.has(q.id)) continue;
             const k = contentWords(keyOf(q));
             const shared = [...k].filter(w => mk.has(w)).length;
             if (shared >= 2 && shared / Math.min(k.size, mk.size) >= 0.75) out.push(`${q.id} repeats ${m.id}`);
@@ -116,11 +117,23 @@ describe('gifted-prep Hebrew banks', () => {
     });
 
     it('no key restates the main-idea key of its passage', () => {
-        expect([...shippedP, ...draftP].flatMap(keyRepeats)).toEqual([]);
-        const p = draftP[0];
-        const m = p.questions.find(q => q.skill === 'main-idea') ?? p.questions[0];
-        const twin = { ...p, questions: [{ ...m, skill: 'main-idea' as const }, { ...m, id: `${p.id}-q99`, skill: 'inference' as const }] };
-        expect(keyRepeats(twin)).toHaveLength(1);
+        expect([...shippedP, ...draftP].flatMap(p => keyRepeats(p))).toEqual([]);
+        // The one exception is real and tracked (card 6335a158): without it, the guard catches it on the shipped data.
+        expect([...KEY_REPEAT_REVIEWED]).toEqual(['rc-055-q2']);
+        expect(keyRepeats(shippedP.find(p => p.id === 'rc-055')!, new Set())).toEqual(['rc-055-q2 repeats rc-055-q1']);
+    });
+
+    it('the key-repeat guard flags at 2+ shared content words covering 75% of the shorter key, and only then', () => {
+        const base = draftP[0];
+        const q = (n: number, skill: BankQuestion['skill'], key: string): BankQuestion =>
+            ({ ...base.questions[0], id: `${base.id}-q${n}`, skill, options: [key, 'א1', 'א2', 'א3'], answerIndex: 0 });
+        const passage = (key: string): BankPassage =>
+            ({ ...base, questions: [q(1, 'main-idea', 'שמש ירח כוכב שמיים'), q(2, 'inference', key)] });
+        expect(keyRepeats(passage('כי שמש ירח כוכב ים'))).toEqual([`${base.id}-q2 repeats ${base.id}-q1`]); // 3 of 4 = 0.75
+        expect(keyRepeats(passage('שמש ירח ים חול'))).toEqual([]); // 2 of 4 = 0.5
+        expect(keyRepeats(passage('שמש'))).toEqual([]); // 1 shared word, even at 100%
+        expect(keyRepeats(passage('הַשֶּׁמֶשׁ, שמש; ירח!'))).toEqual([]); // niqqud and punctuation dropped: 2 words of 3 = 0.67
+        expect(keyRepeats(passage('שמש, ירח!'))).toEqual([`${base.id}-q2 repeats ${base.id}-q1`]); // 2 of 2
     });
 
     it('ids are unique', () => {
