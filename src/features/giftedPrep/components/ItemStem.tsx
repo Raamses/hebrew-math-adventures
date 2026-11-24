@@ -42,7 +42,7 @@ const TRIANGLE_AT: readonly (readonly [number, number])[] = [[120, 28], [74, 105
 /** Magic triangle: a drawn triangle with 6 circles, corners and middles of each side. Always LTR (numbers). */
 function TriangleView({ cells }: { readonly cells: readonly string[] }) {
     return (
-        <div dir="ltr" className="rounded-2xl bg-white border border-slate-200 py-3 flex justify-center" data-testid="prep-triangle">
+        <div dir="ltr" className="unicode-bidi-isolate rounded-2xl bg-white border border-slate-200 py-3 flex justify-center" data-testid="prep-triangle">
             <svg viewBox="0 0 240 210" width={240} height={210} role="img" aria-label={cells.map(c => c || 'ריק').join(', ')}>
                 <polygon points="120,28 28,182 212,182" fill="none" stroke="#f59e0b" strokeWidth={4} strokeLinejoin="round" />
                 {cells.map((c, i) => (
