@@ -7,6 +7,7 @@ import { usePrepAnalytics } from '../hooks/usePrepAnalytics';
 import { usePrepT } from '../hooks/usePrepT';
 import { usePrepProgress } from '../context/PrepProgressContext';
 import { pickOptions, pickText } from '../engine/niqqud';
+import { BidiText } from './BidiText';
 import { ItemStem } from './ItemStem';
 import { OptionList } from './OptionList';
 import { PrepSummary } from './PrepSummary';
@@ -73,7 +74,7 @@ export function LearnSession({ section, items, onAgain, onExit }: LearnSessionPr
                     aria-live="polite"
                 >
                     <p className="font-bold text-lg">{s.currentAnswer?.correct ? `✅ ${t($ => $.prep.player.correct)}` : `💡 ${t($ => $.prep.player.wrong)}`}</p>
-                    <p className="text-slate-700 leading-relaxed" data-testid="prep-explanation">{pickText(niqqud, item.explanation, item.explanationNiqqud)}</p>
+                    <p className="text-slate-700 leading-relaxed" data-testid="prep-explanation"><BidiText text={pickText(niqqud, item.explanation, item.explanationNiqqud)} /></p>
                     <button
                         type="button"
                         onClick={s.next}
