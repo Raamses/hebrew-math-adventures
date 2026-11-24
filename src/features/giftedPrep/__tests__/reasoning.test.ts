@@ -234,6 +234,23 @@ describe('C5: distractors are named wrong paths', () => {
             for (const v of wrong(it).map(Number)) expect(clues.filter(c => !clueHolds(c, v)), `${t} ${v}`).toHaveLength(1);
         }
     });
+    it('clues with 2 clues (d1): two wrong options each break one clue, the third breaks both', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = cluesItem(seed, 1);
+            const t = it.stem.text!;
+            const n = (re: RegExp) => Number(t.match(re)?.[1]);
+            const clues = [
+                ...(/הוא זוגי\./.test(t) ? [{ kind: 'even' as const, n: 0 }] : []),
+                ...(/אי־זוגי\./.test(t) ? [{ kind: 'odd' as const, n: 0 }] : []),
+                ...(/גדול מ־/.test(t) ? [{ kind: 'gt' as const, n: n(/גדול מ־(\d+)/) }] : []),
+                ...(/העשרות שלו היא/.test(t) ? [{ kind: 'tens' as const, n: n(/העשרות שלו היא (\d)/) }] : []),
+                ...(/האחדות שלו היא/.test(t) ? [{ kind: 'ones' as const, n: n(/האחדות שלו היא (\d)/) }] : []),
+            ];
+            expect(clues).toHaveLength(2);
+            const broken = wrong(it).map(Number).map(v => clues.filter(c => !clueHolds(c, v)).length).sort();
+            expect(broken, t).toEqual([1, 1, 2]);
+        }
+    });
     it('machine with doubling: "took the first pair difference as the rule" is an option whenever it is a new number', () => {
         let checked = 0;
         for (let seed = 1; seed <= 1000; seed++) {
