@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { backwardsItem, coinWays, countingItem, positionItem, sumDifferenceItem } from '../engine/mathReasoning';
 import { calendarItem, parityItem, pyramidItem } from '../engine/mathReasoning2';
+import { clueHolds, cluesItem, hiddenDigitItem, machineItem } from '../engine/mathReasoning3';
 import { stripNiqqud as strip } from '../engine/niqqud';
 import { pyramidText } from '../engine/mistakeDetails';
 import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
@@ -9,7 +10,10 @@ import { reasoningOracle, reasoningSolutions } from './reasoningOracles';
 
 const SEEDS = Number(process.env.PREP_SWEEP ?? 10_000);
 const DIFFS: Difficulty[] = [1, 2, 3];
-const MAKERS = { backwardsItem, sumDifferenceItem, positionItem, countingItem, parityItem, pyramidItem, calendarItem };
+const MAKERS = {
+    backwardsItem, sumDifferenceItem, positionItem, countingItem, parityItem, pyramidItem, calendarItem,
+    machineItem, hiddenDigitItem, cluesItem,
+};
 const WEEK = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
 
 /** `a + b − c = d` with any number of terms, evaluated left to right. */
@@ -36,6 +40,8 @@ function problems(item: PrepItem): string[] {
     say(!item.optionsNiqqud || item.optionsNiqqud.every((o, i) => hasNiqqud(o) && strip(o) === item.options[i]), 'option niqqud twin differs');
     say((item.stem.pyramid ?? []).flat().every(c => c === '' || c === '?' || (/^\d+$/.test(c) && Number(c) <= 100)), 'pyramid brick is not a number 0–100, "?" or empty');
     say(!item.stem.pyramid || item.stem.pyramid.every((r, i) => r.length === i + 1), 'pyramid rows are not 1, 2, 3 bricks');
+    say((item.stem.pictureLines ?? []).every(l => (l.match(/\d+/g) ?? []).every(n => Number(n) <= 100)), 'picture number over 100');
+    say((item.stem.equation?.match(/\d+/g) ?? []).every(n => Number(n) <= 100), 'equation number over 100');
     say(!item.stem.pyramid || item.stem.pyramid.flat().filter(c => c === '?').length === 1, 'pyramid does not ask exactly one brick');
     const story = reasoningSolutions(item);
     say(story !== null && story.length === 1, `the story allows ${JSON.stringify(story)}`);
@@ -72,6 +78,9 @@ describe('C3 reasoning types: 10k-seed sweep per type and difficulty', () => {
 
 /** Which template a stem came from, by a phrase only that template uses. */
 const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
+    machineItem: [['pairs', /^\d+ → \d+$/]],
+    cluesItem: [['two', /^[^.]+\.( [^.]+\.){2} איזה/], ['three', /^[^.]+\.( [^.]+\.){3} איזה/], ['digitSum', /מקבלים/]],
+    hiddenDigitItem: [['onesPlus', /^\d⭐ \+ \d\d = /], ['twoPlaces', /^⭐\d \+ \d⭐ = /], ['carry', /^\d⭐ \+ \d\d = /], ['minus', / − /]],
     parityItem: [['odd2', /חיבר \d+ מספרים אי־זוגיים\. /], ['oddBound', /אי־זוגיים, וכל/], ['mixed', /אי־זוגיים ו־/], ['frog', /צפרדע/]],
     pyramidItem: [['top', /^\? \/ ◻ ◻ \/ \d+ \d+ \d+$/], ['down', /^\d+ \/ \d+ ◻ \/ ◻ \? \d+$/], ['twice', /^\d+ \/ ◻ ◻ \/ \d+ \? \d+$/]],
     calendarItem: [['after', /איזה יום יהיה/], ['before', /היה לפני/], ['date', /בחודש/]],
@@ -81,6 +90,10 @@ const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
     backwardsItem: [['double', /לעצמו/], ['half', /החצי/], ['add', /הוספתי/], ['sub', /הורדתי/]],
 };
 const EXPECTED: Readonly<Record<string, Readonly<Record<Difficulty, readonly string[]>>>> = {
+    machineItem: { 1: ['pairs'], 2: ['pairs'], 3: ['pairs'] },
+    cluesItem: { 1: ['two'], 2: ['three', 'digitSum'], 3: ['three', 'digitSum'] },
+    // onesPlus and carry share a shape; the carry itself is checked by the explanation sweep
+    hiddenDigitItem: { 1: ['onesPlus', 'carry'], 2: ['onesPlus', 'carry', 'twoPlaces'], 3: ['onesPlus', 'carry', 'twoPlaces', 'minus'] },
     parityItem: { 1: ['odd2'], 2: ['oddBound', 'frog'], 3: ['mixed', 'oddBound', 'frog'] },
     pyramidItem: { 1: ['top'], 2: ['down'], 3: ['twice'] },
     calendarItem: { 1: ['after'], 2: ['after'], 3: ['after', 'before', 'date'] },
@@ -100,7 +113,7 @@ describe('C3 reasoning types: levels', () => {
             const seen = new Set<string>();
             for (let seed = 1; seed <= 600; seed++) {
                 const it = make(seed, d);
-                const text = it.stem.pyramid ? pyramidText(it.stem.pyramid) : it.stem.text ?? '';
+                const text = it.stem.pyramid ? pyramidText(it.stem.pyramid) : it.stem.equation ?? it.stem.pictureLines?.[0] ?? it.stem.text ?? '';
                 VARIANTS[name].forEach(([v, re]) => { if (re.test(text)) seen.add(v); });
             }
             expect([...seen].sort(), `${name} d${d}`).toEqual([...EXPECTED[name][d]].sort());
@@ -191,6 +204,45 @@ describe('C3 part 2: distractors are named wrong paths', () => {
     it('calendar options carry niqqud twins', () => {
         const it = calendarItem(5, 1);
         expect(it.optionsNiqqud).toHaveLength(4);
+    });
+});
+
+describe('C5: distractors are named wrong paths', () => {
+    const wrong = (it: PrepItem) => it.options.filter((_, i) => i !== it.answerIndex);
+    it('clues: with 3 clues, each wrong option breaks exactly one clue (the child missed that clue)', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = cluesItem(seed, 3);
+            const t = it.stem.text!;
+            const n = (re: RegExp) => Number(t.match(re)?.[1]);
+            const clues = [
+                ...(/הוא זוגי\./.test(t) ? [{ kind: 'even' as const, n: 0 }] : []),
+                ...(/אי־זוגי\./.test(t) ? [{ kind: 'odd' as const, n: 0 }] : []),
+                ...(/גדול מ־/.test(t) ? [{ kind: 'gt' as const, n: n(/גדול מ־(\d+)/) }] : []),
+                ...(/קטן מ־/.test(t) ? [{ kind: 'lt' as const, n: n(/קטן מ־(\d+)/) }] : []),
+                ...(/מקבלים/.test(t) ? [{ kind: 'digitSum' as const, n: n(/מקבלים (\d+)/) }] : []),
+            ];
+            expect(clues).toHaveLength(3);
+            for (const v of wrong(it).map(Number)) expect(clues.filter(c => !clueHolds(c, v)), `${t} ${v}`).toHaveLength(1);
+        }
+    });
+    it('machine with doubling: "took the first pair difference as the rule" is an option whenever it is a new number', () => {
+        let checked = 0;
+        for (let seed = 1; seed <= 1000; seed++) {
+            const it = machineItem(seed, 3);
+            const lines = it.stem.pictureLines!;
+            const [i1, o1] = lines[0].split(' → ').map(Number);
+            const q = Number(lines[3].split(' ')[0]);
+            const slip = q + (o1 - i1);
+            if (slip === Number(it.options[it.answerIndex]) || slip < 0 || slip > 100) continue;
+            checked++;
+            expect(wrong(it)).toContain(String(slip));
+        }
+        expect(checked).toBeGreaterThan(500);
+    });
+    it('hidden digit: options are always single digits', () => {
+        for (let seed = 1; seed <= 1000; seed++) {
+            for (const d of [1, 2, 3] as const) expect(hiddenDigitItem(seed, d).options.every(o => /^\d$/.test(o))).toBe(true);
+        }
     });
 });
 

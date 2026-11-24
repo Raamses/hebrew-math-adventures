@@ -167,6 +167,54 @@ function calendar(item: PrepItem): (number | string)[] {
     return [WEEK[day]];
 }
 
+/** Every rule "times a, then add b" (a = ½, 1, 2, 3 or −1; b = −50…50) that fits all shown pairs, applied to the asked input. */
+function machine(item: PrepItem): number[] {
+    const lines = item.stem.pictureLines ?? [];
+    const pairs = lines.slice(0, -1).map(l => nums(l) as [number, number]);
+    const q = nums(lines[lines.length - 1])[0];
+    const out = new Set<number>();
+    for (const a of [0.5, 1, 2, 3, -1]) {
+        for (let b = -50; b <= 50; b++) {
+            const f = (x: number) => a * x + b;
+            if (pairs.every(([x, y]) => f(x) === y) && Number.isInteger(f(q))) out.add(f(q));
+        }
+    }
+    return [...out];
+}
+
+/** Puts each digit 0–9 in place of ⭐ and keeps the ones that make the exercise true (no leading 0). */
+function hiddenDigit(item: PrepItem): number[] {
+    const eq = item.stem.equation ?? '';
+    return range(0, 9).filter(d => {
+        const [l, r] = eq.split(' = ').map(side => side.split('⭐').join(String(d)));
+        const terms = l.split(' ');
+        if ([terms[0], terms[2], r].some(t => t.length > 1 && t[0] === '0')) return false;
+        const v = terms[1] === '+' ? Number(terms[0]) + Number(terms[2]) : Number(terms[0]) - Number(terms[2]);
+        return v === Number(r);
+    });
+}
+
+/** Reads each sentence of the clue story and keeps the options that satisfy every one. */
+function clues(item: PrepItem): number[] {
+    const text = item.stem.text ?? '';
+    const checks: ((v: number) => boolean)[] = [];
+    if (/הוא זוגי\./.test(text)) checks.push(v => v % 2 === 0);
+    if (/הוא אי־זוגי\./.test(text)) checks.push(v => v % 2 === 1);
+    const gt = text.match(/גדול מ־(\d+)\./);
+    if (gt) checks.push(v => v > Number(gt[1]));
+    const lt = text.match(/קטן מ־(\d+)\./);
+    if (lt) checks.push(v => v < Number(lt[1]));
+    const tens = text.match(/ספרת העשרות שלו היא (\d)\./);
+    if (tens) checks.push(v => Math.floor(v / 10) === Number(tens[1]));
+    const ones = text.match(/ספרת האחדות שלו היא (\d)\./);
+    if (ones) checks.push(v => v % 10 === Number(ones[1]));
+    const sum = text.match(/מקבלים (\d+)\./);
+    if (sum) checks.push(v => Math.floor(v / 10) + (v % 10) === Number(sum[1]));
+    // every sentence between the opening one and the question must have been read
+    if (checks.length < 2 || checks.length !== (text.match(/\. /g) ?? []).length - 1) throw new Error(`clue story not fully read: ${text}`);
+    return item.options.map(Number).filter(v => checks.every(c => c(v)));
+}
+
 const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | string)[]>> = {
     'math-backwards': it => backwards(it.stem.text ?? ''),
     'math-sum-difference': it => sumDifference(it.stem.text ?? ''),
@@ -175,6 +223,9 @@ const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | st
     'math-parity': parity,
     'math-pyramid': pyramid,
     'math-calendar': calendar,
+    'math-machine': machine,
+    'math-hidden-digit': hiddenDigit,
+    'math-clues': clues,
 };
 
 /** Every value the story allows (a well-made item has exactly one); null for kinds this file does not cover. */

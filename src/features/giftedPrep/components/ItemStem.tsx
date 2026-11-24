@@ -13,7 +13,7 @@ interface ItemStemProps {
  * Number pyramid as equal-width bricks in centered rows: with equal widths and gaps, every brick sits
  * exactly over the gap between the two bricks it is the sum of. Always LTR (numbers).
  */
-export function PyramidView({ rows }: { readonly rows: readonly (readonly string[])[] }) {
+function PyramidView({ rows }: { readonly rows: readonly (readonly string[])[] }) {
     return (
         <div dir="ltr" className="unicode-bidi-isolate rounded-2xl bg-white border border-slate-200 py-4 flex flex-col items-center gap-1.5" data-testid="prep-pyramid">
             {rows.map((row, r) => (

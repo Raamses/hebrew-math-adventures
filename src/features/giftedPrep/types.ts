@@ -25,6 +25,9 @@ export type PrepKind =
     | 'math-parity'          // which total of odd numbers is even possible
     | 'math-pyramid'         // number pyramid: each brick is the sum of the two below
     | 'math-calendar'        // the 7-day week, a month running out
+    | 'math-machine'         // number machine: find the in→out rule
+    | 'math-hidden-digit'    // "4⭐ + ⭐5 = 87": which digit is ⭐
+    | 'math-clues'           // "I'm thinking of a number" with 2-3 clues
     | 'reading'              // question about a passage
     | 'word-meaning'
     | 'sentence-completion';
@@ -34,6 +37,7 @@ export const SKILL_TAGS = [
     'add', 'sub', 'missing-number', 'word-problem', 'picture-puzzle',
     'number-pattern', 'compare', 'odd-one-out', 'place-value', 'double-half', 'money',
     'work-backwards', 'sum-difference', 'position', 'counting', 'parity', 'number-wall', 'calendar',
+    'number-machine', 'hidden-digit', 'clues',
     'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
     'word-meaning', 'sentence-completion',
 ] as const;
