@@ -8,6 +8,7 @@ import {
   waitForSagaMap,
   getSagaProgressForNode,
   getProfileId,
+  readInstructionText,
 } from './helpers';
 
 /**
@@ -23,16 +24,6 @@ import {
 
 const SESSION_LENGTH = 10;
 const SENSORY_TARGET_COUNT = 10; // winCondition.value for n1_1 (target_count: 10)
-
-/**
- * Read the current instruction from the BubbleGameContainer header.
- * The instruction is in a div[dir="ltr"] element with a span.font-mono inside.
- */
-async function getBubbleInstruction(page: Page): Promise<string | null> {
-  const instEl = page.locator('div[dir="ltr"] span.font-mono').first();
-  if (await instEl.count() === 0) return null;
-  const raw = await instEl.textContent(); return raw ? raw.replace(/[\u2066\u2067\u2068\u2069]/g, '') : null;
-}
 
 /**
  * Extract the target number from the instruction text.
@@ -101,42 +92,91 @@ function parseInstructionTarget(inst: string): number | null {
 
 /**
  * Pop a target bubble in the SENSORY game.
- * Reads the instruction, computes the target, waits for a matching bubble, and clicks it.
- * Uses aria-label selector for reliability.
+ * Reads the instruction via the shared probe (handles both the PracticeMode and
+ * BubbleGameContainer DOM shapes), computes the target, waits for a matching bubble,
+ * clicks it, then verifies from state that the pop actually registered — a React
+ * remount between the waitFor and the click can otherwise leave the click as a
+ * silent no-op on a detached node. Callers retry on a `false` return.
+ *
+ * Every wait is clamped to `deadlineTs` so a despawned/rotated bubble retries
+ * immediately instead of stalling on the 20s default actionTimeout. Popped bubbles
+ * stay mounted with opacity: 0 (still Playwright-"visible") and pointerEvents: 'none'
+ * for ~1s after popping, so already-popped bubbles are skipped up front and pop
+ * registration is detected via pointerEvents flipping to 'none' (or the instruction
+ * advancing) rather than solely via `!isConnected`.
  */
-async function popTargetBubble(page: Page, timeoutMs = 5000): Promise<boolean> {
-  const inst = await getBubbleInstruction(page);
+async function popTargetBubble(page: Page, deadlineTs: number): Promise<boolean> {
+  const inst = await readInstructionText(page);
   if (!inst) return false;
 
   const target = parseInstructionTarget(inst);
-  if (target === null) {
-    console.log(`[popTargetBubble] Could not parse target from: "${inst}"`);
-    return false;
-  }
-  console.log(`[popTargetBubble] instruction="${inst}", target=${target}`);
+  if (target === null) return false;
 
-  // Wait for a bubble with the target value to appear (using data-testid)
-  const bubbleLocator = page.locator(`[data-testid="bubble-${target}"]`).first();
+  let remaining = deadlineTs - Date.now();
+  if (remaining <= 0) return false;
 
+  const selector = `[data-testid="bubble-${target}"]`;
+  const liveIndex = await page.evaluate((sel) => {
+    const els = Array.from(document.querySelectorAll(sel)) as HTMLElement[];
+    return els.findIndex((el) => el.isConnected && getComputedStyle(el).pointerEvents !== 'none');
+  }, selector);
+  if (liveIndex === -1) return false;
+
+  const bubble = page.locator(selector).nth(liveIndex);
+  let handle: Awaited<ReturnType<typeof bubble.elementHandle>> | null = null;
   try {
-    await bubbleLocator.waitFor({ state: 'visible', timeout: timeoutMs });
+    await bubble.waitFor({ state: 'visible', timeout: Math.min(500, remaining) });
+    remaining = deadlineTs - Date.now();
+    if (remaining <= 0) return false;
+    handle = await bubble.elementHandle({ timeout: Math.min(500, remaining) });
   } catch {
     return false;
   }
+  if (!handle) return false;
 
-  // Use evaluate to dispatch a click event directly on the bubble element.
-  // This avoids issues with framer-motion animated elements where boundingBox
-  // coordinates may be stale by the time mouse.click fires.
-  await bubbleLocator.evaluate((el: HTMLElement) => el.click());
-  return true;
-}
+  try {
+    const clicked = await handle
+      .evaluate((el: HTMLElement) => {
+        if (!el.isConnected || getComputedStyle(el).pointerEvents === 'none') return false;
+        try {
+          el.click();
+          return true;
+        } catch {
+          return false;
+        }
+      })
+      .catch(() => false);
+    if (!clicked) return false;
 
-/**
- * Check if the SENSORY game is still active (instruction visible, no saga map).
- */
-async function isSensoryGameActive(page: Page): Promise<boolean> {
-  const inst = await getBubbleInstruction(page);
-  return inst !== null;
+    // Poll for a real state change instead of trusting the click: the bubble
+    // detaching, its pointerEvents flipping to 'none' (pre-removal pop state), or
+    // the instruction advancing to the next problem.
+    const registerDeadline = Math.min(Date.now() + 2000, deadlineTs);
+    while (Date.now() < registerDeadline) {
+      const registered = await handle
+        .evaluate(
+          (el: HTMLElement) =>
+            !el.isConnected ||
+            el.getClientRects().length === 0 ||
+            getComputedStyle(el).pointerEvents === 'none'
+        )
+        .catch(() => true);
+      if (registered) {
+        // Clear BubbleGameContainer's 120ms ANSWER_LOCK_MS window before the caller retries.
+        await page.waitForTimeout(150);
+        return true;
+      }
+      const instNow = await readInstructionText(page);
+      if (instNow && instNow !== inst) {
+        await page.waitForTimeout(150);
+        return true;
+      }
+      await page.waitForTimeout(100);
+    }
+    return false;
+  } finally {
+    await handle.dispose().catch(() => {});
+  }
 }
 
 test.describe('Saga node completion', () => {
@@ -149,37 +189,35 @@ test.describe('Saga node completion', () => {
 
     // Enter n1_1 (Blast Off — first SENSORY node, unlocked by default)
     await enterSagaNodeById(page, 'n1_1');
-    await page.waitForTimeout(3000); // Wait for initial bubbles to spawn
+    // State-based wait for the first bubble-game instruction to appear, instead of a fixed sleep.
+    await expect
+      .poll(async () => await readInstructionText(page), {
+        message: 'waiting for initial bubble-game instruction to appear',
+        timeout: 10_000,
+      })
+      .not.toBe('');
 
-    // Pop target bubbles until the game completes.
-    // The SENSORY game generates math problems; after every 3 correct pops,
-    // the problem rotates and the target changes.
+    // Pop target bubbles until the game completes, driven by a global deadline
+    // rather than an attempt count. The instruction probe can go transiently null
+    // between problems or during the victory animation — that's not "game over",
+    // so the loop keeps polling through it until the saga map reappears or the
+    // deadline is hit; waitForSagaMap below is the final backstop assertion.
     let popped = 0;
-    const maxAttempts = 40; // Reduced from 80 to avoid timeout
-    for (let i = 0; i < maxAttempts; i++) {
-      // Check if we're back on the saga map (game complete)
+    const deadlineTs = Date.now() + 90_000;
+    while (Date.now() < deadlineTs) {
       const arcadeVisible = await page.locator('[data-testid="saga-node-n1_1"]').first().isVisible().catch(() => false);
       if (arcadeVisible) {
         console.log(`[Test 1] saga map visible after ${popped} pops`);
         break;
       }
 
-      // Check if game is still active
-      if (!(await isSensoryGameActive(page))) {
-        console.log(`[Test 1] game no longer active after ${popped} pops`);
-        await page.waitForTimeout(2000);
-        break;
-      }
-
-      const poppedNow = await popTargetBubble(page, 5000);
+      const poppedNow = await popTargetBubble(page, deadlineTs);
       if (poppedNow) {
         popped++;
         console.log(`[Test 1] popped bubble #${popped}`);
-        // Wait for: pop animation (300ms) + answer lock (120ms) + spawn (1200ms) + buffer
-        await page.waitForTimeout(1500);
       } else {
-        // No matching bubble on screen — wait for one to spawn
-        await page.waitForTimeout(1000);
+        // Instruction/bubble transiently missing, or the click didn't register — retry.
+        await page.waitForTimeout(150);
       }
     }
 
