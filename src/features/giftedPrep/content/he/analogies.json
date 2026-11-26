@@ -1,0 +1,606 @@
+{
+  "schemaVersion": 1,
+  "niqqudProvenance": "Automated vocalization added for reading support; niqqud has not been human-reviewed.",
+  "items": [
+    {
+      "id": "va-001",
+      "kind": "verbal-analogy",
+      "stem": "עיפרון : לכתוב :: מכחול : ?",
+      "stemNiqqud": "עִיפָּרוֹן : לִכְתּוֹב :: מִכְחוֹל : ?",
+      "options": [
+        "לצבוע",
+        "לקרוא",
+        "לגזור",
+        "להדביק"
+      ],
+      "optionsNiqqud": [
+        "לִצְבּוֹעַ",
+        "לִקְרוֹא",
+        "לִגְזוֹר",
+        "לְהַדְבִּיק"
+      ],
+      "answerIndex": 0,
+      "explanation": "במכחול משתמשים כדי לצבוע, כמו שבעיפרון משתמשים כדי לכתוב.",
+      "explanationNiqqud": "בְּמִכְחוֹל מִשְׁתַּמְּשִׁים כְּדֵי לִצְבּוֹעַ, כְּמוֹ שֶׁבְּעִיפָּרוֹן מִשְׁתַּמְּשִׁים כְּדֵי לִכְתּוֹב.",
+      "difficulty": 1,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-002",
+      "kind": "verbal-analogy",
+      "stem": "כלב : גור :: כבשה : ?",
+      "stemNiqqud": "כֶּלֶב : גּוּר :: כִּבְשָׂה : ?",
+      "options": [
+        "עגל",
+        "טלה",
+        "אפרוח",
+        "ראשן"
+      ],
+      "optionsNiqqud": [
+        "עֵגֶל",
+        "טָלֶה",
+        "אֶפְרוֹחַ",
+        "רֹאשָׁן"
+      ],
+      "answerIndex": 1,
+      "explanation": "הטלה הוא הצאצא של הכבשה, כמו שהגור הוא הצאצא של הכלב.",
+      "explanationNiqqud": "הַטָּלֶה הוּא הַצֶּאֱצָא שֶׁל הַכִּבְשָׂה, כְּמוֹ שֶׁהַגּוּר הוּא הַצֶּאֱצָא שֶׁל הַכֶּלֶב.",
+      "difficulty": 1,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-003",
+      "kind": "verbal-analogy",
+      "stem": "זבוב : מזמזם :: אריה : ?",
+      "stemNiqqud": "זְבוּב : מְזַמְזֵם :: אַרְיֵה : ?",
+      "options": [
+        "צוהל",
+        "נובח",
+        "שואג",
+        "גועה"
+      ],
+      "optionsNiqqud": [
+        "צוֹהֵל",
+        "נוֹבֵחַ",
+        "שׁוֹאֵג",
+        "גּוֹעֶה"
+      ],
+      "answerIndex": 2,
+      "explanation": "האריה משמיע קול של שאגה ולכן הוא שואג, כמו שהזבוב מזמזם.",
+      "explanationNiqqud": "הָאַרְיֵה מַשְׁמִיעַ קוֹל שֶׁל שְׁאָגָה וְלָכֵן הוּא שׁוֹאֵג, כְּמוֹ שֶׁהַזְּבוּב מְזַמְזֵם.",
+      "difficulty": 1,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-004",
+      "kind": "verbal-analogy",
+      "stem": "גבוה : נמוך :: ארוך : ?",
+      "stemNiqqud": "גָּבוֹהַּ : נָמוּךְ :: אָרוֹךְ : ?",
+      "options": [
+        "רחב",
+        "דק",
+        "כבד",
+        "קצר"
+      ],
+      "optionsNiqqud": [
+        "רָחָב",
+        "דַּק",
+        "כָּבֵד",
+        "קָצָר"
+      ],
+      "answerIndex": 3,
+      "explanation": "קצר הוא ההפך מארוך, כמו שנמוך הוא ההפך מגבוה.",
+      "explanationNiqqud": "קָצָר הוּא הַהֶפֶךְ מֵאָרוֹךְ, כְּמוֹ שֶׁנָּמוּךְ הוּא הַהֶפֶךְ מִגָּבוֹהַּ.",
+      "difficulty": 1,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-005",
+      "kind": "verbal-analogy",
+      "stem": "אוזן : לשמוע :: עין : ?",
+      "stemNiqqud": "אוֹזֶן : לִשְׁמוֹעַ :: עַיִן : ?",
+      "options": [
+        "לראות",
+        "להריח",
+        "לטעום",
+        "לגעת"
+      ],
+      "optionsNiqqud": [
+        "לִרְאוֹת",
+        "לְהָרִיחַ",
+        "לִטְעוֹם",
+        "לָגַעַת"
+      ],
+      "answerIndex": 0,
+      "explanation": "בעין משתמשים כדי לראות, כמו שבאוזן משתמשים כדי לשמוע.",
+      "explanationNiqqud": "בְּעַיִן מִשְׁתַּמְּשִׁים כְּדֵי לִרְאוֹת, כְּמוֹ שֶׁבְּאוֹזֶן מִשְׁתַּמְּשִׁים כְּדֵי לִשְׁמוֹעַ.",
+      "difficulty": 1,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-006",
+      "kind": "verbal-analogy",
+      "stem": "ציפור : קן :: דוב : ?",
+      "stemNiqqud": "צִיפּוֹר : קֵן :: דּוֹב : ?",
+      "options": [
+        "לול",
+        "מאורה",
+        "דיר",
+        "רפת"
+      ],
+      "optionsNiqqud": [
+        "לוּל",
+        "מְאוּרָה",
+        "דִּיר",
+        "רֶפֶת"
+      ],
+      "answerIndex": 1,
+      "explanation": "הדוב גר במאורה, כמו שהציפור גרה בקן.",
+      "explanationNiqqud": "הַדּוֹב גָּר בִּמְאוּרָה, כְּמוֹ שֶׁהַצִּיפּוֹר גָּרָה בְּקֵן.",
+      "difficulty": 1,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-007",
+      "kind": "verbal-analogy",
+      "stem": "שולחן : עץ :: סיר : ?",
+      "stemNiqqud": "שׁוּלְחָן : עֵץ :: סִיר : ?",
+      "options": [
+        "בד",
+        "קרטון",
+        "מתכת",
+        "גומי"
+      ],
+      "optionsNiqqud": [
+        "בַּד",
+        "קַרְטוֹן",
+        "מַתֶּכֶת",
+        "גּוּמִי"
+      ],
+      "answerIndex": 2,
+      "explanation": "סיר עשוי ממתכת, כמו ששולחן עשוי מעץ.",
+      "explanationNiqqud": "סִיר עָשׂוּי מִמַּתֶּכֶת, כְּמוֹ שֶׁשּׁוּלְחָן עָשׂוּי מֵעֵץ.",
+      "difficulty": 1,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-008",
+      "kind": "verbal-analogy",
+      "stem": "רכבת : מסילה :: סירה : ?",
+      "stemNiqqud": "רַכֶּבֶת : מְסִילָּה :: סִירָה : ?",
+      "options": [
+        "כביש",
+        "מדרכה",
+        "שביל",
+        "ים"
+      ],
+      "optionsNiqqud": [
+        "כְּבִישׁ",
+        "מִדְרָכָה",
+        "שְׁבִיל",
+        "יָם"
+      ],
+      "answerIndex": 3,
+      "explanation": "הסירה שטה בים, כמו שהרכבת נוסעת על מסילה.",
+      "explanationNiqqud": "הַסִּירָה שָׁטָה בַּיָּם, כְּמוֹ שֶׁהָרַכֶּבֶת נוֹסַעַת עַל מְסִילָּה.",
+      "difficulty": 1,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-009",
+      "kind": "verbal-analogy",
+      "stem": "כפתור : חולצה :: שרוך : ?",
+      "stemNiqqud": "כַּפְתּוֹר : חוּלְצָה :: שְׂרוֹךְ : ?",
+      "options": [
+        "נעל",
+        "כובע",
+        "גרב",
+        "צעיף"
+      ],
+      "optionsNiqqud": [
+        "נַעַל",
+        "כּוֹבַע",
+        "גֶּרֶב",
+        "צָעִיף"
+      ],
+      "answerIndex": 0,
+      "explanation": "השרוך הוא חלק מהנעל, כמו שהכפתור הוא חלק מהחולצה.",
+      "explanationNiqqud": "הַשְּׂרוֹךְ הוּא חֵלֶק מֵהַנַּעַל, כְּמוֹ שֶׁהַכַּפְתּוֹר הוּא חֵלֶק מֵהַחוּלְצָה.",
+      "difficulty": 2,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-010",
+      "kind": "verbal-analogy",
+      "stem": "נגר : פטיש :: תופרת : ?",
+      "stemNiqqud": "נַגָּר : פַּטִּישׁ :: תּוֹפֶרֶת : ?",
+      "options": [
+        "משרוקית",
+        "מחט",
+        "מזרק",
+        "מערוך"
+      ],
+      "optionsNiqqud": [
+        "מַשְׁרוֹקִית",
+        "מַחַט",
+        "מַזְרֵק",
+        "מַעֲרוֹךְ"
+      ],
+      "answerIndex": 1,
+      "explanation": "התופרת עובדת עם מחט, כמו שהנגר עובד עם פטיש.",
+      "explanationNiqqud": "הַתּוֹפֶרֶת עוֹבֶדֶת עִם מַחַט, כְּמוֹ שֶׁהַנַּגָּר עוֹבֵד עִם פַּטִּישׁ.",
+      "difficulty": 2,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-011",
+      "kind": "verbal-analogy",
+      "stem": "מקרר : מזון :: ארנק : ?",
+      "stemNiqqud": "מְקָרֵר : מָזוֹן :: אַרְנָק : ?",
+      "options": [
+        "בגדים",
+        "ספרים",
+        "כסף",
+        "תרופות"
+      ],
+      "optionsNiqqud": [
+        "בְּגָדִים",
+        "סְפָרִים",
+        "כֶּסֶף",
+        "תְּרוּפוֹת"
+      ],
+      "answerIndex": 2,
+      "explanation": "בארנק שומרים כסף, כמו שבמקרר שומרים מזון.",
+      "explanationNiqqud": "בְּאַרְנָק שׁוֹמְרִים כֶּסֶף, כְּמוֹ שֶׁבִּמְקָרֵר שׁוֹמְרִים מָזוֹן.",
+      "difficulty": 2,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-012",
+      "kind": "verbal-analogy",
+      "stem": "חם : רותח :: קר : ?",
+      "stemNiqqud": "חַם : רוֹתֵחַ :: קַר : ?",
+      "options": [
+        "פושר",
+        "יבש",
+        "רטוב",
+        "קפוא"
+      ],
+      "optionsNiqqud": [
+        "פּוֹשֵׁר",
+        "יָבֵשׁ",
+        "רָטוֹב",
+        "קָפוּא"
+      ],
+      "answerIndex": 3,
+      "explanation": "קפוא הוא קר מאוד, כמו שרותח הוא חם מאוד.",
+      "explanationNiqqud": "קָפוּא הוּא קַר מְאוֹד, כְּמוֹ שֶׁרוֹתֵחַ הוּא חַם מְאוֹד.",
+      "difficulty": 2,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-013",
+      "kind": "verbal-analogy",
+      "stem": "כובע : ראש :: כפפה : ?",
+      "stemNiqqud": "כּוֹבַע : רֹאשׁ :: כְּפָפָה : ?",
+      "options": [
+        "יד",
+        "רגל",
+        "ברך",
+        "כתף"
+      ],
+      "optionsNiqqud": [
+        "יָד",
+        "רֶגֶל",
+        "בֶּרֶךְ",
+        "כָּתֵף"
+      ],
+      "answerIndex": 0,
+      "explanation": "את הכפפה לובשים על היד, כמו שאת הכובע חובשים על הראש.",
+      "explanationNiqqud": "אֶת הַכְּפָפָה לוֹבְשִׁים עַל הַיָּד, כְּמוֹ שֶׁאֶת הַכּוֹבַע חוֹבְשִׁים עַל הָרֹאשׁ.",
+      "difficulty": 2,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-014",
+      "kind": "verbal-analogy",
+      "stem": "פרה : חלב :: תרנגולת : ?",
+      "stemNiqqud": "פָּרָה : חָלָב :: תַּרְנְגוֹלֶת : ?",
+      "options": [
+        "גבינה",
+        "ביצה",
+        "דבש",
+        "לחם"
+      ],
+      "optionsNiqqud": [
+        "גְּבִינָה",
+        "בֵּיצָה",
+        "דְּבַשׁ",
+        "לֶחֶם"
+      ],
+      "answerIndex": 1,
+      "explanation": "התרנגולת מטילה ביצה, כמו שהפרה נותנת חלב.",
+      "explanationNiqqud": "הַתַּרְנְגוֹלֶת מְטִילָה בֵּיצָה, כְּמוֹ שֶׁהַפָּרָה נוֹתֶנֶת חָלָב.",
+      "difficulty": 2,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-015",
+      "kind": "verbal-analogy",
+      "stem": "אביב : קיץ :: יום ראשון : ?",
+      "stemNiqqud": "אָבִיב : קַיִץ :: יוֹם רִאשׁוֹן : ?",
+      "options": [
+        "יום שבת",
+        "יום שלישי",
+        "יום שני",
+        "יום שישי"
+      ],
+      "optionsNiqqud": [
+        "יוֹם שַׁבָּת",
+        "יוֹם שְׁלִישִׁי",
+        "יוֹם שֵׁנִי",
+        "יוֹם שִׁישִּׁי"
+      ],
+      "answerIndex": 2,
+      "explanation": "אחרי יום ראשון מגיע יום שני, כמו שאחרי האביב מגיע הקיץ.",
+      "explanationNiqqud": "אַחֲרֵי יוֹם רִאשׁוֹן מַגִּיעַ יוֹם שֵׁנִי, כְּמוֹ שֶׁאַחֲרֵי הָאָבִיב מַגִּיעַ הַקַּיִץ.",
+      "difficulty": 2,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-016",
+      "kind": "verbal-analogy",
+      "stem": "צמא : לשתות :: רעב : ?",
+      "stemNiqqud": "צָמֵא : לִשְׁתּוֹת :: רָעֵב : ?",
+      "options": [
+        "לישון",
+        "לרוץ",
+        "לנוח",
+        "לאכול"
+      ],
+      "optionsNiqqud": [
+        "לִישׁוֹן",
+        "לָרוּץ",
+        "לָנוּחַ",
+        "לֶאֱכוֹל"
+      ],
+      "answerIndex": 3,
+      "explanation": "מי שרעב צריך לאכול, כמו שמי שצמא צריך לשתות.",
+      "explanationNiqqud": "מִי שֶׁרָעֵב צָרִיךְ לֶאֱכוֹל, כְּמוֹ שֶׁמִּי שֶׁצָּמֵא צָרִיךְ לִשְׁתּוֹת.",
+      "difficulty": 2,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-017",
+      "kind": "verbal-analogy",
+      "stem": "לאפות : עוגה :: לסרוג : ?",
+      "stemNiqqud": "לֶאֱפוֹת : עוּגָה :: לִסְרוֹג : ?",
+      "options": [
+        "צעיף",
+        "לחם",
+        "צלחת",
+        "מסרגה"
+      ],
+      "optionsNiqqud": [
+        "צָעִיף",
+        "לֶחֶם",
+        "צַלַּחַת",
+        "מַסְרֵגָה"
+      ],
+      "answerIndex": 0,
+      "explanation": "כשסורגים יוצרים צעיף, כמו שכשאופים מכינים עוגה.",
+      "explanationNiqqud": "כְּשֶׁסּוֹרְגִים יוֹצְרִים צָעִיף, כְּמוֹ שֶׁכְּשֶׁאוֹפִים מְכִינִים עוּגָה.",
+      "difficulty": 3,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-018",
+      "kind": "verbal-analogy",
+      "stem": "שחקן : קבוצה :: תלמיד : ?",
+      "stemNiqqud": "שַׂחְקָן : קְבוּצָה :: תַּלְמִיד : ?",
+      "options": [
+        "מחברת",
+        "כיתה",
+        "ילקוט",
+        "הפסקה"
+      ],
+      "optionsNiqqud": [
+        "מַחְבֶּרֶת",
+        "כִּיתָּה",
+        "יַלְקוּט",
+        "הַפְסָקָה"
+      ],
+      "answerIndex": 1,
+      "explanation": "תלמיד הוא חלק מכיתה, כמו ששחקן הוא חלק מקבוצה.",
+      "explanationNiqqud": "תַּלְמִיד הוּא חֵלֶק מִכִּיתָּה, כְּמוֹ שֶׁשַּׂחְקָן הוּא חֵלֶק מִקְּבוּצָה.",
+      "difficulty": 3,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-019",
+      "kind": "verbal-analogy",
+      "stem": "גג : גשם :: מעיל : ?",
+      "stemNiqqud": "גַּג : גֶּשֶׁם :: מְעִיל : ?",
+      "options": [
+        "אור",
+        "חושך",
+        "קור",
+        "רעש"
+      ],
+      "optionsNiqqud": [
+        "אוֹר",
+        "חוֹשֶׁךְ",
+        "קוֹר",
+        "רַעַשׁ"
+      ],
+      "answerIndex": 2,
+      "explanation": "המעיל מגן עלינו מפני הקור, כמו שהגג מגן על הבית מפני הגשם.",
+      "explanationNiqqud": "הַמְּעִיל מֵגֵן עָלֵינוּ מִפְּנֵי הַקּוֹר, כְּמוֹ שֶׁהַגַּג מֵגֵן עַל הַבַּיִת מִפְּנֵי הַגֶּשֶׁם.",
+      "difficulty": 3,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-020",
+      "kind": "verbal-analogy",
+      "stem": "שעון : שעה :: סרגל : ?",
+      "stemNiqqud": "שָׁעוֹן : שָׁעָה :: סַרְגֵּל : ?",
+      "options": [
+        "קילוגרם",
+        "שקל",
+        "שנה",
+        "סנטימטר"
+      ],
+      "optionsNiqqud": [
+        "קִילוֹגְרָם",
+        "שֶׁקֶל",
+        "שָׁנָה",
+        "סֶנְטִימֶטֶר"
+      ],
+      "answerIndex": 3,
+      "explanation": "בסרגל מודדים אורך בסנטימטרים, כמו שבשעון מודדים זמן בשעות.",
+      "explanationNiqqud": "בְּסַרְגֵּל מוֹדְדִים אוֹרֶךְ בְּסֶנְטִימֶטְרִים, כְּמוֹ שֶׁבְּשָׁעוֹן מוֹדְדִים זְמַן בְּשָׁעוֹת.",
+      "difficulty": 3,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-021",
+      "kind": "verbal-analogy",
+      "stem": "מהיר : זריז :: נבון : ?",
+      "stemNiqqud": "מָהִיר : זָרִיז :: נָבוֹן : ?",
+      "options": [
+        "חכם",
+        "שקט",
+        "חזק",
+        "אמיץ"
+      ],
+      "optionsNiqqud": [
+        "חָכָם",
+        "שָׁקֵט",
+        "חָזָק",
+        "אַמִּיץ"
+      ],
+      "answerIndex": 0,
+      "explanation": "נבון וחכם הן מילים בעלות משמעות דומה, כמו מהיר וזריז.",
+      "explanationNiqqud": "נָבוֹן וְחָכָם הֵן מִילִּים בַּעֲלוֹת מַשְׁמָעוּת דּוֹמָה, כְּמוֹ מָהִיר וְזָרִיז.",
+      "difficulty": 3,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-022",
+      "kind": "verbal-analogy",
+      "stem": "רופא : מרפאה :: מורה : ?",
+      "stemNiqqud": "רוֹפֵא : מִרְפָּאָה :: מוֹרֶה : ?",
+      "options": [
+        "חנות",
+        "בית ספר",
+        "תחנה",
+        "תיאטרון"
+      ],
+      "optionsNiqqud": [
+        "חֲנוּת",
+        "בֵּית סֵפֶר",
+        "תַּחֲנָה",
+        "תֵּיאַטְרוֹן"
+      ],
+      "answerIndex": 1,
+      "explanation": "המורה עובד בבית ספר, כמו שהרופא עובד במרפאה.",
+      "explanationNiqqud": "הַמּוֹרֶה עוֹבֵד בְּבֵית סֵפֶר, כְּמוֹ שֶׁהָרוֹפֵא עוֹבֵד בְּמִרְפָּאָה.",
+      "difficulty": 3,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-023",
+      "kind": "verbal-analogy",
+      "stem": "זרע : עץ :: זחל : ?",
+      "stemNiqqud": "זֶרַע : עֵץ :: זַחַל : ?",
+      "options": [
+        "נמלה",
+        "דבורה",
+        "פרפר",
+        "חיפושית"
+      ],
+      "optionsNiqqud": [
+        "נְמָלָה",
+        "דְּבוֹרָה",
+        "פַּרְפַּר",
+        "חִיפּוּשִׁית"
+      ],
+      "answerIndex": 2,
+      "explanation": "מהזחל מתפתח פרפר, כמו שמהזרע גדל עץ.",
+      "explanationNiqqud": "מֵהַזַּחַל מִתְפַּתֵּחַ פַּרְפַּר, כְּמוֹ שֶׁמֵּהַזֶּרַע גָּדֵל עֵץ.",
+      "difficulty": 3,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    },
+    {
+      "id": "va-024",
+      "kind": "verbal-analogy",
+      "stem": "מתי : זמן :: איפה : ?",
+      "stemNiqqud": "מָתַי : זְמַן :: אֵיפֹה : ?",
+      "options": [
+        "סיבה",
+        "כמות",
+        "אדם",
+        "מקום"
+      ],
+      "optionsNiqqud": [
+        "סִיבָּה",
+        "כַּמּוּת",
+        "אָדָם",
+        "מָקוֹם"
+      ],
+      "answerIndex": 3,
+      "explanation": "המילה איפה שואלת על מקום, כמו שהמילה מתי שואלת על זמן.",
+      "explanationNiqqud": "הַמִּילָּה אֵיפֹה שׁוֹאֶלֶת עַל מָקוֹם, כְּמוֹ שֶׁהַמִּילָּה מָתַי שׁוֹאֶלֶת עַל זְמַן.",
+      "difficulty": 3,
+      "skill": "verbal-analogy",
+      "reviewStatus": "reviewed",
+      "source": "original"
+    }
+  ]
+}
