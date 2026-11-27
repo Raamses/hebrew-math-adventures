@@ -220,21 +220,6 @@
       "errorLevel": "Level must be between 1 and 10",
       "errorXP": "XP cannot be negative"
     },
-    "heatmap": {
-      "future": "Future",
-      "activity": "Activity",
-      "less": "Less",
-      "more": "More",
-      "dayLabels": [
-        "S",
-        "M",
-        "T",
-        "W",
-        "T",
-        "F",
-        "S"
-      ]
-    },
     "games": {
       "title": "Games",
       "subtitle": "Pick a game and practise maths together in a few minutes",
@@ -488,14 +473,8 @@
     "selectProfile": "Select Profile",
     "progress": "Progress",
     "skillAnalysis": "Skill Analysis",
-    "weekly": "Weekly Activity",
     "streak": "Practice Streak",
-    "stars": "Stars",
     "badges": "Badges",
-    "coins": "Coins",
-    "timePlayed": "Time Played",
-    "minutes": "min",
-    "overallAccuracy": "Overall Accuracy",
     "answers": "answers",
     "skillBreakdown": "Skill Breakdown",
     "strongest": "Strongest Skill",

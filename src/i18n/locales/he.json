@@ -220,21 +220,6 @@
       "errorLevel": "הרמה חייבת להיות בין 1 ל-10",
       "errorXP": "נקודות לא יכולות להיות שליליות"
     },
-    "heatmap": {
-      "future": "עתידי",
-      "activity": "פעילות",
-      "less": "פחות",
-      "more": "יותר",
-      "dayLabels": [
-        "א",
-        "ב",
-        "ג",
-        "ד",
-        "ה",
-        "ו",
-        "ש"
-      ]
-    },
     "games": {
       "title": "משחקים",
       "subtitle": "בחרו משחק ותרגלו חשבון יחד בכמה דקות",
@@ -488,14 +473,8 @@
     "selectProfile": "בחר פרופיל",
     "progress": "התקדמות",
     "skillAnalysis": "ניתוח כישורים",
-    "weekly": "פעילות שבועית",
     "streak": "רצף אימון",
-    "stars": "כוכבים",
     "badges": "תגים",
-    "coins": "מטבעות",
-    "timePlayed": "זמן משחק",
-    "minutes": "דק'",
-    "overallAccuracy": "דיוק כללי",
     "answers": "תשובות",
     "skillBreakdown": "פירוט כישורים",
     "strongest": "הכישרון הכי חזק",
