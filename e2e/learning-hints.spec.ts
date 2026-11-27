@@ -51,6 +51,7 @@ const NODES = {
   multiplication: 'n3_8',   // multiplication, max 10
   subBorrow: 'n5_5',        // sub_borrow
   comparison: 'n1_5',       // comparison_simple, max 10 (non-arithmetic)
+  division: 'n4_5b',        // division, max 10
 };
 
 /**
@@ -204,17 +205,11 @@ test.describe('hint content by operation', () => {
     await expect(viz.locator('svg').first()).toBeVisible();
   });
 
-  // FIXME: no reachable division hint. learningPath.ts has no arithmetic division practice
-  // node (division appears only adaptively at level 5+), and MathCard.tsx renders the hint
-  // button only when problem.type === 'arithmetic'. n4_7 is NOT a division node: it is
-  // config { type: 'word' } (learningPath.ts:92), so its hint button never renders either.
-  // Follow-up: board card e1d72e8c (add an arithmetic division node, then fill in its id
-  // here and drop the .fixme).
-  test.fixme('division shows baskets, apples and the sharing explainer', async ({ page }) => {
-    await setupWithUnlockedNodes(page, `hint div ${profileSeq++}`, ['TODO_DIV_NODE']);
-    const viz = await openHint(page, 'TODO_DIV_NODE');
+  test('division shows baskets, apples and the sharing explainer', async ({ page }) => {
+    await setupWithUnlockedNodes(page, `hint div ${profileSeq++}`, ['n4_5b']);
+    const viz = await openHint(page, NODES.division);
     await expect(viz).toContainText(T.sharing);
-    await expect(viz.locator('svg')).toBeVisible();
+    await expect(viz.locator('svg').first()).toBeVisible();
   });
 });
 
