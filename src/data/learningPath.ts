@@ -88,6 +88,7 @@ export const CURRICULUM: LearningUnit[] = [
             { id: 'n4_4', unitId: 'unit_4', title: 'Missing Part', description: '10 - ? = 4', type: 'PRACTICE', position: { x: 50, y: 450 }, targetLevel: 5, config: { type: 'algebraic', max: 20 } },
             // Story micro-lesson: sharing into groups of five.
             { id: 'n4_5', unitId: 'unit_4', title: 'Divide by 5', description: 'Lesson: 20 / 5', type: 'LESSON', position: { x: 40, y: 600 }, targetLevel: 5 },
+            { id: 'n4_5b', unitId: 'unit_4', title: 'Dune Division', description: 'Share it evenly', type: 'PRACTICE', position: { x: 80, y: 675 }, targetLevel: 5, config: { type: 'division', max: 10 } },
             { id: 'n4_6', unitId: 'unit_4', title: 'Logic Pattern', description: '2, 4, 8, 16', type: 'PRACTICE', position: { x: 60, y: 750 }, targetLevel: 6, config: { type: 'series_geometric' } },
             { id: 'n4_7', unitId: 'unit_4', title: 'Word Problems', description: 'Advanced Stories', type: 'PRACTICE', position: { x: 50, y: 900 }, targetLevel: 5, config: { type: 'word' } },
             { id: 'n4_8', unitId: 'unit_4', title: 'Sub Master', description: 'Sub up to 100', type: 'PRACTICE', position: { x: 30, y: 1050 }, targetLevel: 6, config: { type: 'sub_simple', max: 100 } },
