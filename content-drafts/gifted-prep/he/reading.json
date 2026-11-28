@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New passages rc-041..rc-080 (2026-11-16): vocalized by Claude, then cross-checked word by word against Dicta Nakdan on 2026-11-16 (about 7,900 words; spelling-only differences such as ktiv male vs chaser ignored; 321 disagreements adjudicated in context by Claude: 60 fields in rc-041..rc-080 corrected, e.g. missing dagesh and wrong noun patterns, the rest kept where Dicta misread the context). Rule for the whole bank: a form corrected in this pass replaces every occurrence of that word, round 1 included, which corrected 17 more fields (77 in all) in (rc-002, rc-003, rc-005, rc-013, rc-018, rc-020, rc-024, rc-034, rc-036, rc-040), and one lemma keeps one stem (the coral word now uses holam in singular and plural). Their niqqud has not been human-reviewed either. Round 3, rc-081..rc-100 (drafts 2026-11-17): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-17: 4,576 words, 4,353 agreed; 223 disagreements adjudicated in context by Claude. 39 fields corrected (e.g. חֵדֶק, עֲטַלֵּפִים, הֶעָלִים, הִנִּיחַ, נִיצֵּחַ, סַחֲטוּ, אַבְקָה, construct אַחַד); the rest kept where Dicta misread the context (article, imperative vs past, names) or differed only in spelling convention, and where two forms are both acceptable the form already in the bank was kept (לְהַחְזִיק, מִלְמַעְלָה). None of the corrected wrong forms occurs in rounds 1-2. Their niqqud has not been human-reviewed either. Round 4, rc-101..rc-120 (drafts 2026-11-20): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-20: 4,529 words, 4,315 agreed; 214 disagreements adjudicated in context by Claude. 6 forms corrected in 21 places (הַחֲתוּלָה, מַאגְמָה, לַיְּלָדִים, חוֹכְמָה, בַּהַתְחָלָה, כְּשֶׁנּוֹצַר); the rest kept where Dicta misread the context (names, verb vs noun, imperative vs past) or differed only in spelling convention, and where two forms are both acceptable the form already in the bank was kept (סַבְתָּא, מָה עָשָׂה). Their niqqud has not been human-reviewed either. Round 5, rc-121..rc-140 (drafts 2026-11-24): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-24: 4,613 words, 4,424 agreed; 189 disagreements adjudicated in context by Claude. 7 forms corrected in 15 places (עֲקוּמָּה, נַהֶגֶת, כִּיוּוּן, סִירֵנָה, בַּשִּׁינַּיִים, מַחֲזִיק, and dagesh kal in דּוֹדָה after a consonant-final word or at the start of a field); the rest kept where Dicta misread the context (names, gender, verb vs noun, imperative vs past) or differed only in spelling convention or tokenization, and where two forms are both acceptable the form already in the bank was kept (סַבְתָּא, מָה, holam for kamatz katan). Their niqqud has not been human-reviewed either. Round 6, rc-141..rc-160 (drafts 2026-11-28): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-28: 4,912 words, 4,648 agreed on the first pass; 264 disagreements adjudicated in context by Claude. 9 forms corrected in 30 places (פַּרְפָּרִים, עֲקֵבוֹת, שָׂמֵחַ, נְאַבֵּד, יְאַבְּדוּ, נִיתָּק, נִפְרָד, הֲמוֹן, לְתָמִיד); the rest kept where Dicta misread the context (names, gender, verb vs noun, imperative vs past) or differed only in spelling convention or tokenization, and where two forms are both acceptable the form already in the bank was kept (טֶלֶפוֹן, אוֹמָּנוּת, הָרַעְיוֹן, holam for kamatz katan). Their niqqud has not been human-reviewed either.",
+ "niqqudProvenance": "Machine-vocalized: LLM + Dicta Nakdan cross-check, 239 word-level disagreements adjudicated by Claude (2026-11-15). Ram's approve pass covered the plain text only; the niqqud has not been human-reviewed. New passages rc-041..rc-080 (2026-11-16): vocalized by Claude, then cross-checked word by word against Dicta Nakdan on 2026-11-16 (about 7,900 words; spelling-only differences such as ktiv male vs chaser ignored; 321 disagreements adjudicated in context by Claude: 60 fields in rc-041..rc-080 corrected, e.g. missing dagesh and wrong noun patterns, the rest kept where Dicta misread the context). Rule for the whole bank: a form corrected in this pass replaces every occurrence of that word, round 1 included, which corrected 17 more fields (77 in all) in (rc-002, rc-003, rc-005, rc-013, rc-018, rc-020, rc-024, rc-034, rc-036, rc-040), and one lemma keeps one stem (the coral word now uses holam in singular and plural). Their niqqud has not been human-reviewed either. Round 3, rc-081..rc-100 (drafts 2026-11-17): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-17: 4,576 words, 4,353 agreed; 223 disagreements adjudicated in context by Claude. 39 fields corrected (e.g. חֵדֶק, עֲטַלֵּפִים, הֶעָלִים, הִנִּיחַ, נִיצֵּחַ, סַחֲטוּ, אַבְקָה, construct אַחַד); the rest kept where Dicta misread the context (article, imperative vs past, names) or differed only in spelling convention, and where two forms are both acceptable the form already in the bank was kept (לְהַחְזִיק, מִלְמַעְלָה). None of the corrected wrong forms occurs in rounds 1-2. Their niqqud has not been human-reviewed either. Round 4, rc-101..rc-120 (drafts 2026-11-20): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-20: 4,529 words, 4,315 agreed; 214 disagreements adjudicated in context by Claude. 6 forms corrected in 21 places (הַחֲתוּלָה, מַאגְמָה, לַיְּלָדִים, חוֹכְמָה, בַּהַתְחָלָה, כְּשֶׁנּוֹצַר); the rest kept where Dicta misread the context (names, verb vs noun, imperative vs past) or differed only in spelling convention, and where two forms are both acceptable the form already in the bank was kept (סַבְתָּא, מָה עָשָׂה). Their niqqud has not been human-reviewed either. Round 5, rc-121..rc-140 (drafts 2026-11-24): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-24: 4,613 words, 4,424 agreed; 189 disagreements adjudicated in context by Claude. 7 forms corrected in 15 places (עֲקוּמָּה, נַהֶגֶת, כִּיוּוּן, סִירֵנָה, בַּשִּׁינַּיִים, מַחֲזִיק, and dagesh kal in דּוֹדָה after a consonant-final word or at the start of a field); the rest kept where Dicta misread the context (names, gender, verb vs noun, imperative vs past) or differed only in spelling convention or tokenization, and where two forms are both acceptable the form already in the bank was kept (סַבְתָּא, מָה, holam for kamatz katan). Their niqqud has not been human-reviewed either. Round 6, rc-141..rc-160 (drafts 2026-11-28): vocalized by Claude, then cross-checked word by word against Dicta Nakdan (nakdan-2-0, modern genre) on 2026-11-28: 4,912 words, 4,648 agreed on the first pass; 264 disagreements adjudicated in context by Claude. 9 forms corrected in 30 places (פַּרְפָּרִים, עֲקֵבוֹת, שָׂמֵחַ, נְאַבֵּד, יְאַבְּדוּ, נִיתָּק, נִפְרָד, הֲמוֹן, לְתָמִיד; the past נִיתַּק is kept in rc-148-q5, whose option tells what already happened), and after review the dagesh kal in גִּ׳ירָפָה / גִּ׳ירָפוֹת was added in 2 more places and הֲמוֹן was swept into round-5 rc-127, which still had הָמוֹן; the rest kept where Dicta misread the context (names, gender, verb vs noun, imperative vs past) or differed only in spelling convention or tokenization, and where two forms are both acceptable the form already in the bank was kept (טֶלֶפוֹן, אוֹמָּנוּת, הָרַעְיוֹן, holam for kamatz katan). Their niqqud has not been human-reviewed either.",
  "passages": [
   {
    "id": "rc-001",
@@ -12093,7 +12093,7 @@
      "stemNiqqud": "הַלִּוְויָיתָן עֲנָק, וְהַקְּרִיל זָעִיר. אֵיךְ הַלִּוְויָיתָן מַצְלִיחַ לֶאֱכוֹל מַסְפִּיק?",
      "explanationNiqqud": "בְּכָל לְגִימָה עֲנָקִית נִכְנָס הַרְבֵּה קְרִיל, וְכָךְ הוּא אוֹכֵל כַּמּוּת גְּדוֹלָה מְאוֹד בַּיּוֹם.",
      "optionsNiqqud": [
-      "הוּא בּוֹלֵעַ בְּבַת אַחַת הָמוֹן מַיִם וּבָהֶם הַרְבֵּה קְרִיל",
+      "הוּא בּוֹלֵעַ בְּבַת אַחַת הֲמוֹן מַיִם וּבָהֶם הַרְבֵּה קְרִיל",
       "הוּא צָד כָּל קְרִיל לְבַד",
       "הוּא אוֹכֵל רַק פַּעַם בְּשָׁנָה",
       "הַקְּרִיל גָּדֵל בְּתוֹךְ הַפֶּה שֶׁלּוֹ"
@@ -14009,6 +14009,7 @@
      "answerIndex": 2,
      "explanation": "דור היה צריך לספור כמה אנשים יאכלו. הוא טעה ושם צלחת לסבתא, שבכלל לא באה.",
      "skill": "inference",
+     "flag": "הפותר העיוור העיר שהקטע לא אומר במפורש למה דור שם צלחת לסבתא. השארתי כך בכוונה: כתוב שצריך ״לספור כמה אנשים יאכלו״ ושסבתא ״בכלל לא באה״, ומזה מסיקים שדור טעה בספירה. הפותר ענה נכון.",
      "stemNiqqud": "לָמָּה שָׂם דּוֹר צַלַּחַת גַּם לְסַבְתָּא?",
      "explanationNiqqud": "דּוֹר הָיָה צָרִיךְ לִסְפּוֹר כַּמָּה אֲנָשִׁים יֹאכְלוּ. הוּא טָעָה וְשָׂם צַלַּחַת לְסַבְתָּא, שֶׁבִּכְלָל לֹא בָּאָה.",
      "optionsNiqqud": [
@@ -14372,7 +14373,7 @@
      "id": "rc-148-q3",
      "stem": "במה עוזר לשממית הזנב שממשיך לזוז על הרצפה?",
      "options": [
-      "הוא מסיח את הטורף, והיא בורחת",
+      "הוא מסיח את דעת הטורף, והיא בורחת",
       "הוא מפחיד את היתושים",
       "הוא עוזר לה לטפס",
       "הוא מראה לה את הדרך הביתה"
@@ -14383,7 +14384,7 @@
      "stemNiqqud": "בַּמֶּה עוֹזֵר לַשְּׂמָמִית הַזָּנָב שֶׁמַּמְשִׁיךְ לָזוּז עַל הָרִצְפָּה?",
      "explanationNiqqud": "הַטּוֹרֵף מִסְתַּכֵּל עַל הַזָּנָב שֶׁזָּז, וּבֵינְתַיִים הַשְּׂמָמִית בּוֹרַחַת.",
      "optionsNiqqud": [
-      "הוּא מַסִּיחַ אֶת הַטּוֹרֵף, וְהִיא בּוֹרַחַת",
+      "הוּא מַסִּיחַ אֶת דַּעַת הַטּוֹרֵף, וְהִיא בּוֹרַחַת",
       "הוּא מַפְחִיד אֶת הַיַּתּוּשִׁים",
       "הוּא עוֹזֵר לָהּ לְטַפֵּס",
       "הוּא מַרְאֶה לָהּ אֶת הַדֶּרֶךְ הַבַּיְתָה"
@@ -15087,6 +15088,7 @@
      "answerIndex": 3,
      "explanation": "המטריה צהובה, וכשפותחים אותה היא עגולה. בגלל זה היא נראית כמו ״שמש קטנה״.",
      "skill": "inference",
+     "flag": "הפותר העיוור העיר שבשיר כתוב רק ״צהובה, כמו שמש״, ושהמילה ״עגולה כשהיא פתוחה״ היא הסקה. השארתי כך בכוונה: זו שאלת הסקה, ושאר האפשרויות לא מתאימות לשיר. הפותר ענה נכון.",
      "stemNiqqud": "לָמָּה הַמִּטְרִיָּה דּוֹמָה לַשֶּׁמֶשׁ, לְפִי הַשִּׁיר?",
      "explanationNiqqud": "הַמִּטְרִיָּה צְהוּבָּה, וּכְשֶׁפּוֹתְחִים אוֹתָהּ הִיא עֲגוּלָּה. בִּגְלַל זֶה הִיא נִרְאֵית כְּמוֹ ״שֶׁמֶשׁ קְטַנָּה״.",
      "optionsNiqqud": [
@@ -15206,6 +15208,7 @@
      "answerIndex": 3,
      "explanation": "את החור עושים בעיפרון חד. כדי שאף אחד לא ייפצע, מבוגר עושה את זה.",
      "skill": "inference",
+     "flag": "הפותר העיוור העיר שהסיבה (עיפרון חד יכול לפצוע) לא כתובה במפורש. השארתי כך בכוונה: זו שאלת הסקה מתוך המילים ״עיפרון חד״. הפותר ענה נכון.",
      "stemNiqqud": "לָמָּה הַהוֹרָאוֹת אוֹמְרוֹת לְבַקֵּשׁ מִמְּבוּגָּר לַעֲשׂוֹת אֶת הַחוֹר?",
      "explanationNiqqud": "אֶת הַחוֹר עוֹשִׂים בְּעִיפָּרוֹן חַד. כְּדֵי שֶׁאַף אֶחָד לֹא יִיפָּצַע, מְבוּגָּר עוֹשֶׂה אֶת זֶה.",
      "optionsNiqqud": [
@@ -15500,6 +15503,7 @@
      "answerIndex": 2,
      "explanation": "אלה מספרת מה עשתה, אומרת שהבינה שפגעה ביואב, וכותבת ״אני מצטערת״.",
      "skill": "main-idea",
+     "flag": "לתשומת לבך: מכתב הסליחה בנוי דומה ל״פתק לשכנה״ שכבר באפליקציה (מודים בטעות, מציעים לתקן, מבטיחים לפעם הבאה). הנושא שונה: כאן צחוק על ציור של חבר. אם תעדיף, אחליף אותו.",
      "stemNiqqud": "לָמָּה כָּתְבָה אֵלָה אֶת הַמִּכְתָּב?",
      "explanationNiqqud": "אֵלָה מְסַפֶּרֶת מָה עָשְׂתָה, אוֹמֶרֶת שֶׁהֵבִינָה שֶׁפָּגְעָה בְּיוֹאָב, וְכוֹתֶבֶת ״אֲנִי מִצְטַעֶרֶת״.",
      "optionsNiqqud": [
@@ -15645,7 +15649,7 @@
      "optionsNiqqud": [
       "כְּדֵי לִשְׁאוֹל אֶת הַשּׁוֹמֶרֶת שְׁאֵלוֹת עַל הַגִּ׳ירָפוֹת",
       "כְּדֵי לְהַזְמִין אֶת הַשּׁוֹמֶרֶת לְבֵית הַסֵּפֶר",
-      "כְּדֵי לְבַקֵּשׁ גִ׳ירָפָה קְטַנָּה",
+      "כְּדֵי לְבַקֵּשׁ גִּ׳ירָפָה קְטַנָּה",
       "כְּדֵי לְהִתְלוֹנֵן עַל גַּן הַחַיּוֹת"
      ]
     },
@@ -15688,7 +15692,7 @@
       "בְּגַן הַחַיּוֹת, בְּבִיקּוּר עִם הַכִּיתָּה",
       "בְּבֵית הַסֵּפֶר",
       "בַּטֶּלֶווִיזְיָה",
-      "בְּסֵפֶר עַל גִ׳ירָפוֹת"
+      "בְּסֵפֶר עַל גִּ׳ירָפוֹת"
      ]
     }
    ],
