@@ -232,4 +232,45 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
   fi
 fi
 
+# ── Sync with origin/main (keeps the vault copy current) ─────────────────────
+# The Pi checkout is mounted read-only into Ram's Obsidian vault, so it must
+# track origin/main. Local snapshot commits are replayed on top of the latest
+# main with a rebase. Nothing is ever discarded: before the rebase the current
+# HEAD is saved to refs/backup/ga4-pre-sync, and on any conflict the rebase is
+# aborted, which restores HEAD exactly. A dirty tree or failed fetch only skips
+# the sync; the snapshot itself is already written.
+sync_with_origin_main() {
+  local pre_head
+  pre_head=$(git rev-parse HEAD 2>/dev/null) || { echo "[$NOW] Sync skipped — no HEAD."; return 0; }
+
+  if [[ -d "$(git rev-parse --git-path rebase-merge)" || -d "$(git rev-parse --git-path rebase-apply)" ]]; then
+    echo "[$NOW] Sync skipped — a rebase is already in progress; fix it by hand."
+    return 0
+  fi
+  if ! git diff --quiet || ! git diff --cached --quiet; then
+    echo "[$NOW] Sync skipped — working tree has uncommitted tracked changes."
+    return 0
+  fi
+  if ! git fetch --quiet origin main; then
+    echo "[$NOW] Sync skipped — git fetch origin main failed."
+    return 0
+  fi
+
+  git update-ref refs/backup/ga4-pre-sync "${pre_head}"
+  if git rebase --quiet origin/main >/dev/null 2>&1; then
+    echo "[$NOW] Synced: HEAD $(git rev-parse --short HEAD) on origin/main $(git rev-parse --short origin/main) (was ${pre_head:0:7})."
+  else
+    git rebase --abort >/dev/null 2>&1 || true
+    if [[ "$(git rev-parse HEAD)" == "${pre_head}" ]]; then
+      echo "[$NOW] Sync FAILED — rebase conflict, aborted; HEAD restored to ${pre_head:0:7}. Resolve by hand."
+    else
+      echo "[$NOW] Sync FAILED — HEAD not restored; backup at refs/backup/ga4-pre-sync (${pre_head:0:7})."
+    fi
+  fi
+}
+
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  sync_with_origin_main
+fi
+
 echo "[$NOW] GA4 snapshot complete."
