@@ -223,6 +223,11 @@ export async function readInstructionText(page: Page): Promise<string> {
   });
 }
 
+// Pure parser lives in its own Playwright-free module so Vitest can exercise it directly
+// (src/__tests__/wordProblemAnswerParser.test.ts); re-exported to keep existing import sites working.
+export { parseWordProblemAnswer } from './wordProblemParser';
+import { parseWordProblemAnswer } from './wordProblemParser';
+
 function parseAnswer(text: string): number | null {
   const bodyText = text.replace(/[⁦⁧⁨⁩]/g, '');
   // Look for arithmetic instruction like "N + N = ?", "? + N = N", "N - ? = N"
@@ -520,6 +525,25 @@ export async function solveCurrentProblem(page: Page): Promise<boolean> {
       if (await checkBtn.count() > 0) await checkBtn.click();
       else await page.keyboard.press('Enter');
       return true;
+    }
+
+    // Word problem (WordProblemView): a single <p> story sentence with two embedded
+    // numbers, no "N op N =" / "N op N = ?" token, so neither equation parser above
+    // matches it. ArithmeticView/SeriesView never render a <p>, so this locator only
+    // ever finds the word-problem story. Operation is inferred from EN/HE phrasing
+    // keywords (wordProblemTemplates.ts), since the rendered text carries no i18n key.
+    const storyP = page.locator('.max-w-md.bg-white.rounded-3xl p').first();
+    if (await storyP.count() > 0) {
+      const storyText = (await storyP.textContent()) || '';
+      const answer = parseWordProblemAnswer(storyText);
+      if (answer !== null) {
+        await input.fill(String(answer));
+        await page.waitForTimeout(200);
+        const checkBtn = page.locator('[data-testid="math-submit"]').first();
+        if (await checkBtn.count() > 0) await checkBtn.click();
+        else await page.keyboard.press('Enter');
+        return true;
+      }
     }
 
     // Series pattern: numbers with a missing value (e.g., "14, 15, ?, 17")
