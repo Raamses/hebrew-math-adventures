@@ -31,6 +31,8 @@ export type PrepKind =
     | 'math-scales'          // order by weight from comparisons; trade along balances
     | 'math-triangle'        // magic triangle: every side has the same sum
     | 'math-logic'           // who has what: four children, four pets, has / has-not clues
+    | 'math-equalize'        // fair sharing: move half the gap, or down to the fair share
+    | 'math-legs'            // heads and legs: chickens and sheep, beetles and spiders
     | 'reading'              // question about a passage
     | 'word-meaning'
     | 'sentence-completion'
@@ -41,7 +43,7 @@ export const SKILL_TAGS = [
     'add', 'sub', 'missing-number', 'word-problem', 'picture-puzzle',
     'number-pattern', 'compare', 'odd-one-out', 'place-value', 'double-half', 'money',
     'work-backwards', 'sum-difference', 'position', 'counting', 'parity', 'number-wall', 'calendar',
-    'number-machine', 'hidden-digit', 'clues', 'scales', 'magic-triangle', 'logic-grid',
+    'number-machine', 'hidden-digit', 'clues', 'scales', 'magic-triangle', 'logic-grid', 'fair-share', 'heads-legs',
     'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
     'word-meaning', 'sentence-completion', 'verbal-analogy',
 ] as const;
