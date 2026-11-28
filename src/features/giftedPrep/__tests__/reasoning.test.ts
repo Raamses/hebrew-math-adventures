@@ -382,6 +382,20 @@ describe('C7 fair sharing and heads and legs: named distractors', () => {
         }
     });
 
+    it('never puts 1 before a plural noun, in the question or the explanation', () => {
+        const one = /(^|[^\d⁦⁩])1 (מדבקות|גולות|תרנגולות|כבשים|חיפושיות|עכבישים|חיות|ראשים|רגליים)/;
+        for (const make of [equalizeItem, legsItem]) {
+            for (const d of DIFFS) {
+                for (let seed = 1; seed <= 2000; seed++) {
+                    const it = make(seed, d);
+                    expect(it.stem.text, it.id).not.toMatch(one);
+                    // an LTR run ends with its own result, so read the explanation with the isolates removed
+                    expect(it.explanation.replace(/[⁦⁩]/g, ''), it.id).not.toMatch(/(^|[^\d])1 (מדבקות|גולות|תרנגולות|כבשים|חיפושיות|עכבישים|רגליים)/);
+                }
+            }
+        }
+    });
+
     it('d1 heads and legs always asks for the four-legged kind', () => {
         for (let seed = 1; seed <= 300; seed++) expect(legsItem(seed, 1).stem.text).toMatch(/כמה כבשים/);
     });

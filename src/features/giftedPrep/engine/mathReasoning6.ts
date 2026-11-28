@@ -2,7 +2,7 @@ import type { Difficulty, PrepItem } from '../types';
 import { ltr } from './arithmeticExplain';
 import { numericItem } from './mathBuild';
 import { fillPair, reasonPair } from './mathText';
-import { intBetween, mulberry32, pick, type Rng } from './prng';
+import { intBetween, mulberry32, type Rng } from './prng';
 
 /**
  * C7 reasoning, part B. Fair sharing: to even out two piles you move half the gap, not the gap; with
@@ -80,8 +80,9 @@ const FARMS = [
 export function legsItem(seed: number, difficulty: Difficulty): PrepItem {
     const rng = mulberry32(seed);
     const farm = difficulty === 3 && rng() < 0.5 ? FARMS[1] : FARMS[0];
-    const heads = intBetween(rng, difficulty === 1 ? 3 : 5, difficulty === 1 ? 6 : farm.few === 6 ? 10 : 12);
-    const many = intBetween(rng, 2, heads - 1); // at least 2, so the explanation's sum has a "+"
+    const heads = intBetween(rng, difficulty === 1 ? 4 : 5, difficulty === 1 ? 6 : farm.few === 6 ? 10 : 12);
+    // both kinds at least 2: the explanation's sum needs a "+", and "1 חיפושיות" is not Hebrew
+    const many = intBetween(rng, 2, heads - 2);
     const few = heads - many;
     const legs = few * farm.few + many * farm.many;
     const askMany = difficulty === 1 || rng() < 0.5;
