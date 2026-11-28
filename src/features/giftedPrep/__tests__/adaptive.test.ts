@@ -152,8 +152,8 @@ describe('reasoning types in the adaptive session (C3)', () => {
             expect(new Set(picks).size).toBe(REASONING_PER_SESSION);
             picks.forEach(p => { hits[p] = (hits[p] ?? 0) + 1; });
         }
-        // weights 2 vs 1 (total 13 over 12 types), 2 drawn: the weak type is in about 29% of sessions, each strong one in about 15%
-        expect(hits.counting).toBeGreaterThan(1030);
-        for (const t of REASONING_TAGS.filter(x => x !== 'counting')) expect(hits[t] ?? 0, t).toBeGreaterThan(480);
+        // weights 2 vs 1 (total 14 over 13 types), 2 drawn: the weak type is in about 27.5% of sessions, each strong one in about 14.4%
+        expect(hits.counting).toBeGreaterThan(970);
+        for (const t of REASONING_TAGS.filter(x => x !== 'counting')) expect(hits[t] ?? 0, t).toBeGreaterThan(455);
     });
 });

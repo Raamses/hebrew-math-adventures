@@ -273,6 +273,26 @@ function triangle(item: PrepItem): number[] {
     });
 }
 
+/** Who has what: the children and pets from the first line, every way to hand out the pets, kept if every clue holds. */
+export function logicGrid(text: string): string[] {
+    const intro = text.match(/מהילדים (.+) יש חיה אחרת: (.+)\.\n/)!;
+    const list = (s: string) => s.split(', ').flatMap(x => x.split(' ו'));
+    const kids = list(intro[1]);
+    const pets = list(intro[2]);
+    const clues = [...text.matchAll(/^ל(\S+) (יש|אין) (\S+)\.$/gm)].map(m => ({ k: kids.indexOf(m[1]), p: pets.indexOf(m[3]), has: m[2] === 'יש' }));
+    if (clues.some(c => c.k < 0 || c.p < 0)) return [];
+    const what = text.match(/איזו חיה יש ל(\S+)\?$/);
+    const who = text.match(/למי יש (\S+)\?$/);
+    const out = new Set<string>();
+    const perms = (left: number[]): number[][] => (left.length ? left.flatMap(x => perms(left.filter(y => y !== x)).map(r => [x, ...r])) : [[]]);
+    for (const owns of perms([0, 1, 2, 3])) {
+        if (!clues.every(c => (owns[c.k] === c.p) === c.has)) continue;
+        if (what) out.add(pets[owns[kids.indexOf(what[1])]]);
+        if (who) out.add(kids[owns.indexOf(pets.indexOf(who[1]))]);
+    }
+    return [...out];
+}
+
 const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | string)[]>> = {
     'math-backwards': it => backwards(it.stem.text ?? ''),
     'math-sum-difference': it => sumDifference(it.stem.text ?? ''),
@@ -286,6 +306,7 @@ const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | st
     'math-clues': clues,
     'math-scales': scales,
     'math-triangle': triangle,
+    'math-logic': it => logicGrid(it.stem.text ?? ''),
 };
 
 /** Every value the story allows (a well-made item has exactly one); null for kinds this file does not cover. */

@@ -3,17 +3,18 @@ import { backwardsItem, coinWays, countingItem, positionItem, sumDifferenceItem 
 import { calendarItem, parityItem, pyramidItem } from '../engine/mathReasoning2';
 import { clueHolds, cluesItem, hiddenDigitItem, machineItem } from '../engine/mathReasoning3';
 import { scalesItem, triangleItem } from '../engine/mathReasoning4';
+import { logicItem } from '../engine/mathReasoning5';
 import { stripNiqqud as strip } from '../engine/niqqud';
 import { pyramidText } from '../engine/mistakeDetails';
 import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
 import type { Difficulty, PrepItem } from '../types';
-import { reasoningOracle, reasoningSolutions } from './reasoningOracles';
+import { logicGrid, reasoningOracle, reasoningSolutions } from './reasoningOracles';
 
 const SEEDS = Number(process.env.PREP_SWEEP ?? 10_000);
 const DIFFS: Difficulty[] = [1, 2, 3];
 const MAKERS = {
     backwardsItem, sumDifferenceItem, positionItem, countingItem, parityItem, pyramidItem, calendarItem,
-    machineItem, hiddenDigitItem, cluesItem, scalesItem, triangleItem,
+    machineItem, hiddenDigitItem, cluesItem, scalesItem, triangleItem, logicItem,
 };
 const WEEK = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
 
@@ -37,8 +38,9 @@ function problems(item: PrepItem): string[] {
     const say = (ok: boolean, msg: string) => { if (!ok) out.push(`${item.id}: ${msg} | ${item.stem.text} [${item.options}]`); };
     say(item.options.length === 4 && new Set(item.options).size === 4, 'options not 4 distinct');
     say(item.options.every(o => /^\d+$/.test(o) && Number(o) <= 100) || item.options.every(o => WEEK.includes(o))
-        || (item.kind === 'math-scales' && item.options.every(o => !/[\d\u05D0-\u05EA]/.test(o))),
-        'options are neither whole numbers 0–100, day names nor (scales) pictures');
+        || (item.kind === 'math-scales' && item.options.every(o => !/[\d\u05D0-\u05EA]/.test(o)))
+        || (item.kind === 'math-logic' && item.optionsNiqqud?.length === 4),
+        'options are neither whole numbers 0–100, day names, (scales) pictures nor (who has what) vocalized words');
     say(!item.stem.triangle || (item.stem.triangle.length === 6 && item.stem.triangle.filter(c => c === '?').length <= 1), 'triangle is not 6 circles with at most one "?"');
     say(!item.optionsNiqqud || item.optionsNiqqud.every((o, i) => hasNiqqud(o) && strip(o) === item.options[i]), 'option niqqud twin differs');
     say((item.stem.pyramid ?? []).flat().every(c => c === '' || c === '?' || (/^\d+$/.test(c) && Number(c) <= 100)), 'pyramid brick is not a number 0–100, "?" or empty');
@@ -82,6 +84,7 @@ describe('C3 reasoning types: 10k-seed sweep per type and difficulty', () => {
 /** Which template a stem came from, by a phrase only that template uses. */
 const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
     machineItem: [['pairs', /^\d+ → \d+$/]],
+    logicItem: [['what', /איזו חיה יש/], ['who', /למי יש/]],
     scalesItem: [['order', /הכי (כבד|קל)/], ['mixed', /קל יותר/], ['trade', /שוקלים/]],
     triangleItem: [['given', /בכל צלע הוא \d+\. איזה/], ['equal', /שווה/], ['corners', /בפינות/]],
     cluesItem: [['two', /^[^.]+\.( [^.]+\.){2} איזה/], ['three', /^[^.]+\.( [^.]+\.){3} איזה/], ['digitSum', /מקבלים/]],
@@ -96,6 +99,7 @@ const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
 };
 const EXPECTED: Readonly<Record<string, Readonly<Record<Difficulty, readonly string[]>>>> = {
     machineItem: { 1: ['pairs'], 2: ['pairs'], 3: ['pairs'] },
+    logicItem: { 1: ['what', 'who'], 2: ['what', 'who'], 3: ['what', 'who'] },
     scalesItem: { 1: ['order'], 2: ['order', 'trade'], 3: ['order', 'mixed', 'trade'] },
     triangleItem: { 1: ['given'], 2: ['equal'], 3: ['equal', 'corners'] },
     cluesItem: { 1: ['two'], 2: ['three', 'digitSum'], 3: ['three', 'digitSum'] },
@@ -304,5 +308,40 @@ describe('coinWays', () => {
         expect(coinWays(20)).toEqual([[0, 10], [2, 5], [4, 0]]);
         expect(coinWays(11)).toEqual([[1, 3]]);
         expect(coinWays(1)).toEqual([]);
+    });
+});
+
+describe('C7 who has what: levels, needed clues, shape', () => {
+    const clueLines = (t: string) => t.split('\n').filter(l => /^ל\S+ (יש|אין) \S+\.$/.test(l));
+    it('d1 has two "has" clues, d2 one, d3 none; every clue is needed; the asked fact is never said', () => {
+        for (const d of DIFFS) {
+            for (let seed = 1; seed <= 1000; seed++) {
+                const it = logicItem(seed, d);
+                const t = it.stem.text!;
+                const lines = clueLines(t);
+                expect(lines.filter(l => / יש /.test(l)), t).toHaveLength(3 - d);
+                expect(lines.some(l => / אין /.test(l)), t).toBe(true);
+                // the explanation ends on the key, one ", אז ..." per deduction
+                expect(it.explanation, t).toMatch(/^מוחקים מה שלא יכול להיות\.( [^.]+, אז (ל\S+ יש \S+|ה\S+ של \S+)\.)+$/);
+                const key = it.options[it.answerIndex];
+                // closed by the child's row ("... יש key") or by the pet's column ("הkey של ...")
+                expect(it.explanation, t).toMatch(/איזו חיה/.test(t) ? new RegExp(`( יש ${key}| ה${key} של \\S+)\\.$`) : new RegExp(`(ל${key} יש \\S+|של ${key})\\.$`));
+                // drop any one clue and the question no longer has one answer
+                for (const l of lines) expect(logicGrid(t.replace(`${l}\n`, '')).length, `${t}\nwithout ${l}`).toBeGreaterThan(1);
+                const asked = t.match(/איזו חיה יש ל(\S+)\?$/)?.[1];
+                const pet = t.match(/למי יש (\S+)\?$/)?.[1];
+                for (const l of lines.filter(x => / יש /.test(x))) expect(l, t).not.toMatch(asked ? new RegExp(`^ל${asked} `) : new RegExp(` ${pet}\.$`));
+            }
+        }
+    });
+
+    it('the options are the four children or the four pets of the first line, with niqqud twins', () => {
+        for (let seed = 1; seed <= 500; seed++) {
+            const it = logicItem(seed, 2);
+            const first = it.stem.text!.split('\n')[0];
+            const named = first.replace(/^.*?מהילדים /, '').split(/, | ו| יש חיה אחרת: |\./).filter(Boolean);
+            for (const o of it.options) expect(named).toContain(o);
+            expect(it.optionsNiqqud!.map(o => stripNiqqud(o))).toEqual(it.options);
+        }
     });
 });

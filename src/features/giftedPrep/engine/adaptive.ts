@@ -8,6 +8,7 @@ import { backwardsItem, countingItem, positionItem, sumDifferenceItem } from './
 import { calendarItem, parityItem, pyramidItem } from './mathReasoning2';
 import { cluesItem, hiddenDigitItem, machineItem } from './mathReasoning3';
 import { scalesItem, triangleItem } from './mathReasoning4';
+import { logicItem } from './mathReasoning5';
 import { pictureItem } from './pictures';
 import { derivePrepTypeProgress } from './progress';
 import { type Rng } from './prng';
@@ -30,7 +31,7 @@ type NumberSenseTag = typeof NUMBER_SENSE_TAGS[number];
 /** C3 non-routine reasoning types: REASONING_PER_SESSION of them per session, weighted by weakness. */
 export const REASONING_TAGS = [
     'work-backwards', 'sum-difference', 'position', 'counting', 'parity', 'number-wall', 'calendar',
-    'number-machine', 'hidden-digit', 'clues', 'scales', 'magic-triangle',
+    'number-machine', 'hidden-digit', 'clues', 'scales', 'magic-triangle', 'logic-grid',
 ] as const;
 export type ReasoningTag = typeof REASONING_TAGS[number];
 
@@ -71,6 +72,7 @@ const REASONING_MAKERS: Readonly<Record<ReasoningTag, Maker>> = {
     clues: cluesItem,
     scales: scalesItem,
     'magic-triangle': triangleItem,
+    'logic-grid': logicItem,
 };
 
 /** 1 - accuracy of one skill; 0.5 when it has no attempts yet. */
