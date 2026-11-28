@@ -293,6 +293,36 @@ export function logicGrid(text: string): string[] {
     return [...out];
 }
 
+/** Fair sharing: try every amount to move (or every start for "after"), keep what ends equal. */
+function equalize(text: string): number[] {
+    const two = text.match(/לרוני יש (\d+) מדבקות ולגל יש (\d+) מדבקות/);
+    if (two) {
+        const [a, b] = [Number(two[1]), Number(two[2])];
+        return range(0, 100).filter(k => k <= a && a - k === b + k);
+    }
+    const after = text.match(/שהעבירו (\d+) מדבקות מרוני לגל/);
+    if (after) {
+        // every start (r, g) that ends equal after the move; collect how far apart they were
+        const k = Number(after[1]);
+        const gaps = new Set<number>();
+        for (let g = 0; g <= 50; g++) for (let r = k; r <= 100; r++) if (r - k === g + k) gaps.add(r - g);
+        return [...gaps];
+    }
+    const [a, b, c] = nums(text.match(/לרוני יש (\d+) גולות, לגל יש (\d+) גולות ולנועה יש (\d+) גולות/)![0]);
+    // Roni gives k in all, x of it to Gal and the rest to Noa; all three end the same
+    return range(0, a).filter(k => range(0, k).some(x => a - k === b + x && a - k === c + k - x));
+}
+
+/** Heads and legs: the two kinds and their legs from the text, every split of the heads. */
+function legs(text: string): number[] {
+    const kinds = [...text.matchAll(/לכל (\S+) (\d+) רגליים/g)].map(m => ({ one: m[1], legs: Number(m[2]) }));
+    const [heads, total] = nums(text.match(/יש (\d+) (?:ראשים|חיות) ו־(\d+) רגליים/)![0]);
+    const asked = text.match(/כמה (\S+) יש/)![1];
+    // the question uses the plural; the singular in "לכל ..." shares its first three letters
+    const which = kinds.findIndex(k => asked.startsWith(k.one.slice(0, 3)));
+    return range(0, heads).filter(n => n * kinds[which].legs + (heads - n) * kinds[1 - which].legs === total);
+}
+
 const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | string)[]>> = {
     'math-backwards': it => backwards(it.stem.text ?? ''),
     'math-sum-difference': it => sumDifference(it.stem.text ?? ''),
@@ -307,6 +337,8 @@ const SOLVERS: Partial<Record<PrepItem['kind'], (item: PrepItem) => (number | st
     'math-scales': scales,
     'math-triangle': triangle,
     'math-logic': it => logicGrid(it.stem.text ?? ''),
+    'math-equalize': it => equalize(it.stem.text ?? ''),
+    'math-legs': it => legs(it.stem.text ?? ''),
 };
 
 /** Every value the story allows (a well-made item has exactly one); null for kinds this file does not cover. */

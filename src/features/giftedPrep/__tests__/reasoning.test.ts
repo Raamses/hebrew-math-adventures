@@ -4,6 +4,7 @@ import { calendarItem, parityItem, pyramidItem } from '../engine/mathReasoning2'
 import { clueHolds, cluesItem, hiddenDigitItem, machineItem } from '../engine/mathReasoning3';
 import { scalesItem, triangleItem } from '../engine/mathReasoning4';
 import { logicItem } from '../engine/mathReasoning5';
+import { equalizeItem, legsItem } from '../engine/mathReasoning6';
 import { stripNiqqud as strip } from '../engine/niqqud';
 import { pyramidText } from '../engine/mistakeDetails';
 import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
@@ -15,6 +16,7 @@ const DIFFS: Difficulty[] = [1, 2, 3];
 const MAKERS = {
     backwardsItem, sumDifferenceItem, positionItem, countingItem, parityItem, pyramidItem, calendarItem,
     machineItem, hiddenDigitItem, cluesItem, scalesItem, triangleItem, logicItem,
+    equalizeItem, legsItem,
 };
 const WEEK = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
 
@@ -85,6 +87,8 @@ describe('C3 reasoning types: 10k-seed sweep per type and difficulty', () => {
 const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
     machineItem: [['pairs', /^\d+ → \d+$/]],
     logicItem: [['what', /איזו חיה יש/], ['who', /למי יש/]],
+    equalizeItem: [['give', /צריך להעביר מרוני לגל/], ['after', /שהעבירו/], ['three', /לנועה/]],
+    legsItem: [['yard', /בחצר/], ['bugs', /בתמונה/]],
     scalesItem: [['order', /הכי (כבד|קל)/], ['mixed', /קל יותר/], ['trade', /שוקלים/]],
     triangleItem: [['given', /בכל צלע הוא \d+\. איזה/], ['equal', /שווה/], ['corners', /בפינות/]],
     cluesItem: [['two', /^[^.]+\.( [^.]+\.){2} איזה/], ['three', /^[^.]+\.( [^.]+\.){3} איזה/], ['digitSum', /מקבלים/]],
@@ -100,6 +104,8 @@ const VARIANTS: Readonly<Record<string, readonly [string, RegExp][]>> = {
 const EXPECTED: Readonly<Record<string, Readonly<Record<Difficulty, readonly string[]>>>> = {
     machineItem: { 1: ['pairs'], 2: ['pairs'], 3: ['pairs'] },
     logicItem: { 1: ['what', 'who'], 2: ['what', 'who'], 3: ['what', 'who'] },
+    equalizeItem: { 1: ['give'], 2: ['give', 'after'], 3: ['give', 'after', 'three'] },
+    legsItem: { 1: ['yard'], 2: ['yard'], 3: ['yard', 'bugs'] },
     scalesItem: { 1: ['order'], 2: ['order', 'trade'], 3: ['order', 'mixed', 'trade'] },
     triangleItem: { 1: ['given'], 2: ['equal'], 3: ['equal', 'corners'] },
     cluesItem: { 1: ['two'], 2: ['three', 'digitSum'], 3: ['three', 'digitSum'] },
@@ -345,3 +351,39 @@ describe('C7 who has what: levels, needed clues, shape', () => {
         }
     });
 });
+
+describe('C7 fair sharing and heads and legs: named distractors', () => {
+    const wrong = (it: PrepItem) => it.options.filter((_, i) => i !== it.answerIndex);
+    const n = (t: string, re: RegExp) => Number(t.match(re)![1]);
+    it('fair sharing: "moved the whole gap", "only what Roni lost" and "gave the poorest the gap" are options', () => {
+        for (const d of DIFFS) {
+            for (let seed = 1; seed <= 1000; seed++) {
+                const it = equalizeItem(seed, d);
+                const t = it.stem.text!;
+                if (/שהעבירו/.test(t)) expect(wrong(it), t).toContain(String(n(t, /שהעבירו (\d+)/)));
+                else if (/לנועה/.test(t)) {
+                    const [a, b, c] = (t.match(/\d+/g) ?? []).map(Number);
+                    expect(wrong(it), t).toContain(String(a - Math.min(b, c)));
+                } else expect(wrong(it), t).toContain(String(n(t, /יש (\d+) מדבקות ולגל/) - n(t, /ולגל יש (\d+)/)));
+            }
+        }
+    });
+
+    it('heads and legs: "answered the other kind" and "forgot to share out the extra legs" are options', () => {
+        for (const d of DIFFS) {
+            for (let seed = 1; seed <= 1000; seed++) {
+                const it = legsItem(seed, d);
+                const t = it.stem.text!;
+                const heads = n(t, /יש (\d+) (ראשים|חיות)/);
+                const key = Number(it.options[it.answerIndex]);
+                if (heads - key !== key) expect(wrong(it), t).toContain(String(heads - key));
+                expect(it.explanation, t).toContain('כפול');
+            }
+        }
+    });
+
+    it('d1 heads and legs always asks for the four-legged kind', () => {
+        for (let seed = 1; seed <= 300; seed++) expect(legsItem(seed, 1).stem.text).toMatch(/כמה כבשים/);
+    });
+});
+
