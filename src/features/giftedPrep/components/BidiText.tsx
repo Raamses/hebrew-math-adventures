@@ -14,7 +14,7 @@ export function BidiText({ text }: { readonly text?: string }) {
         <>
             {text.split(ISOLATE_RUN).map((part, i) =>
                 i % 2 === 1
-                    ? <span key={i} dir="ltr" className="inline-block max-w-full" data-testid="prep-ltr-run">{part}</span>
+                    ? <span key={i} dir="ltr" className="inline-block max-w-full unicode-bidi-isolate" data-testid="prep-ltr-run">{part}</span>
                     : part,
             )}
         </>

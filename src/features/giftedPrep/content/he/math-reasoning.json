@@ -1,5 +1,5 @@
 {
- "_provenance": "Stem templates for the non-routine reasoning types (C3, 2026-11-20). Vocalized by Claude and cross-checked word by word against Dicta Nakdan the same day (271 words: 250 agreed; of 21 disagreements, 3 adopted (בְּתוֹר לִגְלִידָה), 8 kept in context (the name גַּל, מְשַׂחֵק, סִפְרָה, מִקּוֹמָה, בַּמָּקוֹם הַ־), 10 are prefixes before a number); the niqqud has not been human-reviewed. Part 2 (parity, pyramid, calendar, and the day names in engine/mathReasoning2.ts): 118 words checked against Dicta Nakdan, 115 agreed, the other 3 are prefixes before a number. Hebrew wording awaits Ram's review in the PR. Each entry is [plain, vocalized]; the tests check that stripping the marks gives the plain text exactly. Backwards stems are built from parts: intro + step (+ then + step)... + end. C5 (2026-11-24): machine, hiddenDigit and clues, 62 words checked against Dicta Nakdan, 51 agreed, 11 kept in context (נִכְנָס and יוֹצֵא present tense, יֵצֵא will come out, אֲחָדוֹת the math term, סִפְרָה digit, מַה שֶּׁ, prefixes before a number); scales and triangle, 73 words, צֶלַע adopted from Dicta and the שָׁוֶוה spelling twin fixed, בַּמְּשׁוּלָּשׁ and מִסְפָּר kept.",
+ "_provenance": "Stem templates for the non-routine reasoning types (C3, 2026-11-20). Vocalized by Claude and cross-checked word by word against Dicta Nakdan the same day (271 words: 250 agreed; of 21 disagreements, 3 adopted (בְּתוֹר לִגְלִידָה), 8 kept in context (the name גַּל, מְשַׂחֵק, סִפְרָה, מִקּוֹמָה, בַּמָּקוֹם הַ־), 10 are prefixes before a number); the niqqud has not been human-reviewed. Part 2 (parity, pyramid, calendar, and the day names in engine/mathReasoning2.ts): 118 words checked against Dicta Nakdan, 115 agreed, the other 3 are prefixes before a number. Hebrew wording awaits Ram's review in the PR. Each entry is [plain, vocalized]; the tests check that stripping the marks gives the plain text exactly. Backwards stems are built from parts: intro + step (+ then + step)... + end. C5 (2026-11-24): machine, hiddenDigit and clues, 62 words checked against Dicta Nakdan, 51 agreed, 11 kept in context (נִכְנָס and יוֹצֵא present tense, יֵצֵא will come out, אֲחָדוֹת the math term, סִפְרָה digit, מַה שֶּׁ, prefixes before a number); scales and triangle, 73 words, צֶלַע adopted from Dicta and the שָׁוֶוה spelling twin fixed, בַּמְּשׁוּלָּשׁ and מִסְפָּר kept. C7 (2026-11-28): who has what (logic, logicKids*, logicPets*), 40 generated stems (1,184 words, 39 distinct) checked against Dicta Nakdan: 1,144 its first choice, 40 its listed alternative, kept in context (וְדָג ending a list, not the construct; the name עוֹמֶר; תּוּכִּי parrot, not תּוֹכִי).",
  "backwards": {
   "intro": ["חשבתי על מספר. ", "חָשַׁבְתִּי עַל מִסְפָּר. "],
   "add": ["הוספתי לו {{n}}", "הוֹסַפְתִּי לוֹ {{n}}"],
@@ -74,5 +74,33 @@
   "sumGiven": ["במשולש, הסכום של שלושת המספרים בכל צלע הוא {{n}}. איזה מספר חסר במקום סימן השאלה?", "בַּמְּשׁוּלָּשׁ, הַסְּכוּם שֶׁל שְׁלוֹשֶׁת הַמִּסְפָּרִים בְּכָל צֶלַע הוּא {{n}}. אֵיזֶה מִסְפָּר חָסֵר בִּמְקוֹם סִימַן הַשְּׁאֵלָה?"],
   "sumEqual": ["במשולש, הסכום של שלושת המספרים בכל צלע שווה. איזה מספר חסר במקום סימן השאלה?", "בַּמְּשׁוּלָּשׁ, הַסְּכוּם שֶׁל שְׁלוֹשֶׁת הַמִּסְפָּרִים בְּכָל צֶלַע שָׁוֶוה. אֵיזֶה מִסְפָּר חָסֵר בִּמְקוֹם סִימַן הַשְּׁאֵלָה?"],
   "corners": ["שמים את המספרים {{list}} בעיגולים של המשולש, כל מספר פעם אחת, כך שהסכום בכל צלע הוא {{n}}. מה הסכום של שלושת המספרים שבפינות?", "שָׂמִים אֶת הַמִּסְפָּרִים {{list}} בָּעִיגּוּלִים שֶׁל הַמְּשׁוּלָּשׁ, כָּל מִסְפָּר פַּעַם אַחַת, כָּךְ שֶׁהַסְּכוּם בְּכָל צֶלַע הוּא {{n}}. מָה הַסְּכוּם שֶׁל שְׁלוֹשֶׁת הַמִּסְפָּרִים שֶׁבַּפִּינּוֹת?"]
+ },
+ "logic": {
+  "intro": ["לכל אחד מהילדים ", "לְכָל אֶחָד מֵהַיְּלָדִים "],
+  "introPets": [" יש חיה אחרת: ", " יֵשׁ חַיָּה אַחֶרֶת: "],
+  "has": [" יש ", " יֵשׁ "],
+  "hasNot": [" אין ", " אֵין "],
+  "askWhat": ["איזו חיה יש ", "אֵיזוֹ חַיָּה יֵשׁ "],
+  "askWho": ["למי יש ", "לְמִי יֵשׁ "]
+ },
+ "logicKids": {
+  "dana": ["דנה", "דָּנָה"], "gal": ["גל", "גַּל"], "roni": ["רוני", "רוֹנִי"],
+  "noa": ["נועה", "נוֹעָה"], "tamar": ["תמר", "תָּמָר"], "omer": ["עומר", "עוֹמֶר"]
+ },
+ "logicKidsLe": {
+  "dana": ["לדנה", "לְדָנָה"], "gal": ["לגל", "לְגַל"], "roni": ["לרוני", "לְרוֹנִי"],
+  "noa": ["לנועה", "לְנוֹעָה"], "tamar": ["לתמר", "לְתָמָר"], "omer": ["לעומר", "לְעוֹמֶר"]
+ },
+ "logicKidsVe": {
+  "dana": ["ודנה", "וְדָנָה"], "gal": ["וגל", "וְגַל"], "roni": ["ורוני", "וְרוֹנִי"],
+  "noa": ["ונועה", "וְנוֹעָה"], "tamar": ["ותמר", "וְתָמָר"], "omer": ["ועומר", "וְעוֹמֶר"]
+ },
+ "logicPets": {
+  "dog": ["כלב", "כֶּלֶב"], "cat": ["חתול", "חָתוּל"], "fish": ["דג", "דָּג"],
+  "parrot": ["תוכי", "תּוּכִּי"], "rabbit": ["ארנב", "אַרְנָב"], "turtle": ["צב", "צָב"]
+ },
+ "logicPetsVe": {
+  "dog": ["וכלב", "וְכֶלֶב"], "cat": ["וחתול", "וְחָתוּל"], "fish": ["ודג", "וְדָג"],
+  "parrot": ["ותוכי", "וְתוּכִּי"], "rabbit": ["וארנב", "וְאַרְנָב"], "turtle": ["וצב", "וְצָב"]
  }
 }

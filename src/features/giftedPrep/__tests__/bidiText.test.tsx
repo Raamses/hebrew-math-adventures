@@ -20,6 +20,7 @@ describe('BidiText keeps each equation in one LTR box', () => {
             // moves to the next line whole; breaks inside (left to right) only when wider than the line
             expect(b.className).toContain('inline-block');
             expect(b.className).toContain('max-w-full');
+            expect(b.className).toContain('unicode-bidi-isolate');
         }
     });
 
