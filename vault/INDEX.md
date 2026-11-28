@@ -44,6 +44,7 @@ Everything about this project, one place. **Start here.**
 - [[decisions/2026-08-equation-streak-loss-breaks]] — loss breaks streak (Nerdle semantics)
 - [[decisions/2026-11-gifted-prep-stage-a]] — gifted-prep section (Stage A): Hebrew-only, parent toggle, PrepItem contract, original content only
 - [[decisions/2026-11-israel-midnight-day]] — the day rolls over at Israel midnight (Asia/Jerusalem), not UTC; one-time migration of saved progress
+- [[decisions/2026-11-creative-math-part-4]] — creative math part 4 (C7): who has what, fair sharing, heads and legs; matchsticks and grid paths left for later
 
 ## 🔧 Related projects
 - **[[projects/hebrew-math-adventures]]** — main project (this vault)
