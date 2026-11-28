@@ -29,6 +29,16 @@ Because it's plain Markdown + git, either side can be the editor and the other g
 - **I (AmosBot) update on the Pi** → commit with code changes, you pull to see them in Obsidian.
 - **Conflicts are rare** (Markdown, one editor at a time); if one happens, git will flag it — resolve in the usual way.
 
+## Pi checkout auto-sync (GA4 cron)
+The daily `scripts/ga4-snapshot.sh` run rebases the Pi checkout's local snapshot commits onto `origin/main`, so the Pi stays current without a manual pull. It never touches a checked-out feature branch or non-snapshot commits. It skips those cases and logs why.
+
+If `ga4-snapshot.log` shows `Sync FAILED`, the rebase was already aborted and HEAD restored, so nothing is lost. To finish by hand on the Pi:
+1. `git fetch origin main && git rebase origin/main`
+2. Resolve the conflict (usually two versions of the same day's snapshot), then `git add <file> && git rebase --continue`.
+3. If anything goes wrong: `git rebase --abort`. The pre-sync HEAD from the last run is also at `refs/backup/ga4-pre-sync` (`git log -1 refs/backup/ga4-pre-sync`; it is overwritten by the next run).
+
+Never `git reset --hard origin/main` on the Pi: it discards the local snapshot commits.
+
 ## Optional niceties (skip unless you want them)
 - **Obsidian git plugin** (community): auto-commit+push on edit, so laptop↔Pi sync is hands-free. Install in Obsidian → Community Plugins → search "Obsidian Git".
 - **Separate vault repo:** if you ever want the vault to move independently of code, it can be split to its own private repo — but for now it lives with the code, which is fine and simpler.

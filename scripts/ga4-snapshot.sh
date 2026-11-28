@@ -16,7 +16,7 @@ set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────────────
 PROPERTY_ID="519138010"
-REPO_DIR="/home/ramamos/.openclaw/workspace/hebrew-math-adventures"
+REPO_DIR="${REPO_DIR:-/home/ramamos/.openclaw/workspace/hebrew-math-adventures}"
 SNAPSHOT_DIR="${REPO_DIR}/vault/snapshots"
 GOG_BIN="${GOG_BIN:-gog}"
 
@@ -212,7 +212,73 @@ EOF
 
 echo "[$NOW] Snapshot written: ${SNAPSHOT_FILE}"
 
-# ── Git commit (if repo is clean enough) ─────────────────────────────────────
+# ── Sync with origin/main (keeps the vault copy current) ─────────────────────
+# The Pi checkout is mounted read-only into Ram's Obsidian vault, so it must
+# track origin/main. Local snapshot commits are replayed on top of the latest
+# main with a rebase. There is no reset; the only commit a rebase drops is one
+# whose change is already on main.
+# The sync only runs when HEAD is detached or on main AND every local commit is
+# a snapshot commit, so a feature branch checked out on the Pi is never touched.
+# Before the rebase the previous HEAD is saved to refs/backup/ga4-pre-sync (kept
+# until the next run). On failure the rebase is aborted and HEAD restored.
+# Any skip or failure is logged and never fails the run; the snapshot is
+# already written.
+SNAPSHOT_SUBJECT_PREFIX="chore(analytics): daily GA4 snapshot "
+
+sync_with_origin_main() {
+  local pre_head branch upstream sha subject other_files rebase_out
+  pre_head=$(git rev-parse HEAD 2>/dev/null) || { echo "[$NOW] Sync skipped — no HEAD."; return 0; }
+
+  branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)
+  if [[ -n "${branch}" && "${branch}" != "main" ]]; then
+    echo "[$NOW] Sync skipped — branch '${branch}' is checked out (only detached HEAD or main is synced)."
+    return 0
+  fi
+  if [[ -d "$(git rev-parse --git-path rebase-merge)" || -d "$(git rev-parse --git-path rebase-apply)" ]]; then
+    echo "[$NOW] Sync skipped — a rebase is already in progress; fix it by hand."
+    return 0
+  fi
+  if ! git diff --quiet || ! git diff --cached --quiet; then
+    echo "[$NOW] Sync skipped — working tree has uncommitted tracked changes."
+    return 0
+  fi
+  if ! git fetch --quiet origin "+refs/heads/main:refs/remotes/origin/main"; then
+    echo "[$NOW] Sync skipped — git fetch origin main failed."
+    return 0
+  fi
+  if ! upstream=$(git rev-parse --verify --quiet "refs/remotes/origin/main^{commit}"); then
+    echo "[$NOW] Sync skipped — origin/main not found after fetch."
+    return 0
+  fi
+
+  # Every local commit must be a snapshot commit that touches only vault/snapshots/.
+  while read -r sha; do
+    [[ -z "${sha}" ]] && continue
+    subject=$(git log -1 --format=%s "${sha}")
+    other_files=$(git diff-tree --no-commit-id --name-only -r "${sha}" | grep -v '^vault/snapshots/' || true)
+    if [[ "${subject}" != "${SNAPSHOT_SUBJECT_PREFIX}"* || -n "${other_files}" ]]; then
+      echo "[$NOW] Sync skipped — local commit ${sha:0:7} is not a snapshot commit (\"${subject}\")."
+      return 0
+    fi
+  done < <(git rev-list "${upstream}..HEAD")
+
+  git update-ref refs/backup/ga4-pre-sync "${pre_head}"
+  if rebase_out=$(git rebase "${upstream}" 2>&1); then
+    echo "[$NOW] Synced: HEAD $(git rev-parse --short HEAD) on origin/main ${upstream:0:7} (was ${pre_head:0:7})."
+  else
+    git rebase --abort >/dev/null 2>&1 || true
+    echo "[$NOW] Sync FAILED — git rebase origin/main failed:"
+    printf '%s
+' "${rebase_out}" | sed 's/^/    /'
+    if [[ "$(git rev-parse HEAD)" == "${pre_head}" ]]; then
+      echo "[$NOW] Rebase aborted; HEAD restored to ${pre_head:0:7}. Resolve by hand."
+    else
+      echo "[$NOW] HEAD NOT restored; previous HEAD is refs/backup/ga4-pre-sync (${pre_head:0:7})."
+    fi
+  fi
+}
+
+# ── Git commit (if repo is clean enough), then sync ──────────────────────────
 cd "${REPO_DIR}"
 if git rev-parse --git-dir >/dev/null 2>&1; then
   git add "${SNAPSHOT_FILE}" 2>/dev/null || true
@@ -223,13 +289,12 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
     # Check if ONLY the snapshot is staged (don't commit unrelated changes)
     STAGED_COUNT=$(git diff --cached --name-only | wc -l)
     if [[ "${STAGED_COUNT}" -eq 1 ]]; then
-      git commit -m "chore(analytics): daily GA4 snapshot ${TODAY}" --no-verify 2>/dev/null \
-        && echo "[$NOW] Committed snapshot to git." \
-        || echo "[$NOW] Git commit failed (non-fatal)."
+      git commit -m "${SNAPSHOT_SUBJECT_PREFIX}${TODAY}" --no-verify 2>/dev/null         && echo "[$NOW] Committed snapshot to git."         || echo "[$NOW] Git commit failed (non-fatal)."
     else
       echo "[$NOW] Skipping git commit — unrelated files staged."
     fi
   fi
+  sync_with_origin_main
 fi
 
 echo "[$NOW] GA4 snapshot complete."
