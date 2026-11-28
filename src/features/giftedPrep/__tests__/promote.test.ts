@@ -3,9 +3,14 @@ import { describe, it, expect } from 'vitest';
 import { mergeDecisions, parseArgs, promote } from '../../../../scripts/prep-content-promote.mjs';
 import draftReading from '../../../../content-drafts/gifted-prep/he/reading.json';
 import draftLanguage from '../../../../content-drafts/gifted-prep/he/language.json';
+import draftAnalogies from '../../../../content-drafts/gifted-prep/he/analogies.json';
 import shippedReading from '../content/he/reading.json';
 import shippedLanguage from '../content/he/language.json';
-import type { BankLanguageItem, BankPassage, BankQuestion } from '../engine/bankSchema';
+import shippedAnalogiesJson from '../content/he/analogies.json';
+import { parseAnalogyBank, type BankAnalogyItem, type BankLanguageItem, type BankPassage, type BankQuestion } from '../engine/bankSchema';
+
+// The shipped analogy bank may be empty (no item approved yet), which JSON typing reads as `never[]`.
+const shippedAnalogies = shippedAnalogiesJson as { schemaVersion: number; niqqudProvenance?: string; items: { id: string }[] };
 
 const q = (id: string) => ({ id, stem: 's', options: ['a', 'b', 'c', 'd'], answerIndex: 0, explanation: 'e', skill: 'literal', flag: 'x' });
 const drafts = {
@@ -90,10 +95,15 @@ describe('prep-content-promote on the real banks', () => {
     const ITEM_KEYS = {
         ...QUESTION_KEYS, kind: true, difficulty: true, reviewStatus: true, source: true, ...STAMPS,
     } satisfies Record<keyof BankLanguageItem | Stamp, true>;
-    const [QUESTION, PASSAGE, ITEM] = [QUESTION_KEYS, PASSAGE_KEYS, ITEM_KEYS].map(o => Object.keys(o));
-    const approveAll = Object.fromEntries([...shippedReading.passages, ...shippedLanguage.items].map(x => [x.id, { status: 'approve' }]));
-    const out = promote({ reading: draftReading, language: draftLanguage }, approveAll,
-        { reviewer: 'Someone', today: '2099-01-01', shipped: { reading: shippedReading, language: shippedLanguage } });
+    const ANALOGY_KEYS = ITEM_KEYS satisfies Record<keyof BankAnalogyItem | Stamp, true>;
+    const [QUESTION, PASSAGE, ITEM, ANALOGY] = [QUESTION_KEYS, PASSAGE_KEYS, ITEM_KEYS, ANALOGY_KEYS].map(o => Object.keys(o));
+    const approveAll = Object.fromEntries([...shippedReading.passages, ...shippedLanguage.items, ...shippedAnalogies.items]
+        .map(x => [x.id, { status: 'approve' }]));
+    const drafts = { reading: draftReading, language: draftLanguage, analogies: draftAnalogies };
+    const out = promote(drafts, approveAll, {
+        reviewer: 'Someone', today: '2099-01-01',
+        shipped: { reading: shippedReading, language: shippedLanguage, analogies: shippedAnalogies },
+    });
     const extra = (o: object, allowed: string[]) => Object.keys(o).filter(k => !allowed.includes(k));
 
     it('every promoted key is a bank field: a new review-only draft field cannot slip into the bundle', () => {
@@ -102,13 +112,48 @@ describe('prep-content-promote on the real banks', () => {
             for (const q of p.questions) expect(extra(q, QUESTION), q.id).toEqual([]);
         }
         for (const i of out.language.items) expect(extra(i, ITEM), i.id).toEqual([]);
+        for (const i of out.analogies.items) expect(extra(i, ANALOGY), i.id).toEqual([]);
     });
 
     it('re-promoting every shipped id rebuilds the shipped bank exactly, approval stamps carried by id', () => {
         // Also keeps drafts and shipped in step: a text or niqqud fix made in one file only fails here.
         expect(out.reading).toEqual(shippedReading);
         expect(out.language).toEqual(shippedLanguage);
+        expect(out.analogies).toEqual(shippedAnalogies);
         expect(out.reading.passages.every((p: { reviewedBy: string }) => p.reviewedBy === 'Ram')).toBe(true);
         expect(out.language.items.some((i: { reviewedAt: string }) => i.reviewedAt === '2099-01-01')).toBe(false);
+    });
+});
+
+describe('prep-content-promote on the verbal-analogy drafts', () => {
+    // The shipped analogy bank can be empty, so these run over the drafts: approve every draft item, then promote
+    // again with that result as the shipped bank (the next review round) and expect the same bank back.
+    const approveAll = Object.fromEntries(draftAnalogies.items.map(i => [i.id, { status: 'approve' }]));
+    const base = { reading: { passages: [] }, language: { items: [] }, analogies: draftAnalogies };
+    const first = promote(base, approveAll, { reviewer: 'Ram', today: '2099-01-01' }).analogies;
+
+    it('promotes every approved analogy draft as reviewed, text unchanged, review stamps added', () => {
+        expect(first.items).toHaveLength(draftAnalogies.items.length);
+        const parsed = parseAnalogyBank(first);
+        parsed.forEach(i => expect(i.reviewStatus, i.id).toBe('reviewed'));
+        first.items.forEach((i: Record<string, unknown>, n: number) => {
+            const { reviewStatus: _r, reviewedBy, reviewedAt, ...rest } = i;
+            const { reviewStatus: _d, ...draft } = draftAnalogies.items[n];
+            expect(rest, String(i.id)).toEqual(draft);
+            expect([reviewedBy, reviewedAt]).toEqual(['Ram', '2099-01-01']);
+        });
+        expect(first.niqqudProvenance).toBe(draftAnalogies.niqqudProvenance);
+    });
+
+    it('round-trips: re-promoting with the result as the shipped bank rebuilds it exactly, dates carried by id', () => {
+        const again = promote(base, approveAll, { reviewer: 'Other', today: '2100-01-01', shipped: { analogies: first } });
+        expect(again.analogies).toEqual(first);
+    });
+
+    it('ships no analogy item without an approve decision', () => {
+        const some = { [draftAnalogies.items[0].id]: { status: 'approve' }, [draftAnalogies.items[1].id]: { status: 'edit' } };
+        expect(promote(base, some, { today: '2099-01-01' }).analogies.items.map((i: { id: string }) => i.id))
+            .toEqual([draftAnalogies.items[0].id]);
+        expect(promote(base, {}, { today: '2099-01-01' }).analogies.items).toEqual([]);
     });
 });

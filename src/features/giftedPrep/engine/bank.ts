@@ -1,19 +1,21 @@
 import readingJson from '../content/he/reading.json';
 import languageJson from '../content/he/language.json';
+import analogiesJson from '../content/he/analogies.json';
 import type { Difficulty, PrepItem } from '../types';
 import { BagDeck } from './bagDeck';
 import { shuffleOptions, type Rng } from './prng';
-import { parseLanguageBank, parseReadingBank, type BankLanguageItem, type BankPassage, type BankQuestion } from './bankSchema';
+import { parseAnalogyBank, parseLanguageBank, parseReadingBank, type BankAnalogyItem, type BankLanguageItem, type BankPassage, type BankQuestion } from './bankSchema';
 
 /**
  * Curated Hebrew banks (ADR 2026-11-gifted-prep-stage-a §8). Drafts live in content-drafts/ (never
  * bundled); scripts/prep-content-promote.mjs copies only items Ram approved into content/he/, and
  * __tests__/bank.test.ts fails if anything shipped is not `reviewed`.
  */
-export type { BankLanguageItem, BankPassage, BankQuestion } from './bankSchema';
+export type { BankAnalogyItem, BankLanguageItem, BankPassage, BankQuestion } from './bankSchema';
 
 export const READING_PASSAGES: readonly BankPassage[] = parseReadingBank(readingJson);
 export const LANGUAGE_ITEMS: readonly BankLanguageItem[] = parseLanguageBank(languageJson);
+export const ANALOGY_ITEMS: readonly BankAnalogyItem[] = parseAnalogyBank(analogiesJson);
 
 const asDifficulty = (n: number): Difficulty => (n <= 1 ? 1 : n >= 3 ? 3 : 2);
 
@@ -54,11 +56,28 @@ export function readingItems(rng: Rng, count: number, seen: ReadonlySet<string>,
     return out;
 }
 
-export function languageItems(rng: Rng, count: number, seen: ReadonlySet<string>, pool = LANGUAGE_ITEMS): PrepItem[] {
+function drawLanguagePool(
+    rng: Rng, count: number, seen: ReadonlySet<string>,
+    pool: readonly (BankLanguageItem | BankAnalogyItem)[],
+): PrepItem[] {
     if (pool.length === 0) return [];
     const deck = new BagDeck(pool, rng, seen);
     return deck.drawMany(Math.min(count, pool.length)).map(it => toItem(rng, it, {
         kind: it.kind, section: 'language', difficulty: asDifficulty(it.difficulty),
         stem: { text: it.stem, textNiqqud: it.stemNiqqud }, source: 'bank',
     }));
+}
+
+export function languageItems(
+    rng: Rng, count: number, seen: ReadonlySet<string>,
+    pool: readonly (BankLanguageItem | BankAnalogyItem)[] = LANGUAGE_ITEMS,
+): PrepItem[] {
+    return drawLanguagePool(rng, count, seen, pool);
+}
+
+export function analogyItems(
+    rng: Rng, count: number, seen: ReadonlySet<string>,
+    pool: readonly BankAnalogyItem[] = ANALOGY_ITEMS,
+): PrepItem[] {
+    return drawLanguagePool(rng, count, seen, pool);
 }

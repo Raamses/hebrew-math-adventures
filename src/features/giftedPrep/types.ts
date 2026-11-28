@@ -33,7 +33,8 @@ export type PrepKind =
     | 'math-logic'           // who has what: four children, four pets, has / has-not clues
     | 'reading'              // question about a passage
     | 'word-meaning'
-    | 'sentence-completion';
+    | 'sentence-completion'
+    | 'verbal-analogy';      // יחסי מילים: "ספר : לקרוא :: עט : ?"
 
 /** Every skill tag; bank JSON is validated against this list at load (engine/bank.ts). */
 export const SKILL_TAGS = [
@@ -42,7 +43,7 @@ export const SKILL_TAGS = [
     'work-backwards', 'sum-difference', 'position', 'counting', 'parity', 'number-wall', 'calendar',
     'number-machine', 'hidden-digit', 'clues', 'scales', 'magic-triangle', 'logic-grid',
     'literal', 'inference', 'vocabulary', 'main-idea', 'sequence',
-    'word-meaning', 'sentence-completion',
+    'word-meaning', 'sentence-completion', 'verbal-analogy',
 ] as const;
 export type SkillTag = typeof SKILL_TAGS[number];
 

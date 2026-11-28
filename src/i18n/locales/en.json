@@ -1101,7 +1101,8 @@
       "main-idea": "Main idea",
       "sequence": "Order of events",
       "word-meaning": "Word meaning",
-      "sentence-completion": "Sentence completion"
+      "sentence-completion": "Sentence completion",
+      "verbal-analogy": "Verbal analogies"
     }
   }
 }

@@ -39,6 +39,13 @@ export interface BankLanguageItem extends BankQuestion {
     readonly source: string;
 }
 
+export interface BankAnalogyItem extends BankQuestion {
+    readonly kind: 'verbal-analogy';
+    readonly difficulty: number;
+    readonly reviewStatus: string;
+    readonly source: string;
+}
+
 type Raw = Record<string, unknown>;
 
 const isSkill = (v: unknown): v is SkillTag => typeof v === 'string' && (SKILL_TAGS as readonly string[]).includes(v);
@@ -93,6 +100,18 @@ export function parseLanguageBank(json: { items: readonly unknown[] }): BankLang
         const o = raw as Raw;
         const id = String(o.id);
         if (o.kind !== 'word-meaning' && o.kind !== 'sentence-completion') throw new Error(`bank ${id}: unknown kind`);
+        return {
+            ...parseQuestion(o), kind: o.kind, difficulty: difficultyOf(o, id),
+            reviewStatus: str(o, 'reviewStatus', id), source: str(o, 'source', id),
+        };
+    });
+}
+
+export function parseAnalogyBank(json: { items: readonly unknown[] }): BankAnalogyItem[] {
+    return json.items.map(raw => {
+        const o = raw as Raw;
+        const id = String(o.id);
+        if (o.kind !== 'verbal-analogy') throw new Error(`bank ${id}: unknown kind`);
         return {
             ...parseQuestion(o), kind: o.kind, difficulty: difficultyOf(o, id),
             reviewStatus: str(o, 'reviewStatus', id), source: str(o, 'source', id),

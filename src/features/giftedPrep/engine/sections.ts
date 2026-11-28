@@ -1,6 +1,6 @@
 import type { Difficulty, PrepItem, PrepSection } from '../types';
 import { mathItem } from './arithmetic';
-import { LANGUAGE_ITEMS, READING_PASSAGES, languageItems, readingItems, type BankLanguageItem, type BankPassage } from './bank';
+import { ANALOGY_ITEMS, LANGUAGE_ITEMS, READING_PASSAGES, languageItems, readingItems, type BankAnalogyItem, type BankLanguageItem, type BankPassage } from './bank';
 import { intBetween, type Rng } from './prng';
 import { pyramidText, triangleText } from './mistakeDetails';
 
@@ -74,16 +74,19 @@ export const buildMath: SectionBuilder = (rng, count) =>
  * item into content/he/ (empty pool -> section absent -> "soon" in the hub). Exported for tests.
  */
 export function makeBuilders(
-    passages: readonly BankPassage[], items: readonly BankLanguageItem[],
+    passages: readonly BankPassage[],
+    items: readonly BankLanguageItem[],
+    analogies: readonly BankAnalogyItem[] = [],
 ): Partial<Record<PrepSection, SectionBuilder>> {
+    const combinedLanguage: readonly (BankLanguageItem | BankAnalogyItem)[] = [...items, ...analogies];
     return {
         math: buildMath,
         ...(passages.length > 0 ? { reading: (rng: Rng, n: number, seen: ReadonlySet<string>) => readingItems(rng, n, seen, passages) } : {}),
-        ...(items.length > 0 ? { language: (rng: Rng, n: number, seen: ReadonlySet<string>) => languageItems(rng, n, seen, items) } : {}),
+        ...(combinedLanguage.length > 0 ? { language: (rng: Rng, n: number, seen: ReadonlySet<string>) => languageItems(rng, n, seen, combinedLanguage) } : {}),
     };
 }
 
-const BUILDERS = makeBuilders(READING_PASSAGES, LANGUAGE_ITEMS);
+const BUILDERS = makeBuilders(READING_PASSAGES, LANGUAGE_ITEMS, ANALOGY_ITEMS);
 
 export function getSectionBuilder(section: PrepSection): SectionBuilder | undefined {
     return BUILDERS[section];
