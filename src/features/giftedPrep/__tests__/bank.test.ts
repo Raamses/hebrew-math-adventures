@@ -1,11 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import shippedReading from '../content/he/reading.json';
 import shippedLanguage from '../content/he/language.json';
+import shippedAnalogies from '../content/he/analogies.json';
 import draftReading from '../../../../content-drafts/gifted-prep/he/reading.json';
 import draftLanguage from '../../../../content-drafts/gifted-prep/he/language.json';
-import { languageItems, readingItems, type BankLanguageItem, type BankPassage, type BankQuestion } from '../engine/bank';
-import { parseLanguageBank, parseReadingBank } from '../engine/bankSchema';
-import { makeBuilders } from '../engine/sections';
+import draftAnalogies from '../../../../content-drafts/gifted-prep/he/analogies.json';
+import {
+    ANALOGY_ITEMS, languageItems, readingItems,
+    type BankAnalogyItem, type BankLanguageItem, type BankPassage, type BankQuestion,
+} from '../engine/bank';
+import { parseAnalogyBank, parseLanguageBank, parseReadingBank } from '../engine/bankSchema';
+import { getSectionBuilder, makeBuilders } from '../engine/sections';
 import { mulberry32 } from '../engine/prng';
 import { SKILL_TAGS } from '../types';
 import { hasNiqqud, stripNiqqud } from '../engine/niqqud';
@@ -76,15 +81,21 @@ describe('gifted-prep Hebrew banks', () => {
     const shippedL = parseLanguageBank(shippedLanguage);
     const draftP = parseReadingBank(draftReading);
     const draftL = parseLanguageBank(draftLanguage);
+    // Verbal analogies: the shipped bank stays empty until Ram approves drafts, so the content checks also run
+    // over the drafts, and the engine tests below use the drafts.
+    const shippedA = parseAnalogyBank(shippedAnalogies);
+    const draftA = parseAnalogyBank(draftAnalogies);
 
     it('ships ONLY items Ram reviewed (ADR §8; the review covers the plain text)', () => {
         shippedP.forEach(p => expect(p.reviewStatus, p.id).toBe('reviewed'));
         shippedL.forEach(i => expect(i.reviewStatus, i.id).toBe('reviewed'));
+        shippedA.forEach(i => expect(i.reviewStatus, i.id).toBe('reviewed'));
     });
 
     it('declares niqqud provenance whenever a bank carries vocalized twins (it is not part of the review)', () => {
         const hasTwins = (json: object) => JSON.stringify(json).includes('Niqqud"');
-        for (const bank of [shippedReading, shippedLanguage, draftReading, draftLanguage] as Record<string, unknown>[]) {
+        const banks = [shippedReading, shippedLanguage, shippedAnalogies, draftReading, draftLanguage, draftAnalogies];
+        for (const bank of banks as Record<string, unknown>[]) {
             if (hasTwins(bank)) expect(String(bank.niqqudProvenance)).toMatch(/not been human-reviewed/);
         }
     });
@@ -109,6 +120,30 @@ describe('gifted-prep Hebrew banks', () => {
             expect(i.source, i.id).toBe('original');
             checkQuestion(i);
         });
+    });
+
+    it('verbal-analogy items (shipped and draft) are schema-valid, original, and every text has a twin that strips to it', () => {
+        expect(draftA.length).toBeGreaterThan(0);
+        [...shippedA, ...draftA].forEach((i: BankAnalogyItem) => {
+            expect(i.source, i.id).toBe('original');
+            expect(i.kind, i.id).toBe('verbal-analogy');
+            expect(i.skill, i.id).toBe('verbal-analogy');
+            expect(i.id, i.id).toMatch(/^va-[0-9]{3}$/);
+            // checkQuestion strips each twin and requires exactly the plain text back
+            checkQuestion(i);
+            expect(i.stemNiqqud, `${i.id} stem twin`).toBeDefined();
+            expect(i.explanationNiqqud, `${i.id} explanation twin`).toBeDefined();
+            expect(i.optionsNiqqud, `${i.id} option twins`).toHaveLength(4);
+        });
+        draftA.forEach(i => expect(i.reviewStatus, i.id).toBe('draft'));
+        // Every shipped analogy came through promote from a draft with the same id.
+        const draftIds = new Set(draftA.map(i => i.id));
+        shippedA.forEach(i => expect(draftIds.has(i.id), i.id).toBe(true));
+    });
+
+    it('rejects an analogy item whose kind is not verbal-analogy', () => {
+        const bad = { items: [{ ...draftAnalogies.items[0], kind: 'word-meaning' }] };
+        expect(() => parseAnalogyBank(bad)).toThrow(/unknown kind/);
     });
 
     it('rejects a content typo in skill instead of casting it', () => {
@@ -139,7 +174,9 @@ describe('gifted-prep Hebrew banks', () => {
     });
 
     it('ids are unique', () => {
-        const ids = [...draftP.flatMap(p => [p.id, ...p.questions.map(q => q.id)]), ...draftL.map(i => i.id)];
+        const ids = [
+            ...draftP.flatMap(p => [p.id, ...p.questions.map(q => q.id)]), ...draftL.map(i => i.id), ...draftA.map(i => i.id),
+        ];
         expect(new Set(ids).size).toBe(ids.length);
     });
 
@@ -152,6 +189,52 @@ describe('gifted-prep Hebrew banks', () => {
         expect(full.reading).toBeDefined();
         expect(full.language).toBeDefined();
         expect(full.reading!(mulberry32(1), 5, new Set()).length).toBeGreaterThanOrEqual(5);
+        // Verbal analogies alone light up the language section.
+        const analogiesOnly = makeBuilders([], [], draftA);
+        expect(analogiesOnly.reading).toBeUndefined();
+        expect(analogiesOnly.language).toBeDefined();
+        const drawn = analogiesOnly.language!(mulberry32(5), 6, new Set());
+        expect(drawn).toHaveLength(6);
+        drawn.forEach(it => expect([it.kind, it.section, it.skill]).toEqual(['verbal-analogy', 'language', 'verbal-analogy']));
+    });
+
+    it('the language section draws word-meaning, sentence-completion and verbal-analogy items from one pool', () => {
+        const pool = draftL.length + draftA.length;
+        const items = makeBuilders([], draftL, draftA).language!(mulberry32(6), pool, new Set());
+        expect(items).toHaveLength(pool);
+        expect(new Set(items.map(it => it.kind))).toEqual(new Set(['word-meaning', 'sentence-completion', 'verbal-analogy']));
+        items.forEach(it => expect(it.section, it.id).toBe('language'));
+        // each item keeps its key through the option shuffle
+        const src = new Map([...draftL, ...draftA].map(i => [i.id, i]));
+        items.forEach(it => expect(it.options[it.answerIndex], it.id).toBe(keyOf(src.get(it.id)!)));
+    });
+
+    it('the app wires the shipped analogy bank into the language section (engine/sections.ts BUILDERS)', async () => {
+        // Load the engine with the draft analogies standing in for the shipped file, so the wiring is tested even
+        // while the shipped bank is empty.
+        vi.resetModules();
+        vi.doMock('../content/he/analogies.json', () => ({ default: draftAnalogies }));
+        try {
+            const bank = await import('../engine/bank');
+            const sections = await import('../engine/sections');
+            expect(bank.ANALOGY_ITEMS.map(i => i.id)).toEqual(draftA.map(i => i.id));
+            const n = bank.LANGUAGE_ITEMS.length + bank.ANALOGY_ITEMS.length;
+            const items = sections.getSectionBuilder('language')!(mulberry32(7), n, new Set());
+            expect(items.filter(it => it.kind === 'verbal-analogy')).toHaveLength(draftA.length);
+        } finally {
+            vi.doUnmock('../content/he/analogies.json');
+            vi.resetModules();
+        }
+    });
+
+    it('with the shipped (possibly empty) analogy bank the app still draws language items', () => {
+        expect(ANALOGY_ITEMS).toHaveLength(shippedAnalogies.items.length);
+        const build = getSectionBuilder('language');
+        expect(build).toBeDefined();
+        const items = build!(mulberry32(9), 10, new Set());
+        expect(items).toHaveLength(10);
+        items.forEach(it => expect(it.section, it.id).toBe('language'));
+        expect(items.some(it => it.kind === 'word-meaning' || it.kind === 'sentence-completion')).toBe(true);
     });
 
     it('reading sessions keep passages whole, reach the count, and keep the key (plain and vocalized)', () => {
