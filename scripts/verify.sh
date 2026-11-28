@@ -2,7 +2,8 @@
 # scripts/verify.sh - the repo's own PR gate. CI (.github/workflows/pr-checks.yml) and the agent fleet's
 # ci-in-container both run exactly this, so "green" means the same thing everywhere.
 #
-# Blocking:      typecheck, unit (vitest), build, e2e smoke against THIS checkout's build.
+# Blocking:      ga4-sync (bash test of scripts/ga4-snapshot.sh's git sync), typecheck, unit (vitest),
+#                build, e2e smoke against THIS checkout's build.
 # Non-blocking:  lint (eslint). It runs and its summary is printed, but it never fails the gate
 #                (Ram, 2026-10-17: main has ~144 lint errors; a separate cleanup card fixes them).
 #
@@ -77,6 +78,7 @@ e2e_smoke() {
   return $rc
 }
 
+step ga4-sync bash scripts/tests/ga4-sync.test.sh
 step typecheck npm run --silent typecheck
 step unit npx vitest run
 step build npm run --silent build

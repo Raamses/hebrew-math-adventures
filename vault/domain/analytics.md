@@ -57,6 +57,8 @@ Each snapshot includes:
 Snapshots: `vault/snapshots/ga4-YYYY-MM-DD.md`
 Cron: `0 9 * * * .../scripts/ga4-snapshot.sh >> .../scripts/ga4-snapshot.log 2>&1`
 
+After committing the snapshot, the script keeps the Pi checkout on top of `origin/main`. The checkout is mounted read-only into Ram's Obsidian vault, so it must not drift. It fetches `main` and rebases the local snapshot commits onto it. This runs only when HEAD is detached or on `main` and every local commit is a snapshot commit touching only `vault/snapshots/`; a checked-out feature branch, a dirty tree, or a failed fetch makes it skip and log why. HEAD before the rebase is saved to `refs/backup/ga4-pre-sync` (kept until the next run). On a rebase failure the script aborts, restores HEAD and prints git's reason to `ga4-snapshot.log`. Recovery steps: [[git-sync#Pi checkout auto-sync (GA4 cron)]]. Test: `bash scripts/tests/ga4-sync.test.sh` (part of `scripts/verify.sh`).
+
 ## Event Taxonomy
 
 Source: `src/types/analytics.ts` (typed), `src/hooks/useAnalytics.ts` (emission)
