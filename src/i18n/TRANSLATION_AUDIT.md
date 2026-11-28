@@ -1,7 +1,7 @@
 # TRANSLATION AUDIT — en ⇔ he (auto-generated)
 
 **DO NOT EDIT BY HAND** — regenerate: `python3 scripts/gen_translation_audit.py`
-**Generated:** 2026-10-15 · en keys: 728 · he keys: 728 (flatten mirrors src/i18n/__tests__/locales-parity.test.ts)
+**Generated:** 2026-11-27 · en keys: 814 · he keys: 814 (flatten mirrors src/i18n/__tests__/locales-parity.test.ts)
 
 ## Status: CLEAN
 
@@ -16,21 +16,15 @@
 - ✅ `analytics.answers` — 1/1
 - ✅ `analytics.avgSpeed` — 1/1
 - ✅ `analytics.badges` — 1/1
-- ✅ `analytics.coins` — 1/1
-- ✅ `analytics.minutes` — 1/1
 - ✅ `analytics.noData` — 1/1
-- ✅ `analytics.overallAccuracy` — 1/1
 - ✅ `analytics.practiceThis` — 1/1
 - ✅ `analytics.progress` — 1/1
 - ✅ `analytics.selectProfile` — 1/1
 - ✅ `analytics.skillAnalysis` — 1/1
 - ✅ `analytics.skillBreakdown` — 1/1
-- ✅ `analytics.stars` — 1/1
 - ✅ `analytics.streak` — 1/1
 - ✅ `analytics.strongest` — 1/1
-- ✅ `analytics.timePlayed` — 1/1
 - ✅ `analytics.weakest` — 1/1
-- ✅ `analytics.weekly` — 1/1
 - ✅ `app.arcade` — 1/1
 - ✅ `app.common` — 1/1
 - ✅ `app.greeting` — 1/1
@@ -57,6 +51,10 @@
 - ✅ `badges.superstar` — 2/2
 - ✅ `badges.unlocked` — 1/1
 - ✅ `badges.weekly_warrior` — 2/2
+- ✅ `blitz.instruction` — 1/1
+- ✅ `blitz.multiChip` — 1/1
+- ✅ `blitz.progressPill` — 1/1
+- ✅ `blitz.titleChip` — 1/1
 - ✅ `bubble.popNumber` — 1/1
 - ✅ `bubble.popReady` — 1/1
 - ✅ `bubble.solveEquation` — 1/1
@@ -184,7 +182,6 @@
 - ✅ `parent.gate` — 17/17
 - ✅ `parent.gateDesc` — 1/1
 - ✅ `parent.gateTitle` — 1/1
-- ✅ `parent.heatmap` — 11/11
 - ✅ `parent.manageProfiles` — 1/1
 - ✅ `parent.table` — 7/7
 - ✅ `parent.title` — 1/1
@@ -207,6 +204,15 @@
 - ✅ `practice.survival` — 2/2
 - ✅ `practice.time` — 2/2
 - ✅ `practice.zen` — 2/2
+- ✅ `prep.hub` — 10/10
+- ✅ `prep.mock` — 12/12
+- ✅ `prep.parent` — 18/18
+- ✅ `prep.player` — 13/13
+- ✅ `prep.sections` — 3/3
+- ✅ `prep.skills` — 30/30
+- ✅ `prep.summary` — 7/7
+- ✅ `prep.tile` — 2/2
+- ✅ `prep.toggle` — 4/4
 - ✅ `quest.boss1` — 1/1
 - ✅ `quest.boss1_d` — 1/1
 - ✅ `quest.claim` — 1/1
